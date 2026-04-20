@@ -1,0 +1,1921 @@
+openapi: 3.0.3
+info:
+  title: RMap API
+  version: 1.0.0
+  description: |
+    REST API for **RMap** — a web application that generates personalized IT learning roadmaps.
+
+    ## Authentication
+    All protected endpoints require a **Bearer JWT** token obtained from `POST /auth/login`.
+
+    ## Roles
+    - `user` — standard authenticated user
+    - `admin` — can manage roles, skills, template roadmaps, and resources
+
+    ## Key Concepts
+    - **Template roadmap** → `user_id = null`, `is_template = true`, admin-created, visible to everyone
+    - **Personal roadmap** → AI-generated, 1-to-1 with a user; one per user enforced
+    - **Bookmark** → a user saves any roadmap to their list without owning it
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local development
+  - url: https://api.rmap.dev/v1
+    description: Production
+
+tags:
+  - name: Auth
+    description: Registration, login, and current user profile
+  - name: Users
+    description: User profile, goals, and assessed skill levels
+  - name: Quiz
+    description: Onboarding skill assessment quiz
+  - name: Roles
+    description: IT roles and their associated skills
+  - name: Skills
+    description: Atomic skill catalog
+  - name: Roadmaps
+    description: Template and personal roadmap management
+  - name: Roadmap Nodes
+    description: Node-level operations (skill order, relations)
+  - name: Progress
+    description: Per-node learning progress tracking
+  - name: Resources
+    description: Learning resources linked to skills
+  - name: Bookmarks
+    description: Save and manage bookmarked roadmaps
+  - name: Admin
+    description: Admin-only management operations
+
+# =============================================================================
+# SECURITY
+# =============================================================================
+# Auth strategy: HTTP-only cookie pair
+#   access_token  — short-lived JWT (e.g. 15 min), sent on every request
+#   refresh_token — long-lived JWT (e.g. 7 days), used only at POST /auth/refresh
+# Both cookies are set by the server with HttpOnly; Secure; SameSite=Strict.
+# Clients never read the tokens directly — the browser attaches them automatically.
+# =============================================================================
+components:
+  securitySchemes:
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: >
+        HTTP-only JWT access cookie. Set automatically by the server on login/register.
+        Send requests with `credentials: "include"` (fetch) or `withCredentials: true` (axios).
+
+  # ===========================================================================
+  # REUSABLE SCHEMAS
+  # ===========================================================================
+  schemas:
+
+    # ── Enums ─────────────────────────────────────────────────────────────────
+    UserRole:
+      type: string
+      enum: [user, admin]
+
+    SkillLevel:
+      type: string
+      enum: [fresher, junior, middle]
+
+    NodeStatus:
+      type: string
+      enum: [locked, in_progress, completed]
+
+    ResourcePlatform:
+      type: string
+      enum: [udemy, coursera, youtube, other]
+
+    SkillProficiency:
+      type: string
+      enum: [none, basic, intermediate]
+      description: |
+        - `none` — hasn't learned it
+        - `basic` — knows the fundamentals
+        - `intermediate` — can apply it in practice
+
+    RelationType:
+      type: string
+      enum: [required, optional]
+      description: |
+        - `required` — must learn before moving on
+        - `optional` — good to have, not blocking
+
+    # ── Common ────────────────────────────────────────────────────────────────
+    UUID:
+      type: string
+      format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
+
+    Timestamp:
+      type: string
+      format: date-time
+      example: "2025-06-01T08:00:00Z"
+
+    # ── Users ─────────────────────────────────────────────────────────────────
+    UserPublic:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        email:
+          type: string
+          format: email
+          example: "alice@example.com"
+        full_name:
+          type: string
+          example: "Alice Nguyen"
+        avatar_url:
+          type: string
+          nullable: true
+          example: "https://cdn.rmap.dev/avatars/alice.png"
+        role:
+          $ref: '#/components/schemas/UserRole'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    RegisterRequest:
+      type: object
+      required: [email, password, full_name]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "alice@example.com"
+        password:
+          type: string
+          minLength: 8
+          example: "S3cur3P@ss"
+        full_name:
+          type: string
+          example: "Alice Nguyen"
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "alice@example.com"
+        password:
+          type: string
+          example: "S3cur3P@ss"
+
+    AuthResponse:
+      type: object
+      description: >
+        Returned on successful register or login.
+        The server sets two HTTP-only cookies in the response headers:
+        `Set-Cookie: access_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`
+        `Set-Cookie: refresh_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=604800`
+        The response body contains only the authenticated user's public profile.
+      properties:
+        user:
+          $ref: '#/components/schemas/UserPublic'
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          example: "Alice B. Nguyen"
+        avatar_url:
+          type: string
+          nullable: true
+          example: "https://cdn.rmap.dev/avatars/new.png"
+
+    # ── Skills ────────────────────────────────────────────────────────────────
+    Skill:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+          example: "React"
+        slug:
+          type: string
+          example: "react"
+        description:
+          type: string
+          nullable: true
+          example: "A JavaScript library for building UIs"
+        category:
+          type: string
+          nullable: true
+          example: "frontend"
+        estimated_hours:
+          type: integer
+          nullable: true
+          example: 40
+
+    UserSkill:
+      type: object
+      properties:
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        skill_name:
+          type: string
+          example: "React"
+        proficiency:
+          $ref: '#/components/schemas/SkillProficiency'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    # ── Quiz ──────────────────────────────────────────────────────────────────
+    QuizQuestion:
+      type: object
+      properties:
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        skill_name:
+          type: string
+          example: "HTML"
+        question:
+          type: string
+          example: "How confident are you with semantic HTML5 elements?"
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                $ref: '#/components/schemas/SkillProficiency'
+              label:
+                type: string
+                example: "I know the fundamentals"
+
+    QuizAnswer:
+      type: object
+      required: [skill_id, proficiency]
+      properties:
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        proficiency:
+          $ref: '#/components/schemas/SkillProficiency'
+
+    QuizSubmitRequest:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizAnswer'
+          minItems: 1
+
+    # ── Roles ─────────────────────────────────────────────────────────────────
+    Role:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+          example: "Frontend Developer"
+        slug:
+          type: string
+          example: "frontend-developer"
+        description:
+          type: string
+          nullable: true
+          example: "Builds user-facing web applications"
+
+    RoleSkill:
+      allOf:
+        - $ref: '#/components/schemas/Skill'
+        - type: object
+          properties:
+            is_core:
+              type: boolean
+              example: true
+            sort_order:
+              type: integer
+              example: 1
+
+    # ── Roadmaps ──────────────────────────────────────────────────────────────
+    Roadmap:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        user_id:
+          allOf:
+            - $ref: '#/components/schemas/UUID'
+          nullable: true
+          description: "null for template roadmaps"
+        role_id:
+          $ref: '#/components/schemas/UUID'
+        role_name:
+          type: string
+          example: "Frontend Developer"
+        title:
+          type: string
+          example: "Frontend Developer Roadmap – Alice"
+        description:
+          type: string
+          nullable: true
+          example: "Personalized roadmap based on your goals and current skills"
+        is_template:
+          type: boolean
+          example: false
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+
+    RoadmapNode:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        roadmap_id:
+          $ref: '#/components/schemas/UUID'
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        skill_name:
+          type: string
+          example: "React"
+        skill_estimated_hours:
+          type: integer
+          nullable: true
+          example: 40
+        parent_node_id:
+          allOf:
+            - $ref: '#/components/schemas/UUID'
+          nullable: true
+        relation_type:
+          $ref: '#/components/schemas/RelationType'
+        sort_order:
+          type: integer
+          example: 2
+        children:
+          type: array
+          description: Recursively nested child nodes (returned when fetching the full tree)
+          items:
+            $ref: '#/components/schemas/RoadmapNode'
+
+    RoadmapWithNodes:
+      allOf:
+        - $ref: '#/components/schemas/Roadmap'
+        - type: object
+          properties:
+            nodes:
+              type: array
+              description: Tree-structured nodes; top-level nodes have parent_node_id = null
+              items:
+                $ref: '#/components/schemas/RoadmapNode'
+
+    GenerateRoadmapResponse:
+      type: object
+      properties:
+        roadmap:
+          $ref: '#/components/schemas/RoadmapWithNodes'
+        generation_summary:
+          type: object
+          properties:
+            total_skills:
+              type: integer
+              example: 12
+            total_estimated_hours:
+              type: integer
+              example: 240
+            feasibility_ok:
+              type: boolean
+              description: "true when total_hours / (hours_per_day × deadline_days) ≤ 1"
+              example: true
+
+    # ── Progress ──────────────────────────────────────────────────────────────
+    NodeProgress:
+      type: object
+      properties:
+        roadmap_node_id:
+          $ref: '#/components/schemas/UUID'
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        skill_name:
+          type: string
+          example: "CSS Flexbox"
+        status:
+          $ref: '#/components/schemas/NodeStatus'
+        started_at:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+        completed_at:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+
+    RoadmapProgress:
+      type: object
+      properties:
+        roadmap_id:
+          $ref: '#/components/schemas/UUID'
+        total_nodes:
+          type: integer
+          example: 12
+        completed_nodes:
+          type: integer
+          example: 4
+        in_progress_nodes:
+          type: integer
+          example: 2
+        completion_percentage:
+          type: number
+          format: float
+          example: 33.3
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeProgress'
+
+    UpdateNodeProgressRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: '#/components/schemas/NodeStatus'
+
+    # ── Resources ─────────────────────────────────────────────────────────────
+    Resource:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        title:
+          type: string
+          example: "React – The Complete Guide (Udemy)"
+        url:
+          type: string
+          format: uri
+          example: "https://www.udemy.com/course/react-the-complete-guide/"
+        platform:
+          $ref: '#/components/schemas/ResourcePlatform'
+        is_free:
+          type: boolean
+          example: false
+        level_tag:
+          allOf:
+            - $ref: '#/components/schemas/SkillLevel'
+          nullable: true
+
+    # ── Admin request bodies ──────────────────────────────────────────────────
+    CreateRoleRequest:
+      type: object
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+          example: "Backend Developer"
+        slug:
+          type: string
+          example: "backend-developer"
+        description:
+          type: string
+          nullable: true
+
+    CreateSkillRequest:
+      type: object
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+          example: "Node.js"
+        slug:
+          type: string
+          example: "nodejs"
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+          example: "backend"
+        estimated_hours:
+          type: integer
+          nullable: true
+          example: 30
+
+    AddRoleSkillRequest:
+      type: object
+      required: [skill_id]
+      properties:
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        is_core:
+          type: boolean
+          default: true
+        sort_order:
+          type: integer
+          default: 0
+
+    CreateTemplateRoadmapRequest:
+      type: object
+      required: [role_id, title, nodes]
+      properties:
+        role_id:
+          $ref: '#/components/schemas/UUID'
+        title:
+          type: string
+          example: "Frontend Developer – Standard Path"
+        description:
+          type: string
+          nullable: true
+        nodes:
+          type: array
+          description: Flat list of nodes; set parent_node_id to null for root nodes
+          items:
+            type: object
+            required: [skill_id, sort_order]
+            properties:
+              skill_id:
+                $ref: '#/components/schemas/UUID'
+              parent_node_id:
+                allOf:
+                  - $ref: '#/components/schemas/UUID'
+                nullable: true
+              relation_type:
+                $ref: '#/components/schemas/RelationType'
+              sort_order:
+                type: integer
+
+    CreateResourceRequest:
+      type: object
+      required: [skill_id, title, url]
+      properties:
+        skill_id:
+          $ref: '#/components/schemas/UUID'
+        title:
+          type: string
+          example: "CSS Tricks – Flexbox Guide"
+        url:
+          type: string
+          format: uri
+        platform:
+          $ref: '#/components/schemas/ResourcePlatform'
+        is_free:
+          type: boolean
+          default: true
+        level_tag:
+          allOf:
+            - $ref: '#/components/schemas/SkillLevel'
+          nullable: true
+
+    # ── Common responses ──────────────────────────────────────────────────────
+    # Error code convention: HTTP_STATUS * 100 + sequence
+    #   e.g. 40000 = 400 validation,  40101 = 401 bad credentials
+    #        40300 = 403 forbidden,   40400 = 404 not found
+    #        40901 = 409 email taken, 50300 = 503 AI unavailable
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: integer
+          description: >
+            Application-level error code. Encodes HTTP status + sub-type:
+            `HTTP_STATUS * 100 + sequence_number`.
+          example: 40400
+        message:
+          type: string
+          description: Human-readable summary of the error.
+          example: "The requested resource was not found."
+        errors:
+          description: >
+            Optional field-level detail. Present on validation errors (code 40000).
+            Shape is a map of field name → array of violation objects, or a plain array.
+          oneOf:
+            - type: object
+              description: Field-keyed map of violations
+              additionalProperties:
+                type: array
+                items:
+                  type: object
+                  required: [code, message]
+                  properties:
+                    code:
+                      type: string
+                      description: Machine-readable violation code
+                      example: "IS_EMAIL"
+                    message:
+                      type: string
+                      description: Human-readable violation description
+                      example: "email must be an email"
+            - type: array
+              description: Flat list of violations (used when errors are not field-specific)
+              items:
+                type: object
+                required: [code, message]
+                properties:
+                  code:
+                    type: string
+                    example: "INVALID_PAYLOAD"
+                  message:
+                    type: string
+                    example: "Request body is not valid JSON"
+
+    PaginationMeta:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 42
+        page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 20
+        total_pages:
+          type: integer
+          example: 3
+
+  # ===========================================================================
+  # REUSABLE RESPONSES
+  # ===========================================================================
+  responses:
+    Unauthorized:
+      description: Missing or expired access_token cookie
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 40100
+            message: "Authentication required. Please log in."
+
+    Forbidden:
+      description: Authenticated user lacks required permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 40300
+            message: "You do not have permission to perform this action."
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 40400
+            message: "The requested resource was not found."
+
+    UnprocessableEntity:
+      description: Validation error — one or more request fields are invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 40000
+            message: "Validation failed"
+            errors:
+              email:
+                - code: "IS_EMAIL"
+                  message: "email must be an email"
+              password:
+                - code: "MIN_LENGTH"
+                  message: "password must be longer than or equal to 8 characters"
+
+  # ===========================================================================
+  # REUSABLE PARAMETERS
+  # ===========================================================================
+  parameters:
+    RoadmapId:
+      name: roadmapId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: Unique identifier of the roadmap
+
+    NodeId:
+      name: nodeId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: Unique identifier of the roadmap node
+
+    RoleId:
+      name: roleId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: Unique identifier of the role
+
+    SkillId:
+      name: skillId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/UUID'
+      description: Unique identifier of the skill
+
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+      description: Page number (1-indexed)
+
+    PerPageParam:
+      name: per_page
+      in: query
+      schema:
+        type: integer
+        default: 20
+        maximum: 100
+      description: Number of items per page
+
+# =============================================================================
+# PATHS
+# =============================================================================
+paths:
+
+  # ============================================================
+  # AUTH
+  # ============================================================
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      description: >
+        Creates a new user account and immediately issues an access + refresh token pair
+        via HTTP-only `Set-Cookie` headers. No separate login step needed.
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered; access_token and refresh_token cookies set
+          headers:
+            Set-Cookie:
+              description: >
+                Two cookies are set in a single response (multi-value header):
+                `access_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`
+                `refresh_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=604800`
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40901
+                message: "Email already registered"
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in and obtain JWT cookies
+      description: >
+        Validates credentials and sets `access_token` + `refresh_token` HTTP-only cookies.
+        On success the client should store nothing — the browser handles the cookies automatically.
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful; access_token and refresh_token cookies set
+          headers:
+            Set-Cookie:
+              description: >
+                Two cookies are set:
+                `access_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`
+                `refresh_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=604800`
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40101
+                message: "Invalid email or password"
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh the access token
+      description: >
+        Reads the `refresh_token` HTTP-only cookie, validates it, and issues a new
+        `access_token` cookie (and optionally rotates the `refresh_token`).
+        The refresh cookie is scoped to `Path=/auth/refresh`, so the browser only
+        sends it to this endpoint — it is never exposed to other routes.
+      operationId: refreshToken
+      responses:
+        '200':
+          description: Access token rotated; new access_token cookie set
+          headers:
+            Set-Cookie:
+              description: >
+                New short-lived access token cookie (and rotated refresh token if rotation is enabled):
+                `access_token=<jwt>; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=900`
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserPublic'
+        '401':
+          description: Refresh token is missing, expired, or has been revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40102
+                message: "Refresh token is expired or invalid. Please log in again."
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out and clear JWT cookies
+      description: >
+        Invalidates the current session. The server responds with `Set-Cookie` headers
+        that clear both `access_token` and `refresh_token` by setting `Max-Age=0`.
+      operationId: logoutUser
+      security:
+        - CookieAuth: []
+      responses:
+        '204':
+          description: Logged out; both cookies cleared
+          headers:
+            Set-Cookie:
+              description: >
+                Clears both cookies:
+                `access_token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`
+                `refresh_token=; HttpOnly; Secure; SameSite=Strict; Path=/auth/refresh; Max-Age=0`
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the currently authenticated user
+      operationId: getMe
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================
+  # USERS – Profile
+  # ============================================================
+
+  /users/me:
+    patch:
+      tags: [Users]
+      summary: Update current user's profile
+      operationId: updateProfile
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublic'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ============================================================
+  # USERS – Skills
+  # ============================================================
+
+  /users/me/skills:
+    get:
+      tags: [Users]
+      summary: Get the current user's assessed skill levels
+      operationId: getUserSkills
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: List of user skills with proficiency levels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserSkill'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================
+  # QUIZ
+  # ============================================================
+
+  /quiz:
+    get:
+      tags: [Quiz]
+      summary: Get quiz questions for a target role
+      description: |
+        Returns skill-mapped questions for the onboarding assessment (FR-03).
+        Filter by `role_id` to get questions relevant to the user's chosen target role.
+      operationId: getQuizQuestions
+      security:
+        - CookieAuth: []
+      parameters:
+        - name: role_id
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+          description: Target role to filter quiz questions
+      responses:
+        '200':
+          description: List of quiz questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  role_id:
+                    $ref: '#/components/schemas/UUID'
+                  role_name:
+                    type: string
+                    example: "Frontend Developer"
+                  questions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QuizQuestion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /quiz/submit:
+    post:
+      tags: [Quiz]
+      summary: Submit quiz answers and store skill proficiency levels
+      description: |
+        Converts quiz answers into skill proficiency rows in `user_skills` (FR-04).
+        If the user retakes the quiz, existing rows are upserted.
+      operationId: submitQuiz
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizSubmitRequest'
+      responses:
+        '200':
+          description: Skills stored; returns updated user skills
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated_skills:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserSkill'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ============================================================
+  # ROLES
+  # ============================================================
+
+  /roles:
+    get:
+      tags: [Roles]
+      summary: List all available IT roles
+      operationId: listRoles
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated list of roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Role'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /roles/{roleId}:
+    get:
+      tags: [Roles]
+      summary: Get a single role by ID
+      operationId: getRole
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      responses:
+        '200':
+          description: Role detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /roles/{roleId}/skills:
+    get:
+      tags: [Roles]
+      summary: List skills associated with a role
+      operationId: getRoleSkills
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+        - name: is_core
+          in: query
+          schema:
+            type: boolean
+          description: Filter by core vs optional skills
+      responses:
+        '200':
+          description: Skills for the role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RoleSkill'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # SKILLS
+  # ============================================================
+
+  /skills:
+    get:
+      tags: [Skills]
+      summary: List all skills
+      operationId: listSkills
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by skill category (e.g., frontend, backend)
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated list of skills
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Skill'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /skills/{skillId}:
+    get:
+      tags: [Skills]
+      summary: Get a single skill by ID
+      operationId: getSkill
+      parameters:
+        - $ref: '#/components/parameters/SkillId'
+      responses:
+        '200':
+          description: Skill detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Skill'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # RESOURCES
+  # ============================================================
+
+  /skills/{skillId}/resources:
+    get:
+      tags: [Resources]
+      summary: List learning resources for a skill
+      description: Returns curated resources (videos, courses, docs) linked to a skill (FR-13).
+      operationId: getSkillResources
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SkillId'
+        - name: platform
+          in: query
+          schema:
+            $ref: '#/components/schemas/ResourcePlatform'
+          description: Filter by resource platform
+        - name: is_free
+          in: query
+          schema:
+            type: boolean
+          description: Filter by free resources only
+        - name: level_tag
+          in: query
+          schema:
+            $ref: '#/components/schemas/SkillLevel'
+          description: Filter by difficulty level tag
+      responses:
+        '200':
+          description: List of resources for the skill
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Resource'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # ROADMAPS
+  # ============================================================
+
+  /roadmaps/generate:
+    post:
+      tags: [Roadmaps]
+      summary: Generate a personalized roadmap using AI
+      description: |
+        Sends user skills (`user_skills`) and goal (`user_goals`) to the AI model.
+        The AI returns an ordered skill structure which is persisted into `roadmaps`
+        and `roadmap_nodes`. A user can only have one personal roadmap — calling this
+        again will replace the existing one (FR-05, FR-06, FR-07).
+
+        **Prerequisites**: User must have completed goal setup (FR-02) and quiz (FR-04).
+      operationId: generateRoadmap
+      security:
+        - CookieAuth: []
+      responses:
+        '201':
+          description: Roadmap generated and persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateRoadmapResponse'
+        '400':
+          description: Missing prerequisites (no goal or skill data)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40001
+                message: "Please set your goal and complete the skill quiz before generating a roadmap."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '503':
+          description: AI service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 50300
+                message: "The AI generation service is temporarily unavailable. Please try again later."
+
+  /roadmaps/me:
+    get:
+      tags: [Roadmaps]
+      summary: Get the current user's personal roadmap
+      description: Returns the user's AI-generated roadmap as a full node tree (FR-08).
+      operationId: getMyRoadmap
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Personal roadmap with node tree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapWithNodes'
+        '404':
+          description: No personal roadmap generated yet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40400
+                message: "No personal roadmap found. Please generate one first."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /roadmaps/templates:
+    get:
+      tags: [Roadmaps]
+      summary: List all template roadmaps
+      description: Returns admin-created template roadmaps visible to all authenticated users.
+      operationId: listTemplateRoadmaps
+      security:
+        - CookieAuth: []
+      parameters:
+        - name: role_id
+          in: query
+          schema:
+            $ref: '#/components/schemas/UUID'
+          description: Filter templates by role
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated list of template roadmaps
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Roadmap'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /roadmaps/{roadmapId}:
+    get:
+      tags: [Roadmaps]
+      summary: Get a roadmap by ID
+      description: |
+        Returns any roadmap (template or personal) accessible to the user.
+        Personal roadmaps belonging to other users are not returned.
+      operationId: getRoadmap
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+      responses:
+        '200':
+          description: Roadmap with full node tree
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapWithNodes'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # ROADMAP NODES
+  # ============================================================
+
+  /roadmaps/{roadmapId}/nodes:
+    get:
+      tags: [Roadmap Nodes]
+      summary: List nodes of a roadmap with optional filtering
+      description: |
+        Returns the flat list of nodes for a roadmap. Use the `level` query
+        parameter to filter by difficulty (FR-09). Nodes include parent_node_id
+        so clients can reconstruct the tree.
+      operationId: listRoadmapNodes
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+        - name: level
+          in: query
+          schema:
+            $ref: '#/components/schemas/SkillLevel'
+          description: |
+            Filter nodes by difficulty level derived from the skill's estimated_hours.
+            Thresholds: fresher ≤ 20 h, junior 21–50 h, middle > 50 h.
+        - name: relation_type
+          in: query
+          schema:
+            $ref: '#/components/schemas/RelationType'
+          description: Filter by relation type (required / optional)
+      responses:
+        '200':
+          description: Flat list of roadmap nodes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RoadmapNode'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # PROGRESS
+  # ============================================================
+
+  /roadmaps/{roadmapId}/progress:
+    get:
+      tags: [Progress]
+      summary: Get learning progress summary for a roadmap
+      description: |
+        Returns aggregated progress stats and per-node status for the current user
+        on the given roadmap (FR-12).
+      operationId: getRoadmapProgress
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+      responses:
+        '200':
+          description: Progress summary with per-node details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapProgress'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /roadmap-nodes/{nodeId}/progress:
+    patch:
+      tags: [Progress]
+      summary: Update the learning status of a roadmap node
+      description: |
+        Updates `user_node_progress` for the authenticated user and the given node.
+        Automatically sets `started_at` when transitioning to `in_progress`,
+        and `completed_at` when transitioning to `completed` (FR-10, FR-11).
+      operationId: updateNodeProgress
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/NodeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNodeProgressRequest'
+      responses:
+        '200':
+          description: Progress updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeProgress'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ============================================================
+  # BOOKMARKS
+  # ============================================================
+
+  /users/me/saved-roadmaps:
+    get:
+      tags: [Bookmarks]
+      summary: List the current user's bookmarked roadmaps
+      operationId: listSavedRoadmaps
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated list of bookmarked roadmaps
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Roadmap'
+                        - type: object
+                          properties:
+                            saved_at:
+                              $ref: '#/components/schemas/Timestamp'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Bookmarks]
+      summary: Bookmark a roadmap
+      operationId: saveRoadmap
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roadmap_id]
+              properties:
+                roadmap_id:
+                  $ref: '#/components/schemas/UUID'
+      responses:
+        '201':
+          description: Roadmap bookmarked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  roadmap_id:
+                    $ref: '#/components/schemas/UUID'
+                  saved_at:
+                    $ref: '#/components/schemas/Timestamp'
+        '409':
+          description: Roadmap already bookmarked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40902
+                message: "This roadmap is already in your saved list."
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/me/saved-roadmaps/{roadmapId}:
+    delete:
+      tags: [Bookmarks]
+      summary: Remove a roadmap from bookmarks
+      operationId: unsaveRoadmap
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+      responses:
+        '204':
+          description: Bookmark removed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # ADMIN – Roles
+  # ============================================================
+
+  /admin/roles:
+    post:
+      tags: [Admin]
+      summary: Create a new role
+      operationId: adminCreateRole
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Role created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40901
+                message: "A role with this slug already exists."
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /admin/roles/{roleId}/skills:
+    post:
+      tags: [Admin]
+      summary: Add a skill to a role
+      operationId: adminAddRoleSkill
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRoleSkillRequest'
+      responses:
+        '201':
+          description: Skill added to role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleSkill'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Skill already associated with role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40902
+                message: "This skill is already linked to the role."
+
+  /admin/roles/{roleId}/skills/{skillId}:
+    delete:
+      tags: [Admin]
+      summary: Remove a skill from a role
+      operationId: adminRemoveRoleSkill
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoleId'
+        - $ref: '#/components/parameters/SkillId'
+      responses:
+        '204':
+          description: Skill removed from role
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # ADMIN – Skills
+  # ============================================================
+
+  /admin/skills:
+    post:
+      tags: [Admin]
+      summary: Create a new skill
+      operationId: adminCreateSkill
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSkillRequest'
+      responses:
+        '201':
+          description: Skill created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Skill'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Slug already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: 40901
+                message: "A skill with this slug already exists."
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /admin/skills/{skillId}:
+    put:
+      tags: [Admin]
+      summary: Update an existing skill
+      operationId: adminUpdateSkill
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SkillId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSkillRequest'
+      responses:
+        '200':
+          description: Skill updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Skill'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  # ============================================================
+  # ADMIN – Template Roadmaps
+  # ============================================================
+
+  /admin/roadmaps:
+    post:
+      tags: [Admin]
+      summary: Create a new template roadmap
+      description: |
+        Creates an admin-authored template roadmap (`user_id = null`, `is_template = true`)
+        along with its node structure.
+      operationId: adminCreateTemplateRoadmap
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplateRoadmapRequest'
+      responses:
+        '201':
+          description: Template roadmap created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapWithNodes'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /admin/roadmaps/{roadmapId}:
+    put:
+      tags: [Admin]
+      summary: Update a template roadmap
+      operationId: adminUpdateTemplateRoadmap
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTemplateRoadmapRequest'
+      responses:
+        '200':
+          description: Template roadmap updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapWithNodes'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+    delete:
+      tags: [Admin]
+      summary: Delete a template roadmap
+      operationId: adminDeleteTemplateRoadmap
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+      responses:
+        '204':
+          description: Template roadmap deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # ADMIN – Resources
+  # ============================================================
+
+  /admin/resources:
+    post:
+      tags: [Admin]
+      summary: Add a learning resource for a skill
+      operationId: adminCreateResource
+      security:
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResourceRequest'
+      responses:
+        '201':
+          description: Resource created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /admin/resources/{resourceId}:
+    put:
+      tags: [Admin]
+      summary: Update a learning resource
+      operationId: adminUpdateResource
+      security:
+        - CookieAuth: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateResourceRequest'
+      responses:
+        '200':
+          description: Resource updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Admin]
+      summary: Delete a learning resource
+      operationId: adminDeleteResource
+      security:
+        - CookieAuth: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '204':
+          description: Resource deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================
+  # ADMIN – Users
+  # ============================================================
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users
+      operationId: adminListUsers
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserRole'
+          description: Filter by user role
+      responses:
+        '200':
+          description: Paginated list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserPublic'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
