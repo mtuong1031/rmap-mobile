@@ -1,23 +1,60 @@
-# AGENTS
+# AGENTS instructions
 
 ## Use skills before working
 
-- Before handling any request, check `.agents/skills` for a relevant skill.
+- Before handling any request, check `.ai` for a relevant skill.
 - If a relevant skill exists, read its `SKILL.md` and follow the required steps and checklist.
 - If no suitable skill exists, state the reason and proceed with the normal approach.
 - If multiple skills seem relevant, prefer the one with the clearest and most up-to-date guidance.
 
+## Available Skills
+
+### Platform skills (Google LLC — do NOT modify)
+
+| Skill | Path | Use for |
+|---|---|---|
+| `navigation-3` | `.ai/android-skills/navigation/navigation-3/` | Navigation 3 setup, deep links, back stack, conditional nav |
+| `edge-to-edge` | `.ai/android-skills/system/edge-to-edge/` | Insets, IME, system bar handling |
+| `migrate-xml-to-compose` | `.ai/android-skills/jetpack-compose/migration/` | Migrating XML Views → Compose |
+| `agp-upgrade` | `.ai/android-skills/build/agp/` | Android Gradle Plugin upgrade |
+| `r8-analyzer` | `.ai/android-skills/performance/r8-analyzer/` | R8/ProGuard analysis |
+| `play-billing-upgrade` | `.ai/android-skills/play/` | Play Billing library upgrade |
+
+### Project skills (this repo — editable)
+
+| Skill | Path | Use for |
+|---|---|---|
+| `project-rules` | `.ai/project-rules/` | Pre-generation enforcement checklist |
+| `compose-architecture` | `.ai/compose-architecture/` | Layer boundary decisions (where does code belong?) |
+| `compose-state` | `.ai/compose-state/` | UiState, StateFlow, event pattern in ViewModel |
+| `api-client` | `.ai/api-client/` | Retrofit service, DTO, Mapper code generation |
+| `error-handling` | `.ai/error-handling/` | Error flow: data → domain → ViewModel → UiState |
+| `feature-generator` | `.ai/feature-generator/` | Full feature scaffold (orchestrator skill) |
+| `navigation-flow` | `.ai/navigation-flow/` | Project-specific NavEvent pattern |
+
+> **Skill selection guide:** See `.ai/context.md` for a decision table and quick-pick guide by task type.
+
 ## Minimum workflow
 
-1. Identify the request topic.
-2. Compare it against skills in `.agents/skills`.
-3. Apply the chosen skill, including mandatory steps and checklist items.
-4. Report results and explicitly note any steps that could not be performed.
-# AGENTS instructions
+1. Read `.ai/context.md` to identify the relevant skill(s).
+2. Read the `SKILL.md` of each selected skill.
+3. Always apply `project-rules` checklist before generating any code.
+4. For platform-specific work (navigation, insets, build), check `android-skills` first.
+5. Apply the skill steps and checklist items.
+6. Report results and explicitly note any steps that could not be performed.
 
 ## Project overview
 
 RMap Mobile is the Android frontend for the RMap platform — helping learners map current skills to career goals and navigate personalized developer learning roadmaps. The backend API lives in a separate repository.
+
+## AI Integration
+
+This project uses local AI skills located in `.ai/`. There are two categories:
+
+- **Platform skills** (`.ai/android-skills/`) — maintained by Google LLC, cover platform-level patterns: Navigation 3, edge-to-edge, build tooling. Do not modify these files.
+- **Project skills** (`.ai/compose-architecture/`, `.ai/compose-state/`, `.ai/api-client/`, `.ai/error-handling/`, `.ai/feature-generator/`, `.ai/navigation-flow/`, `.ai/project-rules/`) — project-specific rules and code generation guides.
+
+All generated code must follow both the relevant project skill and `project-rules` checklist.
 
 ## Development Environment
 
