@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.rmap_moblie"
+    namespace = "com.rmap.mobile"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.rmap_moblie"
+        applicationId = "com.rmap.mobile"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

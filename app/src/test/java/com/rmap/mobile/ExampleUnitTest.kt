@@ -1,4 +1,4 @@
-package com.example.rmap_moblie
+package com.rmap.mobile
 
 import org.junit.Test
 
