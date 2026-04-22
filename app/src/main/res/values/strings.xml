@@ -58,4 +58,20 @@
     <string name="home_roadmap_duration_3_months">3 months</string>
     <string name="home_roadmap_duration_4_months">4 months</string>
     <string name="home_roadmap_duration_6_months">6 months</string>
+    <string name="home_roadmap_duration_8_months">8 months</string>
+
+    <!-- Bookmarks Screen -->
+    <string name="bookmarks_heading">Your bookmarks</string>
+    <string name="bookmarks_tab_saved_roadmaps">Saved Roadmaps</string>
+    <string name="bookmarks_tab_saved_skills">Saved Skills</string>
+    <string name="bookmarks_section_curated_paths">Curated Paths</string>
+    <string name="bookmarks_section_specific_skills">Specific Skills</string>
+    <string name="bookmarks_saved_count">%1$d Saved</string>
+    <string name="bookmarks_pins_count">%1$d Pins</string>
+    <string name="bookmarks_continue_path">Continue Path</string>
+    <string name="bookmarks_join_now">Join Now</string>
+    <string name="bookmarks_status_in_progress">In Progress</string>
+    <string name="bookmarks_status_not_started">Not Started</string>
+    <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
+    <string name="bookmarks_part_of_format">Part of: %1$s</string>
 </resources>
