@@ -35,6 +35,7 @@ description: >
 ❌ Log.d / Log.e / println in committed code — use Timber
 ❌ !! (non-null assertion) — use safe calls or ?: return
 ❌ UseCase that is a 1:1 pass-through with no logic
+❌ Don't declare strings.xml variable when it can be hardcoded in the Preview UI Component
 ```
 
 ## Pre-Generation Checklist
