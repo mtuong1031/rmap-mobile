@@ -4,16 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import com.rmap.mobile.presentation.home.HomeScreen
+import com.rmap.mobile.presentation.navigation.NavBarDestination
 import com.rmap.mobile.presentation.ui.theme.RMapTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,27 +26,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    GreetingScreen()
+                    var selectedDestination by remember { mutableStateOf(NavBarDestination.Home) }
+
+                    HomeScreen(
+                        userName = "Thinh",
+                        selectedDestination = selectedDestination,
+                        onDestinationSelected = { selectedDestination = it }
+                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun GreetingScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = stringResource(id = R.string.home_welcome_message))
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun GreetingScreenPreview() {
-    RMapTheme {
-        GreetingScreen()
     }
 }
