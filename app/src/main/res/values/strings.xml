@@ -13,7 +13,6 @@
     <string name="nav_home">Home</string>
     <string name="nav_bookmarks">Bookmarks</string>
     <string name="nav_explore">Explore</string>
-    <string name="nav_ai">AI</string>
     <string name="nav_more">More</string>
 
     <!-- Home Screen -->
@@ -78,4 +77,31 @@
     <string name="profile_setting_learning_goals">Learning Goals</string>
     <string name="profile_setting_privacy">Privacy Policy</string>
     <string name="profile_setting_sign_out">Sign Out</string>
+    <string name="home_roadmap_duration_8_months">8 months</string>
+
+    <!-- Bookmarks Screen -->
+    <string name="bookmarks_heading">Your bookmarks</string>
+    <string name="bookmarks_tab_saved_roadmaps">Roadmaps</string>
+    <string name="bookmarks_tab_saved_skills">Skills</string>
+    <string name="bookmarks_section_curated_paths">Curated Paths</string>
+    <string name="bookmarks_section_specific_skills">Specific Skills</string>
+    <string name="bookmarks_saved_count">%1$d Saved</string>
+    <string name="bookmarks_pins_count">%1$d Pins</string>
+    <string name="bookmarks_continue_path">Continue Path</string>
+    <string name="bookmarks_join_now">Join Now</string>
+    <string name="bookmarks_status_in_progress">In Progress</string>
+    <string name="bookmarks_status_not_started">Not Started</string>
+    <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
+    <string name="bookmarks_part_of_format">Part of: %1$s</string>
+
+    <!-- Roadmap Detail Screen -->
+    <string name="roadmap_detail_chapter_tag">Chapter</string>
+    <string name="roadmap_detail_done_label">Done</string>
+    <string name="roadmap_detail_lessons_completed">%1$d of %2$d lessons completed</string>
+    <string name="roadmap_detail_completed">%1$d%% Completed</string>
+    <string name="roadmap_detail_in_progress">%1$d%% In-Progress</string>
+    <string name="roadmap_detail_locked">Locked Content</string>
+    <string name="roadmap_detail_ai_tip_heading">AI Scholar Tip</string>
+    <string name="roadmap_detail_ai_tip_prefix">Based on your progress in \"%1$s\", we recommend focusing on </string>
+    <string name="roadmap_detail_ai_tip_suffix"> before moving to %1$s.</string>
 </resources>
