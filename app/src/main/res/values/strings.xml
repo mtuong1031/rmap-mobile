@@ -74,4 +74,15 @@
     <string name="bookmarks_status_not_started">Not Started</string>
     <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
     <string name="bookmarks_part_of_format">Part of: %1$s</string>
+
+    <!-- Roadmap Detail Screen -->
+    <string name="roadmap_detail_chapter_tag">Chapter</string>
+    <string name="roadmap_detail_done_label">Done</string>
+    <string name="roadmap_detail_lessons_completed">%1$d of %2$d lessons completed</string>
+    <string name="roadmap_detail_completed">%1$d%% Completed</string>
+    <string name="roadmap_detail_in_progress">%1$d%% In-Progress</string>
+    <string name="roadmap_detail_locked">Locked Content</string>
+    <string name="roadmap_detail_ai_tip_heading">AI Scholar Tip</string>
+    <string name="roadmap_detail_ai_tip_prefix">Based on your progress in \"%1$s\", we recommend focusing on </string>
+    <string name="roadmap_detail_ai_tip_suffix"> before moving to %1$s.</string>
 </resources>
