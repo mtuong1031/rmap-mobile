@@ -59,6 +59,22 @@
     <string name="home_roadmap_duration_4_months">4 months</string>
     <string name="home_roadmap_duration_6_months">6 months</string>
 
+    <!-- Explore Screen -->
+    <string name="explore_title">Explore roadmaps</string>
+    <string name="explore_search_placeholder">Search for skills or roles...</string>
+    <string name="explore_categories_title">Categories</string>
+    <string name="explore_view_all">VIEW ALL</string>
+    <string name="explore_recommended_title">Recommended For You</string>
+    <string name="explore_popular_title">Popular Roadmaps</string>
+    <string name="explore_category_frontend">Frontend</string>
+    <string name="explore_category_backend">Backend</string>
+    <string name="explore_category_mobile">Mobile</string>
+    <string name="explore_category_devops">DevOps</string>
+    <string name="explore_category_ai">AI</string>
+    <string name="explore_badge_most_popular">MOST POPULAR</string>
+    <string name="explore_badge_career_path">CAREER PATH</string>
+    <string name="explore_card_stats">%1$d Skill Nodes • %2$s Level</string>
+
     <!-- Profile Screen -->
     <string name="profile_header_title">Your Profile</string>
     <string name="profile_avatar_content_description">Profile avatar</string>
