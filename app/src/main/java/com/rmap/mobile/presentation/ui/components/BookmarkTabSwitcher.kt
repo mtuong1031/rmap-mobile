@@ -1,18 +1,23 @@
 package com.rmap.mobile.presentation.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,9 +25,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,9 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.presentation.ui.theme.RMapTheme
 
-private val TabSwitcherShape = RoundedCornerShape(24.dp)
-private val TabItemShape = RoundedCornerShape(20.dp)
-
 @Composable
 fun BookmarkTabSwitcher(
     tabs: List<String>,
@@ -41,77 +44,81 @@ fun BookmarkTabSwitcher(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    BoxWithConstraints(
         modifier = modifier.fillMaxWidth(),
-        shape = TabSwitcherShape,
-        color = Color.White.copy(alpha = 0.6f),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White),
-        shadowElevation = 1.dp
+        contentAlignment = Alignment.BottomStart
     ) {
+        val tabCount = tabs.size.coerceAtLeast(1)
+        val density = LocalDensity.current
+        val tabWidth = with(density) { (constraints.maxWidth / tabCount).toDp() }
+
+        val indicatorWidth = 60.dp
+
+        val indicatorOffset by animateDpAsState(
+            targetValue = (tabWidth * selectedIndex) + (tabWidth / 2) - (indicatorWidth / 2),
+            animationSpec = tween(durationMillis = 300),
+            label = "indicatorOffset"
+        )
+
         Row(
-            modifier = Modifier.padding(6.dp),
-            horizontalArrangement = Arrangement.spacedBy(0.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             tabs.forEachIndexed { index, label ->
                 val isSelected = index == selectedIndex
                 val interactionSource = remember { MutableInteractionSource() }
 
-                val animatedBgColor by animateColorAsState(
-                    targetValue = if (isSelected) Color.White else Color.White.copy(alpha = 0f),
-                    animationSpec = tween(durationMillis = 200),
-                    label = "tabBg"
+                val textColor by animateColorAsState(
+                    targetValue = if (isSelected) Color.Black else Color.Gray,
+                    animationSpec = tween(durationMillis = 300),
+                    label = "textColor"
+                )
+
+                val textSize by animateFloatAsState(
+                    targetValue = if (isSelected) 22f else 16f,
+                    animationSpec = tween(durationMillis = 300),
+                    label = "textSize"
                 )
 
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .then(
-                            if (isSelected) {
-                                Modifier.shadow(
-                                    elevation = 4.dp,
-                                    shape = TabItemShape,
-                                    spotColor = Color(0x26298CF7),
-                                    ambientColor = Color(0x26298CF7)
-                                )
-                            } else {
-                                Modifier
-                            }
-                        )
-                        .background(
-                            color = animatedBgColor,
-                            shape = TabItemShape
-                        )
+                        .width(tabWidth)
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null,
                             onClick = { onTabSelected(index) }
                         )
-                        .padding(vertical = 13.dp, horizontal = 23.dp)
-                        .alpha(if (isSelected) 1f else 0.8f),
+                        .padding(vertical = 16.dp, horizontal = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            lineHeight = 19.6.sp,
-                            textAlign = TextAlign.Center,
-                            color = if (isSelected) {
-                                Color(0xFF298CF7)
-                            } else {
-                                Color(0xFF6B7280)
-                            }
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                            fontSize = textSize.sp,
+                            textAlign = TextAlign.Center
                         ),
-                        maxLines = 1
+                        color = textColor,
+                        maxLines = 1,
+                        modifier = Modifier.alpha(if (isSelected) 1f else 0.6f)
                     )
                 }
             }
         }
+
+        Box(
+            modifier = Modifier
+                .padding(bottom = 6.dp)
+                .offset(x = indicatorOffset)
+                .width(indicatorWidth)
+                .height(4.dp)
+                .clip(RoundedCornerShape(50))
+                .background(Color(0xFF298CF7))
+        )
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF, widthDp = 390)
 @Composable
 private fun BookmarkTabSwitcherPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {

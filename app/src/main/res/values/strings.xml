@@ -62,8 +62,8 @@
 
     <!-- Bookmarks Screen -->
     <string name="bookmarks_heading">Your bookmarks</string>
-    <string name="bookmarks_tab_saved_roadmaps">Saved Roadmaps</string>
-    <string name="bookmarks_tab_saved_skills">Saved Skills</string>
+    <string name="bookmarks_tab_saved_roadmaps">Roadmaps</string>
+    <string name="bookmarks_tab_saved_skills">Skills</string>
     <string name="bookmarks_section_curated_paths">Curated Paths</string>
     <string name="bookmarks_section_specific_skills">Specific Skills</string>
     <string name="bookmarks_saved_count">%1$d Saved</string>
