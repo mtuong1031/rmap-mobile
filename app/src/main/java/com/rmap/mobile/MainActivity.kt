@@ -66,6 +66,11 @@ class MainActivity : ComponentActivity() {
                                             restoreState = true
                                         }
                                     }
+                                },
+                                onRoadmapActionClick = { item ->
+                                    if (item.title.contains("Frontend Pro", ignoreCase = true)) {
+                                        navController.navigate("roadmap_detail")
+                                    }
                                 }
                             )
                         }

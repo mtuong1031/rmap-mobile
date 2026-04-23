@@ -81,6 +81,14 @@ fun BookmarksScreen(
 
     val roadmapItems = listOf(
         BookmarkRoadmapCardUiModel(
+            title = stringResource(R.string.home_roadmap_title_frontend_pro),
+            difficultyLabel = stringResource(R.string.roadmap_level_intermediate),
+            difficulty = RoadmapDifficulty.Intermediate,
+            durationLabel = stringResource(R.string.home_roadmap_duration_6_months),
+            actionLabel = stringResource(R.string.bookmarks_continue_path),
+            coverPlaceholderRes = R.drawable.bg_placeholder_fullstack
+        ),
+        BookmarkRoadmapCardUiModel(
             title = "Full Stack Development",
             difficultyLabel = stringResource(R.string.roadmap_level_intermediate),
             difficulty = RoadmapDifficulty.Intermediate,
