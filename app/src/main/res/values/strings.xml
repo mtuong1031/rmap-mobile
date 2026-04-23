@@ -58,4 +58,24 @@
     <string name="home_roadmap_duration_3_months">3 months</string>
     <string name="home_roadmap_duration_4_months">4 months</string>
     <string name="home_roadmap_duration_6_months">6 months</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_header_title">Your Profile</string>
+    <string name="profile_avatar_content_description">Profile avatar</string>
+    <string name="profile_edit_avatar_content_description">Edit avatar</string>
+    <string name="profile_total_experience_label">TOTAL EXPERIENCE</string>
+    <string name="profile_xp_value">%1$d XP</string>
+    <string name="profile_experience_trending_content_description">Experience trend</string>
+
+    <string name="profile_current_streak_title">Current Streak</string>
+    <string name="profile_certificates_title">Certificates</string>
+    <string name="profile_streak_value">%1$d Days</string>
+    <string name="profile_certificates_value">%1$d Earned</string>
+
+    <string name="profile_account_settings_title">ACCOUNT SETTINGS</string>
+    <string name="profile_setting_personal_info">Personal Information</string>
+    <string name="profile_setting_notifications">Notification Settings</string>
+    <string name="profile_setting_learning_goals">Learning Goals</string>
+    <string name="profile_setting_privacy">Privacy Policy</string>
+    <string name="profile_setting_sign_out">Sign Out</string>
 </resources>
