@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +47,10 @@ enum class NavBarDestination(
     Bookmarks(
         labelRes = R.string.nav_bookmarks,
         icon = Icons.Outlined.Bookmarks,
+    ),
+    Ai(
+        labelRes = R.string.nav_ai,
+        icon = Icons.Outlined.AutoAwesome,
     ),
     Explore(
         labelRes = R.string.nav_explore,
@@ -123,7 +129,7 @@ private fun NavBarItem(
         )
 
         Text(
-            text = androidx.compose.ui.res.stringResource(id = destination.labelRes),
+            text = stringResource(id = destination.labelRes),
             color = contentColor,
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
