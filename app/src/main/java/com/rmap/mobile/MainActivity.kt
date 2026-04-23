@@ -28,11 +28,30 @@ class MainActivity : ComponentActivity() {
                 ) {
                     var selectedDestination by remember { mutableStateOf(NavBarDestination.Home) }
 
-                    HomeScreen(
-                        userName = "Thinh",
-                        selectedDestination = selectedDestination,
-                        onDestinationSelected = { selectedDestination = it }
-                    )
+                    when (selectedDestination) {
+                        NavBarDestination.Home -> {
+                            HomeScreen(
+                                userName = "Thinh",
+                                selectedDestination = selectedDestination,
+                                onDestinationSelected = { selectedDestination = it }
+                            )
+                        }
+                        NavBarDestination.Explore -> {
+                            com.rmap.mobile.presentation.explore.ExploreScreen(
+                                userName = "Thinh",
+                                selectedDestination = selectedDestination,
+                                onDestinationSelected = { selectedDestination = it }
+                            )
+                        }
+                        else -> {
+                            // Placeholder for other screens
+                            HomeScreen(
+                                userName = "Thinh",
+                                selectedDestination = selectedDestination,
+                                onDestinationSelected = { selectedDestination = it }
+                            )
+                        }
+                    }
                 }
             }
         }
