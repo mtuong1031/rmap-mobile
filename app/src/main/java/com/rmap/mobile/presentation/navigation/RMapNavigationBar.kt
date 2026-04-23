@@ -16,7 +16,6 @@ import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.SmartToy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -50,10 +49,6 @@ enum class NavBarDestination(
     Explore(
         labelRes = R.string.nav_explore,
         icon = Icons.Outlined.Explore,
-    ),
-    Ai(
-        labelRes = R.string.nav_ai,
-        icon = Icons.Outlined.SmartToy,
     ),
     More(
         labelRes = R.string.nav_more,
