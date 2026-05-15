@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.theme
+package com.rmap.mobile.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

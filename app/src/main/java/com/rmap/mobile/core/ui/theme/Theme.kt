@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.theme
+package com.rmap.mobile.core.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -51,6 +51,7 @@ fun RMapTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = RMapShapes,
         content = content
     )
 }
