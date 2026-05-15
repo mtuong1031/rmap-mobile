@@ -23,7 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.RoadmapDifficulty
+import com.rmap.mobile.core.ui.components.SkillCard
+import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -93,9 +94,9 @@ fun CuratedPathsSection(
 
 @Composable
 fun SpecificSkillsSection(
-    skillItems: List<BookmarkSkillCardUiModel>,
+    skillItems: List<SkillCardUiModel>,
     pinsCount: Int,
-    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
+    onSkillClick: ((SkillCardUiModel) -> Unit)?
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         SectionHeader(
@@ -104,7 +105,7 @@ fun SpecificSkillsSection(
         )
 
         skillItems.forEach { item ->
-            BookmarkSkillCard(
+            SkillCard(
                 item = item,
                 onClick = onSkillClick?.let { callback ->
                     { callback(item) }

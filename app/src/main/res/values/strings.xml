@@ -109,7 +109,7 @@
     <string name="bookmarks_status_in_progress">In Progress</string>
     <string name="bookmarks_status_not_started">Not Started</string>
     <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
-    <string name="bookmarks_part_of_format">Part of: %1$s</string>
+    <string name="skill_part_of_format">Part of: %1$s</string>
 
     <!-- Roadmap Detail Screen -->
     <string name="roadmap_detail_chapter_tag">Chapter</string>

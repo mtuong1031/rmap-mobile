@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.bookmarks.presentation.components
+package com.rmap.mobile.core.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -59,7 +59,7 @@ enum class SkillStatus(
     )
 }
 
-data class BookmarkSkillCardUiModel(
+data class SkillCardUiModel(
     val title: String,
     val parentPathName: String,
     val status: SkillStatus,
@@ -68,8 +68,8 @@ data class BookmarkSkillCardUiModel(
 )
 
 @Composable
-fun BookmarkSkillCard(
-    item: BookmarkSkillCardUiModel,
+fun SkillCard(
+    item: SkillCardUiModel,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
@@ -197,7 +197,7 @@ private fun SkillIconFrame(icon: ImageVector) {
 
 @Composable
 private fun PartOfText(parentPathName: String) {
-    val partOfPrefix = stringResource(R.string.bookmarks_part_of_format, "").trimEnd()
+    val partOfPrefix = stringResource(R.string.skill_part_of_format, "").trimEnd()
     val text = buildAnnotatedString {
         withStyle(
             SpanStyle(
@@ -256,14 +256,14 @@ private fun StatusBadge(
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable
-private fun BookmarkSkillCardPreview() {
+private fun SkillCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            BookmarkSkillCard(
-                item = BookmarkSkillCardUiModel(
+            SkillCard(
+                item = SkillCardUiModel(
                     title = "Advanced CSS Layouts",
                     parentPathName = "Frontend Dev",
                     status = SkillStatus.IN_PROGRESS,
@@ -271,8 +271,8 @@ private fun BookmarkSkillCardPreview() {
                     icon = Icons.Outlined.Code
                 )
             )
-            BookmarkSkillCard(
-                item = BookmarkSkillCardUiModel(
+            SkillCard(
+                item = SkillCardUiModel(
                     title = "NoSQL Data Modeling",
                     parentPathName = "Backend Systems",
                     status = SkillStatus.NOT_STARTED,

@@ -43,14 +43,13 @@ import com.rmap.mobile.core.ui.components.AppNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCard
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkSkillCard
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkSkillCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTabSwitcher
 import com.rmap.mobile.features.bookmarks.presentation.components.CuratedPathsSection
 import com.rmap.mobile.features.bookmarks.presentation.components.FooterHint
 import com.rmap.mobile.core.ui.components.Header
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
-import com.rmap.mobile.features.bookmarks.presentation.components.SkillStatus
+import com.rmap.mobile.core.ui.components.SkillCardUiModel
+import com.rmap.mobile.core.ui.components.SkillStatus
 import com.rmap.mobile.features.bookmarks.presentation.components.SpecificSkillsSection
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -66,7 +65,7 @@ fun BookmarksScreen(
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
     onTabSelected: (Int) -> Unit = {},
-    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)? = null
+    onSkillClick: ((SkillCardUiModel) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
@@ -106,14 +105,14 @@ fun BookmarksScreen(
     )
 
     val skillItems = listOf(
-        BookmarkSkillCardUiModel(
+        SkillCardUiModel(
             title = "Advanced CSS Layouts",
             parentPathName = "Frontend Dev",
             status = SkillStatus.IN_PROGRESS,
             statusLabel = stringResource(R.string.bookmarks_status_in_progress),
             icon = Icons.Outlined.Code
         ),
-        BookmarkSkillCardUiModel(
+        SkillCardUiModel(
             title = "NoSQL Data Modeling",
             parentPathName = "Backend Systems",
             status = SkillStatus.NOT_STARTED,
