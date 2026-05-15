@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.auth
+package com.rmap.mobile.features.auth.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -36,9 +36,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
-import com.rmap.mobile.presentation.ui.components.FilledButton
-import com.rmap.mobile.presentation.ui.components.FilledTonalButton
-import com.rmap.mobile.presentation.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.components.FilledButton
+import com.rmap.mobile.core.ui.components.FilledTonalButton
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun AuthScreen(
