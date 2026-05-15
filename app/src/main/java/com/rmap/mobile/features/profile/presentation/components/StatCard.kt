@@ -1,6 +1,5 @@
 package com.rmap.mobile.features.profile.presentation.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material3.Icon
@@ -25,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -36,10 +35,10 @@ fun StatCard(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(32.dp),
+        shape = AppCardDefaults.shape,
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, Color(0x80F9FAFB)),
-        shadowElevation = 8.dp
+        border = AppCardDefaults.border(),
+        shadowElevation = AppCardDefaults.shadowElevation
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),

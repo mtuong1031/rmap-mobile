@@ -1,11 +1,9 @@
 package com.rmap.mobile.features.profile.presentation.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.NotificationsNone
@@ -17,13 +15,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 enum class SettingType {
@@ -55,10 +53,10 @@ fun SettingsSection(
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(32.dp),
+            shape = AppCardDefaults.shape,
             color = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, Color(0x80F9FAFB)),
-            shadowElevation = 8.dp
+            border = AppCardDefaults.border(),
+            shadowElevation = AppCardDefaults.shadowElevation
         ) {
             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                 SettingsItem(

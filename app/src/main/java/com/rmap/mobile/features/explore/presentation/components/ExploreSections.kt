@@ -1,6 +1,5 @@
 package com.rmap.mobile.features.explore.presentation.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -46,11 +44,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
+import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.RecommendedCardUiModel
+
+private val ExploreSearchBarShape = RoundedCornerShape(20.dp)
+private val RecommendedCardShape = RoundedCornerShape(24.dp)
 
 @Composable
 fun ExploreSearchBar(
@@ -63,14 +66,14 @@ fun ExploreSearchBar(
         modifier = modifier
             .fillMaxWidth()
             .height(58.dp)
-            .shadow(
-                elevation = 20.dp,
-                shape = RoundedCornerShape(20.dp),
+            .appCardShadow(
+                elevation = AppCardDefaults.shadowElevation,
+                shape = ExploreSearchBarShape,
                 spotColor = Color(0x0A000000)
             ),
-        shape = RoundedCornerShape(20.dp),
+        shape = ExploreSearchBarShape,
         color = MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF3F4F6))
+        border = AppCardDefaults.border(color = Color(0xFFF3F4F6))
     ) {
         Row(
             modifier = Modifier
@@ -247,12 +250,13 @@ fun RecommendedCard(
         modifier = Modifier
             .width(280.dp)
             .height(170.dp)
-            .shadow(
-                elevation = 20.dp,
-                shape = RoundedCornerShape(24.dp),
+            .appCardShadow(
+                elevation = AppCardDefaults.shadowElevation,
+                shape = RecommendedCardShape,
+                ambientColor = item.accentColor.copy(alpha = 0.3f),
                 spotColor = item.accentColor.copy(alpha = 0.3f)
             )
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RecommendedCardShape)
             .clickable(onClick = onClick)
             .background(
                 brush = Brush.linearGradient(
@@ -376,6 +380,27 @@ private fun ExploreSearchBarPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Box(modifier = Modifier.padding(16.dp)) {
             ExploreSearchBar(query = "", onQueryChange = {}, onFilterClick = {})
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, name = "Recommended Card")
+@Composable
+private fun RecommendedCardPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        Box(modifier = Modifier.padding(16.dp)) {
+            RecommendedCard(
+                item = RecommendedCardUiModel(
+                    id = "frontend",
+                    title = "Frontend Development",
+                    badgeText = "Recommended",
+                    skillNodesCount = 24,
+                    level = "Intermediate",
+                    imageUrl = "",
+                    accentColor = Color(0xFF298CF7)
+                ),
+                onClick = {}
+            )
         }
     }
 }

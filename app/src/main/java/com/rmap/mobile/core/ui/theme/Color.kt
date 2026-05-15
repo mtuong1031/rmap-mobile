@@ -10,6 +10,8 @@ val BackgroundLight = Color(0xFFF4F8FF)
 val OnBackgroundLight = Color(0xFF111827)
 val SurfaceLight = Color(0xFFFFFFFF)
 val OnSurfaceLight = Color(0xFF111827)
+val CardBorderColor = Color(0x80F9FAFB)
+val CardShadowColor = Color(0x0F000000)
 
 val PrimaryDark = Color(0xFF90CAF9)
 val OnPrimaryDark = Color(0xFF003258)
@@ -19,4 +21,3 @@ val BackgroundDark = Color(0xFF0B1220)
 val OnBackgroundDark = Color(0xFFE5E7EB)
 val SurfaceDark = Color(0xFF111827)
 val OnSurfaceDark = Color(0xFFE5E7EB)
-

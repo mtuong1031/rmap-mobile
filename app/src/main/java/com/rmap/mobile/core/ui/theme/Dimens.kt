@@ -34,4 +34,6 @@ object Dimens {
     val cardElevationLg = 20.dp
     val cardElevationXl = 24.dp
     val cardElevationXxl = 30.dp
+
+    val borderThin = 1.dp
 }

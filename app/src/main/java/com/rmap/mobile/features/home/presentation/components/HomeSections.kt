@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +29,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.RMapTheme
+
+private val LearningProgressCardShape = RoundedCornerShape(28.dp)
 
 @Composable
 fun LearningProgressCard(
@@ -46,15 +49,15 @@ fun LearningProgressCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 30.dp,
-                shape = RoundedCornerShape(28.dp),
+            .appCardShadow(
+                elevation = AppCardDefaults.shadowElevation,
+                shape = LearningProgressCardShape,
                 spotColor = Color(0x66006FFF),
                 ambientColor = Color(0x66006FFF)
             )
             .background(
                 color = Color(0xFF3875B7),
-                shape = RoundedCornerShape(28.dp)
+                shape = LearningProgressCardShape
             )
             .padding(start = 22.dp, top = 22.dp, end = 22.dp, bottom = 22.dp)
     ) {

@@ -1,7 +1,6 @@
 package com.rmap.mobile.features.bookmarks.presentation.components
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -42,11 +41,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
+import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val BookmarkRoadmapCardShape = RoundedCornerShape(32.dp)
+private val BookmarkRoadmapCardShape = AppCardDefaults.shape
+private val BookmarkShareButtonShape = RoundedCornerShape(16.dp)
 private val CoverHeight = 150.dp
 
 data class BookmarkRoadmapCardUiModel(
@@ -69,14 +71,10 @@ fun BookmarkRoadmapCard(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 30.dp,
-                spotColor = Color(0x0F000000),
-                ambientColor = Color(0x0F000000)
-            ),
+            .appCardShadow(shape = BookmarkRoadmapCardShape),
         color = MaterialTheme.colorScheme.surface,
         shape = BookmarkRoadmapCardShape,
-        border = BorderStroke(1.dp, Color(0x80F9FAFB))
+        border = AppCardDefaults.border()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             CoverImageSection(
@@ -272,15 +270,14 @@ private fun ContentSection(
                 Surface(
                     modifier = Modifier
                         .size(54.dp)
-                        .shadow(
-                            elevation = 20.dp,
-                            shape = RoundedCornerShape(16.dp),
+                        .appCardShadow(
+                            shape = BookmarkShareButtonShape,
                             spotColor = Color(0xCCF4F8FF),
                             ambientColor = Color(0xCCF4F8FF)
                         ),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = BookmarkShareButtonShape,
                     color = Color(0xFFF4F8FF),
-                    border = BorderStroke(1.dp, Color(0x1A298CF7))
+                    border = AppCardDefaults.border(color = Color(0x1A298CF7))
                 ) {
                     IconButton(
                         onClick = onShareClick ?: {},

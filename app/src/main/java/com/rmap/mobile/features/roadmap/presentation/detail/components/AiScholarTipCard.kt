@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -31,7 +30,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.RMapTheme
+
+private val AiScholarTipCardShape = RoundedCornerShape(24.dp)
 
 @Composable
 fun AiScholarTipCard(
@@ -53,20 +56,19 @@ fun AiScholarTipCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(24.dp),
-                spotColor = Color(0x08000000),
-                ambientColor = Color(0x08000000)
+            .appCardShadow(
+                shape = AiScholarTipCardShape,
+                ambientColor = Color(0x08000000),
+                spotColor = Color(0x08000000)
             )
             .background(
                 brush = Brush.linearGradient(colors = bgGradientColors),
-                shape = RoundedCornerShape(24.dp)
+                shape = AiScholarTipCardShape
             )
             .border(
-                width = 1.dp,
+                width = AppCardDefaults.borderWidth,
                 color = Color.White.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(24.dp)
+                shape = AiScholarTipCardShape
             )
             .padding(20.dp)
     ) {

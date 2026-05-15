@@ -44,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 enum class ModuleStatus {
@@ -82,7 +83,10 @@ fun ModuleCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         color = cardBg,
-        shadowElevation = if (isLocked) 0.dp else 10.dp,
+        border = AppCardDefaults.border(
+            color = if (isLocked) AppCardDefaults.borderColor.copy(alpha = 0.5f) else AppCardDefaults.borderColor
+        ),
+        shadowElevation = if (isLocked) 0.dp else AppCardDefaults.shadowElevation,
         tonalElevation = 0.dp
     ) {
         Column(

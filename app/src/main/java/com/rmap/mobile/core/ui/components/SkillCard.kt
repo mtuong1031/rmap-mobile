@@ -1,6 +1,5 @@
 package com.rmap.mobile.core.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +40,7 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val SkillCardShape = RoundedCornerShape(32.dp)
+private val SkillCardShape = AppCardDefaults.shape
 private val SkillIconFrameShape = RoundedCornerShape(24.dp)
 private val SkillIconContainerShape = RoundedCornerShape(18.dp)
 
@@ -75,11 +74,11 @@ fun SkillCard(
 ) {
     Surface(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .appCardShadow(shape = SkillCardShape),
         color = MaterialTheme.colorScheme.surface,
         shape = SkillCardShape,
-        border = BorderStroke(1.dp, Color(0x80F9FAFB)),
-        shadowElevation = 8.dp
+        border = AppCardDefaults.border()
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(

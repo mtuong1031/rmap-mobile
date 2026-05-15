@@ -1,6 +1,5 @@
 package com.rmap.mobile.core.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,7 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val RoadmapCardShape = RoundedCornerShape(32.dp)
+private val RoadmapCardShape = AppCardDefaults.shape
 private val RoadmapIconFrameShape = RoundedCornerShape(24.dp)
 private val RoadmapIconContainerShape = RoundedCornerShape(18.dp)
 
@@ -89,15 +87,11 @@ fun RoadmapCard(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 30.dp,
-                spotColor = Color(0x0F000000),
-                ambientColor = Color(0x0F000000)
-            )
+            .appCardShadow(shape = RoadmapCardShape)
             .then(clickModifier),
         color = MaterialTheme.colorScheme.surface,
         shape = RoadmapCardShape,
-        border = BorderStroke(1.dp, Color(0x80F9FAFB)),
+        border = AppCardDefaults.border(),
     ) {
         Box(
             modifier = Modifier
@@ -278,5 +272,3 @@ private fun TrendingRoadmapsSectionPreview() {
         )
     }
 }
-
-
