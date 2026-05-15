@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.profile
+package com.rmap.mobile.features.profile.presentation
 
 data class ProfileUiState(
     val name: String,

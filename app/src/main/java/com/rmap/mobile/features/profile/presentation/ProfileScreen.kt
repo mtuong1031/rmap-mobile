@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.profile
+package com.rmap.mobile.features.profile.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,26 +14,26 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
-import com.rmap.mobile.presentation.ui.components.BackgroundDecorator
-import com.rmap.mobile.presentation.ui.components.BottomNavBar
-import com.rmap.mobile.presentation.ui.components.ExperienceCard
-import com.rmap.mobile.presentation.ui.components.ProfileCard
-import com.rmap.mobile.presentation.ui.components.ProfileHeader
-import com.rmap.mobile.presentation.ui.components.ProfileNavigationRoute
-import com.rmap.mobile.presentation.ui.components.SettingType
-import com.rmap.mobile.presentation.ui.components.SettingsSection
-import com.rmap.mobile.presentation.ui.components.StatsSection
-import com.rmap.mobile.presentation.ui.components.rememberBackgroundScrollOffsetY
-import com.rmap.mobile.presentation.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.components.AppNavigationBar
+import com.rmap.mobile.core.ui.components.BackgroundDecorator
+import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.profile.presentation.components.ExperienceCard
+import com.rmap.mobile.features.profile.presentation.components.ProfileCard
+import com.rmap.mobile.features.profile.presentation.components.ProfileHeader
+import com.rmap.mobile.features.profile.presentation.components.SettingType
+import com.rmap.mobile.features.profile.presentation.components.SettingsSection
+import com.rmap.mobile.features.profile.presentation.components.StatsSection
+import com.rmap.mobile.navigation.NavBarDestination
 
 @Composable
 fun ProfileScreen(
     uiState: ProfileUiState,
     onEditProfile: () -> Unit,
     onSettingClick: (SettingType) -> Unit,
-    onNavigate: (String) -> Unit,
+    onDestinationSelected: (NavBarDestination) -> Unit,
     modifier: Modifier = Modifier,
-    currentRoute: String = ProfileNavigationRoute.MORE
+    selectedDestination: NavBarDestination = NavBarDestination.More
 ) {
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
@@ -42,9 +42,9 @@ fun ProfileScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            BottomNavBar(
-                currentRoute = currentRoute,
-                onNavigate = onNavigate,
+            AppNavigationBar(
+                selectedDestination = selectedDestination,
+                onDestinationSelected = onDestinationSelected,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -115,7 +115,7 @@ private fun ProfileScreenPreview() {
             ),
             onEditProfile = {},
             onSettingClick = {},
-            onNavigate = {}
+            onDestinationSelected = {}
         )
     }
 }
