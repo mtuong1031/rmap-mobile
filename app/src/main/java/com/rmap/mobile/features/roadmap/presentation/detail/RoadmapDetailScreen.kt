@@ -49,6 +49,7 @@ import com.rmap.mobile.features.roadmap.presentation.detail.components.RoadmapHe
 import com.rmap.mobile.features.roadmap.presentation.detail.components.SubLessonUiModel
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -132,7 +133,7 @@ fun RoadmapDetailScreen(
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
-                            .background(Color.White)
+                            .background(MaterialTheme.colorScheme.surface)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null,
@@ -174,7 +175,7 @@ fun RoadmapDetailScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         SectionHeader(
                             title = "Framework Ecosystem",
-                            dotColor = Color(0xFF9CA3AF)
+                            dotColor = NeutralDisabledColor
                         )
                         frameworkEcosystem.forEach { module ->
                             ModuleCard(item = module)

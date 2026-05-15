@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -72,7 +71,7 @@ fun ProfileCard(
                     )
                     .border(
                         width = 4.dp,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(32.dp)
                     )
                     .clip(RoundedCornerShape(32.dp))
@@ -107,7 +106,7 @@ fun ProfileCard(
                     }
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)
-                    .border(2.dp, Color.White, CircleShape)
+                    .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape)
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,

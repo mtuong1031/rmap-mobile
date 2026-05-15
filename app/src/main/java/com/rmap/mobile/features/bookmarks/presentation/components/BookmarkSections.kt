@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.SkillCard
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
+import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -128,7 +129,7 @@ fun FooterHint(modifier: Modifier = Modifier) {
         Icon(
             imageVector = Icons.Outlined.AutoAwesome,
             contentDescription = null,
-            tint = Color(0xFF9CA3AF),
+            tint = NeutralDisabledColor,
             modifier = Modifier.size(40.dp)
         )
 
@@ -138,7 +139,7 @@ fun FooterHint(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
                 lineHeight = 19.6.sp,
-                color = Color(0xFF9CA3AF),
+                color = NeutralDisabledColor,
                 textAlign = TextAlign.Center
             )
         )

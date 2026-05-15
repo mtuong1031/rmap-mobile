@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.FilledTonalButton
+import com.rmap.mobile.core.ui.theme.AuthHeroPlaceholderColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -49,7 +50,7 @@ fun AuthScreen(
 ) {
     val isPreview = LocalInspectionMode.current
     val resolvedHeroPainter = heroPainter ?: if (isPreview) {
-        ColorPainter(Color(0xFFDCE7F7))
+        ColorPainter(AuthHeroPlaceholderColor)
     } else {
         painterResource(id = R.drawable.auth_hero)
     }
@@ -226,7 +227,7 @@ private fun AuthScreenPreview() {
         AuthScreen(
             onContinueWithGoogle = {},
             onContinueWithFacebook = {},
-            heroPainter = ColorPainter(Color(0xFFDCE7F7))
+            heroPainter = ColorPainter(AuthHeroPlaceholderColor)
         )
     }
 }

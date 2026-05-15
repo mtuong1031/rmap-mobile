@@ -52,6 +52,7 @@ import com.rmap.mobile.core.ui.theme.CardPrimaryGlowFaintColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowSoftColor
 import com.rmap.mobile.core.ui.theme.CardShadowOverlayColor
 import com.rmap.mobile.core.ui.theme.CoverPreviewSurfaceColor
+import com.rmap.mobile.core.ui.theme.CoverScrimColor
 import com.rmap.mobile.core.ui.theme.CoverSurfaceColor
 import com.rmap.mobile.core.ui.theme.NeutralDividerDotColor
 import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
@@ -155,7 +156,7 @@ private fun CoverImageSection(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            Color.Black.copy(alpha = 0.6f)
+                            CoverScrimColor
                         )
                     )
                 )
@@ -175,7 +176,7 @@ private fun CoverImageSection(
                         ambientColor = CardShadowOverlayColor
                     ),
                 colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
                 Icon(

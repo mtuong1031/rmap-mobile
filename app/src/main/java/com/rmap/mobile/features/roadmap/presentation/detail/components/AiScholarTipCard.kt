@@ -20,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -73,7 +72,7 @@ fun AiScholarTipCard(
             )
             .border(
                 width = AppCardDefaults.borderWidth,
-                color = Color.White.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
                 shape = AiScholarTipCardShape
             )
             .padding(20.dp)
@@ -93,7 +92,7 @@ fun AiScholarTipCard(
                     Icon(
                         imageVector = Icons.Outlined.AutoAwesome,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(16.dp)
                     )
                 }

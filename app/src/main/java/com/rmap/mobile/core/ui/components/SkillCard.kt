@@ -47,6 +47,7 @@ import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.NeutralDisabledTextColor
 import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
 import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
+import com.rmap.mobile.core.ui.theme.OnPrimaryLight
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -60,7 +61,7 @@ enum class SkillStatus(
 ) {
     IN_PROGRESS(
         backgroundColor = PrimaryLight,
-        textColor = Color.White
+        textColor = OnPrimaryLight
     ),
     NOT_STARTED(
         backgroundColor = NeutralSoftSurfaceColor,

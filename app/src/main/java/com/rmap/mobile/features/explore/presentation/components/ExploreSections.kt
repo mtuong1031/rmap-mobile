@@ -195,7 +195,7 @@ private fun CategoryItem(
             modifier = Modifier
                 .size(64.dp)
                 .background(category.backgroundColor, CircleShape)
-                .border(1.dp, Color.White, CircleShape),
+                .border(1.dp, MaterialTheme.colorScheme.surface, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -278,7 +278,10 @@ fun RecommendedCard(
                 .offset(x = 40.dp, y = (-40).dp)
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(Color.White.copy(alpha = 0.3f), Color.Transparent)
+                        colors = listOf(
+                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
+                            Color.Transparent
+                        )
                     ),
                     shape = CircleShape
                 )
@@ -291,7 +294,7 @@ fun RecommendedCard(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Surface(
-                color = Color.White.copy(alpha = 0.2f),
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
@@ -299,7 +302,7 @@ fun RecommendedCard(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         letterSpacing = 0.5.sp
                     )
                 )
@@ -310,7 +313,7 @@ fun RecommendedCard(
                     text = item.title,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 20.sp,
                         lineHeight = 26.sp
                     )
@@ -319,7 +322,7 @@ fun RecommendedCard(
                     Icon(
                         imageVector = Icons.Outlined.WbSunny,
                         contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.9f),
+                        tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
@@ -327,7 +330,7 @@ fun RecommendedCard(
                         text = stringResource(R.string.explore_card_stats, item.skillNodesCount, item.level),
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Medium,
-                            color = Color.White.copy(alpha = 0.85f),
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
                             letterSpacing = 0.2.sp
                         )
                     )
