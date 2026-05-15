@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.components
+package com.rmap.mobile.features.roadmap.presentation.detail.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,9 +26,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun RoadmapHeroCard(
@@ -172,6 +174,21 @@ fun RoadmapHeroCard(
                     trackColor = Color(0x33FFFFFF)
                 )
             }
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun RoadmapHeroCardPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        Box(modifier = Modifier.padding(16.dp)) {
+            RoadmapHeroCard(
+                title = "Frontend Pro",
+                progressFraction = 0.75f,
+                completedLessons = 6,
+                totalLessons = 8
+            )
         }
     }
 }

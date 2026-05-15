@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.roadmapdetail
+package com.rmap.mobile.features.roadmap.presentation.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,23 +39,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rmap.mobile.presentation.navigation.NavBarDestination
-import com.rmap.mobile.presentation.navigation.RMapNavigationBar
-import com.rmap.mobile.presentation.ui.components.AiScholarTipCard
-import com.rmap.mobile.presentation.ui.components.ModuleCard
-import com.rmap.mobile.presentation.ui.components.ModuleCardUiModel
-import com.rmap.mobile.presentation.ui.components.ModuleStatus
-import com.rmap.mobile.presentation.ui.components.RoadmapHeroCard
-import com.rmap.mobile.presentation.ui.components.SubLessonUiModel
-import com.rmap.mobile.presentation.ui.components.BackgroundDecorator
-import com.rmap.mobile.presentation.ui.components.rememberBackgroundScrollOffsetY
-import com.rmap.mobile.presentation.ui.theme.RMapTheme
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavController
+import com.rmap.mobile.navigation.NavBarDestination
+import com.rmap.mobile.core.ui.components.AppNavigationBar
+import com.rmap.mobile.features.roadmap.presentation.detail.components.AiScholarTipCard
+import com.rmap.mobile.features.roadmap.presentation.detail.components.ModuleCard
+import com.rmap.mobile.features.roadmap.presentation.detail.components.ModuleCardUiModel
+import com.rmap.mobile.features.roadmap.presentation.detail.components.ModuleStatus
+import com.rmap.mobile.features.roadmap.presentation.detail.components.RoadmapHeroCard
+import com.rmap.mobile.features.roadmap.presentation.detail.components.SubLessonUiModel
+import com.rmap.mobile.core.ui.components.BackgroundDecorator
+import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun RoadmapDetailScreen(
-    navController: NavController,
+    uiState: RoadmapDetailUiState,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.Bookmarks,
     onDestinationSelected: (NavBarDestination) -> Unit = {}
@@ -103,7 +102,7 @@ fun RoadmapDetailScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            RMapNavigationBar(
+            AppNavigationBar(
                 selectedDestination = selectedDestination,
                 onDestinationSelected = onDestinationSelected,
                 modifier = Modifier.fillMaxWidth()
@@ -137,7 +136,7 @@ fun RoadmapDetailScreen(
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null,
-                                onClick = { navController.popBackStack() }
+                                onClick = onBackClick
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -152,10 +151,10 @@ fun RoadmapDetailScreen(
 
                 item {
                     RoadmapHeroCard(
-                        title = "Frontend Pro",
-                        progressFraction = 0.75f,
-                        completedLessons = 6,
-                        totalLessons = 8
+                        title = uiState.title,
+                        progressFraction = uiState.progressFraction,
+                        completedLessons = uiState.completedLessons,
+                        totalLessons = uiState.totalLessons
                     )
                 }
 
@@ -230,9 +229,9 @@ private fun SectionHeader(
 private fun RoadmapDetailScreenPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         var selectedDestination by remember { mutableStateOf(NavBarDestination.Bookmarks) }
-        val navController = rememberNavController()
         RoadmapDetailScreen(
-            navController = navController,
+            uiState = RoadmapDetailUiState(),
+            onBackClick = {},
             selectedDestination = selectedDestination,
             onDestinationSelected = { selectedDestination = it }
         )

@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.components
+package com.rmap.mobile.features.roadmap.presentation.detail.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lock
@@ -39,9 +40,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 enum class ModuleStatus {
     COMPLETED, IN_PROGRESS, LOCKED
@@ -277,6 +280,28 @@ fun ModuleCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun ModuleCardPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            ModuleCard(
+                item = ModuleCardUiModel(
+                    title = "JavaScript Basics",
+                    status = ModuleStatus.IN_PROGRESS,
+                    progressPercent = 45,
+                    icon = Icons.Outlined.Code,
+                    subLessons = listOf(
+                        SubLessonUiModel("ES6+ Syntax", ModuleStatus.COMPLETED),
+                        SubLessonUiModel("Asynchronous JS", ModuleStatus.IN_PROGRESS),
+                        SubLessonUiModel("DOM Manipulation", ModuleStatus.LOCKED)
+                    )
+                )
+            )
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.components
+package com.rmap.mobile.features.roadmap.presentation.detail.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,9 +27,11 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun AiScholarTipCard(
@@ -120,6 +122,20 @@ fun AiScholarTipCard(
                     lineHeight = 22.75.sp,
                     color = Color(0xFF4B5563)
                 )
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AiScholarTipCardPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        Box(modifier = Modifier.padding(16.dp)) {
+            AiScholarTipCard(
+                currentModule = "Asynchronous JS",
+                recommendedTopic = "Promises",
+                nextModule = "DOM Manipulation"
             )
         }
     }
