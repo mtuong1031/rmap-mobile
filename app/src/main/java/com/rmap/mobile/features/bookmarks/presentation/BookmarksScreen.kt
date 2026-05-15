@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.bookmarks
+package com.rmap.mobile.features.bookmarks.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,38 +38,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
-import com.rmap.mobile.presentation.navigation.NavBarDestination
-import com.rmap.mobile.presentation.navigation.RMapNavigationBar
-import com.rmap.mobile.presentation.ui.components.BackgroundDecorator
-import com.rmap.mobile.presentation.ui.components.BookmarkRoadmapCard
-import com.rmap.mobile.presentation.ui.components.BookmarkRoadmapCardUiModel
-import com.rmap.mobile.presentation.ui.components.BookmarkSkillCard
-import com.rmap.mobile.presentation.ui.components.BookmarkSkillCardUiModel
-import com.rmap.mobile.presentation.ui.components.BookmarkTabSwitcher
-import com.rmap.mobile.presentation.ui.components.Header
-import com.rmap.mobile.presentation.ui.components.RoadmapDifficulty
-import com.rmap.mobile.presentation.ui.components.SkillStatus
-import com.rmap.mobile.presentation.ui.components.rememberBackgroundScrollOffsetY
-import com.rmap.mobile.presentation.ui.theme.RMapTheme
-
-private const val TAB_INDEX_ROADMAPS = 0
-private const val TAB_INDEX_SKILLS = 1
+import com.rmap.mobile.navigation.NavBarDestination
+import com.rmap.mobile.core.ui.components.AppNavigationBar
+import com.rmap.mobile.core.ui.components.BackgroundDecorator
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCard
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkSkillCard
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkSkillCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTabSwitcher
+import com.rmap.mobile.features.bookmarks.presentation.components.CuratedPathsSection
+import com.rmap.mobile.features.bookmarks.presentation.components.FooterHint
+import com.rmap.mobile.core.ui.components.Header
+import com.rmap.mobile.core.ui.components.RoadmapDifficulty
+import com.rmap.mobile.features.bookmarks.presentation.components.SkillStatus
+import com.rmap.mobile.features.bookmarks.presentation.components.SpecificSkillsSection
+import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun BookmarksScreen(
     userName: String,
     modifier: Modifier = Modifier,
+    selectedTabIndex: Int = TAB_INDEX_ROADMAPS,
     selectedDestination: NavBarDestination = NavBarDestination.Bookmarks,
     onHeaderActionClick: () -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
+    onTabSelected: (Int) -> Unit = {},
     onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
-
-    var selectedTabIndex by remember { mutableIntStateOf(TAB_INDEX_ROADMAPS) }
 
     val greetingText = stringResource(R.string.home_greeting, userName)
     val headingText = stringResource(R.string.bookmarks_heading)
@@ -127,7 +126,7 @@ fun BookmarksScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            RMapNavigationBar(
+            AppNavigationBar(
                 selectedDestination = selectedDestination,
                 onDestinationSelected = onDestinationSelected,
                 modifier = Modifier.fillMaxWidth()
@@ -165,7 +164,7 @@ fun BookmarksScreen(
                     BookmarkTabSwitcher(
                         tabs = tabs,
                         selectedIndex = selectedTabIndex,
-                        onTabSelected = { selectedTabIndex = it }
+                        onTabSelected = onTabSelected
                     )
                 }
 
@@ -195,124 +194,6 @@ fun BookmarksScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun SectionHeader(
-    title: String,
-    badgeText: String,
-    badgeColor: Color = MaterialTheme.colorScheme.primary,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 20.sp,
-                lineHeight = 30.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        )
-
-        Text(
-            text = badgeText,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                letterSpacing = 0.3.sp,
-                color = badgeColor
-            ),
-            modifier = Modifier
-                .padding(horizontal = 3.dp, vertical = 6.dp)
-        )
-    }
-}
-
-@Composable
-private fun CuratedPathsSection(
-    roadmapItems: List<BookmarkRoadmapCardUiModel>,
-    savedCount: Int,
-    onActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        SectionHeader(
-            title = stringResource(R.string.bookmarks_section_curated_paths),
-            badgeText = stringResource(R.string.bookmarks_saved_count, savedCount)
-        )
-
-        roadmapItems.forEach { item ->
-            BookmarkRoadmapCard(
-                item = item,
-                onActionClick = onActionClick?.let { callback ->
-                    { callback(item) }
-                },
-                onShareClick = onShareClick?.let { callback ->
-                    { callback(item) }
-                },
-                onBookmarkClick = {}
-            )
-        }
-    }
-}
-
-@Composable
-private fun SpecificSkillsSection(
-    skillItems: List<BookmarkSkillCardUiModel>,
-    pinsCount: Int,
-    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        SectionHeader(
-            title = stringResource(R.string.bookmarks_section_specific_skills),
-            badgeText = stringResource(R.string.bookmarks_pins_count, pinsCount)
-        )
-
-        skillItems.forEach { item ->
-            BookmarkSkillCard(
-                item = item,
-                onClick = onSkillClick?.let { callback ->
-                    { callback(item) }
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun FooterHint(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(0.7f)
-            .padding(bottom = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.AutoAwesome,
-            contentDescription = null,
-            tint = Color(0xFF9CA3AF),
-            modifier = Modifier.size(40.dp)
-        )
-
-        Text(
-            text = stringResource(R.string.bookmarks_footer_hint),
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp,
-                lineHeight = 19.6.sp,
-                color = Color(0xFF9CA3AF),
-                textAlign = TextAlign.Center
-            )
-        )
     }
 }
 
