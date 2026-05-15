@@ -45,6 +45,16 @@ import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.BackgroundLight
+import com.rmap.mobile.core.ui.theme.CardPrimaryBorderColor
+import com.rmap.mobile.core.ui.theme.CardPrimaryGlowColor
+import com.rmap.mobile.core.ui.theme.CardPrimaryGlowFaintColor
+import com.rmap.mobile.core.ui.theme.CardPrimaryGlowSoftColor
+import com.rmap.mobile.core.ui.theme.CardShadowOverlayColor
+import com.rmap.mobile.core.ui.theme.CoverPreviewSurfaceColor
+import com.rmap.mobile.core.ui.theme.CoverSurfaceColor
+import com.rmap.mobile.core.ui.theme.NeutralDividerDotColor
+import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val BookmarkRoadmapCardShape = AppCardDefaults.shape
@@ -97,8 +107,8 @@ fun BookmarkRoadmapCard(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0x14298CF7),
-                            Color(0x0A298CF7),
+                            CardPrimaryGlowSoftColor,
+                            CardPrimaryGlowFaintColor,
                             Color.Transparent
                         )
                     ),
@@ -117,7 +127,7 @@ private fun CoverImageSection(
         modifier = Modifier
             .fillMaxWidth()
             .height(CoverHeight)
-            .background(Color(0xFF0F172B))
+            .background(CoverSurfaceColor)
     ) {
         if (coverPlaceholderRes != null) {
             val isPreview = LocalInspectionMode.current
@@ -133,7 +143,7 @@ private fun CoverImageSection(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0xFF1E3A5F).copy(alpha = 0.6f))
+                        .background(CoverPreviewSurfaceColor.copy(alpha = 0.6f))
                 )
             }
         }
@@ -161,8 +171,8 @@ private fun CoverImageSection(
                     .shadow(
                         elevation = 10.dp,
                         shape = RoundedCornerShape(14.dp),
-                        spotColor = Color(0x1A000000),
-                        ambientColor = Color(0x1A000000)
+                        spotColor = CardShadowOverlayColor,
+                        ambientColor = CardShadowOverlayColor
                     ),
                 colors = IconButtonDefaults.iconButtonColors(
                     containerColor = Color.White
@@ -226,7 +236,7 @@ private fun ContentSection(
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 15.sp,
-                            color = Color(0xFF6B7280)
+                            color = NeutralTextMutedColor
                         ),
                         maxLines = 1
                     )
@@ -240,7 +250,7 @@ private fun ContentSection(
                         modifier = Modifier
                             .size(4.dp)
                             .background(
-                                color = Color(0xFFD1D5DB),
+                                color = NeutralDividerDotColor,
                                 shape = CircleShape
                             )
                     )
@@ -249,7 +259,7 @@ private fun ContentSection(
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
-                            color = Color(0xFF6B7280)
+                            color = NeutralTextMutedColor
                         ),
                         maxLines = 1
                     )
@@ -272,12 +282,12 @@ private fun ContentSection(
                         .size(54.dp)
                         .appCardShadow(
                             shape = BookmarkShareButtonShape,
-                            spotColor = Color(0xCCF4F8FF),
-                            ambientColor = Color(0xCCF4F8FF)
+                            spotColor = CardPrimaryGlowColor,
+                            ambientColor = CardPrimaryGlowColor
                         ),
                     shape = BookmarkShareButtonShape,
-                    color = Color(0xFFF4F8FF),
-                    border = AppCardDefaults.border(color = Color(0x1A298CF7))
+                    color = BackgroundLight,
+                    border = AppCardDefaults.border(color = CardPrimaryBorderColor)
                 ) {
                     IconButton(
                         onClick = onShareClick ?: {},

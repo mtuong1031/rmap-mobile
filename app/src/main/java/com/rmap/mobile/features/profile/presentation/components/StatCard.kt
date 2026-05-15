@@ -17,13 +17,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -47,7 +47,7 @@ fun StatCard(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(Color(0xFFF4F3F7), CircleShape),
+                    .background(ProfileIconContainerColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

@@ -45,7 +45,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.BackgroundLight
+import com.rmap.mobile.core.ui.theme.CardDividerColor
+import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
+import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
+import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.StatusCompletedContentColor
 
 enum class ModuleStatus {
     COMPLETED, IN_PROGRESS, LOCKED
@@ -74,10 +80,14 @@ fun ModuleCard(
     val interactionSource = remember { MutableInteractionSource() }
 
     val isLocked = item.status == ModuleStatus.LOCKED
-    val cardBg = if (isLocked) Color.White.copy(alpha = 0.6f) else Color.White
-    val titleColor = if (isLocked) Color(0xFF9CA3AF) else MaterialTheme.colorScheme.onSurface
-    val iconBg = if (isLocked) Color(0xFFF3F4F6) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-    val iconTint = if (isLocked) Color(0xFF9CA3AF) else MaterialTheme.colorScheme.primary
+    val cardBg = if (isLocked) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    val titleColor = if (isLocked) NeutralDisabledColor else MaterialTheme.colorScheme.onSurface
+    val iconBg = if (isLocked) NeutralSoftSurfaceColor else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+    val iconTint = if (isLocked) NeutralDisabledColor else MaterialTheme.colorScheme.primary
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -144,9 +154,9 @@ fun ModuleCard(
                         }
 
                         val statusColor = when (item.status) {
-                            ModuleStatus.COMPLETED -> Color(0xFF0F8330)
-                            ModuleStatus.IN_PROGRESS -> Color(0xFF6B7280)
-                            ModuleStatus.LOCKED -> Color(0xFF9CA3AF)
+                            ModuleStatus.COMPLETED -> StatusCompletedContentColor
+                            ModuleStatus.IN_PROGRESS -> NeutralTextMutedColor
+                            ModuleStatus.LOCKED -> NeutralDisabledColor
                         }
 
                         Text(
@@ -164,14 +174,14 @@ fun ModuleCard(
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
-                        tint = Color(0xFF9CA3AF),
+                        tint = NeutralDisabledColor,
                         modifier = Modifier.size(24.dp)
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
-                        tint = Color(0xFF9CA3AF),
+                        tint = NeutralDisabledColor,
                         modifier = Modifier
                             .size(24.dp)
                             .rotate(rotation)
@@ -198,7 +208,7 @@ fun ModuleCard(
                                         modifier = Modifier
                                             .width(2.dp)
                                             .height(16.dp)
-                                            .background(Color(0xFFF4F8FF))
+                                            .background(BackgroundLight)
                                     )
                                 } else {
                                     Spacer(modifier = Modifier.height(16.dp))
@@ -215,12 +225,12 @@ fun ModuleCard(
                                                     .background(MaterialTheme.colorScheme.primary),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Check,
-                                                    contentDescription = null,
-                                                    tint = Color.White,
-                                                    modifier = Modifier.size(12.dp)
-                                                )
+                                                    Icon(
+                                                        imageVector = Icons.Default.Check,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                                        modifier = Modifier.size(12.dp)
+                                                    )
                                             }
                                         }
                                         ModuleStatus.IN_PROGRESS -> {
@@ -244,13 +254,13 @@ fun ModuleCard(
                                                 modifier = Modifier
                                                     .size(20.dp)
                                                     .clip(CircleShape)
-                                                    .background(Color(0xFFF3F4F6)),
+                                                    .background(CardDividerColor),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Lock,
                                                     contentDescription = null,
-                                                    tint = Color(0xFF9CA3AF),
+                                                    tint = NeutralDisabledColor,
                                                     modifier = Modifier.size(10.dp)
                                                 )
                                             }
@@ -263,7 +273,7 @@ fun ModuleCard(
                                         modifier = Modifier
                                             .width(2.dp)
                                             .height(16.dp)
-                                            .background(Color(0xFFF4F8FF))
+                                            .background(BackgroundLight)
                                     )
                                 } else {
                                     Spacer(modifier = Modifier.height(16.dp))
@@ -277,7 +287,7 @@ fun ModuleCard(
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = if (lesson.status == ModuleStatus.IN_PROGRESS) FontWeight.SemiBold else FontWeight.Medium,
                                     fontSize = 13.sp,
-                                    color = if (lesson.status == ModuleStatus.LOCKED) Color(0xFF9CA3AF) else MaterialTheme.colorScheme.onSurface
+                                    color = if (lesson.status == ModuleStatus.LOCKED) NeutralDisabledColor else MaterialTheme.colorScheme.onSurface
                                 )
                             )
                         }

@@ -32,6 +32,12 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.AccentPurpleColor
+import com.rmap.mobile.core.ui.theme.AiTipContainerEndColor
+import com.rmap.mobile.core.ui.theme.BackgroundLight
+import com.rmap.mobile.core.ui.theme.CardShadowSoftColor
+import com.rmap.mobile.core.ui.theme.NeutralTextBodyColor
+import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val AiScholarTipCardShape = RoundedCornerShape(24.dp)
@@ -44,13 +50,13 @@ fun AiScholarTipCard(
     modifier: Modifier = Modifier
 ) {
     val gradientColors = listOf(
-        Color(0xFF298CF7),
-        Color(0xFF7B61FF)
+        PrimaryLight,
+        AccentPurpleColor
     )
 
     val bgGradientColors = listOf(
-        Color(0xFFF4F8FF),
-        Color(0xFFEAF2FF)
+        BackgroundLight,
+        AiTipContainerEndColor
     )
 
     Box(
@@ -58,8 +64,8 @@ fun AiScholarTipCard(
             .fillMaxWidth()
             .appCardShadow(
                 shape = AiScholarTipCardShape,
-                ambientColor = Color(0x08000000),
-                spotColor = Color(0x08000000)
+                ambientColor = CardShadowSoftColor,
+                spotColor = CardShadowSoftColor
             )
             .background(
                 brush = Brush.linearGradient(colors = bgGradientColors),
@@ -122,7 +128,7 @@ fun AiScholarTipCard(
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp,
                     lineHeight = 22.75.sp,
-                    color = Color(0xFF4B5563)
+                    color = NeutralTextBodyColor
                 )
             )
         }

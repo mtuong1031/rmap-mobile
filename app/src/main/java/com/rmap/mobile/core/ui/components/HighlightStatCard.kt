@@ -38,7 +38,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.InfoContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.StatusSuccessContainerColor
+import com.rmap.mobile.core.ui.theme.StatusSuccessContentColor
+import com.rmap.mobile.core.ui.theme.StatusWarningContainerColor
+import com.rmap.mobile.core.ui.theme.StatusWarningContentColor
+import com.rmap.mobile.core.ui.theme.PrimaryLight
 
 private val HighlightStatCardShape = RoundedCornerShape(22.dp)
 
@@ -67,24 +73,24 @@ object HighlightStatCardDefaults {
     @Composable
     fun streakStyle(): HighlightStatCardStyle {
         return HighlightStatCardStyle(
-            iconColor = Color(0xFFF59E0B),
-            iconContainerColor = Color(0xFFFFFBEB)
+            iconColor = StatusWarningContentColor,
+            iconContainerColor = StatusWarningContainerColor
         )
     }
 
     @Composable
     fun goalStyle(): HighlightStatCardStyle {
         return HighlightStatCardStyle(
-            iconContainerColor = Color(0xFFECFDF5),
-            iconColor = Color(0xFF10B981),
+            iconContainerColor = StatusSuccessContainerColor,
+            iconColor = StatusSuccessContentColor,
         )
     }
 
     @Composable
     fun completedStyle(): HighlightStatCardStyle {
         return HighlightStatCardStyle(
-            iconContainerColor = Color(0xFFEFF6FF),
-            iconColor = Color(0xFF298CF7),
+            iconContainerColor = InfoContainerColor,
+            iconColor = PrimaryLight,
         )
     }
 }

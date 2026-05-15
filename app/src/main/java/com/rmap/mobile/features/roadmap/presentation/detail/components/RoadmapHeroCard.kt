@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val RoadmapHeroCardShape = RoundedCornerShape(28.dp)
@@ -51,8 +51,8 @@ fun RoadmapHeroCard(
             .appCardShadow(
                 elevation = AppCardDefaults.shadowElevation,
                 shape = RoadmapHeroCardShape,
-                spotColor = Color(0x66006FFF),
-                ambientColor = Color(0x66006FFF)
+                spotColor = PrimaryHeroShadowColor,
+                ambientColor = PrimaryHeroShadowColor
             )
             .background(
                 color = MaterialTheme.colorScheme.primary,
@@ -73,12 +73,12 @@ fun RoadmapHeroCard(
                     Row(
                         modifier = Modifier
                             .background(
-                                color = Color(0x33FFFFFF),
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .border(
                                 width = 1.dp,
-                                color = Color(0x1AFFFFFF),
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f),
                                 shape = RoundedCornerShape(10.dp)
                             )
                             .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -88,14 +88,14 @@ fun RoadmapHeroCard(
                         Icon(
                             imageVector = Icons.Outlined.AutoGraph,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = stringResource(R.string.roadmap_detail_chapter_tag).uppercase(),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 letterSpacing = 0.5.sp
                             )
                         )
@@ -108,7 +108,7 @@ fun RoadmapHeroCard(
                             fontSize = 24.sp,
                             lineHeight = 30.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     )
                 }
@@ -121,8 +121,8 @@ fun RoadmapHeroCard(
                     CircularProgressIndicator(
                         progress = { progressFraction },
                         modifier = Modifier.size(76.dp),
-                        color = Color.White,
-                        trackColor = Color(0x33FFFFFF),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                         strokeWidth = 6.dp
                     )
 
@@ -138,7 +138,7 @@ fun RoadmapHeroCard(
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimary
                             )
                         )
                         Text(
@@ -146,7 +146,7 @@ fun RoadmapHeroCard(
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 11.sp,
-                                color = Color(0xCCFFFFFF)
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                             )
                         )
                     }
@@ -164,7 +164,7 @@ fun RoadmapHeroCard(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium,
                         fontSize = 13.sp,
-                        color = Color(0xE6FFFFFF)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                     )
                 )
 
@@ -173,8 +173,8 @@ fun RoadmapHeroCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(CircleShape),
-                    color = Color.White,
-                    trackColor = Color(0x33FFFFFF)
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
                 )
             }
         }

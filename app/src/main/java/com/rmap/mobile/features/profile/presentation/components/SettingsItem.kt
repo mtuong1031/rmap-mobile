@@ -25,14 +25,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.StatusDangerContainerColor
+import com.rmap.mobile.core.ui.theme.StatusDangerContentColor
 
 @Composable
 fun SettingsItem(
@@ -51,9 +53,9 @@ fun SettingsItem(
         label = "settings_item_scale"
     )
 
-    val iconContainerColor = if (isDestructive) Color(0xFFFEF2F2) else Color(0xFFF4F3F7)
-    val iconTint = if (isDestructive) Color(0xFFFB2C36) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
-    val textColor = if (isDestructive) Color(0xFFFB2C36) else MaterialTheme.colorScheme.onSurface
+    val iconContainerColor = if (isDestructive) StatusDangerContainerColor else ProfileIconContainerColor
+    val iconTint = if (isDestructive) StatusDangerContentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+    val textColor = if (isDestructive) StatusDangerContentColor else MaterialTheme.colorScheme.onSurface
 
     Row(
         modifier = modifier

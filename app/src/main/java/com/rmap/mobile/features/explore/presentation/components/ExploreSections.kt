@@ -48,6 +48,9 @@ import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.CardDividerColor
+import com.rmap.mobile.core.ui.theme.CardShadowSubtleColor
+import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.RecommendedCardUiModel
@@ -69,11 +72,11 @@ fun ExploreSearchBar(
             .appCardShadow(
                 elevation = AppCardDefaults.shadowElevation,
                 shape = ExploreSearchBarShape,
-                spotColor = Color(0x0A000000)
+                spotColor = CardShadowSubtleColor
             ),
         shape = ExploreSearchBarShape,
         color = MaterialTheme.colorScheme.surface,
-        border = AppCardDefaults.border(color = Color(0xFFF3F4F6))
+        border = AppCardDefaults.border(color = CardDividerColor)
     ) {
         Row(
             modifier = Modifier
@@ -397,7 +400,7 @@ private fun RecommendedCardPreview() {
                     skillNodesCount = 24,
                     level = "Intermediate",
                     imageUrl = "",
-                    accentColor = Color(0xFF298CF7)
+                    accentColor = PrimaryLight
                 ),
                 onClick = {}
             )

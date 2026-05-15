@@ -66,6 +66,13 @@ import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.DifficultyExpertContentColor
+import com.rmap.mobile.core.ui.theme.ExploreBlueContainerColor
+import com.rmap.mobile.core.ui.theme.ExploreGreenContainerColor
+import com.rmap.mobile.core.ui.theme.ExplorePurpleContainerColor
+import com.rmap.mobile.core.ui.theme.ExploreRoseContainerColor
+import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
+import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.components.CategorySection
 import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBar
@@ -114,31 +121,31 @@ fun ExploreScreen(
             "frontend",
             stringResource(R.string.explore_category_frontend),
             Icons.Outlined.Code,
-            Color(0xFFEBF5FF)
+            ExploreBlueContainerColor
         ),
         CategoryUiModel(
             "backend",
             stringResource(R.string.explore_category_backend),
             Icons.Outlined.Storage,
-            Color(0xFFF3F4F6)
+            NeutralSoftSurfaceColor
         ),
         CategoryUiModel(
             "mobile",
             stringResource(R.string.explore_category_mobile),
             Icons.Outlined.Devices,
-            Color(0xFFFFF1F2)
+            ExploreRoseContainerColor
         ),
         CategoryUiModel(
             "devops",
             stringResource(R.string.explore_category_devops),
             Icons.Outlined.Terminal,
-            Color(0xFFF0FDF4)
+            ExploreGreenContainerColor
         ),
         CategoryUiModel(
             "ai",
             stringResource(R.string.explore_category_ai),
             Icons.Outlined.SmartToy,
-            Color(0xFFF5F3FF)
+            ExplorePurpleContainerColor
         )
     )
 
@@ -150,7 +157,7 @@ fun ExploreScreen(
             48,
             "Expert",
             "", // Placeholder
-            Color(0xFF298CF7)
+            PrimaryLight
         ),
         RecommendedCardUiModel(
             "2",
@@ -159,7 +166,7 @@ fun ExploreScreen(
             64,
             "Advanced",
             "", // Placeholder
-            Color(0xFF9810FA)
+            DifficultyExpertContentColor
         )
     )
 
@@ -319,7 +326,7 @@ private fun RecommendedCardPreview() {
                     48,
                     "Expert",
                     "",
-                    Color(0xFF298CF7)
+                    PrimaryLight
                 ),
                 onClick = {}
             )

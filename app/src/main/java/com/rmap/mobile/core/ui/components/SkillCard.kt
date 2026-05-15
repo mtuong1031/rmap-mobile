@@ -38,6 +38,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.CardDividerColor
+import com.rmap.mobile.core.ui.theme.CardPrimaryGlowBareColor
+import com.rmap.mobile.core.ui.theme.CardPrimaryGlowFaintColor
+import com.rmap.mobile.core.ui.theme.CardPrimaryGlowMediumColor
+import com.rmap.mobile.core.ui.theme.CardPrimaryGlowSoftColor
+import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
+import com.rmap.mobile.core.ui.theme.NeutralDisabledTextColor
+import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
+import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
+import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val SkillCardShape = AppCardDefaults.shape
@@ -49,12 +59,12 @@ enum class SkillStatus(
     val textColor: Color
 ) {
     IN_PROGRESS(
-        backgroundColor = Color(0xFF298CF7),
+        backgroundColor = PrimaryLight,
         textColor = Color.White
     ),
     NOT_STARTED(
-        backgroundColor = Color(0xFFF3F4F6),
-        textColor = Color(0xFF6A7282)
+        backgroundColor = NeutralSoftSurfaceColor,
+        textColor = NeutralDisabledTextColor
     )
 }
 
@@ -115,7 +125,7 @@ fun SkillCard(
 
                 HorizontalDivider(
                     thickness = 1.dp,
-                    color = Color(0xFFF3F4F6)
+                    color = CardDividerColor
                 )
 
                 Row(
@@ -131,7 +141,7 @@ fun SkillCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                         contentDescription = null,
-                        tint = Color(0xFF9CA3AF),
+                        tint = NeutralDisabledColor,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -144,9 +154,9 @@ fun SkillCard(
                     .blur(radius = 48.dp)
                     .background(
                         brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0x14298CF7),
-                                Color(0x0A298CF7),
+                        colors = listOf(
+                                CardPrimaryGlowSoftColor,
+                                CardPrimaryGlowFaintColor,
                                 Color.Transparent
                             )
                         ),
@@ -176,8 +186,8 @@ private fun SkillIconFrame(icon: ImageVector) {
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0x26298CF7),
-                            Color(0x0D298CF7)
+                            CardPrimaryGlowMediumColor,
+                            CardPrimaryGlowBareColor
                         )
                     ),
                     shape = SkillIconContainerShape
@@ -202,7 +212,7 @@ private fun PartOfText(parentPathName: String) {
             SpanStyle(
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp,
-                color = Color(0xFF6B7280)
+                color = NeutralTextMutedColor
             )
         ) {
             append("$partOfPrefix ")

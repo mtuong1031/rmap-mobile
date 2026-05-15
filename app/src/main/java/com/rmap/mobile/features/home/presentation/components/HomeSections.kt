@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.HeadingTextColor
+import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val LearningProgressCardShape = RoundedCornerShape(28.dp)
@@ -52,11 +54,11 @@ fun LearningProgressCard(
             .appCardShadow(
                 elevation = AppCardDefaults.shadowElevation,
                 shape = LearningProgressCardShape,
-                spotColor = Color(0x66006FFF),
-                ambientColor = Color(0x66006FFF)
+                spotColor = PrimaryHeroShadowColor,
+                ambientColor = PrimaryHeroShadowColor
             )
             .background(
-                color = Color(0xFF3875B7),
+                color = MaterialTheme.colorScheme.primaryContainer,
                 shape = LearningProgressCardShape
             )
             .padding(start = 22.dp, top = 22.dp, end = 22.dp, bottom = 22.dp)
@@ -72,7 +74,7 @@ fun LearningProgressCard(
                         modifier = Modifier
                             .size(48.dp)
                             .background(
-                                color = Color(0x26FFFFFF),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
                                 shape = RoundedCornerShape(14.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -80,7 +82,7 @@ fun LearningProgressCard(
                         Icon(
                             imageVector = Icons.Outlined.AutoGraph,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -96,7 +98,7 @@ fun LearningProgressCard(
                                 lineHeight = 28.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 letterSpacing = 0.sp,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                         Text(
@@ -106,14 +108,14 @@ fun LearningProgressCard(
                                 lineHeight = 28.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 letterSpacing = 0.sp,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                         Text(
                             text = stringResource(R.string.home_progress_subtitle),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
-                                color = Color.White.copy(alpha = 0.8f)
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
                         )
                     }
@@ -136,8 +138,8 @@ fun LearningProgressCard(
                     CircularProgressIndicator(
                         progress = { normalizedProgress },
                         modifier = Modifier.size(76.dp),
-                        color = Color.White,
-                        trackColor = Color.White.copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f),
                         strokeWidth = 6.dp
                     )
 
@@ -154,7 +156,7 @@ fun LearningProgressCard(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp,
                                 lineHeight = 18.sp,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                         Text(
@@ -163,7 +165,7 @@ fun LearningProgressCard(
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 12.sp,
                                 lineHeight = 12.sp,
-                                color = Color.White.copy(alpha = 0.8f)
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
                         )
                     }
@@ -177,7 +179,7 @@ fun LearningProgressCard(
                         fontSize = 28.sp,
                         lineHeight = 28.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 )
                 Text(
@@ -188,7 +190,7 @@ fun LearningProgressCard(
                     ),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium,
-                        color = Color.White.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                     )
                 )
             }
@@ -212,7 +214,7 @@ fun TrendingRoadmapsHeader(
                 fontSize = 20.sp,
                 lineHeight = 30.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2D3142)
+                color = HeadingTextColor
             )
         )
 

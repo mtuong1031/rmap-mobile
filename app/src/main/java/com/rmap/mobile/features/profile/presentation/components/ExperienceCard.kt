@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -55,7 +56,7 @@ fun ExperienceCard(
                     modifier = Modifier
                         .size(52.dp)
                         .background(
-                            color = androidx.compose.ui.graphics.Color(0xFFF4F3F7),
+                            color = ProfileIconContainerColor,
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center

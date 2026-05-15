@@ -41,6 +41,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.Neutral900Color
+import com.rmap.mobile.core.ui.theme.PrimaryAvatarShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -65,8 +67,8 @@ fun ProfileCard(
                     .shadow(
                         elevation = 20.dp,
                         shape = RoundedCornerShape(32.dp),
-                        ambientColor = Color(0x33298CF7),
-                        spotColor = Color(0x33298CF7)
+                        ambientColor = PrimaryAvatarShadowColor,
+                        spotColor = PrimaryAvatarShadowColor
                     )
                     .border(
                         width = 4.dp,
@@ -74,7 +76,7 @@ fun ProfileCard(
                         shape = RoundedCornerShape(32.dp)
                     )
                     .clip(RoundedCornerShape(32.dp))
-                    .background(Color(0xFF111827))
+                    .background(Neutral900Color)
             ) {
                 // Replacing SubcomposeAsyncImage with AsyncImage to resolve NoClassDefFoundError in Preview.
                 // SubcomposeAsyncImageScope can sometimes fail to load in the IDE's render environment.

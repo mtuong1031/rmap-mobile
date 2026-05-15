@@ -18,6 +18,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.theme.AccentBlueColor
+import com.rmap.mobile.core.ui.theme.AccentCyanColor
+import com.rmap.mobile.core.ui.theme.AccentPurpleGlowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -53,21 +56,21 @@ fun BackgroundDecorator(
             offsetX = 129.dp,
             offsetY = 0.dp,
             size = 320.dp,
-            tint = Color(0xFF007AFF),
+            tint = AccentBlueColor,
             alpha = 0.15f
         )
         SoftGlow(
             offsetX = (-78).dp,
             offsetY = 510.92188.dp,
             size = 280.dp,
-            tint = Color(0xFFC27AFF),
+            tint = AccentPurpleGlowColor,
             alpha = 0.14f
         )
         SoftGlow(
             offsetX = 168.dp,
             offsetY = 1232.78906.dp,
             size = 320.dp,
-            tint = Color(0xFF00D3F3),
+            tint = AccentCyanColor,
             alpha = 0.15f
         )
     }

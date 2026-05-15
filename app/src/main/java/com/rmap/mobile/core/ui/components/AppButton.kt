@@ -29,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.NeutralBorderColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import androidx.compose.material3.Button as M3Button
 import androidx.compose.material3.ButtonDefaults as MaterialButtonDefaults
@@ -119,7 +120,7 @@ object ButtonDefaults {
 
     @Composable
     fun filledTonalBorder(): BorderStroke {
-        return BorderStroke(width = 1.dp, color = Color(0xFFE5E7EB))
+        return BorderStroke(width = 1.dp, color = NeutralBorderColor)
     }
 
     @Composable
