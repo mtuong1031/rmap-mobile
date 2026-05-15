@@ -1,6 +1,5 @@
-package com.rmap.mobile.presentation.navigation
+package com.rmap.mobile.core.ui.components
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -11,12 +10,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Bookmarks
-import androidx.compose.material.icons.outlined.Explore
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,43 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.rmap.mobile.R
-import com.rmap.mobile.presentation.ui.theme.RMapTheme
-
-enum class NavBarDestination(
-    @param:StringRes val labelRes: Int,
-    val icon: ImageVector,
-) {
-    Home(
-        labelRes = R.string.nav_home,
-        icon = Icons.Outlined.Home,
-    ),
-    Bookmarks(
-        labelRes = R.string.nav_bookmarks,
-        icon = Icons.Outlined.Bookmarks,
-    ),
-    Ai(
-        labelRes = R.string.nav_ai,
-        icon = Icons.Outlined.AutoAwesome,
-    ),
-    Explore(
-        labelRes = R.string.nav_explore,
-        icon = Icons.Outlined.Explore,
-    ),
-    More(
-        labelRes = R.string.nav_more,
-        icon = Icons.Outlined.Menu,
-    )
-}
+import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.navigation.NavBarDestination
 
 @Composable
-fun RMapNavigationBar(
+fun AppNavigationBar(
     selectedDestination: NavBarDestination,
     onDestinationSelected: (NavBarDestination) -> Unit,
     modifier: Modifier = Modifier,
@@ -145,7 +111,7 @@ private fun NavBarItem(
 @Composable
 private fun RMapNavigationBarPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        RMapNavigationBar(
+        AppNavigationBar(
             selectedDestination = NavBarDestination.Home,
             onDestinationSelected = {},
             modifier = Modifier.fillMaxWidth()

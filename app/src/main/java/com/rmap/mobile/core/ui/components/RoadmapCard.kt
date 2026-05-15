@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.components
+package com.rmap.mobile.core.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -37,7 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
-import com.rmap.mobile.presentation.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val RoadmapCardShape = RoundedCornerShape(32.dp)
 private val RoadmapIconFrameShape = RoundedCornerShape(24.dp)

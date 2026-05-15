@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.components
+package com.rmap.mobile.core.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,7 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rmap.mobile.presentation.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val HeaderActionShape = RoundedCornerShape(20.dp)
 

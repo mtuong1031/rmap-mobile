@@ -1,4 +1,4 @@
-package com.rmap.mobile.presentation.ui.components
+package com.rmap.mobile.core.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,8 +15,10 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun rememberBackgroundScrollOffsetY(listState: LazyListState): Float {
@@ -39,7 +41,7 @@ fun rememberBackgroundScrollOffsetY(listState: LazyListState): Float {
 
 @Composable
 fun BackgroundDecorator(
-    scrollOffsetY: Float,
+    scrollOffsetY: Float = 0f,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -95,4 +97,12 @@ private fun SoftGlow(
                 shape = CircleShape
             )
     )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 844)
+@Composable
+private fun BackgroundDecoratorPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        BackgroundDecorator()
+    }
 }
