@@ -77,9 +77,6 @@ fun ProfileCard(
                     .clip(AppShapes.largeCard)
                     .background(Neutral900Color)
             ) {
-                // Replacing SubcomposeAsyncImage with AsyncImage to resolve NoClassDefFoundError in Preview.
-                // SubcomposeAsyncImageScope can sometimes fail to load in the IDE's render environment.
-                // We layer the placeholder behind the image to achieve the same loading/error behavior.
                 AvatarPlaceholder()
                 AsyncImage(
                     model = avatarUrl,

@@ -77,8 +77,9 @@ enum class RoadmapDifficulty(
 }
 
 data class RoadmapCardUiModel(
+    val id: String,
     val title: String,
-    val lessonsCount: Int,
+    val totalLessonsCount: Int,
     val difficultyLabel: String,
     val difficulty: RoadmapDifficulty,
     val durationLabel: String,
@@ -144,7 +145,7 @@ fun RoadmapCard(
                             Text(
                                 text = stringResource(
                                     id = R.string.roadmap_lessons_count,
-                                    item.lessonsCount
+                                    item.totalLessonsCount
                                 ),
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.SemiBold,
@@ -271,8 +272,9 @@ private fun TrendingRoadmapsSectionPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         RoadmapCard(
             item = RoadmapCardUiModel(
+                id = "ui-ux-master",
                 title = "UI/UX Master",
-                lessonsCount = 96,
+                totalLessonsCount = 96,
                 difficultyLabel = "Intermediate",
                 difficulty = RoadmapDifficulty.Intermediate,
                 durationLabel = "2 months",

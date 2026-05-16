@@ -53,8 +53,8 @@ import com.rmap.mobile.core.ui.theme.CardShadowSubtleColor
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.explore.presentation.CategoryUiModel
-import com.rmap.mobile.features.explore.presentation.RecommendedCardUiModel
+import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
+import com.rmap.mobile.features.explore.presentation.viewmodel.RecommendedCardUiModel
 
 private val ExploreSearchBarShape = AppShapes.searchBar
 private val RecommendedCardShape = AppShapes.card
@@ -119,7 +119,7 @@ fun ExploreSearchBar(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.FilterList,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.content_description_filter),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(Dimens.iconMd)
                 )
@@ -389,7 +389,7 @@ private fun RecommendedCardPreview() {
                     badgeText = "Recommended",
                     skillNodesCount = 24,
                     level = "Intermediate",
-                    imageUrl = "",
+                    coverImageUrl = "",
                     accentColor = PrimaryLight
                 ),
                 onClick = {}

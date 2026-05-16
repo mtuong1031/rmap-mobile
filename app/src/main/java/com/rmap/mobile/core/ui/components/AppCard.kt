@@ -77,8 +77,9 @@ private fun AppCardDefaultsPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         RoadmapCard(
             item = RoadmapCardUiModel(
+                id = "frontend-pro",
                 title = "Frontend Pro",
-                lessonsCount = 120,
+                totalLessonsCount = 120,
                 difficultyLabel = "Expert",
                 difficulty = RoadmapDifficulty.Expert,
                 durationLabel = "3 months",

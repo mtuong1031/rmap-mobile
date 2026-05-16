@@ -22,18 +22,11 @@ import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
-
-enum class SettingType {
-    PERSONAL_INFO,
-    NOTIFICATIONS,
-    LEARNING_GOALS,
-    PRIVACY,
-    SIGN_OUT
-}
+import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileSettingAction
 
 @Composable
 fun SettingsSection(
-    onItemClick: (SettingType) -> Unit,
+    onItemClick: (ProfileSettingAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -58,32 +51,32 @@ fun SettingsSection(
                     icon = Icons.Outlined.PersonOutline,
                     title = stringResource(id = R.string.profile_setting_personal_info),
                     isDestructive = false,
-                    onClick = { onItemClick(SettingType.PERSONAL_INFO) }
+                    onClick = { onItemClick(ProfileSettingAction.PersonalInfo) }
                 )
                 SettingsItem(
                     icon = Icons.Outlined.NotificationsNone,
                     title = stringResource(id = R.string.profile_setting_notifications),
                     isDestructive = false,
-                    onClick = { onItemClick(SettingType.NOTIFICATIONS) }
+                    onClick = { onItemClick(ProfileSettingAction.Notifications) }
                 )
                 SettingsItem(
                     icon = Icons.Outlined.TrackChanges,
                     title = stringResource(id = R.string.profile_setting_learning_goals),
                     isDestructive = false,
-                    onClick = { onItemClick(SettingType.LEARNING_GOALS) }
+                    onClick = { onItemClick(ProfileSettingAction.LearningGoals) }
                 )
                 SettingsItem(
                     icon = Icons.Outlined.Policy,
                     title = stringResource(id = R.string.profile_setting_privacy),
                     isDestructive = false,
-                    onClick = { onItemClick(SettingType.PRIVACY) }
+                    onClick = { onItemClick(ProfileSettingAction.Privacy) }
                 )
                 SettingsItem(
                     icon = Icons.AutoMirrored.Outlined.Logout,
                     title = stringResource(id = R.string.profile_setting_sign_out),
                     isDestructive = true,
                     showArrow = false,
-                    onClick = { onItemClick(SettingType.SIGN_OUT) }
+                    onClick = { onItemClick(ProfileSettingAction.SignOut) }
                 )
             }
         }

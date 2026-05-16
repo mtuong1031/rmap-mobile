@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
@@ -59,6 +60,7 @@ private val BookmarkRoadmapCardShape = AppCardDefaults.shape
 private val BookmarkShareButtonShape = AppShapes.button
 
 data class BookmarkRoadmapCardUiModel(
+    val id: String,
     val title: String,
     val difficultyLabel: String,
     val difficulty: RoadmapDifficulty,
@@ -174,7 +176,7 @@ private fun CoverImageSection(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Bookmark,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.content_description_bookmark),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(Dimens.iconMdPlus)
                 )
@@ -280,7 +282,7 @@ private fun ContentSection(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Share,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.content_description_share),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(Dimens.iconMdPlus)
                         )
@@ -302,6 +304,7 @@ private fun BookmarkRoadmapCardPreview() {
             BookmarkRoadmapCard(
                 item = BookmarkRoadmapCardUiModel(
                     title = "Full Stack Development",
+                    id = "full-stack-development",
                     difficultyLabel = "Intermediate",
                     difficulty = RoadmapDifficulty.Intermediate,
                     durationLabel = "8 months",
@@ -316,6 +319,7 @@ private fun BookmarkRoadmapCardPreview() {
             BookmarkRoadmapCard(
                 item = BookmarkRoadmapCardUiModel(
                     title = "UI/UX Masterclass",
+                    id = "ui-ux-masterclass",
                     difficultyLabel = "Beginner",
                     difficulty = RoadmapDifficulty.Beginner,
                     durationLabel = "4 months",

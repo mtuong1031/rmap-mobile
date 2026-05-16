@@ -40,13 +40,13 @@ private val LearningProgressCardShape = AppShapes.heroCard
 @Composable
 fun LearningProgressCard(
     progressFraction: Float,
+    completedLessons: Int,
+    totalLessons: Int,
     onPrimaryIconClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val normalizedProgress = progressFraction.coerceIn(0f, 1f)
     val progressPercent = (normalizedProgress * 100).toInt()
-    val totalLessons = 107
-    val completedLessons = 1
 
     Box(
         modifier = modifier
@@ -230,7 +230,12 @@ fun TrendingRoadmapsHeader(
 private fun LearningProgressCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Box(modifier = Modifier.padding(Dimens.spacingLg)) {
-            LearningProgressCard(progressFraction = 0.42f, onPrimaryIconClick = {})
+            LearningProgressCard(
+                progressFraction = 0.42f,
+                completedLessons = 45,
+                totalLessons = 107,
+                onPrimaryIconClick = {}
+            )
         }
     }
 }
