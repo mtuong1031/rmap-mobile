@@ -33,7 +33,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.FilledTonalButton
@@ -65,7 +64,7 @@ fun AuthScreen(
             painter = resolvedHeroPainter,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp)
+                .height(Dimens.authHeroHeight)
         )
 
         Surface(

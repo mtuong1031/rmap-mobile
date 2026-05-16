@@ -29,6 +29,7 @@ object Dimens {
     val spacingScreenBottomCompact = spacingMassive
     val spacingScreenTop = 72.dp
     val spacingScreenBottom = 72.dp
+    val authHeroHeight = 400.dp
 
     // Icon and control sizes
     val iconXxs = 12.dp
@@ -49,9 +50,15 @@ object Dimens {
     val profileEditButtonSize = 36.dp
     val profileExperienceIconContainerSize = 52.dp
     val bookmarkShareButtonSize = 54.dp
+    val exploreSearchBarHeight = 58.dp
     val iconFrameSize = 72.dp
     val progressIndicatorLg = 76.dp
     val categoryIconContainerSize = 64.dp
+    val recommendedCardWidth = 280.dp
+    val recommendedCardHeight = 170.dp
+    val recommendedCardGlowSize = 140.dp
+    val recommendedCardGlowOffset = 40.dp
+    val bookmarkCoverHeight = 150.dp
     val bookmarkTabIndicatorWidth = 60.dp
     val profileAvatarSize = 128.dp
     val statCardMinWidth = 108.dp
@@ -98,4 +105,10 @@ object Dimens {
     val cardGlowBlur = spacingMassive
     val backgroundGlowSizeLg = 320.dp
     val backgroundGlowBlur = 190.dp
+    val backgroundGlowTopOffsetX = 129.dp
+    val backgroundGlowMidOffsetX = (-78).dp
+    val backgroundGlowMidOffsetY = 510.92188.dp
+    val backgroundGlowMidSize = 280.dp
+    val backgroundGlowBottomOffsetX = 168.dp
+    val backgroundGlowBottomOffsetY = 1232.78906.dp
 }

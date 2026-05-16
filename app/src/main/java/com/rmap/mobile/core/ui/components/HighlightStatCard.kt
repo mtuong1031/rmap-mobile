@@ -27,14 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
-import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.InfoContainerColor
@@ -153,9 +149,7 @@ fun HighlightStatCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 ),
-                textAlign = TextAlign.Center,
-//                maxLines = 1,
-//                overflow = TextOverflow.Ellipsis
+                textAlign = TextAlign.Center
             )
 
 
@@ -164,9 +158,7 @@ fun HighlightStatCard(
                 style = MaterialTheme.typography.labelMedium.copy(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
                 ),
-                textAlign = TextAlign.Center,
-//                maxLines = 1,
-//                overflow = TextOverflow.Ellipsis
+                textAlign = TextAlign.Center
             )
         }
     }

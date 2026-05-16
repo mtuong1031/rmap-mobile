@@ -25,12 +25,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AccentPurpleColor
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.AiTipContainerEndColor
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardShadowSoftColor
@@ -99,10 +99,8 @@ fun AiScholarTipCard(
 
                 Text(
                     text = stringResource(R.string.roadmap_detail_ai_tip_heading),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 16.sp
+                    style = AppTextStyles.titleMediumStrong.copy(
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 )
             }
@@ -125,8 +123,6 @@ fun AiScholarTipCard(
                 },
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    lineHeight = 22.75.sp,
                     color = NeutralTextBodyColor
                 )
             )

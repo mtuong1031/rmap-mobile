@@ -1,11 +1,14 @@
 package com.rmap.mobile.core.ui.theme
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 
 @OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
@@ -57,3 +60,107 @@ val Typography = Typography(
     labelMedium = BaseTypography.labelMedium.withInter(), // 12sp, 16sp, Medium
     labelSmall = BaseTypography.labelSmall.withInter() // 11sp, 16sp, Medium
 )
+
+object AppTextStyles {
+    val sectionTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.titleLarge.copy(
+            fontSize = 20.sp,
+            lineHeight = 30.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.sp
+        )
+
+    val compactCardTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.titleLarge.copy(
+            fontSize = 20.sp,
+            lineHeight = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+    val titleMediumStrong: TextStyle
+        @Composable get() = MaterialTheme.typography.titleMedium.copy(
+            fontWeight = FontWeight.Bold
+        )
+
+    val heroTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.headlineSmall.copy(
+            fontSize = 24.sp,
+            lineHeight = 30.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+    val progressTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.titleLarge.copy(
+            fontSize = 20.sp,
+            lineHeight = 28.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.sp
+        )
+
+    val progressValue: TextStyle
+        @Composable get() = MaterialTheme.typography.headlineSmall.copy(
+            fontSize = 28.sp,
+            lineHeight = 28.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+    val headerTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.headlineMedium.copy(
+            fontSize = 28.sp,
+            lineHeight = 39.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.sp
+        )
+
+    val statValue: TextStyle
+        @Composable get() = MaterialTheme.typography.titleMedium.copy(
+            fontSize = 20.sp,
+            lineHeight = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+    val eyebrow: TextStyle
+        @Composable get() = MaterialTheme.typography.labelSmall.copy(
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.8.sp
+        )
+
+    val sectionEyebrow: TextStyle
+        @Composable get() = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.5.sp
+        )
+
+    val tag: TextStyle
+        @Composable get() = MaterialTheme.typography.labelSmall.copy(
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.5.sp
+        )
+
+    val metadata: TextStyle
+        @Composable get() = MaterialTheme.typography.labelMedium.copy(
+            fontWeight = FontWeight.Medium,
+            letterSpacing = 0.2.sp
+        )
+
+    val recommendedCardTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.titleLarge.copy(
+            fontSize = 20.sp,
+            lineHeight = 26.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+    val badge: TextStyle
+        @Composable get() = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.3.sp
+        )
+
+    val badgeSmall: TextStyle
+        @Composable get() = MaterialTheme.typography.labelMedium.copy(
+            fontSize = 13.sp,
+            lineHeight = 19.5.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.325.sp
+        )
+}

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,9 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
+import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
 import com.rmap.mobile.core.ui.components.AppNavigationBar
 import com.rmap.mobile.features.roadmap.presentation.detail.components.AiScholarTipCard
@@ -48,6 +47,7 @@ import com.rmap.mobile.features.roadmap.presentation.detail.components.RoadmapHe
 import com.rmap.mobile.features.roadmap.presentation.detail.components.SubLessonUiModel
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -67,32 +67,50 @@ fun RoadmapDetailScreen(
     // Dummy data from Figma
     val coreWebFundamentals = listOf(
         ModuleCardUiModel(
-            title = "HTML & CSS",
+            title = stringResource(R.string.roadmap_detail_module_html_css),
             status = ModuleStatus.COMPLETED,
             progressPercent = 100,
             icon = Icons.Outlined.Code,
             subLessons = listOf(
-                SubLessonUiModel("Semantic HTML", ModuleStatus.COMPLETED),
-                SubLessonUiModel("CSS Flexbox & Grid", ModuleStatus.COMPLETED),
-                SubLessonUiModel("Responsive Design", ModuleStatus.COMPLETED)
+                SubLessonUiModel(
+                    stringResource(R.string.roadmap_detail_lesson_semantic_html),
+                    ModuleStatus.COMPLETED
+                ),
+                SubLessonUiModel(
+                    stringResource(R.string.roadmap_detail_lesson_css_flexbox_grid),
+                    ModuleStatus.COMPLETED
+                ),
+                SubLessonUiModel(
+                    stringResource(R.string.roadmap_detail_lesson_responsive_design),
+                    ModuleStatus.COMPLETED
+                )
             )
         ),
         ModuleCardUiModel(
-            title = "JavaScript Basics",
+            title = stringResource(R.string.roadmap_detail_module_javascript_basics),
             status = ModuleStatus.IN_PROGRESS,
             progressPercent = 45,
             icon = Icons.Outlined.DataObject,
             subLessons = listOf(
-                SubLessonUiModel("ES6+ Syntax", ModuleStatus.COMPLETED),
-                SubLessonUiModel("Asynchronous JS", ModuleStatus.IN_PROGRESS),
-                SubLessonUiModel("DOM Manipulation", ModuleStatus.LOCKED)
+                SubLessonUiModel(
+                    stringResource(R.string.roadmap_detail_lesson_es6_syntax),
+                    ModuleStatus.COMPLETED
+                ),
+                SubLessonUiModel(
+                    stringResource(R.string.roadmap_detail_lesson_async_js),
+                    ModuleStatus.IN_PROGRESS
+                ),
+                SubLessonUiModel(
+                    stringResource(R.string.roadmap_detail_lesson_dom_manipulation),
+                    ModuleStatus.LOCKED
+                )
             )
         )
     )
 
     val frameworkEcosystem = listOf(
         ModuleCardUiModel(
-            title = "React Fundamentals",
+            title = stringResource(R.string.roadmap_detail_module_react_fundamentals),
             status = ModuleStatus.LOCKED,
             icon = Icons.Outlined.Storage,
             subLessons = emptyList()
@@ -143,7 +161,7 @@ fun RoadmapDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.content_description_back),
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(Dimens.iconLg)
                         )
@@ -162,7 +180,7 @@ fun RoadmapDetailScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
                         SectionHeader(
-                            title = "Core Web Fundamentals",
+                            title = stringResource(R.string.roadmap_detail_section_core_web_fundamentals),
                             dotColor = MaterialTheme.colorScheme.primary
                         )
                         coreWebFundamentals.forEach { module ->
@@ -174,7 +192,7 @@ fun RoadmapDetailScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
                         SectionHeader(
-                            title = "Framework Ecosystem",
+                            title = stringResource(R.string.roadmap_detail_section_framework_ecosystem),
                             dotColor = NeutralDisabledColor
                         )
                         frameworkEcosystem.forEach { module ->
@@ -186,9 +204,9 @@ fun RoadmapDetailScreen(
                 item {
                     Spacer(modifier = Modifier.height(Dimens.spacingSm))
                     AiScholarTipCard(
-                        currentModule = "Asynchronous JS",
-                        recommendedTopic = "Promises",
-                        nextModule = "DOM Manipulation"
+                        currentModule = stringResource(R.string.roadmap_detail_lesson_async_js),
+                        recommendedTopic = stringResource(R.string.roadmap_detail_topic_promises),
+                        nextModule = stringResource(R.string.roadmap_detail_lesson_dom_manipulation)
                     )
                 }
             }
@@ -215,10 +233,7 @@ private fun SectionHeader(
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 20.sp,
-                lineHeight = 30.sp,
-                fontWeight = FontWeight.Bold,
+            style = AppTextStyles.sectionTitle.copy(
                 color = MaterialTheme.colorScheme.onSurface
             )
         )

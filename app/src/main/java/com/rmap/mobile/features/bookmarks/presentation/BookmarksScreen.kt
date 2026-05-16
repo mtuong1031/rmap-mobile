@@ -2,45 +2,30 @@ package com.rmap.mobile.features.bookmarks.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DataObject
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.WbSunny
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
 import com.rmap.mobile.core.ui.components.AppNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCard
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTabSwitcher
 import com.rmap.mobile.features.bookmarks.presentation.components.CuratedPathsSection
@@ -87,7 +72,7 @@ fun BookmarksScreen(
             coverPlaceholderRes = R.drawable.bg_placeholder_fullstack
         ),
         BookmarkRoadmapCardUiModel(
-            title = "Full Stack Development",
+            title = stringResource(R.string.home_roadmap_title_full_stack_development),
             difficultyLabel = stringResource(R.string.roadmap_level_intermediate),
             difficulty = RoadmapDifficulty.Intermediate,
             durationLabel = stringResource(R.string.home_roadmap_duration_8_months),
@@ -95,7 +80,7 @@ fun BookmarksScreen(
             coverPlaceholderRes = R.drawable.bg_placeholder_fullstack
         ),
         BookmarkRoadmapCardUiModel(
-            title = "UI/UX Masterclass",
+            title = stringResource(R.string.home_roadmap_title_ui_ux_masterclass),
             difficultyLabel = stringResource(R.string.roadmap_level_beginner),
             difficulty = RoadmapDifficulty.Beginner,
             durationLabel = stringResource(R.string.home_roadmap_duration_4_months),
@@ -106,15 +91,15 @@ fun BookmarksScreen(
 
     val skillItems = listOf(
         SkillCardUiModel(
-            title = "Advanced CSS Layouts",
-            parentPathName = "Frontend Dev",
+            title = stringResource(R.string.skill_advanced_css_layouts),
+            parentPathName = stringResource(R.string.skill_parent_frontend_dev),
             status = SkillStatus.IN_PROGRESS,
             statusLabel = stringResource(R.string.bookmarks_status_in_progress),
             icon = Icons.Outlined.Code
         ),
         SkillCardUiModel(
-            title = "NoSQL Data Modeling",
-            parentPathName = "Backend Systems",
+            title = stringResource(R.string.skill_nosql_data_modeling),
+            parentPathName = stringResource(R.string.skill_parent_backend_systems),
             status = SkillStatus.NOT_STARTED,
             statusLabel = stringResource(R.string.bookmarks_status_not_started),
             icon = Icons.Outlined.DataObject

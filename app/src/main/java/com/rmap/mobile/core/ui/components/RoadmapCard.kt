@@ -30,11 +30,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.CardDividerStrongColor
-import com.rmap.mobile.core.ui.theme.CardPrimaryGlowBareColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowMediumColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowSubtleColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowStrongColor
@@ -126,10 +125,7 @@ fun RoadmapCard(
                     ) {
                         Text(
                             text = item.title,
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 20.sp,
-                                lineHeight = 24.sp,
-                                fontWeight = FontWeight.Bold,
+                            style = AppTextStyles.compactCardTitle.copy(
                                 color = MaterialTheme.colorScheme.onSurface
                             ),
                             maxLines = 1
@@ -260,10 +256,9 @@ private fun DifficultyBadge(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.Bold,
+            style = AppTextStyles.badge.copy(
                 color = difficulty.textColor,
-                letterSpacing = 0.325.sp
+                letterSpacing = AppTextStyles.badgeSmall.letterSpacing
             ),
             maxLines = 1
         )

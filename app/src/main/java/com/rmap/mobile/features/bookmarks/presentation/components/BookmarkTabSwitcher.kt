@@ -2,7 +2,6 @@ package com.rmap.mobile.features.bookmarks.presentation.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,7 +30,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
@@ -75,12 +73,6 @@ fun BookmarkTabSwitcher(
                     label = "textColor"
                 )
 
-                val textSize by animateFloatAsState(
-                    targetValue = if (isSelected) 22f else 16f,
-                    animationSpec = tween(durationMillis = 300),
-                    label = "textSize"
-                )
-
                 Box(
                     modifier = Modifier
                         .width(tabWidth)
@@ -94,9 +86,12 @@ fun BookmarkTabSwitcher(
                 ) {
                     Text(
                         text = label,
-                        style = MaterialTheme.typography.titleLarge.copy(
+                        style = (if (isSelected) {
+                            MaterialTheme.typography.titleLarge
+                        } else {
+                            MaterialTheme.typography.titleMedium
+                        }).copy(
                             fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                            fontSize = textSize.sp,
                             textAlign = TextAlign.Center
                         ),
                         color = textColor,

@@ -40,8 +40,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
@@ -49,6 +47,7 @@ import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.CardShadowSubtleColor
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -70,7 +69,7 @@ fun ExploreSearchBar(
     AppCard(
         modifier = modifier
             .fillMaxWidth()
-            .height(58.dp),
+            .height(Dimens.exploreSearchBarHeight),
         shape = ExploreSearchBarShape,
         border = AppCardDefaults.border(color = CardDividerColor),
         shadowColor = CardShadowSubtleColor
@@ -146,9 +145,8 @@ fun CategorySection(
         ) {
             Text(
                 text = stringResource(R.string.explore_categories_title),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                style = AppTextStyles.sectionTitle.copy(
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
             Text(
@@ -222,9 +220,8 @@ fun RecommendedSection(
         Text(
             text = stringResource(R.string.explore_recommended_title),
             modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide),
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
+            style = AppTextStyles.sectionTitle.copy(
+                color = MaterialTheme.colorScheme.onSurface
             )
         )
         
@@ -248,8 +245,8 @@ fun RecommendedCard(
 ) {
     Box(
         modifier = Modifier
-            .width(280.dp)
-            .height(170.dp)
+            .width(Dimens.recommendedCardWidth)
+            .height(Dimens.recommendedCardHeight)
             .appCardShadow(
                 elevation = AppCardDefaults.shadowElevation,
                 shape = RecommendedCardShape,
@@ -270,9 +267,9 @@ fun RecommendedCard(
         // Decorative glow
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .size(Dimens.recommendedCardGlowSize)
                 .align(Alignment.TopEnd)
-                .offset(x = 40.dp, y = (-40).dp)
+                .offset(x = Dimens.recommendedCardGlowOffset, y = -Dimens.recommendedCardGlowOffset)
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
@@ -297,10 +294,9 @@ fun RecommendedCard(
                 Text(
                     text = item.badgeText,
                     modifier = Modifier.padding(horizontal = Dimens.spacingSmPlus, vertical = Dimens.spacingXsPlus),
-                    style = MaterialTheme.typography.labelSmall.copy(
+                    style = AppTextStyles.tag.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        letterSpacing = 0.5.sp
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 )
             }
@@ -308,11 +304,8 @@ fun RecommendedCard(
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)) {
                 Text(
                     text = item.title,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 20.sp,
-                        lineHeight = 26.sp
+                    style = AppTextStyles.recommendedCardTitle.copy(
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -325,10 +318,8 @@ fun RecommendedCard(
                     Spacer(modifier = Modifier.width(Dimens.spacingXsPlus))
                     Text(
                         text = stringResource(R.string.explore_card_stats, item.skillNodesCount, item.level),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
-                            letterSpacing = 0.2.sp
+                        style = AppTextStyles.metadata.copy(
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                         )
                     )
                 }
@@ -352,9 +343,8 @@ fun PopularRoadmapsSection(
         ) {
             Text(
                 text = stringResource(R.string.explore_popular_title),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
+                style = AppTextStyles.sectionTitle.copy(
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
             Text(

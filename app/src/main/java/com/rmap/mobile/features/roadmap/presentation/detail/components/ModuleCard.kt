@@ -39,11 +39,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -162,7 +162,6 @@ fun ModuleCard(
                             text = statusText,
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 12.sp,
                                 color = statusColor
                             )
                         )
@@ -283,9 +282,8 @@ fun ModuleCard(
 
                             Text(
                                 text = lesson.title,
-                                style = MaterialTheme.typography.bodyMedium.copy(
+                                style = AppTextStyles.badgeSmall.copy(
                                     fontWeight = if (lesson.status == ModuleStatus.IN_PROGRESS) FontWeight.SemiBold else FontWeight.Medium,
-                                    fontSize = 13.sp,
                                     color = if (lesson.status == ModuleStatus.LOCKED) NeutralDisabledColor else MaterialTheme.colorScheme.onSurface
                                 )
                             )

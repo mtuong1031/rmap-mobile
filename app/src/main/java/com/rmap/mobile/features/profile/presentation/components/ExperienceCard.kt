@@ -21,10 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -70,9 +70,7 @@ fun ExperienceCard(
                 Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)) {
                     Text(
                         text = stringResource(id = R.string.profile_total_experience_label),
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            letterSpacing = 0.8.sp,
+                        style = AppTextStyles.eyebrow.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
                     )

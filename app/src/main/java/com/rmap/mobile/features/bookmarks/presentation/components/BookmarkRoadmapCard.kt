@@ -26,24 +26,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardPrimaryBorderColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowColor
@@ -60,7 +57,6 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val BookmarkRoadmapCardShape = AppCardDefaults.shape
 private val BookmarkShareButtonShape = AppShapes.button
-private val CoverHeight = 150.dp
 
 data class BookmarkRoadmapCardUiModel(
     val title: String,
@@ -124,7 +120,7 @@ private fun CoverImageSection(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(CoverHeight)
+            .height(Dimens.bookmarkCoverHeight)
             .background(CoverSurfaceColor)
     ) {
         if (coverPlaceholderRes != null) {
@@ -205,8 +201,6 @@ private fun ContentSection(
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 22.sp,
-                    lineHeight = 30.8.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 ),
@@ -233,7 +227,6 @@ private fun ContentSection(
                         text = item.difficultyLabel,
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
                             color = NeutralTextMutedColor
                         ),
                         maxLines = 1
@@ -254,9 +247,7 @@ private fun ContentSection(
                     )
                     Text(
                         text = item.durationLabel,
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
+                        style = AppTextStyles.badge.copy(
                             color = NeutralTextMutedColor
                         ),
                         maxLines = 1

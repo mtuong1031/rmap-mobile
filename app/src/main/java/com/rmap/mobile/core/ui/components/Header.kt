@@ -25,8 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryBlueShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -95,12 +95,8 @@ fun Header(
 
             Text(
                 text = headingText,
-                style = MaterialTheme.typography.headlineMedium.copy(
-                    fontSize = 28.sp,
-                    lineHeight = 39.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    letterSpacing = 0.sp
+                style = AppTextStyles.headerTitle.copy(
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

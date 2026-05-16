@@ -24,11 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -93,10 +93,8 @@ fun RoadmapHeroCard(
                         )
                         Text(
                             text = stringResource(R.string.roadmap_detail_chapter_tag).uppercase(),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
+                            style = AppTextStyles.tag.copy(
                                 color = MaterialTheme.colorScheme.onPrimary,
-                                letterSpacing = 0.5.sp
                             )
                         )
                     }
@@ -104,10 +102,7 @@ fun RoadmapHeroCard(
                     // Title
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontSize = 24.sp,
-                            lineHeight = 30.sp,
-                            fontWeight = FontWeight.Bold,
+                        style = AppTextStyles.heroTitle.copy(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     )
@@ -137,7 +132,6 @@ fun RoadmapHeroCard(
                             ),
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                         )
@@ -145,7 +139,6 @@ fun RoadmapHeroCard(
                             text = stringResource(R.string.roadmap_detail_done_label),
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                             )
                         )
@@ -163,7 +156,6 @@ fun RoadmapHeroCard(
                     ),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                     )
                 )

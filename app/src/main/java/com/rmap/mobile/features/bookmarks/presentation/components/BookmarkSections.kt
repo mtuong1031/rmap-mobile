@@ -20,10 +20,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.SkillCard
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -42,21 +42,14 @@ private fun SectionHeader(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 20.sp,
-                lineHeight = 30.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp,
+            style = AppTextStyles.sectionTitle.copy(
                 color = MaterialTheme.colorScheme.onSurface
             )
         )
 
         Text(
             text = badgeText,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                letterSpacing = 0.3.sp,
+            style = AppTextStyles.badge.copy(
                 color = badgeColor
             ),
             modifier = Modifier
@@ -137,8 +130,6 @@ fun FooterHint(modifier: Modifier = Modifier) {
             text = stringResource(R.string.bookmarks_footer_hint),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Medium,
-                fontSize = 14.sp,
-                lineHeight = 19.6.sp,
                 color = NeutralDisabledColor,
                 textAlign = TextAlign.Center
             )

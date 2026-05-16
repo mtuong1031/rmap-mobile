@@ -53,6 +53,8 @@
     <string name="home_roadmap_title_frontend_pro">Frontend Pro</string>
     <string name="home_roadmap_title_devops_specialist">DevOps Specialist</string>
     <string name="home_roadmap_title_ui_ux_master">UI/UX Master</string>
+    <string name="home_roadmap_title_full_stack_development">Full Stack Development</string>
+    <string name="home_roadmap_title_ui_ux_masterclass">UI/UX Masterclass</string>
     <string name="home_roadmap_title_data_science">Data Science</string>
     <string name="home_roadmap_duration_2_months">2 months</string>
     <string name="home_roadmap_duration_3_months">3 months</string>
@@ -73,6 +75,9 @@
     <string name="explore_category_ai">AI</string>
     <string name="explore_badge_most_popular">MOST POPULAR</string>
     <string name="explore_badge_career_path">CAREER PATH</string>
+    <string name="explore_recommended_react_nextjs">Mastering React &amp; Next.js</string>
+    <string name="explore_recommended_ai_engineering">AI Engineering Path</string>
+    <string name="roadmap_level_advanced">Advanced</string>
     <string name="explore_card_stats">%1$d Skill Nodes • %2$s Level</string>
 
     <!-- Profile Screen -->
@@ -110,8 +115,25 @@
     <string name="bookmarks_status_not_started">Not Started</string>
     <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
     <string name="skill_part_of_format">Part of: %1$s</string>
+    <string name="skill_advanced_css_layouts">Advanced CSS Layouts</string>
+    <string name="skill_nosql_data_modeling">NoSQL Data Modeling</string>
+    <string name="skill_parent_frontend_dev">Frontend Dev</string>
+    <string name="skill_parent_backend_systems">Backend Systems</string>
 
     <!-- Roadmap Detail Screen -->
+    <string name="content_description_back">Back</string>
+    <string name="roadmap_detail_section_core_web_fundamentals">Core Web Fundamentals</string>
+    <string name="roadmap_detail_section_framework_ecosystem">Framework Ecosystem</string>
+    <string name="roadmap_detail_module_html_css">HTML &amp; CSS</string>
+    <string name="roadmap_detail_module_javascript_basics">JavaScript Basics</string>
+    <string name="roadmap_detail_module_react_fundamentals">React Fundamentals</string>
+    <string name="roadmap_detail_lesson_semantic_html">Semantic HTML</string>
+    <string name="roadmap_detail_lesson_css_flexbox_grid">CSS Flexbox &amp; Grid</string>
+    <string name="roadmap_detail_lesson_responsive_design">Responsive Design</string>
+    <string name="roadmap_detail_lesson_es6_syntax">ES6+ Syntax</string>
+    <string name="roadmap_detail_lesson_async_js">Asynchronous JS</string>
+    <string name="roadmap_detail_lesson_dom_manipulation">DOM Manipulation</string>
+    <string name="roadmap_detail_topic_promises">Promises</string>
     <string name="roadmap_detail_chapter_tag">Chapter</string>
     <string name="roadmap_detail_done_label">Done</string>
     <string name="roadmap_detail_lessons_completed">%1$d of %2$d lessons completed</string>

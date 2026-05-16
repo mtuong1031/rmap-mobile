@@ -25,11 +25,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.HeadingTextColor
 import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
@@ -98,21 +98,13 @@ fun LearningProgressCard(
                     ) {
                         Text(
                             text = stringResource(R.string.home_progress_title_line_1),
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 20.sp,
-                                lineHeight = 28.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 0.sp,
+                            style = AppTextStyles.progressTitle.copy(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                         Text(
                             text = stringResource(R.string.home_progress_title_line_2),
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 20.sp,
-                                lineHeight = 28.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 0.sp,
+                            style = AppTextStyles.progressTitle.copy(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
@@ -159,8 +151,6 @@ fun LearningProgressCard(
                             ),
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                lineHeight = 18.sp,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
@@ -168,8 +158,6 @@ fun LearningProgressCard(
                             text = stringResource(R.string.home_progress_done),
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Medium,
-                                fontSize = 12.sp,
-                                lineHeight = 12.sp,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
                         )
@@ -180,10 +168,7 @@ fun LearningProgressCard(
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)) {
                 Text(
                     text = stringResource(R.string.home_progress_percent_complete, progressPercent),
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontSize = 28.sp,
-                        lineHeight = 28.sp,
-                        fontWeight = FontWeight.SemiBold,
+                    style = AppTextStyles.progressValue.copy(
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 )
@@ -215,10 +200,7 @@ fun TrendingRoadmapsHeader(
     ) {
         Text(
             text = stringResource(R.string.roadmap_trending_title),
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 20.sp,
-                lineHeight = 30.sp,
-                fontWeight = FontWeight.Bold,
+            style = AppTextStyles.sectionTitle.copy(
                 color = HeadingTextColor
             )
         )
@@ -236,7 +218,7 @@ fun TrendingRoadmapsHeader(
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
-                letterSpacing = 0.3.sp
+                letterSpacing = AppTextStyles.badge.letterSpacing
             )
         )
     }

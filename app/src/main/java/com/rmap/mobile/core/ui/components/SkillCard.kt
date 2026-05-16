@@ -33,9 +33,9 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowBareColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowFaintColor
@@ -107,10 +107,7 @@ fun SkillCard(
                     ) {
                         Text(
                             text = item.title,
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontSize = 20.sp,
-                                lineHeight = 24.sp,
-                                fontWeight = FontWeight.Bold,
+                            style = AppTextStyles.compactCardTitle.copy(
                                 color = MaterialTheme.colorScheme.onSurface
                             ),
                             maxLines = 2
@@ -208,7 +205,6 @@ private fun PartOfText(parentPathName: String) {
         withStyle(
             SpanStyle(
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp,
                 color = NeutralTextMutedColor
             )
         ) {
@@ -217,7 +213,6 @@ private fun PartOfText(parentPathName: String) {
         withStyle(
             SpanStyle(
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.primary
             )
         ) {
@@ -248,11 +243,7 @@ private fun StatusBadge(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                lineHeight = 19.5.sp,
-                letterSpacing = 0.325.sp,
+            style = AppTextStyles.badgeSmall.copy(
                 color = status.textColor
             ),
             maxLines = 1
