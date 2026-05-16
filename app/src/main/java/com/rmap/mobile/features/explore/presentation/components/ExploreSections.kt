@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
@@ -66,18 +67,13 @@ fun ExploreSearchBar(
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppCard(
         modifier = modifier
             .fillMaxWidth()
-            .height(58.dp)
-            .appCardShadow(
-                elevation = AppCardDefaults.shadowElevation,
-                shape = ExploreSearchBarShape,
-                spotColor = CardShadowSubtleColor
-            ),
+            .height(58.dp),
         shape = ExploreSearchBarShape,
-        color = MaterialTheme.colorScheme.surface,
-        border = AppCardDefaults.border(color = CardDividerColor)
+        border = AppCardDefaults.border(color = CardDividerColor),
+        shadowColor = CardShadowSubtleColor
     ) {
         Row(
             modifier = Modifier

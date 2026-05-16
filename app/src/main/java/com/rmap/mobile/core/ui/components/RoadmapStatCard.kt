@@ -16,7 +16,6 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -72,17 +71,14 @@ fun RoadmapStatCard(
         Modifier
     }
 
-    Surface(
+    AppCard(
         modifier = modifier
             .defaultMinSize(
                 minWidth = RoadmapStatCardDefaults.CardMinWidth,
                 minHeight = RoadmapStatCardDefaults.CardHeight
             )
-            .appCardShadow(shape = RoadmapStatCardDefaults.CardShape)
             .then(clickableModifier),
-        shape = RoadmapStatCardDefaults.CardShape,
-        color = MaterialTheme.colorScheme.surface,
-        border = AppCardDefaults.border()
+        shape = RoadmapStatCardDefaults.CardShape
     ) {
         Column(
             modifier = Modifier.padding(

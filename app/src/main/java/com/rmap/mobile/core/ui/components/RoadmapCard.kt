@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -99,14 +98,11 @@ fun RoadmapCard(
         Modifier
     }
 
-    Surface(
+    AppCard(
         modifier = modifier
             .fillMaxWidth()
-            .appCardShadow(shape = RoadmapCardShape)
             .then(clickModifier),
-        color = MaterialTheme.colorScheme.surface,
         shape = RoadmapCardShape,
-        border = AppCardDefaults.border(),
     ) {
         Box(
             modifier = Modifier

@@ -37,7 +37,7 @@ import androidx.compose.material3.FilledTonalButton as M3FilledTonalButton
 import androidx.compose.material3.OutlinedButton as M3OutlinedButton
 import androidx.compose.material3.TextButton as M3TextButton
 
-object ButtonDefaults {
+object AppButtonDefaults {
     val MinHeight: Dp = Dimens.controlXl
     val Shape: Shape = AppShapes.button
     val IconSize: Dp = Dimens.iconLg
@@ -136,13 +136,13 @@ fun FilledButton(
     modifier: Modifier = Modifier,
     leadingIcon: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.Shape,
-    colors: ButtonColors = ButtonDefaults.filledButtonColors(),
-    elevation: ButtonElevation = ButtonDefaults.filledButtonElevation()
+    shape: Shape = AppButtonDefaults.Shape,
+    colors: ButtonColors = AppButtonDefaults.filledButtonColors(),
+    elevation: ButtonElevation = AppButtonDefaults.filledButtonElevation()
 ) {
     M3Button(
         onClick = onClick,
-        modifier = modifier.defaultMinSize(minHeight = ButtonDefaults.MinHeight),
+        modifier = modifier.defaultMinSize(minHeight = AppButtonDefaults.MinHeight),
         enabled = enabled,
         shape = shape,
         colors = colors,
@@ -162,14 +162,14 @@ fun FilledTonalButton(
     modifier: Modifier = Modifier,
     leadingIcon: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.Shape,
-    colors: ButtonColors = ButtonDefaults.filledTonalButtonColors(),
-    elevation: ButtonElevation = ButtonDefaults.filledTonalButtonElevation(),
-    border: BorderStroke = ButtonDefaults.filledTonalBorder()
+    shape: Shape = AppButtonDefaults.Shape,
+    colors: ButtonColors = AppButtonDefaults.filledTonalButtonColors(),
+    elevation: ButtonElevation = AppButtonDefaults.filledTonalButtonElevation(),
+    border: BorderStroke = AppButtonDefaults.filledTonalBorder()
 ) {
     M3FilledTonalButton(
         onClick = onClick,
-        modifier = modifier.defaultMinSize(minHeight = ButtonDefaults.MinHeight),
+        modifier = modifier.defaultMinSize(minHeight = AppButtonDefaults.MinHeight),
         enabled = enabled,
         shape = shape,
         colors = colors,
@@ -190,14 +190,14 @@ fun OutlinedButton(
     modifier: Modifier = Modifier,
     leadingIcon: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.Shape,
-    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
-    elevation: ButtonElevation = ButtonDefaults.outlinedButtonElevation(),
-    border: BorderStroke = ButtonDefaults.outlinedBorder()
+    shape: Shape = AppButtonDefaults.Shape,
+    colors: ButtonColors = AppButtonDefaults.outlinedButtonColors(),
+    elevation: ButtonElevation = AppButtonDefaults.outlinedButtonElevation(),
+    border: BorderStroke = AppButtonDefaults.outlinedBorder()
 ) {
     M3OutlinedButton(
         onClick = onClick,
-        modifier = modifier.defaultMinSize(minHeight = ButtonDefaults.MinHeight),
+        modifier = modifier.defaultMinSize(minHeight = AppButtonDefaults.MinHeight),
         enabled = enabled,
         shape = shape,
         colors = colors,
@@ -218,14 +218,14 @@ fun TextButton(
     modifier: Modifier = Modifier,
     leadingIcon: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
-    shape: Shape = ButtonDefaults.Shape,
-    colors: ButtonColors = ButtonDefaults.textButtonColors(),
-    elevation: ButtonElevation = ButtonDefaults.textButtonElevation(),
+    shape: Shape = AppButtonDefaults.Shape,
+    colors: ButtonColors = AppButtonDefaults.textButtonColors(),
+    elevation: ButtonElevation = AppButtonDefaults.textButtonElevation(),
     border: BorderStroke? = null
 ) {
     M3TextButton(
         onClick = onClick,
-        modifier = modifier.defaultMinSize(minHeight = ButtonDefaults.MinHeight),
+        modifier = modifier.defaultMinSize(minHeight = AppButtonDefaults.MinHeight),
         enabled = enabled,
         shape = shape,
         colors = colors,
@@ -250,13 +250,13 @@ private fun ButtonContent(
     ) {
         if (leadingIcon != null) {
             Box(
-                modifier = Modifier.size(ButtonDefaults.IconSize),
+                modifier = Modifier.size(AppButtonDefaults.IconSize),
                 contentAlignment = Alignment.Center
             ) {
                 leadingIcon()
             }
 
-            Spacer(modifier = Modifier.width(ButtonDefaults.IconSpacing))
+            Spacer(modifier = Modifier.width(AppButtonDefaults.IconSpacing))
         }
 
         Text(

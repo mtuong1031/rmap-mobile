@@ -21,7 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,10 +39,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
-import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardPrimaryBorderColor
@@ -80,13 +79,10 @@ fun BookmarkRoadmapCard(
     onShareClick: (() -> Unit)? = null,
     onBookmarkClick: (() -> Unit)? = null
 ) {
-    Surface(
+    AppCard(
         modifier = modifier
-            .fillMaxWidth()
-            .appCardShadow(shape = BookmarkRoadmapCardShape),
-        color = MaterialTheme.colorScheme.surface,
-        shape = BookmarkRoadmapCardShape,
-        border = AppCardDefaults.border()
+            .fillMaxWidth(),
+        shape = BookmarkRoadmapCardShape
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             CoverImageSection(
@@ -279,17 +275,13 @@ private fun ContentSection(
                     modifier = Modifier.weight(1f)
                 )
 
-                Surface(
+                AppCard(
                     modifier = Modifier
-                        .size(Dimens.bookmarkShareButtonSize)
-                        .appCardShadow(
-                            shape = BookmarkShareButtonShape,
-                            spotColor = CardPrimaryGlowColor,
-                            ambientColor = CardPrimaryGlowColor
-                        ),
+                        .size(Dimens.bookmarkShareButtonSize),
                     shape = BookmarkShareButtonShape,
                     color = BackgroundLight,
-                    border = AppCardDefaults.border(color = CardPrimaryBorderColor)
+                    border = AppCardDefaults.border(color = CardPrimaryBorderColor),
+                    shadowColor = CardPrimaryGlowColor
                 ) {
                     IconButton(
                         onClick = onShareClick ?: {},

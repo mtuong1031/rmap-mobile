@@ -14,7 +14,6 @@ import androidx.compose.material.icons.outlined.AutoGraph
 import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,8 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
-import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -35,13 +34,10 @@ fun ExperienceCard(
     xp: Int,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppCard(
         modifier = modifier
-            .fillMaxWidth()
-            .appCardShadow(shape = AppCardDefaults.shape),
-        shape = AppCardDefaults.shape,
-        color = MaterialTheme.colorScheme.surface,
-        border = AppCardDefaults.border()
+            .fillMaxWidth(),
+        shape = AppCardDefaults.shape
     ) {
         Row(
             modifier = Modifier

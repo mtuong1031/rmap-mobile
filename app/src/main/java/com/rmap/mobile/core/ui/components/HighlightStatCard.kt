@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -115,16 +114,14 @@ fun HighlightStatCard(
         Modifier
     }
 
-    Surface(
+    AppCard(
         modifier = modifier
             .defaultMinSize(
                 minWidth = HighlightStatCardDefaults.CardMinWidth,
                 minHeight = HighlightStatCardDefaults.CardMinHeight
             )
-            .appCardShadow(shape = HighlightStatCardDefaults.CardShape)
             .then(clickableModifier),
         shape = HighlightStatCardDefaults.CardShape,
-        color = MaterialTheme.colorScheme.surface,
         border = AppCardDefaults.border(color = style.iconColor.copy(alpha = 0.5f))
     ) {
         Column(

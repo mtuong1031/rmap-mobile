@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -83,13 +82,10 @@ fun SkillCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
-    Surface(
+    AppCard(
         modifier = modifier
-            .fillMaxWidth()
-            .appCardShadow(shape = SkillCardShape),
-        color = MaterialTheme.colorScheme.surface,
+            .fillMaxWidth(),
         shape = SkillCardShape,
-        border = AppCardDefaults.border()
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(

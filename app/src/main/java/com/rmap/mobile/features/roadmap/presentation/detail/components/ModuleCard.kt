@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.BackgroundLight
@@ -89,15 +89,14 @@ fun ModuleCard(
     val iconBg = if (isLocked) NeutralSoftSurfaceColor else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
     val iconTint = if (isLocked) NeutralDisabledColor else MaterialTheme.colorScheme.primary
 
-    Surface(
+    AppCard(
         modifier = modifier.fillMaxWidth(),
         shape = AppShapes.card,
         color = cardBg,
         border = AppCardDefaults.border(
             color = if (isLocked) AppCardDefaults.borderColor.copy(alpha = 0.5f) else AppCardDefaults.borderColor
         ),
-        shadowElevation = if (isLocked) Dimens.cardElevationNone else AppCardDefaults.shadowElevation,
-        tonalElevation = Dimens.cardElevationNone
+        shadowElevation = if (isLocked) Dimens.cardElevationNone else AppCardDefaults.shadowElevation
     ) {
         Column(
             modifier = Modifier.padding(Dimens.spacingLg)

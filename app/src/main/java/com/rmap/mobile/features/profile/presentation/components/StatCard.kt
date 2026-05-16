@@ -12,7 +12,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,8 +20,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
-import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -34,13 +33,10 @@ fun StatCard(
     value: String,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppCard(
         modifier = modifier
-            .fillMaxWidth()
-            .appCardShadow(shape = AppCardDefaults.shape),
-        shape = AppCardDefaults.shape,
-        color = MaterialTheme.colorScheme.surface,
-        border = AppCardDefaults.border()
+            .fillMaxWidth(),
+        shape = AppCardDefaults.shape
     ) {
         Column(
             modifier = Modifier.padding(horizontal = Dimens.spacingXl, vertical = Dimens.spacingXl),

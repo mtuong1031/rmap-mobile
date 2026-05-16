@@ -3,6 +3,8 @@ package com.rmap.mobile.core.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -29,6 +31,30 @@ object AppCardDefaults {
     ): BorderStroke {
         return BorderStroke(width = width, color = color)
     }
+}
+
+@Composable
+fun AppCard(
+    modifier: Modifier = Modifier,
+    shape: Shape = AppCardDefaults.shape,
+    color: Color = MaterialTheme.colorScheme.surface,
+    border: BorderStroke? = AppCardDefaults.border(),
+    shadowElevation: Dp = AppCardDefaults.shadowElevation,
+    shadowColor: Color = AppCardDefaults.shadowColor,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        modifier = modifier.appCardShadow(
+            shape = shape,
+            elevation = shadowElevation,
+            ambientColor = shadowColor,
+            spotColor = shadowColor
+        ),
+        shape = shape,
+        color = color,
+        border = border,
+        content = content
+    )
 }
 
 fun Modifier.appCardShadow(

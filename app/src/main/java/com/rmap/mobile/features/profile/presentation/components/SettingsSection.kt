@@ -11,7 +11,6 @@ import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,8 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.AppCardDefaults
-import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -52,13 +51,10 @@ fun SettingsSection(
             )
         )
 
-        Surface(
+        AppCard(
             modifier = Modifier
-                .fillMaxWidth()
-                .appCardShadow(shape = AppCardDefaults.shape),
-            shape = AppCardDefaults.shape,
-            color = MaterialTheme.colorScheme.surface,
-            border = AppCardDefaults.border()
+                .fillMaxWidth(),
+            shape = AppCardDefaults.shape
         ) {
             Column(modifier = Modifier.padding(vertical = Dimens.spacingSm)) {
                 SettingsItem(
