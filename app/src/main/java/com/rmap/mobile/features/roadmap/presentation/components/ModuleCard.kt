@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.detail.components
+package com.rmap.mobile.features.roadmap.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState

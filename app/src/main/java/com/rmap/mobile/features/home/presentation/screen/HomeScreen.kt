@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.home.presentation
+package com.rmap.mobile.features.home.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,14 +11,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.LocalFireDepartment
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.MaterialTheme
@@ -41,7 +37,6 @@ import com.rmap.mobile.core.ui.components.HighlightStatCardRow
 import com.rmap.mobile.core.ui.components.HighlightStatItemUiModel
 import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
-import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.RoadmapStatCardRow
 import com.rmap.mobile.core.ui.components.RoadmapStatItemUiModel
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
@@ -49,12 +44,12 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.home.presentation.components.LearningProgressCard
 import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapsHeader
+import com.rmap.mobile.features.home.presentation.viewmodel.HomeUiState
 
 @Composable
 fun HomeScreen(
-    userName: String,
+    uiState: HomeUiState,
     modifier: Modifier = Modifier,
-    progressFraction: Float = 0f,
     selectedDestination: NavBarDestination = NavBarDestination.Home,
     onHeaderActionClick: () -> Unit = {},
     onSeeAllClick: () -> Unit = {},
@@ -66,24 +61,24 @@ fun HomeScreen(
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
 
-    val greetingText = stringResource(R.string.home_greeting, userName)
+    val greetingText = stringResource(R.string.home_greeting, uiState.userName)
     val headingText = stringResource(R.string.home_heading_ready_to_learn)
 
     val highlightItems = listOf(
         HighlightStatItemUiModel(
-            valueText = stringResource(R.string.home_streak_value),
+            valueText = stringResource(R.string.home_streak_value, uiState.streakDays),
             labelText = stringResource(R.string.home_streak_label),
             icon = Icons.Outlined.LocalFireDepartment,
             style = HighlightStatCardDefaults.streakStyle()
         ),
         HighlightStatItemUiModel(
-            valueText = stringResource(R.string.home_goal_value),
+            valueText = stringResource(R.string.home_goal_value, uiState.todayGoalCompleted, uiState.todayGoalTotal),
             labelText = stringResource(R.string.home_goal_label),
             icon = Icons.Outlined.TrackChanges,
             style = HighlightStatCardDefaults.goalStyle()
         ),
         HighlightStatItemUiModel(
-            valueText = stringResource(R.string.home_completed_value),
+            valueText = uiState.completedRoadmaps.toString(),
             labelText = stringResource(R.string.home_completed_label),
             icon = Icons.Outlined.EmojiEvents,
             style = HighlightStatCardDefaults.completedStyle()
@@ -92,54 +87,19 @@ fun HomeScreen(
 
     val roadmapStats = listOf(
         RoadmapStatItemUiModel(
-            valueText = stringResource(R.string.home_roadmap_total_lessons_value),
+            valueText = uiState.totalLessons.toString(),
             labelText = stringResource(R.string.home_roadmap_total_lessons_label),
             icon = Icons.AutoMirrored.Outlined.MenuBook
         ),
         RoadmapStatItemUiModel(
-            valueText = stringResource(R.string.home_roadmap_completed_lessons_value),
+            valueText = uiState.completedLessons.toString(),
             labelText = stringResource(R.string.home_roadmap_completed_lessons_label),
             icon = Icons.Outlined.CheckCircle
         ),
         RoadmapStatItemUiModel(
-            valueText = stringResource(R.string.home_roadmap_remaining_lessons_value),
+            valueText = (uiState.totalLessons - uiState.completedLessons).coerceAtLeast(0).toString(),
             labelText = stringResource(R.string.home_roadmap_remaining_lessons_label),
             icon = Icons.Outlined.Schedule
-        )
-    )
-
-    val roadmapItems = listOf(
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_frontend_pro),
-            lessonsCount = 120,
-            difficultyLabel = stringResource(R.string.roadmap_level_expert),
-            difficulty = RoadmapDifficulty.Expert,
-            durationLabel = stringResource(R.string.home_roadmap_duration_3_months),
-            icon = Icons.Outlined.Code
-        ),
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_devops_specialist),
-            lessonsCount = 185,
-            difficultyLabel = stringResource(R.string.roadmap_level_beginner),
-            difficulty = RoadmapDifficulty.Beginner,
-            durationLabel = stringResource(R.string.home_roadmap_duration_6_months),
-            icon = Icons.Outlined.DataObject
-        ),
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_ui_ux_master),
-            lessonsCount = 96,
-            difficultyLabel = stringResource(R.string.roadmap_level_intermediate),
-            difficulty = RoadmapDifficulty.Intermediate,
-            durationLabel = stringResource(R.string.home_roadmap_duration_2_months),
-            icon = Icons.Outlined.Palette
-        ),
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_data_science),
-            lessonsCount = 240,
-            difficultyLabel = stringResource(R.string.roadmap_level_hard),
-            difficulty = RoadmapDifficulty.Hard,
-            durationLabel = stringResource(R.string.home_roadmap_duration_4_months),
-            icon = Icons.Outlined.Science
         )
     )
 
@@ -191,7 +151,9 @@ fun HomeScreen(
 
                 item {
                     LearningProgressCard(
-                        progressFraction = progressFraction,
+                        progressFraction = uiState.progressFraction,
+                        completedLessons = uiState.completedLessons,
+                        totalLessons = uiState.totalLessons,
                         onPrimaryIconClick = {}
                     )
                 }
@@ -207,7 +169,7 @@ fun HomeScreen(
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
                         TrendingRoadmapsHeader(onSeeAllClick = onSeeAllClick)
-                        roadmapItems.forEach { item ->
+                        uiState.trendingRoadmaps.forEach { item ->
                             RoadmapCard(
                                 item = item,
                                 onClick = onRoadmapClick?.let { callback ->
@@ -228,7 +190,16 @@ private fun HomeScreenPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         var selectedDestination by remember { mutableStateOf(NavBarDestination.Home) }
         HomeScreen(
-            userName = "Thinh",
+            uiState = HomeUiState(
+                userName = "Thinh",
+                progressFraction = 0.42f,
+                completedLessons = 45,
+                totalLessons = 107,
+                streakDays = 2,
+                todayGoalCompleted = 1,
+                todayGoalTotal = 3,
+                completedRoadmaps = 1
+            ),
             selectedDestination = selectedDestination,
             onDestinationSelected = { selectedDestination = it },
             onHeaderActionClick = {},

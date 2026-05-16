@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.bookmarks.presentation
+package com.rmap.mobile.features.bookmarks.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.MaterialTheme
@@ -26,24 +24,23 @@ import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
 import com.rmap.mobile.core.ui.components.AppNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTabSwitcher
 import com.rmap.mobile.features.bookmarks.presentation.components.CuratedPathsSection
 import com.rmap.mobile.features.bookmarks.presentation.components.FooterHint
 import com.rmap.mobile.core.ui.components.Header
-import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
-import com.rmap.mobile.core.ui.components.SkillStatus
+import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.SpecificSkillsSection
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.bookmarks.presentation.viewmodel.BookmarksUiState
 
 @Composable
 fun BookmarksScreen(
-    userName: String,
+    uiState: BookmarksUiState,
     modifier: Modifier = Modifier,
-    selectedTabIndex: Int = TAB_INDEX_ROADMAPS,
     selectedDestination: NavBarDestination = NavBarDestination.Bookmarks,
     onHeaderActionClick: () -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
@@ -55,55 +52,11 @@ fun BookmarksScreen(
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
 
-    val greetingText = stringResource(R.string.home_greeting, userName)
+    val greetingText = stringResource(R.string.home_greeting, uiState.userName)
     val headingText = stringResource(R.string.bookmarks_heading)
     val tabs = listOf(
         stringResource(R.string.bookmarks_tab_saved_roadmaps),
         stringResource(R.string.bookmarks_tab_saved_skills)
-    )
-
-    val roadmapItems = listOf(
-        BookmarkRoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_frontend_pro),
-            difficultyLabel = stringResource(R.string.roadmap_level_intermediate),
-            difficulty = RoadmapDifficulty.Intermediate,
-            durationLabel = stringResource(R.string.home_roadmap_duration_6_months),
-            actionLabel = stringResource(R.string.bookmarks_continue_path),
-            coverPlaceholderRes = R.drawable.bg_placeholder_fullstack
-        ),
-        BookmarkRoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_full_stack_development),
-            difficultyLabel = stringResource(R.string.roadmap_level_intermediate),
-            difficulty = RoadmapDifficulty.Intermediate,
-            durationLabel = stringResource(R.string.home_roadmap_duration_8_months),
-            actionLabel = stringResource(R.string.bookmarks_continue_path),
-            coverPlaceholderRes = R.drawable.bg_placeholder_fullstack
-        ),
-        BookmarkRoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_ui_ux_masterclass),
-            difficultyLabel = stringResource(R.string.roadmap_level_beginner),
-            difficulty = RoadmapDifficulty.Beginner,
-            durationLabel = stringResource(R.string.home_roadmap_duration_4_months),
-            actionLabel = stringResource(R.string.bookmarks_join_now),
-            coverPlaceholderRes = R.drawable.bg_placeholder_uiux
-        )
-    )
-
-    val skillItems = listOf(
-        SkillCardUiModel(
-            title = stringResource(R.string.skill_advanced_css_layouts),
-            parentPathName = stringResource(R.string.skill_parent_frontend_dev),
-            status = SkillStatus.IN_PROGRESS,
-            statusLabel = stringResource(R.string.bookmarks_status_in_progress),
-            icon = Icons.Outlined.Code
-        ),
-        SkillCardUiModel(
-            title = stringResource(R.string.skill_nosql_data_modeling),
-            parentPathName = stringResource(R.string.skill_parent_backend_systems),
-            status = SkillStatus.NOT_STARTED,
-            statusLabel = stringResource(R.string.bookmarks_status_not_started),
-            icon = Icons.Outlined.DataObject
-        )
     )
 
     Scaffold(
@@ -147,27 +100,27 @@ fun BookmarksScreen(
                 item {
                     BookmarkTabSwitcher(
                         tabs = tabs,
-                        selectedIndex = selectedTabIndex,
+                        selectedIndex = uiState.selectedTab.ordinal,
                         onTabSelected = onTabSelected
                     )
                 }
 
-                if (selectedTabIndex == TAB_INDEX_ROADMAPS) {
+                if (uiState.selectedTab == BookmarkTab.Roadmaps) {
                     item {
                         CuratedPathsSection(
-                            roadmapItems = roadmapItems,
-                            savedCount = roadmapItems.size,
+                            roadmapItems = uiState.roadmapItems,
+                            savedCount = uiState.roadmapItems.size,
                             onActionClick = onRoadmapActionClick,
                             onShareClick = onRoadmapShareClick
                         )
                     }
                 }
 
-                if (selectedTabIndex == TAB_INDEX_SKILLS) {
+                if (uiState.selectedTab == BookmarkTab.Skills) {
                     item {
                         SpecificSkillsSection(
-                            skillItems = skillItems,
-                            pinsCount = skillItems.size,
+                            skillItems = uiState.skillItems,
+                            pinsCount = uiState.skillItems.size,
                             onSkillClick = onSkillClick
                         )
                     }
@@ -187,7 +140,7 @@ private fun BookmarksScreenRoadmapsPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         var selectedDestination by remember { mutableStateOf(NavBarDestination.Bookmarks) }
         BookmarksScreen(
-            userName = "Thinh",
+            uiState = BookmarksUiState(userName = "Thinh"),
             selectedDestination = selectedDestination,
             onDestinationSelected = { selectedDestination = it },
             onHeaderActionClick = {}
@@ -207,7 +160,7 @@ private fun BookmarksScreenSkillsPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         var selectedDestination by remember { mutableStateOf(NavBarDestination.Bookmarks) }
         BookmarksScreen(
-            userName = "Thinh",
+            uiState = BookmarksUiState(userName = "Thinh", selectedTab = BookmarkTab.Skills),
             selectedDestination = selectedDestination,
             onDestinationSelected = { selectedDestination = it },
             onHeaderActionClick = {}

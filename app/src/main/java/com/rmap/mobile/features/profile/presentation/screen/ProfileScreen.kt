@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.profile.presentation
+package com.rmap.mobile.features.profile.presentation.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,19 +21,20 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.profile.presentation.components.ExperienceCard
 import com.rmap.mobile.features.profile.presentation.components.ProfileCard
 import com.rmap.mobile.features.profile.presentation.components.ProfileHeader
-import com.rmap.mobile.features.profile.presentation.components.SettingType
 import com.rmap.mobile.features.profile.presentation.components.SettingsSection
 import com.rmap.mobile.features.profile.presentation.components.StatsSection
+import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileSettingAction
+import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileUiState
 import com.rmap.mobile.navigation.NavBarDestination
 
 @Composable
 fun ProfileScreen(
     uiState: ProfileUiState,
     onEditProfile: () -> Unit,
-    onSettingClick: (SettingType) -> Unit,
+    onSettingClick: (ProfileSettingAction) -> Unit,
     onDestinationSelected: (NavBarDestination) -> Unit,
     modifier: Modifier = Modifier,
-    selectedDestination: NavBarDestination = NavBarDestination.More
+    selectedDestination: NavBarDestination = NavBarDestination.Profile
 ) {
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)

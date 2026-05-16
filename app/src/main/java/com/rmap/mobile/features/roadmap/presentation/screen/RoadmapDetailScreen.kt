@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.detail
+package com.rmap.mobile.features.roadmap.presentation.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,9 +18,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.DataObject
-import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -39,12 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
 import com.rmap.mobile.core.ui.components.AppNavigationBar
-import com.rmap.mobile.features.roadmap.presentation.detail.components.AiScholarTipCard
-import com.rmap.mobile.features.roadmap.presentation.detail.components.ModuleCard
-import com.rmap.mobile.features.roadmap.presentation.detail.components.ModuleCardUiModel
-import com.rmap.mobile.features.roadmap.presentation.detail.components.ModuleStatus
-import com.rmap.mobile.features.roadmap.presentation.detail.components.RoadmapHeroCard
-import com.rmap.mobile.features.roadmap.presentation.detail.components.SubLessonUiModel
+import com.rmap.mobile.features.roadmap.presentation.components.AiScholarTipCard
+import com.rmap.mobile.features.roadmap.presentation.components.ModuleCard
+import com.rmap.mobile.features.roadmap.presentation.components.RoadmapHeroCard
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailUiState
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.AppTextStyles
@@ -63,59 +58,6 @@ fun RoadmapDetailScreen(
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
     val interactionSource = remember { MutableInteractionSource() }
-
-    // Dummy data from Figma
-    val coreWebFundamentals = listOf(
-        ModuleCardUiModel(
-            title = stringResource(R.string.roadmap_detail_module_html_css),
-            status = ModuleStatus.COMPLETED,
-            progressPercent = 100,
-            icon = Icons.Outlined.Code,
-            subLessons = listOf(
-                SubLessonUiModel(
-                    stringResource(R.string.roadmap_detail_lesson_semantic_html),
-                    ModuleStatus.COMPLETED
-                ),
-                SubLessonUiModel(
-                    stringResource(R.string.roadmap_detail_lesson_css_flexbox_grid),
-                    ModuleStatus.COMPLETED
-                ),
-                SubLessonUiModel(
-                    stringResource(R.string.roadmap_detail_lesson_responsive_design),
-                    ModuleStatus.COMPLETED
-                )
-            )
-        ),
-        ModuleCardUiModel(
-            title = stringResource(R.string.roadmap_detail_module_javascript_basics),
-            status = ModuleStatus.IN_PROGRESS,
-            progressPercent = 45,
-            icon = Icons.Outlined.DataObject,
-            subLessons = listOf(
-                SubLessonUiModel(
-                    stringResource(R.string.roadmap_detail_lesson_es6_syntax),
-                    ModuleStatus.COMPLETED
-                ),
-                SubLessonUiModel(
-                    stringResource(R.string.roadmap_detail_lesson_async_js),
-                    ModuleStatus.IN_PROGRESS
-                ),
-                SubLessonUiModel(
-                    stringResource(R.string.roadmap_detail_lesson_dom_manipulation),
-                    ModuleStatus.LOCKED
-                )
-            )
-        )
-    )
-
-    val frameworkEcosystem = listOf(
-        ModuleCardUiModel(
-            title = stringResource(R.string.roadmap_detail_module_react_fundamentals),
-            status = ModuleStatus.LOCKED,
-            icon = Icons.Outlined.Storage,
-            subLessons = emptyList()
-        )
-    )
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -146,7 +88,6 @@ fun RoadmapDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
             ) {
                 item {
-                    // Back button
                     Box(
                         modifier = Modifier
                             .size(Dimens.controlSm)
@@ -177,37 +118,29 @@ fun RoadmapDetailScreen(
                     )
                 }
 
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
-                        SectionHeader(
-                            title = stringResource(R.string.roadmap_detail_section_core_web_fundamentals),
-                            dotColor = MaterialTheme.colorScheme.primary
-                        )
-                        coreWebFundamentals.forEach { module ->
-                            ModuleCard(item = module)
+                uiState.sections.forEachIndexed { index, section ->
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
+                            SectionHeader(
+                                title = section.title,
+                                dotColor = if (index == 0) MaterialTheme.colorScheme.primary else NeutralDisabledColor
+                            )
+                            section.modules.forEach { module ->
+                                ModuleCard(item = module)
+                            }
                         }
                     }
                 }
 
-                item {
-                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
-                        SectionHeader(
-                            title = stringResource(R.string.roadmap_detail_section_framework_ecosystem),
-                            dotColor = NeutralDisabledColor
+                uiState.aiTip?.let { tip ->
+                    item {
+                        Spacer(modifier = Modifier.height(Dimens.spacingSm))
+                        AiScholarTipCard(
+                            currentModule = tip.currentModule,
+                            recommendedTopic = tip.recommendedTopic,
+                            nextModule = tip.nextModule
                         )
-                        frameworkEcosystem.forEach { module ->
-                            ModuleCard(item = module)
-                        }
                     }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(Dimens.spacingSm))
-                    AiScholarTipCard(
-                        currentModule = stringResource(R.string.roadmap_detail_lesson_async_js),
-                        recommendedTopic = stringResource(R.string.roadmap_detail_topic_promises),
-                        nextModule = stringResource(R.string.roadmap_detail_lesson_dom_manipulation)
-                    )
                 }
             }
         }

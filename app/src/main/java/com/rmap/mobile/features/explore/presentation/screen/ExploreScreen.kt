@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.explore.presentation
+package com.rmap.mobile.features.explore.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,22 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.DataObject
-import androidx.compose.material.icons.outlined.Devices
-import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.Science
-import androidx.compose.material.icons.outlined.SmartToy
-import androidx.compose.material.icons.outlined.Storage
-import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
@@ -33,15 +23,8 @@ import com.rmap.mobile.core.ui.components.AppNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.Header
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
-import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
-import com.rmap.mobile.core.ui.theme.DifficultyExpertContentColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.ExploreBlueContainerColor
-import com.rmap.mobile.core.ui.theme.ExploreGreenContainerColor
-import com.rmap.mobile.core.ui.theme.ExplorePurpleContainerColor
-import com.rmap.mobile.core.ui.theme.ExploreRoseContainerColor
-import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.components.CategorySection
@@ -49,29 +32,14 @@ import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBar
 import com.rmap.mobile.features.explore.presentation.components.PopularRoadmapsSection
 import com.rmap.mobile.features.explore.presentation.components.RecommendedCard
 import com.rmap.mobile.features.explore.presentation.components.RecommendedSection
-
-data class CategoryUiModel(
-    val id: String,
-    val name: String,
-    val icon: ImageVector,
-    val backgroundColor: Color
-)
-
-data class RecommendedCardUiModel(
-    val id: String,
-    val title: String,
-    val badgeText: String,
-    val skillNodesCount: Int,
-    val level: String,
-    val imageUrl: String,
-    val accentColor: Color
-)
+import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
+import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreUiState
+import com.rmap.mobile.features.explore.presentation.viewmodel.RecommendedCardUiModel
 
 @Composable
 fun ExploreScreen(
-    userName: String,
+    uiState: ExploreUiState,
     modifier: Modifier = Modifier,
-    searchQuery: String = "",
     selectedDestination: NavBarDestination = NavBarDestination.Explore,
     onHeaderActionClick: () -> Unit = {},
     onFilterClick: () -> Unit = {},
@@ -85,95 +53,6 @@ fun ExploreScreen(
 ) {
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
-
-    val categories = listOf(
-        CategoryUiModel(
-            "frontend",
-            stringResource(R.string.explore_category_frontend),
-            Icons.Outlined.Code,
-            ExploreBlueContainerColor
-        ),
-        CategoryUiModel(
-            "backend",
-            stringResource(R.string.explore_category_backend),
-            Icons.Outlined.Storage,
-            NeutralSoftSurfaceColor
-        ),
-        CategoryUiModel(
-            "mobile",
-            stringResource(R.string.explore_category_mobile),
-            Icons.Outlined.Devices,
-            ExploreRoseContainerColor
-        ),
-        CategoryUiModel(
-            "devops",
-            stringResource(R.string.explore_category_devops),
-            Icons.Outlined.Terminal,
-            ExploreGreenContainerColor
-        ),
-        CategoryUiModel(
-            "ai",
-            stringResource(R.string.explore_category_ai),
-            Icons.Outlined.SmartToy,
-            ExplorePurpleContainerColor
-        )
-    )
-
-    val recommendedItems = listOf(
-        RecommendedCardUiModel(
-            "1",
-            stringResource(R.string.explore_recommended_react_nextjs),
-            stringResource(R.string.explore_badge_most_popular),
-            48,
-            stringResource(R.string.roadmap_level_expert),
-            "", // Placeholder
-            PrimaryLight
-        ),
-        RecommendedCardUiModel(
-            "2",
-            stringResource(R.string.explore_recommended_ai_engineering),
-            stringResource(R.string.explore_badge_career_path),
-            64,
-            stringResource(R.string.roadmap_level_advanced),
-            "", // Placeholder
-            DifficultyExpertContentColor
-        )
-    )
-
-    val popularRoadmaps = listOf(
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_frontend_pro),
-            lessonsCount = 120,
-            difficultyLabel = stringResource(R.string.roadmap_level_expert),
-            difficulty = RoadmapDifficulty.Expert,
-            durationLabel = stringResource(R.string.home_roadmap_duration_3_months),
-            icon = Icons.Outlined.Code
-        ),
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_devops_specialist),
-            lessonsCount = 185,
-            difficultyLabel = stringResource(R.string.roadmap_level_beginner),
-            difficulty = RoadmapDifficulty.Beginner,
-            durationLabel = stringResource(R.string.home_roadmap_duration_6_months),
-            icon = Icons.Outlined.DataObject
-        ),
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_ui_ux_master),
-            lessonsCount = 96,
-            difficultyLabel = stringResource(R.string.roadmap_level_intermediate),
-            difficulty = RoadmapDifficulty.Intermediate,
-            durationLabel = stringResource(R.string.home_roadmap_duration_2_months),
-            icon = Icons.Outlined.Palette
-        ),
-        RoadmapCardUiModel(
-            title = stringResource(R.string.home_roadmap_title_data_science),
-            lessonsCount = 240,
-            difficultyLabel = stringResource(R.string.roadmap_level_hard),
-            difficulty = RoadmapDifficulty.Hard,
-            durationLabel = stringResource(R.string.home_roadmap_duration_4_months),
-            icon = Icons.Outlined.Science
-        )
-    )
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -205,7 +84,7 @@ fun ExploreScreen(
             ) {
                 item {
                     Header(
-                        greetingText = stringResource(R.string.home_greeting, userName),
+                        greetingText = stringResource(R.string.home_greeting, uiState.userName),
                         headingText = stringResource(R.string.explore_title),
                         greetingIcon = Icons.Outlined.WbSunny,
                         actionIcon = Icons.Outlined.School,
@@ -216,7 +95,7 @@ fun ExploreScreen(
 
                 item {
                     ExploreSearchBar(
-                        query = searchQuery,
+                        query = uiState.searchQuery,
                         onQueryChange = onSearchQueryChange,
                         onFilterClick = onFilterClick,
                         modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
@@ -225,7 +104,7 @@ fun ExploreScreen(
 
                 item {
                     CategorySection(
-                        categories = categories,
+                        categories = uiState.categories,
                         onCategoryClick = onCategoryClick,
                         onViewAllClick = onViewAllCategoriesClick
                     )
@@ -233,14 +112,14 @@ fun ExploreScreen(
 
                 item {
                     RecommendedSection(
-                        items = recommendedItems,
+                        items = uiState.recommendedItems,
                         onItemClick = onRecommendedClick
                     )
                 }
 
                 item {
                     PopularRoadmapsSection(
-                        roadmaps = popularRoadmaps,
+                        roadmaps = uiState.popularRoadmaps,
                         onRoadmapClick = onRoadmapClick,
                         onSeeAllClick = onSeeAllPopularClick,
                         modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
@@ -257,7 +136,7 @@ fun ExploreScreen(
 @Composable
 private fun ExploreScreenLightPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        ExploreScreen(userName = "Minh")
+        ExploreScreen(uiState = ExploreUiState(userName = "Minh"))
     }
 }
 
@@ -265,7 +144,7 @@ private fun ExploreScreenLightPreview() {
 @Composable
 private fun ExploreScreenDarkPreview() {
     RMapTheme(darkTheme = true, dynamicColor = false) {
-        ExploreScreen(userName = "Minh")
+        ExploreScreen(uiState = ExploreUiState(userName = "Minh"))
     }
 }
 

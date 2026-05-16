@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.auth.presentation
+package com.rmap.mobile.features.auth.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
