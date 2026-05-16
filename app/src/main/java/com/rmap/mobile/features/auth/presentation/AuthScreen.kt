@@ -39,6 +39,7 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.FilledTonalButton
 import com.rmap.mobile.core.ui.theme.AuthHeroPlaceholderColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -73,9 +74,12 @@ fun AuthScreen(
                 .fillMaxHeight(0.58f)
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding(),
-            shape = RoundedCornerShape(topStart = 48.dp, topEnd = 48.dp),
+            shape = RoundedCornerShape(
+                topStart = Dimens.spacingMassive,
+                topEnd = Dimens.spacingMassive
+            ),
             color = MaterialTheme.colorScheme.background,
-            shadowElevation = 12.dp
+            shadowElevation = Dimens.cardElevationMdPlus
         ) {
             AuthFormSection(
                 onContinueWithGoogle = onContinueWithGoogle,
@@ -83,7 +87,7 @@ fun AuthScreen(
                 showSocialIcons = !isPreview,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 32.dp, vertical = 48.dp)
+                    .padding(horizontal = Dimens.spacingHuge, vertical = Dimens.spacingMassive)
             )
         }
     }
@@ -134,9 +138,9 @@ private fun AuthFormSection(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(28.dp)
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxxl)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)) {
             Text(
                 text = stringResource(id = R.string.auth_heading_continue_account),
                 style = MaterialTheme.typography.headlineSmall.copy(
@@ -154,7 +158,7 @@ private fun AuthFormSection(
             )
         }
 
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
             FilledTonalButton(
                 text = stringResource(id = R.string.button_continue_with_google),
                 onClick = onContinueWithGoogle,
@@ -178,7 +182,7 @@ private fun AuthFormSection(
                 onClick = onContinueWithFacebook,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp)),
+                    .clip(RoundedCornerShape(Dimens.cardRadiusMd)),
                 leadingIcon = if (showSocialIcons) {
                     {
                         Icon(
@@ -194,7 +198,7 @@ private fun AuthFormSection(
             )
         }
 
-        Spacer(modifier = Modifier.height(1.dp))
+        Spacer(modifier = Modifier.height(Dimens.borderThin))
     }
 }
 

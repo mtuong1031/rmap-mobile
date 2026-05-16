@@ -26,7 +26,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
@@ -35,11 +34,12 @@ import com.rmap.mobile.core.ui.theme.AccentPurpleColor
 import com.rmap.mobile.core.ui.theme.AiTipContainerEndColor
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardShadowSoftColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralTextBodyColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val AiScholarTipCardShape = RoundedCornerShape(24.dp)
+private val AiScholarTipCardShape = RoundedCornerShape(Dimens.cardRadiusXl)
 
 @Composable
 fun AiScholarTipCard(
@@ -75,17 +75,17 @@ fun AiScholarTipCard(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
                 shape = AiScholarTipCardShape
             )
-            .padding(20.dp)
+            .padding(Dimens.spacingXl)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(34.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .size(Dimens.aiIconContainerSize)
+                        .clip(RoundedCornerShape(Dimens.cardRadiusSm))
                         .background(Brush.linearGradient(colors = gradientColors)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -93,7 +93,7 @@ fun AiScholarTipCard(
                         imageVector = Icons.Outlined.AutoAwesome,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(Dimens.iconSm)
                     )
                 }
 
@@ -138,7 +138,7 @@ fun AiScholarTipCard(
 @Composable
 private fun AiScholarTipCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             AiScholarTipCard(
                 currentModule = "Asynchronous JS",
                 recommendedTopic = "Promises",

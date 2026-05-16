@@ -41,12 +41,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardDividerColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
 import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
@@ -91,16 +91,16 @@ fun ModuleCard(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(Dimens.cardRadiusXl),
         color = cardBg,
         border = AppCardDefaults.border(
             color = if (isLocked) AppCardDefaults.borderColor.copy(alpha = 0.5f) else AppCardDefaults.borderColor
         ),
-        shadowElevation = if (isLocked) 0.dp else AppCardDefaults.shadowElevation,
-        tonalElevation = 0.dp
+        shadowElevation = if (isLocked) Dimens.cardElevationNone else AppCardDefaults.shadowElevation,
+        tonalElevation = Dimens.cardElevationNone
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(Dimens.spacingLg)
         ) {
             Row(
                 modifier = Modifier
@@ -114,18 +114,18 @@ fun ModuleCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Icon Box
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
-                            .background(iconBg, RoundedCornerShape(16.dp))
+                            .size(Dimens.controlLg)
+                            .background(iconBg, RoundedCornerShape(Dimens.cardRadiusMd))
                             .border(
-                                width = 1.dp,
+                                width = Dimens.borderThin,
                                 color = if (isLocked) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(Dimens.cardRadiusMd)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -133,12 +133,12 @@ fun ModuleCard(
                             imageVector = item.icon,
                             contentDescription = null,
                             tint = iconTint,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimens.iconLg)
                         )
                     }
 
                     // Texts
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)) {
                         Text(
                             text = item.title,
                             style = MaterialTheme.typography.titleMedium.copy(
@@ -175,7 +175,7 @@ fun ModuleCard(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
                         tint = NeutralDisabledColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(Dimens.iconLg)
                     )
                 } else {
                     Icon(
@@ -183,7 +183,7 @@ fun ModuleCard(
                         contentDescription = null,
                         tint = NeutralDisabledColor,
                         modifier = Modifier
-                            .size(24.dp)
+                            .size(Dimens.iconLg)
                             .rotate(rotation)
                     )
                 }
@@ -191,7 +191,7 @@ fun ModuleCard(
 
             AnimatedVisibility(visible = isExpanded && !isLocked) {
                 Column(
-                    modifier = Modifier.padding(top = 16.dp, start = 6.dp)
+                    modifier = Modifier.padding(top = Dimens.spacingLg, start = Dimens.spacingXsPlus)
                 ) {
                     item.subLessons.forEachIndexed { index, lesson ->
                         Row(
@@ -201,17 +201,17 @@ fun ModuleCard(
                             // Timeline connection
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.width(20.dp)
+                                modifier = Modifier.width(Dimens.iconMd)
                             ) {
                                 if (index > 0) {
                                     Box(
                                         modifier = Modifier
-                                            .width(2.dp)
-                                            .height(16.dp)
+                                            .width(Dimens.spacingXxs)
+                                            .height(Dimens.spacingLg)
                                             .background(BackgroundLight)
                                     )
                                 } else {
-                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.spacingLg))
                                 }
 
                                 // Status Indicator
@@ -220,7 +220,7 @@ fun ModuleCard(
                                         ModuleStatus.COMPLETED -> {
                                             Box(
                                                 modifier = Modifier
-                                                    .size(20.dp)
+                                                    .size(Dimens.iconMd)
                                                     .clip(CircleShape)
                                                     .background(MaterialTheme.colorScheme.primary),
                                                 contentAlignment = Alignment.Center
@@ -229,21 +229,21 @@ fun ModuleCard(
                                                         imageVector = Icons.Default.Check,
                                                         contentDescription = null,
                                                         tint = MaterialTheme.colorScheme.onPrimary,
-                                                        modifier = Modifier.size(12.dp)
+                                                        modifier = Modifier.size(Dimens.iconXxs)
                                                     )
                                             }
                                         }
                                         ModuleStatus.IN_PROGRESS -> {
                                             Box(
                                                 modifier = Modifier
-                                                    .size(20.dp)
+                                                    .size(Dimens.iconMd)
                                                     .clip(CircleShape)
-                                                    .border(2.5.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                                                    .border(Dimens.borderProgress, MaterialTheme.colorScheme.primary, CircleShape),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Box(
                                                     modifier = Modifier
-                                                        .size(10.dp)
+                                                        .size(Dimens.spacingSmPlus)
                                                         .clip(CircleShape)
                                                         .background(MaterialTheme.colorScheme.primary)
                                                 )
@@ -252,7 +252,7 @@ fun ModuleCard(
                                         ModuleStatus.LOCKED -> {
                                             Box(
                                                 modifier = Modifier
-                                                    .size(20.dp)
+                                                    .size(Dimens.iconMd)
                                                     .clip(CircleShape)
                                                     .background(CardDividerColor),
                                                 contentAlignment = Alignment.Center
@@ -261,7 +261,7 @@ fun ModuleCard(
                                                     imageVector = Icons.Default.Lock,
                                                     contentDescription = null,
                                                     tint = NeutralDisabledColor,
-                                                    modifier = Modifier.size(10.dp)
+                                                    modifier = Modifier.size(Dimens.spacingSmPlus)
                                                 )
                                             }
                                         }
@@ -271,16 +271,16 @@ fun ModuleCard(
                                 if (index < item.subLessons.size - 1) {
                                     Box(
                                         modifier = Modifier
-                                            .width(2.dp)
-                                            .height(16.dp)
+                                            .width(Dimens.spacingXxs)
+                                            .height(Dimens.spacingLg)
                                             .background(BackgroundLight)
                                     )
                                 } else {
-                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.spacingLg))
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(16.dp))
+                            Spacer(modifier = Modifier.width(Dimens.spacingLg))
 
                             Text(
                                 text = lesson.title,
@@ -302,7 +302,7 @@ fun ModuleCard(
 @Composable
 private fun ModuleCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(Dimens.spacingLg)) {
             ModuleCard(
                 item = ModuleCardUiModel(
                     title = "JavaScript Basics",

@@ -22,10 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -44,17 +44,17 @@ fun ExperienceCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp),
+                .padding(horizontal = Dimens.spacingXl, vertical = Dimens.spacingXl),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(52.dp)
+                        .size(Dimens.profileExperienceIconContainerSize)
                         .background(
                             color = ProfileIconContainerColor,
                             shape = CircleShape
@@ -65,11 +65,11 @@ fun ExperienceCard(
                         imageVector = Icons.Outlined.WorkspacePremium,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(Dimens.iconLg)
                     )
                 }
 
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)) {
                     Text(
                         text = stringResource(id = R.string.profile_total_experience_label),
                         style = MaterialTheme.typography.labelSmall.copy(
@@ -92,7 +92,7 @@ fun ExperienceCard(
                 imageVector = Icons.Outlined.AutoGraph,
                 contentDescription = stringResource(id = R.string.profile_experience_trending_content_description),
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f),
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(Dimens.iconMd)
             )
         }
     }

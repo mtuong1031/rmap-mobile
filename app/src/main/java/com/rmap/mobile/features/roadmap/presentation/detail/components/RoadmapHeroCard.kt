@@ -25,15 +25,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val RoadmapHeroCardShape = RoundedCornerShape(28.dp)
+private val RoadmapHeroCardShape = RoundedCornerShape(Dimens.cardRadiusXxl)
 
 @Composable
 fun RoadmapHeroCard(
@@ -58,38 +58,38 @@ fun RoadmapHeroCard(
                 color = MaterialTheme.colorScheme.primary,
                 shape = RoadmapHeroCardShape
             )
-            .padding(22.dp)
+            .padding(Dimens.spacingXlPlus)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
                 ) {
                     // Chapter Tag
                     Row(
                         modifier = Modifier
                             .background(
                                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(10.dp)
+                                shape = RoundedCornerShape(Dimens.radiusSm)
                             )
                             .border(
-                                width = 1.dp,
+                                width = Dimens.borderThin,
                                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(10.dp)
+                                shape = RoundedCornerShape(Dimens.radiusSm)
                             )
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXsPlus),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.AutoGraph,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(Dimens.iconXs)
                         )
                         Text(
                             text = stringResource(R.string.roadmap_detail_chapter_tag).uppercase(),
@@ -115,20 +115,20 @@ fun RoadmapHeroCard(
 
                 // Circular Progress
                 Box(
-                    modifier = Modifier.size(76.dp),
+                    modifier = Modifier.size(Dimens.progressIndicatorLg),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
                         progress = { progressFraction },
-                        modifier = Modifier.size(76.dp),
+                        modifier = Modifier.size(Dimens.progressIndicatorLg),
                         color = MaterialTheme.colorScheme.onPrimary,
                         trackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                        strokeWidth = 6.dp
+                        strokeWidth = Dimens.progressStroke
                     )
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
                     ) {
                         Text(
                             text = stringResource(
@@ -154,7 +154,7 @@ fun RoadmapHeroCard(
             }
 
             // Bottom Progress Bar section
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmPlus)) {
                 Text(
                     text = stringResource(
                         R.string.roadmap_detail_lessons_completed,
@@ -185,7 +185,7 @@ fun RoadmapHeroCard(
 @Composable
 private fun RoadmapHeroCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             RoadmapHeroCard(
                 title = "Frontend Pro",
                 progressFraction = 0.75f,

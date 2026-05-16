@@ -35,7 +35,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.CardDividerColor
@@ -43,6 +42,7 @@ import com.rmap.mobile.core.ui.theme.CardPrimaryGlowBareColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowFaintColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowMediumColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowSoftColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.NeutralDisabledTextColor
 import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
@@ -52,8 +52,8 @@ import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val SkillCardShape = AppCardDefaults.shape
-private val SkillIconFrameShape = RoundedCornerShape(24.dp)
-private val SkillIconContainerShape = RoundedCornerShape(18.dp)
+private val SkillIconFrameShape = RoundedCornerShape(Dimens.cardRadiusXl)
+private val SkillIconContainerShape = RoundedCornerShape(Dimens.cardRadiusMdPlus)
 
 enum class SkillStatus(
     val backgroundColor: Color,
@@ -95,19 +95,19 @@ fun SkillCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(18.dp)
+                    .padding(Dimens.spacingXl),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingLgPlus)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     SkillIconFrame(icon = item.icon)
 
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)
                     ) {
                         Text(
                             text = item.title,
@@ -125,7 +125,7 @@ fun SkillCard(
                 }
 
                 HorizontalDivider(
-                    thickness = 1.dp,
+                    thickness = Dimens.borderThin,
                     color = CardDividerColor
                 )
 
@@ -143,16 +143,16 @@ fun SkillCard(
                         imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                         contentDescription = null,
                         tint = NeutralDisabledColor,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(Dimens.iconMdPlus)
                     )
                 }
             }
 
             Box(
                 modifier = Modifier
-                    .offset(x = 225.dp, y = (-63).dp)
-                    .size(180.dp)
-                    .blur(radius = 48.dp)
+                    .offset(x = Dimens.cardGlowOffsetX, y = Dimens.cardGlowOffsetY)
+                    .size(Dimens.cardGlowSize)
+                    .blur(radius = Dimens.cardGlowBlur)
                     .background(
                         brush = Brush.radialGradient(
                         colors = listOf(
@@ -172,13 +172,13 @@ fun SkillCard(
 private fun SkillIconFrame(icon: ImageVector) {
     Box(
         modifier = Modifier
-            .size(72.dp)
+            .size(Dimens.iconFrameSize)
             .border(
-                width = 2.dp,
+                width = Dimens.borderMedium,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 shape = SkillIconFrameShape
             )
-            .padding(5.dp),
+            .padding(Dimens.iconFramePadding),
         contentAlignment = Alignment.Center
     ) {
         Box(
@@ -199,7 +199,7 @@ private fun SkillIconFrame(icon: ImageVector) {
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(Dimens.iconXxl)
             )
         }
     }
@@ -247,7 +247,7 @@ private fun StatusBadge(
                 color = status.backgroundColor,
                 shape = CircleShape
             )
-            .padding(horizontal = 14.dp, vertical = 6.dp),
+            .padding(horizontal = Dimens.spacingMdPlus, vertical = Dimens.spacingXsPlus),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -269,8 +269,8 @@ private fun StatusBadge(
 private fun SkillCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(Dimens.spacingLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             SkillCard(
                 item = SkillCardUiModel(

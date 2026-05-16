@@ -32,8 +32,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -53,7 +53,7 @@ fun BookmarkTabSwitcher(
         val density = LocalDensity.current
         val tabWidth = with(density) { (constraints.maxWidth / tabCount).toDp() }
 
-        val indicatorWidth = 60.dp
+        val indicatorWidth = Dimens.bookmarkTabIndicatorWidth
 
         val indicatorOffset by animateDpAsState(
             targetValue = (tabWidth * selectedIndex) + (tabWidth / 2) - (indicatorWidth / 2),
@@ -89,7 +89,7 @@ fun BookmarkTabSwitcher(
                             indication = null,
                             onClick = { onTabSelected(index) }
                         )
-                        .padding(vertical = 16.dp, horizontal = 4.dp),
+                        .padding(vertical = Dimens.spacingLg, horizontal = Dimens.spacingXs),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -109,10 +109,10 @@ fun BookmarkTabSwitcher(
 
         Box(
             modifier = Modifier
-                .padding(bottom = 6.dp)
+                .padding(bottom = Dimens.spacingXsPlus)
                 .offset(x = indicatorOffset)
                 .width(indicatorWidth)
-                .height(4.dp)
+                .height(Dimens.spacingXs)
                 .clip(RoundedCornerShape(50))
                 .background(PrimaryLight)
         )
@@ -128,7 +128,7 @@ private fun BookmarkTabSwitcherPreview() {
             tabs = listOf("Saved Roadmaps", "Saved Skills"),
             selectedIndex = selectedIndex,
             onTabSelected = { selectedIndex = it },
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(Dimens.spacingLg)
         )
     }
 }

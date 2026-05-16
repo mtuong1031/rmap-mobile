@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.AccentBlueColor
 import com.rmap.mobile.core.ui.theme.AccentCyanColor
 import com.rmap.mobile.core.ui.theme.AccentPurpleGlowColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -54,8 +55,8 @@ fun BackgroundDecorator(
     ) {
         SoftGlow(
             offsetX = 129.dp,
-            offsetY = 0.dp,
-            size = 320.dp,
+            offsetY = Dimens.spacingNone,
+            size = Dimens.backgroundGlowSizeLg,
             tint = AccentBlueColor,
             alpha = 0.15f
         )
@@ -69,7 +70,7 @@ fun BackgroundDecorator(
         SoftGlow(
             offsetX = 168.dp,
             offsetY = 1232.78906.dp,
-            size = 320.dp,
+            size = Dimens.backgroundGlowSizeLg,
             tint = AccentCyanColor,
             alpha = 0.15f
         )
@@ -88,7 +89,7 @@ private fun SoftGlow(
         modifier = Modifier
             .offset(x = offsetX, y = offsetY)
             .size(size)
-            .blur(radius = 190.dp)
+            .blur(radius = Dimens.backgroundGlowBlur)
             .background(
                 brush = Brush.radialGradient(
                     colors = listOf(

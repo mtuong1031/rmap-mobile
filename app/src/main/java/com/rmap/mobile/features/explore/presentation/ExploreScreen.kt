@@ -55,7 +55,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
@@ -67,6 +66,7 @@ import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.DifficultyExpertContentColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ExploreBlueContainerColor
 import com.rmap.mobile.core.ui.theme.ExploreGreenContainerColor
 import com.rmap.mobile.core.ui.theme.ExplorePurpleContainerColor
@@ -226,12 +226,12 @@ fun ExploreScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 0.dp,
-                    end = 0.dp,
-                    top = 72.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 72.dp
+                    start = Dimens.spacingNone,
+                    end = Dimens.spacingNone,
+                    top = Dimens.spacingScreenTop,
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottom
                 ),
-                verticalArrangement = Arrangement.spacedBy(32.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingHuge)
             ) {
                 item {
                     Header(
@@ -240,7 +240,7 @@ fun ExploreScreen(
                         greetingIcon = Icons.Outlined.WbSunny,
                         actionIcon = Icons.Outlined.School,
                         onActionClick = onHeaderActionClick,
-                        modifier = Modifier.padding(horizontal = 24.dp)
+                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
                     )
                 }
 
@@ -249,7 +249,7 @@ fun ExploreScreen(
                         query = searchQuery,
                         onQueryChange = onSearchQueryChange,
                         onFilterClick = onFilterClick,
-                        modifier = Modifier.padding(horizontal = 24.dp)
+                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
                     )
                 }
 
@@ -273,7 +273,7 @@ fun ExploreScreen(
                         roadmaps = popularRoadmaps,
                         onRoadmapClick = onRoadmapClick,
                         onSeeAllClick = onSeeAllPopularClick,
-                        modifier = Modifier.padding(horizontal = 24.dp)
+                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
                     )
                 }
             }
@@ -303,7 +303,7 @@ private fun ExploreScreenDarkPreview() {
 @Composable
 private fun SearchBarPreview() {
     RMapTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             ExploreSearchBar(
                 query = "",
                 onQueryChange = {},
@@ -317,7 +317,7 @@ private fun SearchBarPreview() {
 @Composable
 private fun RecommendedCardPreview() {
     RMapTheme {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             RecommendedCard(
                 item = RecommendedCardUiModel(
                     "1",

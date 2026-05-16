@@ -26,16 +26,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.HeadingTextColor
 import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val LearningProgressCardShape = RoundedCornerShape(28.dp)
+private val LearningProgressCardShape = RoundedCornerShape(Dimens.cardRadiusXxl)
 
 @Composable
 fun LearningProgressCard(
@@ -61,21 +61,26 @@ fun LearningProgressCard(
                 color = MaterialTheme.colorScheme.primaryContainer,
                 shape = LearningProgressCardShape
             )
-            .padding(start = 22.dp, top = 22.dp, end = 22.dp, bottom = 22.dp)
+            .padding(
+                start = Dimens.spacingXlPlus,
+                top = Dimens.spacingXlPlus,
+                end = Dimens.spacingXlPlus,
+                bottom = Dimens.spacingXlPlus
+            )
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMdPlus)) {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(Dimens.controlLg)
                             .background(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(14.dp)
+                                shape = RoundedCornerShape(Dimens.cardRadiusSmPlus)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -83,13 +88,13 @@ fun LearningProgressCard(
                             imageVector = Icons.Outlined.AutoGraph,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimens.iconLg)
                         )
                     }
 
                     Column(
-                        modifier = Modifier.padding(top = 2.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        modifier = Modifier.padding(top = Dimens.spacingXxs),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
                     ) {
                         Text(
                             text = stringResource(R.string.home_progress_title_line_1),
@@ -123,7 +128,7 @@ fun LearningProgressCard(
 
                 Box(
                     modifier = Modifier
-                        .size(76.dp)
+                        .size(Dimens.progressIndicatorLg)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,
@@ -137,15 +142,15 @@ fun LearningProgressCard(
                 ) {
                     CircularProgressIndicator(
                         progress = { normalizedProgress },
-                        modifier = Modifier.size(76.dp),
+                        modifier = Modifier.size(Dimens.progressIndicatorLg),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f),
-                        strokeWidth = 6.dp
+                        strokeWidth = Dimens.progressStroke
                     )
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
                     ) {
                         Text(
                             text = stringResource(
@@ -172,7 +177,7 @@ fun LearningProgressCard(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)) {
                 Text(
                     text = stringResource(R.string.home_progress_percent_complete, progressPercent),
                     style = MaterialTheme.typography.headlineSmall.copy(
@@ -226,8 +231,8 @@ fun TrendingRoadmapsHeader(
                     indication = null,
                     onClick = onSeeAllClick
                 )
-                .background(Color.Transparent, RoundedCornerShape(8.dp))
-                .padding(horizontal = 2.dp),
+                .background(Color.Transparent, RoundedCornerShape(Dimens.spacingSm))
+                .padding(horizontal = Dimens.spacingXxs),
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -242,7 +247,7 @@ fun TrendingRoadmapsHeader(
 @Composable
 private fun LearningProgressCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             LearningProgressCard(progressFraction = 0.42f, onPrimaryIconClick = {})
         }
     }

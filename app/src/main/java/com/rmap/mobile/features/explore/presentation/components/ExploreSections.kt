@@ -50,13 +50,14 @@ import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.CardShadowSubtleColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.RecommendedCardUiModel
 
-private val ExploreSearchBarShape = RoundedCornerShape(20.dp)
-private val RecommendedCardShape = RoundedCornerShape(24.dp)
+private val ExploreSearchBarShape = RoundedCornerShape(Dimens.cardRadiusLg)
+private val RecommendedCardShape = RoundedCornerShape(Dimens.cardRadiusXl)
 
 @Composable
 fun ExploreSearchBar(
@@ -81,14 +82,14 @@ fun ExploreSearchBar(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = Dimens.spacingLg),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Outlined.Search,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(Dimens.iconLg)
             )
             
             TextField(
@@ -115,8 +116,8 @@ fun ExploreSearchBar(
 
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(Dimens.controlSm)
+                    .clip(RoundedCornerShape(Dimens.cardRadiusSm))
                     .clickable(onClick = onFilterClick)
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
@@ -125,7 +126,7 @@ fun ExploreSearchBar(
                     imageVector = Icons.Outlined.FilterList,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(Dimens.iconMd)
                 )
             }
         }
@@ -143,7 +144,7 @@ fun CategorySection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = Dimens.spacingScreenHorizontalWide),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -164,11 +165,11 @@ fun CategorySection(
             )
         }
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(Dimens.spacingLg))
 
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(horizontal = Dimens.spacingScreenHorizontalWide),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             items(categories) { category ->
                 CategoryItem(category = category, onClick = { onCategoryClick(category) })
@@ -184,7 +185,7 @@ private fun CategoryItem(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
         modifier = Modifier.clickable(
             interactionSource = remember { MutableInteractionSource() },
             indication = null,
@@ -193,16 +194,16 @@ private fun CategoryItem(
     ) {
         Box(
             modifier = Modifier
-                .size(64.dp)
+                .size(Dimens.categoryIconContainerSize)
                 .background(category.backgroundColor, CircleShape)
-                .border(1.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                .border(Dimens.borderThin, MaterialTheme.colorScheme.surface, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = category.icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(Dimens.iconXl)
             )
         }
         Text(
@@ -224,18 +225,18 @@ fun RecommendedSection(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.explore_recommended_title),
-            modifier = Modifier.padding(horizontal = 24.dp),
+            modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide),
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(Dimens.spacingLg))
 
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(horizontal = Dimens.spacingScreenHorizontalWide),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             items(items) { item ->
                 RecommendedCard(item = item, onClick = { onItemClick(item) })
@@ -290,16 +291,16 @@ fun RecommendedCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
+                .padding(Dimens.spacingXl),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Surface(
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(10.dp)
+                shape = RoundedCornerShape(Dimens.radiusSm)
             ) {
                 Text(
                     text = item.badgeText,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = Dimens.spacingSmPlus, vertical = Dimens.spacingXsPlus),
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -308,7 +309,7 @@ fun RecommendedCard(
                 )
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)) {
                 Text(
                     text = item.title,
                     style = MaterialTheme.typography.titleLarge.copy(
@@ -323,9 +324,9 @@ fun RecommendedCard(
                         imageVector = Icons.Outlined.WbSunny,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(Dimens.iconXs)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(Dimens.spacingXsPlus))
                     Text(
                         text = stringResource(R.string.explore_card_stats, item.skillNodesCount, item.level),
                         style = MaterialTheme.typography.labelMedium.copy(
@@ -347,7 +348,7 @@ fun PopularRoadmapsSection(
     onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -384,7 +385,7 @@ fun PopularRoadmapsSection(
 @Composable
 private fun ExploreSearchBarPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             ExploreSearchBar(query = "", onQueryChange = {}, onFilterClick = {})
         }
     }
@@ -394,7 +395,7 @@ private fun ExploreSearchBarPreview() {
 @Composable
 private fun RecommendedCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        Box(modifier = Modifier.padding(16.dp)) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             RecommendedCard(
                 item = RecommendedCardUiModel(
                     id = "frontend",

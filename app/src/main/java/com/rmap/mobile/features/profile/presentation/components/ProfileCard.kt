@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.theme.Dimens
 import coil.compose.AsyncImage
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.Neutral900Color
@@ -62,19 +62,19 @@ fun ProfileCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(128.dp)
+                    .size(Dimens.profileAvatarSize)
                     .shadow(
-                        elevation = 20.dp,
-                        shape = RoundedCornerShape(32.dp),
+                        elevation = Dimens.cardElevationLg,
+                        shape = RoundedCornerShape(Dimens.cardRadiusHuge),
                         ambientColor = PrimaryAvatarShadowColor,
                         spotColor = PrimaryAvatarShadowColor
                     )
                     .border(
-                        width = 4.dp,
+                        width = Dimens.borderThick,
                         color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(32.dp)
+                        shape = RoundedCornerShape(Dimens.cardRadiusHuge)
                     )
-                    .clip(RoundedCornerShape(32.dp))
+                    .clip(RoundedCornerShape(Dimens.cardRadiusHuge))
                     .background(Neutral900Color)
             ) {
                 // Replacing SubcomposeAsyncImage with AsyncImage to resolve NoClassDefFoundError in Preview.
@@ -99,14 +99,14 @@ fun ProfileCard(
 
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(Dimens.profileEditButtonSize)
                     .graphicsLayer {
                         scaleX = scale
                         scaleY = scale
                     }
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)
-                    .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                    .border(Dimens.borderMedium, MaterialTheme.colorScheme.surface, CircleShape)
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
@@ -118,12 +118,12 @@ fun ProfileCard(
                     imageVector = Icons.Outlined.Edit,
                     contentDescription = stringResource(id = R.string.profile_edit_avatar_content_description),
                     tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(Dimens.iconSmPlus)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(Dimens.spacingMdPlus))
 
         Text(
             text = name,
@@ -136,7 +136,7 @@ fun ProfileCard(
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(Dimens.spacingXs))
 
         Text(
             text = role,
@@ -158,7 +158,7 @@ private fun AvatarPlaceholder() {
             imageVector = Icons.Outlined.Person,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier.size(Dimens.controlLg)
         )
     }
 }

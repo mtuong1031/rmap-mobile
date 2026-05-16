@@ -54,12 +54,13 @@ import com.rmap.mobile.core.ui.theme.CardShadowOverlayColor
 import com.rmap.mobile.core.ui.theme.CoverPreviewSurfaceColor
 import com.rmap.mobile.core.ui.theme.CoverScrimColor
 import com.rmap.mobile.core.ui.theme.CoverSurfaceColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDividerDotColor
 import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val BookmarkRoadmapCardShape = AppCardDefaults.shape
-private val BookmarkShareButtonShape = RoundedCornerShape(16.dp)
+private val BookmarkShareButtonShape = RoundedCornerShape(Dimens.cardRadiusMd)
 private val CoverHeight = 150.dp
 
 data class BookmarkRoadmapCardUiModel(
@@ -102,9 +103,9 @@ fun BookmarkRoadmapCard(
 
         Box(
             modifier = Modifier
-                .offset(x = 225.dp, y = (-63).dp)
-                .size(180.dp)
-                .blur(radius = 48.dp)
+                .offset(x = Dimens.cardGlowOffsetX, y = Dimens.cardGlowOffsetY)
+                .size(Dimens.cardGlowSize)
+                .blur(radius = Dimens.cardGlowBlur)
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
@@ -167,11 +168,11 @@ private fun CoverImageSection(
                 onClick = onBookmarkClick,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 16.dp)
-                    .size(44.dp)
+                    .padding(top = Dimens.spacingLg, end = Dimens.spacingLg)
+                    .size(Dimens.controlMd)
                     .shadow(
-                        elevation = 10.dp,
-                        shape = RoundedCornerShape(14.dp),
+                        elevation = Dimens.cardElevationMd,
+                        shape = RoundedCornerShape(Dimens.cardRadiusSmPlus),
                         spotColor = CardShadowOverlayColor,
                         ambientColor = CardShadowOverlayColor
                     ),
@@ -183,7 +184,7 @@ private fun CoverImageSection(
                     imageVector = Icons.Outlined.Bookmark,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(Dimens.iconMdPlus)
                 )
             }
         }
@@ -199,11 +200,11 @@ private fun ContentSection(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp)
+            .padding(Dimens.spacingXxl)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             Text(
                 text = item.title,
@@ -217,16 +218,16 @@ private fun ContentSection(
             )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(8.dp)
+                            .size(Dimens.spacingSm)
                             .background(
                                 color = item.difficulty.textColor,
                                 shape = CircleShape
@@ -244,12 +245,12 @@ private fun ContentSection(
                 }
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(4.dp)
+                            .size(Dimens.spacingXs)
                             .background(
                                 color = NeutralDividerDotColor,
                                 shape = CircleShape
@@ -269,7 +270,7 @@ private fun ContentSection(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 FilledButton(
@@ -280,7 +281,7 @@ private fun ContentSection(
 
                 Surface(
                     modifier = Modifier
-                        .size(54.dp)
+                        .size(Dimens.bookmarkShareButtonSize)
                         .appCardShadow(
                             shape = BookmarkShareButtonShape,
                             spotColor = CardPrimaryGlowColor,
@@ -298,7 +299,7 @@ private fun ContentSection(
                             imageVector = Icons.Outlined.Share,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(Dimens.iconMdPlus)
                         )
                     }
                 }
@@ -312,8 +313,8 @@ private fun ContentSection(
 private fun BookmarkRoadmapCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier = Modifier.padding(Dimens.spacingLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             BookmarkRoadmapCard(
                 item = BookmarkRoadmapCardUiModel(

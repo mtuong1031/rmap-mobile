@@ -35,9 +35,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.InfoContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.StatusSuccessContainerColor
@@ -46,7 +46,7 @@ import com.rmap.mobile.core.ui.theme.StatusWarningContainerColor
 import com.rmap.mobile.core.ui.theme.StatusWarningContentColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 
-private val HighlightStatCardShape = RoundedCornerShape(22.dp)
+private val HighlightStatCardShape = RoundedCornerShape(Dimens.cardRadiusLgPlus)
 
 @Immutable
 data class HighlightStatCardStyle(
@@ -64,11 +64,11 @@ data class HighlightStatItemUiModel(
 
 object HighlightStatCardDefaults {
     val CardShape = HighlightStatCardShape
-    val CardMinWidth: Dp = 108.dp
-    val CardMinHeight: Dp = 128.dp
-    val IconContainerSize: Dp = 40.dp
-    val IconSize: Dp = 20.dp
-    val ContentSpacing: Dp = 8.dp
+    val CardMinWidth: Dp = Dimens.statCardMinWidth
+    val CardMinHeight: Dp = Dimens.statCardMinHeight
+    val IconContainerSize: Dp = Dimens.controlSm
+    val IconSize: Dp = Dimens.iconMd
+    val ContentSpacing: Dp = Dimens.spacingSm
 
     @Composable
     fun streakStyle(): HighlightStatCardStyle {
@@ -128,7 +128,7 @@ fun HighlightStatCard(
         border = AppCardDefaults.border(color = style.iconColor.copy(alpha = 0.5f))
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 16.dp),
+            modifier = Modifier.padding(vertical = Dimens.spacingLg),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(HighlightStatCardDefaults.ContentSpacing)
         ) {
@@ -179,7 +179,7 @@ fun HighlightStatCard(
 fun HighlightStatCardRow(
     items: List<HighlightStatItemUiModel>,
     modifier: Modifier = Modifier,
-    horizontalSpacing: Dp = 12.dp,
+    horizontalSpacing: Dp = Dimens.spacingMd,
     onItemClick: ((index: Int, item: HighlightStatItemUiModel) -> Unit)? = null
 ) {
     Row(

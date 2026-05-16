@@ -47,7 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
@@ -63,6 +62,7 @@ import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.RoadmapStatCardRow
 import com.rmap.mobile.core.ui.components.RoadmapStatItemUiModel
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.home.presentation.components.LearningProgressCard
 import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapsHeader
@@ -181,12 +181,12 @@ fun HomeScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 72.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 72.dp
+                    start = Dimens.spacingScreenHorizontal,
+                    end = Dimens.spacingScreenHorizontal,
+                    top = Dimens.spacingScreenTop,
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottom
                 ),
-                verticalArrangement = Arrangement.spacedBy(28.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxxl)
             ) {
                 item {
                     Header(
@@ -201,7 +201,7 @@ fun HomeScreen(
                 item {
                     HighlightStatCardRow(
                         items = highlightItems,
-                        horizontalSpacing = 14.dp,
+                        horizontalSpacing = Dimens.spacingMdPlus,
                         onItemClick = onHighlightItemClick
                     )
                 }
@@ -216,13 +216,13 @@ fun HomeScreen(
                 item {
                     RoadmapStatCardRow(
                         items = roadmapStats,
-                        horizontalSpacing = 14.dp,
+                        horizontalSpacing = Dimens.spacingMdPlus,
                         onItemClick = onRoadmapStatItemClick
                     )
                 }
 
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
                         TrendingRoadmapsHeader(onSeeAllClick = onSeeAllClick)
                         roadmapItems.forEach { item ->
                             RoadmapCard(

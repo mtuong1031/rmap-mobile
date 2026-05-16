@@ -37,7 +37,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.navigation.NavBarDestination
 import com.rmap.mobile.core.ui.components.AppNavigationBar
@@ -49,6 +48,7 @@ import com.rmap.mobile.features.roadmap.presentation.detail.components.RoadmapHe
 import com.rmap.mobile.features.roadmap.presentation.detail.components.SubLessonUiModel
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -120,18 +120,18 @@ fun RoadmapDetailScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 48.dp, // Space for top bar
-                    bottom = innerPadding.calculateBottomPadding() + 48.dp
+                    start = Dimens.spacingScreenHorizontal,
+                    end = Dimens.spacingScreenHorizontal,
+                    top = Dimens.spacingScreenTopCompact,
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
                 ),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
             ) {
                 item {
                     // Back button
                     Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(Dimens.controlSm)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.surface)
                             .clickable(
@@ -145,7 +145,7 @@ fun RoadmapDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(Dimens.iconLg)
                         )
                     }
                 }
@@ -160,7 +160,7 @@ fun RoadmapDetailScreen(
                 }
 
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
                         SectionHeader(
                             title = "Core Web Fundamentals",
                             dotColor = MaterialTheme.colorScheme.primary
@@ -172,7 +172,7 @@ fun RoadmapDetailScreen(
                 }
 
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
                         SectionHeader(
                             title = "Framework Ecosystem",
                             dotColor = NeutralDisabledColor
@@ -184,7 +184,7 @@ fun RoadmapDetailScreen(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(Dimens.spacingSm))
                     AiScholarTipCard(
                         currentModule = "Asynchronous JS",
                         recommendedTopic = "Promises",
@@ -204,12 +204,12 @@ private fun SectionHeader(
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(width = 16.dp, height = 6.dp)
+                .size(width = Dimens.spacingLg, height = Dimens.spacingXsPlus)
                 .background(color = dotColor, shape = CircleShape)
         )
 

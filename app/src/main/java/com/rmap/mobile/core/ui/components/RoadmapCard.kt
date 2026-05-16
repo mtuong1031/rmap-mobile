@@ -32,7 +32,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.CardDividerStrongColor
@@ -45,6 +44,7 @@ import com.rmap.mobile.core.ui.theme.DifficultyExpertContainerColor
 import com.rmap.mobile.core.ui.theme.DifficultyExpertContentColor
 import com.rmap.mobile.core.ui.theme.DifficultyHardContainerColor
 import com.rmap.mobile.core.ui.theme.DifficultyIntermediateContainerColor
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryBlueOverlayFaintColor
 import com.rmap.mobile.core.ui.theme.PrimaryBlueOverlaySoftColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
@@ -53,8 +53,8 @@ import com.rmap.mobile.core.ui.theme.StatusCompletedContentColor
 import com.rmap.mobile.core.ui.theme.StatusHardContentColor
 
 private val RoadmapCardShape = AppCardDefaults.shape
-private val RoadmapIconFrameShape = RoundedCornerShape(24.dp)
-private val RoadmapIconContainerShape = RoundedCornerShape(18.dp)
+private val RoadmapIconFrameShape = RoundedCornerShape(Dimens.cardRadiusXl)
+private val RoadmapIconContainerShape = RoundedCornerShape(Dimens.cardRadiusMdPlus)
 
 enum class RoadmapDifficulty(
     val backgroundColor: Color,
@@ -111,22 +111,22 @@ fun RoadmapCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(Dimens.spacingXl)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(18.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingLgPlus)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RoadmapIconFrame(icon = item.icon)
 
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
                     ) {
                         Text(
                             text = item.title,
@@ -140,14 +140,14 @@ fun RoadmapCard(
                         )
 
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.BookmarkBorder,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(Dimens.iconSm)
                             )
                             Text(
                                 text = stringResource(
@@ -164,7 +164,7 @@ fun RoadmapCard(
                     }
                 }
 
-                HorizontalDivider(Modifier, thickness = 1.dp, color = CardDividerStrongColor)
+                HorizontalDivider(Modifier, thickness = Dimens.borderThin, color = CardDividerStrongColor)
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -190,9 +190,9 @@ fun RoadmapCard(
 
         Box(
             modifier = Modifier
-                .offset(x = 225.dp, y = (-63).dp)
-                .size(180.dp)
-                .blur(radius = 48.dp)
+                .offset(x = Dimens.cardGlowOffsetX, y = Dimens.cardGlowOffsetY)
+                .size(Dimens.cardGlowSize)
+                .blur(radius = Dimens.cardGlowBlur)
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
@@ -212,13 +212,16 @@ fun RoadmapCard(
 private fun RoadmapIconFrame(icon: ImageVector) {
     Box(
         modifier = Modifier
-            .size(72.dp)
+            .size(Dimens.iconFrameSize)
             .border(
-                width = 2.dp,
+                width = Dimens.borderMedium,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 shape = RoadmapIconFrameShape
             )
-            .padding(horizontal = 5.dp, vertical = 5.dp),
+            .padding(
+                horizontal = Dimens.iconFramePadding,
+                vertical = Dimens.iconFramePadding
+            ),
         contentAlignment = Alignment.Center
     ) {
         Box(
@@ -239,7 +242,7 @@ private fun RoadmapIconFrame(icon: ImageVector) {
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(Dimens.iconXxl)
             )
         }
     }
@@ -256,7 +259,7 @@ private fun DifficultyBadge(
                 color = difficulty.backgroundColor,
                 shape = CircleShape
             )
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXsPlus),
         contentAlignment = Alignment.Center
     ) {
         Text(

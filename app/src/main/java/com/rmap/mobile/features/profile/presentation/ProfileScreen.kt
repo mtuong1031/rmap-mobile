@@ -12,11 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.profile.presentation.components.ExperienceCard
 import com.rmap.mobile.features.profile.presentation.components.ProfileCard
@@ -59,12 +59,12 @@ fun ProfileScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 24.dp,
-                    end = 24.dp,
-                    top = 48.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 28.dp
+                    start = Dimens.spacingScreenHorizontalWide,
+                    end = Dimens.spacingScreenHorizontalWide,
+                    top = Dimens.spacingScreenTopCompact,
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingXxxl
                 ),
-                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp)
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.spacingLg)
             ) {
                 item {
                     ProfileHeader(

@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.StatusDangerContainerColor
@@ -69,25 +69,25 @@ fun SettingsItem(
                 indication = LocalIndication.current,
                 onClick = onClick
             )
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingLg),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .background(iconContainerColor, RoundedCornerShape(12.dp)),
+                    .size(Dimens.controlSm)
+                    .background(iconContainerColor, RoundedCornerShape(Dimens.cardRadiusSm)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = iconTint,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(Dimens.iconMd)
                 )
             }
 
@@ -107,7 +107,7 @@ fun SettingsItem(
                 imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.28f),
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(Dimens.iconMd)
             )
         }
     }
@@ -122,7 +122,7 @@ private fun SettingsItemPreview() {
             title = "Personal Information",
             isDestructive = false,
             onClick = {},
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(Dimens.spacingLg)
         )
     }
 }

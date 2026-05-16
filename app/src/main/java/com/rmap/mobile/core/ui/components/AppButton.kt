@@ -27,8 +27,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralBorderColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import androidx.compose.material3.Button as M3Button
@@ -38,10 +38,10 @@ import androidx.compose.material3.OutlinedButton as M3OutlinedButton
 import androidx.compose.material3.TextButton as M3TextButton
 
 object ButtonDefaults {
-    val MinHeight: Dp = 56.dp
-    val Shape: Shape = RoundedCornerShape(16.dp)
-    val IconSize: Dp = 24.dp
-    val IconSpacing: Dp = 12.dp
+    val MinHeight: Dp = Dimens.controlXl
+    val Shape: Shape = RoundedCornerShape(Dimens.cardRadiusMd)
+    val IconSize: Dp = Dimens.iconLg
+    val IconSpacing: Dp = Dimens.spacingMd
 
     @Composable
     fun filledButtonColors(): ButtonColors {
@@ -77,55 +77,55 @@ object ButtonDefaults {
     @Composable
     fun filledButtonElevation(): ButtonElevation {
         return MaterialButtonDefaults.buttonElevation(
-            defaultElevation = 8.dp,
-            pressedElevation = 2.dp,
-            focusedElevation = 8.dp,
-            hoveredElevation = 8.dp,
-            disabledElevation = 0.dp
+            defaultElevation = Dimens.cardElevationSm,
+            pressedElevation = Dimens.cardElevationPressed,
+            focusedElevation = Dimens.cardElevationSm,
+            hoveredElevation = Dimens.cardElevationSm,
+            disabledElevation = Dimens.cardElevationNone
         )
     }
 
     @Composable
     fun filledTonalButtonElevation(): ButtonElevation {
         return MaterialButtonDefaults.filledTonalButtonElevation(
-            defaultElevation = 1.dp,
-            pressedElevation = 2.dp,
-            focusedElevation = 1.dp,
-            hoveredElevation = 1.dp,
-            disabledElevation = 0.dp
+            defaultElevation = Dimens.cardElevationXs,
+            pressedElevation = Dimens.cardElevationPressed,
+            focusedElevation = Dimens.cardElevationXs,
+            hoveredElevation = Dimens.cardElevationXs,
+            disabledElevation = Dimens.cardElevationNone
         )
     }
 
     @Composable
     fun outlinedButtonElevation(): ButtonElevation {
         return MaterialButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp,
-            focusedElevation = 0.dp,
-            hoveredElevation = 0.dp,
-            disabledElevation = 0.dp
+            defaultElevation = Dimens.cardElevationNone,
+            pressedElevation = Dimens.cardElevationNone,
+            focusedElevation = Dimens.cardElevationNone,
+            hoveredElevation = Dimens.cardElevationNone,
+            disabledElevation = Dimens.cardElevationNone
         )
     }
 
     @Composable
     fun textButtonElevation(): ButtonElevation {
         return MaterialButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 0.dp,
-            focusedElevation = 0.dp,
-            hoveredElevation = 0.dp,
-            disabledElevation = 0.dp
+            defaultElevation = Dimens.cardElevationNone,
+            pressedElevation = Dimens.cardElevationNone,
+            focusedElevation = Dimens.cardElevationNone,
+            hoveredElevation = Dimens.cardElevationNone,
+            disabledElevation = Dimens.cardElevationNone
         )
     }
 
     @Composable
     fun filledTonalBorder(): BorderStroke {
-        return BorderStroke(width = 1.dp, color = NeutralBorderColor)
+        return BorderStroke(width = Dimens.borderThin, color = NeutralBorderColor)
     }
 
     @Composable
     fun outlinedBorder(): BorderStroke {
-        return BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+        return BorderStroke(width = Dimens.borderThin, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     }
 }
 
@@ -275,8 +275,8 @@ private fun ButtonsPreview() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(Dimens.spacingLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
         ) {
             FilledButton(
                 text = "Continue with Facebook",

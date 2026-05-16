@@ -31,11 +31,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val RoadmapStatCardShape = RoundedCornerShape(22.dp)
+private val RoadmapStatCardShape = RoundedCornerShape(Dimens.cardRadiusLgPlus)
 
 @Immutable
 data class RoadmapStatItemUiModel(
@@ -46,11 +46,11 @@ data class RoadmapStatItemUiModel(
 
 object RoadmapStatCardDefaults {
     val CardShape = RoadmapStatCardShape
-    val CardMinWidth: Dp = 108.dp
-    val CardHeight: Dp = 114.dp
-    val IconSize: Dp = 22.dp
-    val ContentSpacing: Dp = 8.dp
-    val VerticalPadding: Dp = 17.dp
+    val CardMinWidth: Dp = Dimens.statCardMinWidth
+    val CardHeight: Dp = Dimens.statCardHeight
+    val IconSize: Dp = Dimens.iconMdPlus
+    val ContentSpacing: Dp = Dimens.spacingSm
+    val VerticalPadding: Dp = Dimens.statCardVerticalPadding
 }
 
 @Composable
@@ -131,7 +131,7 @@ fun RoadmapStatCard(
 fun RoadmapStatCardRow(
     items: List<RoadmapStatItemUiModel>,
     modifier: Modifier = Modifier,
-    horizontalSpacing: Dp = 12.dp,
+    horizontalSpacing: Dp = Dimens.spacingMd,
     onItemClick: ((index: Int, item: RoadmapStatItemUiModel) -> Unit)? = null
 ) {
     Row(

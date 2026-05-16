@@ -18,10 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 enum class SettingType {
@@ -39,11 +39,11 @@ fun SettingsSection(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
     ) {
         Text(
             text = stringResource(id = R.string.profile_account_settings_title),
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = Dimens.spacingSm),
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp,
@@ -58,7 +58,7 @@ fun SettingsSection(
             border = AppCardDefaults.border(),
             shadowElevation = AppCardDefaults.shadowElevation
         ) {
-            Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(vertical = Dimens.spacingSm)) {
                 SettingsItem(
                     icon = Icons.Outlined.PersonOutline,
                     title = stringResource(id = R.string.profile_setting_personal_info),

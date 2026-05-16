@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.navigation.NavBarDestination
 
@@ -36,15 +36,18 @@ fun AppNavigationBar(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+        shape = RoundedCornerShape(
+            topStart = Dimens.cardRadiusHuge,
+            topEnd = Dimens.cardRadiusHuge
+        ),
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 10.dp
+        shadowElevation = Dimens.cardElevationMd
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = Dimens.spacingXxl, vertical = Dimens.spacingLg),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -77,7 +80,7 @@ private fun NavBarItem(
 
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(Dimens.spacingSm))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -85,13 +88,13 @@ private fun NavBarItem(
             )
             .alpha(if (isSelected) 1f else 0.40f),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
     ) {
         Icon(
             imageVector = destination.icon,
             contentDescription = null,
             tint = contentColor,
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier.size(Dimens.iconMdPlus)
         )
 
         Text(

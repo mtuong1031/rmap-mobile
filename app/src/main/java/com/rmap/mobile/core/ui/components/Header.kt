@@ -26,21 +26,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryBlueShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val HeaderActionShape = RoundedCornerShape(20.dp)
+private val HeaderActionShape = RoundedCornerShape(Dimens.cardRadiusLg)
 
 object HeaderDefaults {
-    val ActionButtonSize: Dp = 56.dp
+    val ActionButtonSize: Dp = Dimens.controlXl
     val ActionButtonShape = HeaderActionShape
-    val ActionIconSize: Dp = 28.dp
-    val GreetingIconSize: Dp = 18.dp
-    val HeadingSpacing: Dp = 24.dp
-    val GreetingSpacing: Dp = 8.dp
-    val SectionSpacing: Dp = 8.dp
+    val ActionIconSize: Dp = Dimens.iconXl
+    val GreetingIconSize: Dp = Dimens.iconSmPlus
+    val HeadingSpacing: Dp = Dimens.spacingXxl
+    val GreetingSpacing: Dp = Dimens.spacingSm
+    val SectionSpacing: Dp = Dimens.spacingSm
 }
 
 @Composable
@@ -111,7 +111,7 @@ fun Header(
             modifier = Modifier
                 .size(HeaderDefaults.ActionButtonSize)
                 .shadow(
-                    elevation = 16.dp,
+                    elevation = Dimens.cardElevationHeader,
                     spotColor = PrimaryBlueShadowColor,
                     ambientColor = PrimaryBlueShadowColor
                 )

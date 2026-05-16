@@ -20,11 +20,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.SkillCard
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -60,7 +60,7 @@ private fun SectionHeader(
                 color = badgeColor
             ),
             modifier = Modifier
-                .padding(horizontal = 3.dp, vertical = 6.dp)
+                .padding(horizontal = Dimens.spacingMicro, vertical = Dimens.spacingXsPlus)
         )
     }
 }
@@ -72,7 +72,7 @@ fun CuratedPathsSection(
     onActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
         SectionHeader(
             title = stringResource(R.string.bookmarks_section_curated_paths),
             badgeText = stringResource(R.string.bookmarks_saved_count, savedCount)
@@ -99,7 +99,7 @@ fun SpecificSkillsSection(
     pinsCount: Int,
     onSkillClick: ((SkillCardUiModel) -> Unit)?
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
         SectionHeader(
             title = stringResource(R.string.bookmarks_section_specific_skills),
             badgeText = stringResource(R.string.bookmarks_pins_count, pinsCount)
@@ -122,15 +122,15 @@ fun FooterHint(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .alpha(0.7f)
-            .padding(bottom = 32.dp),
+            .padding(bottom = Dimens.spacingHuge),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
     ) {
         Icon(
             imageVector = Icons.Outlined.AutoAwesome,
             contentDescription = null,
             tint = NeutralDisabledColor,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(Dimens.controlSm)
         )
 
         Text(
@@ -151,6 +151,6 @@ fun FooterHint(modifier: Modifier = Modifier) {
 @Composable
 private fun FooterHintPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        FooterHint(modifier = Modifier.padding(16.dp))
+        FooterHint(modifier = Modifier.padding(Dimens.spacingLg))
     }
 }

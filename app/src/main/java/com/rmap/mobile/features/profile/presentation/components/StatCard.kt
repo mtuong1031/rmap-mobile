@@ -21,8 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -41,12 +41,12 @@ fun StatCard(
         shadowElevation = AppCardDefaults.shadowElevation
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(horizontal = Dimens.spacingXl, vertical = Dimens.spacingXl),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(Dimens.controlSm)
                     .background(ProfileIconContainerColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -54,7 +54,7 @@ fun StatCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(Dimens.iconMd)
                 )
             }
 

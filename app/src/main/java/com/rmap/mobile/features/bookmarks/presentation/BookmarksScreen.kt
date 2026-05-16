@@ -35,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
@@ -52,6 +51,7 @@ import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.core.ui.components.SkillStatus
 import com.rmap.mobile.features.bookmarks.presentation.components.SpecificSkillsSection
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -142,12 +142,12 @@ fun BookmarksScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 72.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 72.dp
+                    start = Dimens.spacingScreenHorizontal,
+                    end = Dimens.spacingScreenHorizontal,
+                    top = Dimens.spacingScreenTop,
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottom
                 ),
-                verticalArrangement = Arrangement.spacedBy(28.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxxl)
             ) {
                 item {
                     Header(
