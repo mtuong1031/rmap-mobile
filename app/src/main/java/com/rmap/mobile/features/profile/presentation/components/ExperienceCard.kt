@@ -25,6 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -35,11 +36,12 @@ fun ExperienceCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .appCardShadow(shape = AppCardDefaults.shape),
         shape = AppCardDefaults.shape,
         color = MaterialTheme.colorScheme.surface,
-        border = AppCardDefaults.border(),
-        shadowElevation = AppCardDefaults.shadowElevation
+        border = AppCardDefaults.border()
     ) {
         Row(
             modifier = Modifier

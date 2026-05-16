@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -34,11 +35,12 @@ fun StatCard(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .appCardShadow(shape = AppCardDefaults.shape),
         shape = AppCardDefaults.shape,
         color = MaterialTheme.colorScheme.surface,
-        border = AppCardDefaults.border(),
-        shadowElevation = AppCardDefaults.shadowElevation
+        border = AppCardDefaults.border()
     ) {
         Column(
             modifier = Modifier.padding(horizontal = Dimens.spacingXl, vertical = Dimens.spacingXl),
