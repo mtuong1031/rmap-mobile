@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Search
@@ -34,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.CardDividerStrongColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowBareColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowMediumColor
@@ -53,8 +53,8 @@ import com.rmap.mobile.core.ui.theme.StatusCompletedContentColor
 import com.rmap.mobile.core.ui.theme.StatusHardContentColor
 
 private val RoadmapCardShape = AppCardDefaults.shape
-private val RoadmapIconFrameShape = RoundedCornerShape(Dimens.cardRadiusXl)
-private val RoadmapIconContainerShape = RoundedCornerShape(Dimens.cardRadiusMdPlus)
+private val RoadmapIconFrameShape = AppShapes.card
+private val RoadmapIconContainerShape = AppShapes.iconFrameInner
 
 enum class RoadmapDifficulty(
     val backgroundColor: Color,

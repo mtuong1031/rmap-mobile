@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Icon
@@ -31,6 +30,7 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AccentPurpleColor
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AiTipContainerEndColor
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardShadowSoftColor
@@ -39,7 +39,7 @@ import com.rmap.mobile.core.ui.theme.NeutralTextBodyColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val AiScholarTipCardShape = RoundedCornerShape(Dimens.cardRadiusXl)
+private val AiScholarTipCardShape = AppShapes.card
 
 @Composable
 fun AiScholarTipCard(
@@ -85,7 +85,7 @@ fun AiScholarTipCard(
                 Box(
                     modifier = Modifier
                         .size(Dimens.aiIconContainerSize)
-                        .clip(RoundedCornerShape(Dimens.cardRadiusSm))
+                        .clip(AppShapes.iconContainer)
                         .background(Brush.linearGradient(colors = gradientColors)),
                     contentAlignment = Alignment.Center
                 ) {

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoGraph
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,11 +28,12 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val RoadmapHeroCardShape = RoundedCornerShape(Dimens.cardRadiusXxl)
+private val RoadmapHeroCardShape = AppShapes.heroCard
 
 @Composable
 fun RoadmapHeroCard(
@@ -74,12 +74,12 @@ fun RoadmapHeroCard(
                         modifier = Modifier
                             .background(
                                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(Dimens.radiusSm)
+                                shape = AppShapes.chip
                             )
                             .border(
                                 width = Dimens.borderThin,
                                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f),
-                                shape = RoundedCornerShape(Dimens.radiusSm)
+                                shape = AppShapes.chip
                             )
                             .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXsPlus),
                         verticalAlignment = Alignment.CenterVertically,

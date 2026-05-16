@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Person
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import coil.compose.AsyncImage
 import com.rmap.mobile.R
@@ -65,16 +65,16 @@ fun ProfileCard(
                     .size(Dimens.profileAvatarSize)
                     .shadow(
                         elevation = Dimens.cardElevationLg,
-                        shape = RoundedCornerShape(Dimens.cardRadiusHuge),
+                        shape = AppShapes.largeCard,
                         ambientColor = PrimaryAvatarShadowColor,
                         spotColor = PrimaryAvatarShadowColor
                     )
                     .border(
                         width = Dimens.borderThick,
                         color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(Dimens.cardRadiusHuge)
+                        shape = AppShapes.largeCard
                     )
-                    .clip(RoundedCornerShape(Dimens.cardRadiusHuge))
+                    .clip(AppShapes.largeCard)
                     .background(Neutral900Color)
             ) {
                 // Replacing SubcomposeAsyncImage with AsyncImage to resolve NoClassDefFoundError in Preview.

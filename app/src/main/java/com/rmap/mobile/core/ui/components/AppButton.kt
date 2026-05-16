@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Icon
@@ -28,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.NeutralBorderColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -39,7 +39,7 @@ import androidx.compose.material3.TextButton as M3TextButton
 
 object ButtonDefaults {
     val MinHeight: Dp = Dimens.controlXl
-    val Shape: Shape = RoundedCornerShape(Dimens.cardRadiusMd)
+    val Shape: Shape = AppShapes.button
     val IconSize: Dp = Dimens.iconLg
     val IconSpacing: Dp = Dimens.spacingMd
 

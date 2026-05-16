@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.Share
@@ -45,6 +44,7 @@ import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardPrimaryBorderColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowColor
@@ -60,7 +60,7 @@ import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val BookmarkRoadmapCardShape = AppCardDefaults.shape
-private val BookmarkShareButtonShape = RoundedCornerShape(Dimens.cardRadiusMd)
+private val BookmarkShareButtonShape = AppShapes.button
 private val CoverHeight = 150.dp
 
 data class BookmarkRoadmapCardUiModel(
@@ -172,7 +172,7 @@ private fun CoverImageSection(
                     .size(Dimens.controlMd)
                     .shadow(
                         elevation = Dimens.cardElevationMd,
-                        shape = RoundedCornerShape(Dimens.cardRadiusSmPlus),
+                        shape = AppShapes.iconContainerLarge,
                         spotColor = CardShadowOverlayColor,
                         ambientColor = CardShadowOverlayColor
                     ),

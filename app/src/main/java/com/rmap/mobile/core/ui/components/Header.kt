@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.WbSunny
@@ -27,11 +26,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryBlueShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val HeaderActionShape = RoundedCornerShape(Dimens.cardRadiusLg)
+private val HeaderActionShape = AppShapes.searchBar
 
 object HeaderDefaults {
     val ActionButtonSize: Dp = Dimens.controlXl

@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Search
@@ -48,6 +47,7 @@ import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.CardShadowSubtleColor
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -56,8 +56,8 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.RecommendedCardUiModel
 
-private val ExploreSearchBarShape = RoundedCornerShape(Dimens.cardRadiusLg)
-private val RecommendedCardShape = RoundedCornerShape(Dimens.cardRadiusXl)
+private val ExploreSearchBarShape = AppShapes.searchBar
+private val RecommendedCardShape = AppShapes.card
 
 @Composable
 fun ExploreSearchBar(
@@ -117,7 +117,7 @@ fun ExploreSearchBar(
             Box(
                 modifier = Modifier
                     .size(Dimens.controlSm)
-                    .clip(RoundedCornerShape(Dimens.cardRadiusSm))
+                    .clip(AppShapes.iconContainer)
                     .clickable(onClick = onFilterClick)
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
@@ -296,7 +296,7 @@ fun RecommendedCard(
         ) {
             Surface(
                 color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(Dimens.radiusSm)
+                shape = AppShapes.chip
             ) {
                 Text(
                     text = item.badgeText,

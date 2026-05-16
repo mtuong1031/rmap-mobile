@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoGraph
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,12 +29,13 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.HeadingTextColor
 import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val LearningProgressCardShape = RoundedCornerShape(Dimens.cardRadiusXxl)
+private val LearningProgressCardShape = AppShapes.heroCard
 
 @Composable
 fun LearningProgressCard(
@@ -80,7 +80,7 @@ fun LearningProgressCard(
                             .size(Dimens.controlLg)
                             .background(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.15f),
-                                shape = RoundedCornerShape(Dimens.cardRadiusSmPlus)
+                                shape = AppShapes.iconContainerLarge
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -231,7 +231,7 @@ fun TrendingRoadmapsHeader(
                     indication = null,
                     onClick = onSeeAllClick
                 )
-                .background(Color.Transparent, RoundedCornerShape(Dimens.spacingSm))
+                .background(Color.Transparent, AppShapes.small)
                 .padding(horizontal = Dimens.spacingXxs),
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -24,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.navigation.NavBarDestination
@@ -36,10 +36,7 @@ fun AppNavigationBar(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(
-            topStart = Dimens.cardRadiusHuge,
-            topEnd = Dimens.cardRadiusHuge
-        ),
+        shape = AppShapes.navigationBar,
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = Dimens.cardElevationMd
     ) {
@@ -80,7 +77,7 @@ private fun NavBarItem(
 
     Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(Dimens.spacingSm))
+            .clip(AppShapes.small)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,

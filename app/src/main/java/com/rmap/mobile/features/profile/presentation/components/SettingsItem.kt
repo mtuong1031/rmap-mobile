@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.PersonOutline
@@ -30,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.ProfileIconContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -80,7 +80,7 @@ fun SettingsItem(
             Box(
                 modifier = Modifier
                     .size(Dimens.controlSm)
-                    .background(iconContainerColor, RoundedCornerShape(Dimens.cardRadiusSm)),
+                    .background(iconContainerColor, AppShapes.iconContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

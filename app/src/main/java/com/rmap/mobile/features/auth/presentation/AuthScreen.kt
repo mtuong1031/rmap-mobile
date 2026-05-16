@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.FilledTonalButton
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AuthHeroPlaceholderColor
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -74,10 +74,7 @@ fun AuthScreen(
                 .fillMaxHeight(0.58f)
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding(),
-            shape = RoundedCornerShape(
-                topStart = Dimens.spacingMassive,
-                topEnd = Dimens.spacingMassive
-            ),
+            shape = AppShapes.bottomSheet,
             color = MaterialTheme.colorScheme.background,
             shadowElevation = Dimens.cardElevationMdPlus
         ) {
@@ -182,7 +179,7 @@ private fun AuthFormSection(
                 onClick = onContinueWithFacebook,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(Dimens.cardRadiusMd)),
+                    .clip(AppShapes.button),
                 leadingIcon = if (showSocialIcons) {
                     {
                         Icon(

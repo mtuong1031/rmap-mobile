@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Code
@@ -37,6 +36,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowBareColor
 import com.rmap.mobile.core.ui.theme.CardPrimaryGlowFaintColor
@@ -52,8 +52,8 @@ import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val SkillCardShape = AppCardDefaults.shape
-private val SkillIconFrameShape = RoundedCornerShape(Dimens.cardRadiusXl)
-private val SkillIconContainerShape = RoundedCornerShape(Dimens.cardRadiusMdPlus)
+private val SkillIconFrameShape = AppShapes.card
+private val SkillIconContainerShape = AppShapes.iconFrameInner
 
 enum class SkillStatus(
     val backgroundColor: Color,

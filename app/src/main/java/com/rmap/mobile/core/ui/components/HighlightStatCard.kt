@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.LocalFireDepartment
@@ -37,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.InfoContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -46,7 +46,7 @@ import com.rmap.mobile.core.ui.theme.StatusWarningContainerColor
 import com.rmap.mobile.core.ui.theme.StatusWarningContentColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 
-private val HighlightStatCardShape = RoundedCornerShape(Dimens.cardRadiusLgPlus)
+private val HighlightStatCardShape = AppShapes.statCard
 
 @Immutable
 data class HighlightStatCardStyle(

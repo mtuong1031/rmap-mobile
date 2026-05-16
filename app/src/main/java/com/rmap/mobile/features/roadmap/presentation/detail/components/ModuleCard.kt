@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.filled.Check
@@ -44,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -91,7 +91,7 @@ fun ModuleCard(
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(Dimens.cardRadiusXl),
+        shape = AppShapes.card,
         color = cardBg,
         border = AppCardDefaults.border(
             color = if (isLocked) AppCardDefaults.borderColor.copy(alpha = 0.5f) else AppCardDefaults.borderColor
@@ -121,11 +121,11 @@ fun ModuleCard(
                     Box(
                         modifier = Modifier
                             .size(Dimens.controlLg)
-                            .background(iconBg, RoundedCornerShape(Dimens.cardRadiusMd))
+                            .background(iconBg, AppShapes.button)
                             .border(
                                 width = Dimens.borderThin,
                                 color = if (isLocked) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(Dimens.cardRadiusMd)
+                                shape = AppShapes.button
                             ),
                         contentAlignment = Alignment.Center
                     ) {
