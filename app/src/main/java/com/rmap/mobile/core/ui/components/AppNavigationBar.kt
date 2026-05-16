@@ -89,7 +89,7 @@ private fun NavBarItem(
     ) {
         Icon(
             imageVector = destination.icon,
-            contentDescription = null,
+            contentDescription = stringResource(id = destination.labelRes),
             tint = contentColor,
             modifier = Modifier.size(Dimens.iconMdPlus)
         )
