@@ -1,9 +1,9 @@
 ---
 name: api-client
 description: >
-  Generates the API layer for this project from openapi.yaml.
+  Generates the API layer for this project from docs/openapi.yml.
   Use when creating or updating: Retrofit service interfaces, DTO classes, or Mapper functions.
-  Source of truth: openapi.yaml at project root — NEVER invent fields or endpoints.
+  Source of truth: docs/openapi.yml — NEVER invent fields or endpoints.
 ---
 
 ## Layer Structure
@@ -18,7 +18,7 @@ data/
 
 ## Rules
 
-- **ALWAYS** read `openapi.yaml` before writing any DTO or service method.
+- **ALWAYS** read `docs/openapi.yml` before writing any DTO or service method.
 - **NEVER** invent fields, endpoints, or status codes not defined in the spec.
 - DTOs **MUST** use `@SerializedName` (Gson) to match exact JSON field names.
 - DTOs and Entities **NEVER** leak outside the `data` layer.
@@ -46,7 +46,7 @@ interface RoadmapApiService {
 ### DTO Classes
 
 ```kotlin
-// Response DTO — matches openapi.yaml schema exactly
+// Response DTO — matches docs/openapi.yml schema exactly
 data class RoadmapResponseDto(
     @SerializedName("id") val id: String,
     @SerializedName("title") val title: String,
@@ -94,7 +94,7 @@ override suspend fun getRoadmap(id: String): Result<Roadmap> = runCatching {
 
 ## Checklist
 
-- [ ] DTO field names match `openapi.yaml` exactly (use `@SerializedName`)
+- [ ] DTO field names match `docs/openapi.yml` exactly (use `@SerializedName`)
 - [ ] No DTO type referenced outside `data/` package
 - [ ] Mapper file placed in `data/mapper/`
 - [ ] Repository wraps calls in `runCatching` or explicit `Result`

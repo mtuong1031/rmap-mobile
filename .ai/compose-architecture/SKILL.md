@@ -117,5 +117,5 @@ Rules:
 - [ ] ViewModel only interacts with UseCase or Repository interface
 - [ ] Screen uses UiModel / UiState only (not domain model directly)
 - [ ] Mapping done at the correct layer boundary
-- [ ] API contract matches `openapi.yaml`
+- [ ] API contract matches `docs/openapi.yml`
 - [ ] No unnecessary UseCase wrapper

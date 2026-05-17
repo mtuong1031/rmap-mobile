@@ -22,7 +22,7 @@ description: >
 
 ### Step 2 — Read API contract (if needed)
 
-- Open `openapi.yaml` at the project root
+- Open `docs/openapi.yml`
 - Find relevant endpoint(s), request body, response schema, error codes
 - Note exact field names — DTOs must match exactly
 
@@ -76,7 +76,7 @@ abstract class XxxModule {
 ## Output Checklist
 
 - [ ] All files in correct package per project structure
-- [ ] DTO matches `openapi.yaml` field names exactly (`@SerializedName`)
+- [ ] DTO matches `docs/openapi.yml` field names exactly (`@SerializedName`)
 - [ ] Domain model is pure Kotlin (no Android imports)
 - [ ] Repository interface in `domain/`, implementation in `data/`
 - [ ] ViewModel uses `viewModelScope`, no `runBlocking`
