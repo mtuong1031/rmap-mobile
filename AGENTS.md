@@ -112,7 +112,8 @@ build.gradle.kts              — Root Gradle config
 settings.gradle.kts           — Module declarations
 gradle.properties             — Gradle JVM args and flags
 local.properties              — Local secrets (not committed to VCS)
-openapi.yaml              — Backend API contract (source of truth for DTOs and endpoints)
+docs/openapi.yml              — Backend API contract (source of truth for DTOs and endpoints)
+docs/SRS.md                   — Product requirements (SRS)
 AGENTS.md                     — This file
 README.md                     — Project overview
 ```
@@ -141,7 +142,8 @@ All new dependencies must be declared in `gradle/libs.versions.toml` before addi
 - This app is **frontend only**; all business logic lives in the backend (separate repo).
 - Base URL: stored in `local.properties` as `BASE_URL` — never hardcode.
 - Auth: Bearer token in `Authorization` header; token stored in `EncryptedSharedPreferences`.
-- API contract: see [`openapi.yaml`](./openapi.yaml) at the project root for all endpoints, request/response shapes, and error codes. Always refer to this file before writing DTOs or API service interfaces.
+- API contract: see [`docs/openapi.yml`](./docs/openapi.yml) for all endpoints, request/response shapes, and error codes. Always refer to this file before writing DTOs or API service interfaces.
+- Requirements: see [`docs/SRS.md`](./docs/SRS.md) for product scope and functional requirements.
 - Handle all API errors in the `data` layer; surface them to `presentation` via `Result<T>` or `UiState`.
 
 ## UI Conventions

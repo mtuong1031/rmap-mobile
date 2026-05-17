@@ -19,7 +19,7 @@ description: >
 | No direct repo call from UI | ViewModel is the ONLY bridge to domain |
 | No DTO in UI | Map to UiModel at ViewModel boundary |
 | No business logic in Composables | Delegate everything to ViewModel |
-| API follows `openapi.yaml` | Never invent fields or endpoints |
+| API follows `docs/openapi.yml` | Never invent fields or endpoints |
 | No hardcoded strings in UI | `stringResource()` only |
 | No raw exceptions to UI | Map to UiState.Error with user-friendly message |
 | Secrets in `local.properties` | Never in source code or BuildConfig |
@@ -44,7 +44,7 @@ Before generating any file, verify:
 
 - [ ] Does the new code belong in the correct layer? (→ `compose-architecture`)
 - [ ] Is UiState modeled correctly — sealed or data class with `isLoading`/`error`? (→ `compose-state`)
-- [ ] If API-related: does DTO match `openapi.yaml` exactly? (→ `api-client`)
+- [ ] If API-related: does DTO match `docs/openapi.yml` exactly? (→ `api-client`)
 - [ ] Is error flow mapped at the right layer? (→ `error-handling`)
 - [ ] Are navigation events emitted via SharedFlow from ViewModel? (→ `navigation-flow`)
 - [ ] Are all new dependencies added to `gradle/libs.versions.toml`?
