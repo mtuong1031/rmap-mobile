@@ -1,11 +1,11 @@
-name: Android CI
+name: Android Pipeline
 
 on:
   pull_request:
     branches: ["main"]
 
 jobs:
-  ci:
+  CI:
     runs-on: ubuntu-latest
 
     steps:
