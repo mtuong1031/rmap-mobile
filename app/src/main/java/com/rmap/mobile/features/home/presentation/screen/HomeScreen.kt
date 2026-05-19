@@ -27,9 +27,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
-import com.rmap.mobile.core.ui.components.AppNavigationBar
+import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
-import com.rmap.mobile.core.ui.components.Header
+import com.rmap.mobile.core.ui.components.RMapHeader
 import com.rmap.mobile.core.ui.components.HighlightStatCardDefaults
 import com.rmap.mobile.core.ui.components.HighlightStatCardRow
 import com.rmap.mobile.core.ui.components.HighlightStatItemUiModel
@@ -105,7 +105,7 @@ fun HomeScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            AppNavigationBar(
+            RMapNavigationBar(
                 selectedDestination = selectedDestination,
                 onDestinationSelected = onDestinationSelected,
                 modifier = Modifier.fillMaxWidth()
@@ -130,7 +130,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxxl)
             ) {
                 item {
-                    Header(
+                    RMapHeader(
                         greetingText = greetingText,
                         headingText = headingText,
                         onActionClick = onHeaderActionClick

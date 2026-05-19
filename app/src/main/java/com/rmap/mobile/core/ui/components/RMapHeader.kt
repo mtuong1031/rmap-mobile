@@ -39,11 +39,11 @@ import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val HeaderActionShape = AppShapes.searchBar
+private val RMapHeaderActionShape = AppShapes.searchBar
 
-object HeaderDefaults {
+object RMapHeaderDefaults {
     val ActionButtonSize: Dp = Dimens.controlLg
-    val ActionButtonShape = HeaderActionShape
+    val ActionButtonShape = RMapHeaderActionShape
     val ActionIconSize: Dp = Dimens.iconMdPlus
     val GreetingIconSize: Dp = Dimens.iconSm
     val GreetingSpacing: Dp = Dimens.spacingSm
@@ -52,7 +52,7 @@ object HeaderDefaults {
 }
 
 @Composable
-fun Header(
+fun RMapHeader(
     greetingText: String,
     headingText: String,
     modifier: Modifier = Modifier,
@@ -94,18 +94,18 @@ fun Header(
         Column(
             modifier = Modifier
                 .weight(1f, fill = false)
-                .widthIn(max = HeaderDefaults.TextMaxWidth),
-            verticalArrangement = Arrangement.spacedBy(HeaderDefaults.SectionSpacing)
+                .widthIn(max = RMapHeaderDefaults.TextMaxWidth),
+            verticalArrangement = Arrangement.spacedBy(RMapHeaderDefaults.SectionSpacing)
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(HeaderDefaults.GreetingSpacing),
+                horizontalArrangement = Arrangement.spacedBy(RMapHeaderDefaults.GreetingSpacing),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = greetingIcon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(HeaderDefaults.GreetingIconSize)
+                    modifier = Modifier.size(RMapHeaderDefaults.GreetingIconSize)
                 )
                 Text(
                     text = greetingText,
@@ -129,7 +129,7 @@ fun Header(
 
         Box(
             modifier = Modifier
-                .size(HeaderDefaults.ActionButtonSize)
+                .size(RMapHeaderDefaults.ActionButtonSize)
                 .shadow(
                     elevation = Dimens.cardElevationHeader,
                     spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
@@ -137,12 +137,12 @@ fun Header(
                 )
                 .background(
                     color = MaterialTheme.colorScheme.surface,
-                    shape = HeaderDefaults.ActionButtonShape
+                    shape = RMapHeaderDefaults.ActionButtonShape
                 )
                 .border(
                     width = Dimens.borderThin,
-                    color = Color(0xFFF3F4F6),
-                    shape = HeaderDefaults.ActionButtonShape
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RMapHeaderDefaults.ActionButtonShape
                 )
                 .then(actionSemanticsModifier)
                 .then(actionModifier),
@@ -152,7 +152,7 @@ fun Header(
                 imageVector = actionIcon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(HeaderDefaults.ActionIconSize)
+                modifier = Modifier.size(RMapHeaderDefaults.ActionIconSize)
             )
         }
     }
@@ -160,9 +160,9 @@ fun Header(
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 180)
 @Composable
-private fun HeaderPreview() {
+private fun RMapHeaderPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        Header(
+        RMapHeader(
             greetingText = "Good morning, Thinh Hoang Duy",
             headingText = "Ready for your next skill?",
             onActionClick = {}

@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import androidx.compose.material3.Button as MaterialButton
 import androidx.compose.material3.ButtonDefaults as MaterialButtonDefaults
@@ -60,28 +61,28 @@ object RMapButtonDefaults {
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 disabledContainerColor = MaterialTheme.colorScheme.outline,
-                disabledContentColor = Color(0xFF99A1AF)
+                disabledContentColor = Color(OnSurfacePlaceholderLight.value)
             )
 
             RMapButtonVariant.Secondary -> MaterialButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 disabledContainerColor = MaterialTheme.colorScheme.outline,
-                disabledContentColor = Color(0xFF99A1AF)
+                disabledContentColor = Color(OnSurfacePlaceholderLight.value)
             )
 
             RMapButtonVariant.Outline -> MaterialButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary,
                 disabledContainerColor = MaterialTheme.colorScheme.outline,
-                disabledContentColor = Color(0xFF99A1AF)
+                disabledContentColor = Color(OnSurfacePlaceholderLight.value)
             )
 
             RMapButtonVariant.Neutral -> MaterialButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.primary,
                 disabledContainerColor = MaterialTheme.colorScheme.outline,
-                disabledContentColor = Color(0xFF99A1AF)
+                disabledContentColor = Color(OnSurfacePlaceholderLight.value)
             )
         }
     }

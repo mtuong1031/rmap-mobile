@@ -35,7 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
-import com.rmap.mobile.core.ui.components.AppNavigationBar
+import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.features.roadmap.presentation.components.AiScholarTipCard
 import com.rmap.mobile.features.roadmap.presentation.components.ModuleCard
 import com.rmap.mobile.features.roadmap.presentation.components.RoadmapHeroCard
@@ -62,7 +62,7 @@ fun RoadmapDetailScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            AppNavigationBar(
+            RMapNavigationBar(
                 selectedDestination = selectedDestination,
                 onDestinationSelected = onDestinationSelected,
                 modifier = Modifier.fillMaxWidth()
