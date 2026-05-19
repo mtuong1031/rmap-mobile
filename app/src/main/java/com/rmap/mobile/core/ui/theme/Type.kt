@@ -105,9 +105,17 @@ object AppTextStyles {
         )
 
     val headerTitle: TextStyle
-        @Composable get() = MaterialTheme.typography.headlineMedium.copy(
-            fontSize = 28.sp,
-            lineHeight = 39.sp,
+        @Composable get() = MaterialTheme.typography.headlineSmall.copy(
+            fontSize = 26.sp,
+            lineHeight = 32.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.sp
+        )
+
+    val headerGreeting: TextStyle
+        @Composable get() = MaterialTheme.typography.labelLarge.copy(
+            fontSize = 13.sp,
+            lineHeight = 20.sp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 0.sp
         )
@@ -162,5 +170,12 @@ object AppTextStyles {
             lineHeight = 19.5.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 0.325.sp
+        )
+
+    val navigationLabel: TextStyle
+        @Composable get() = MaterialTheme.typography.labelSmall.copy(
+            fontSize = 10.sp,
+            lineHeight = 15.sp,
+            letterSpacing = 0.sp
         )
 }

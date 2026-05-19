@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.School
-import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -86,10 +83,8 @@ fun ExploreScreen(
                     Header(
                         greetingText = stringResource(R.string.home_greeting, uiState.userName),
                         headingText = stringResource(R.string.explore_title),
-                        greetingIcon = Icons.Outlined.WbSunny,
-                        actionIcon = Icons.Outlined.School,
                         onActionClick = onHeaderActionClick,
-                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
+                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
                     )
                 }
 
