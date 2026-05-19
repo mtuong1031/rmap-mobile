@@ -14,9 +14,7 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.TrackChanges
-import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -135,8 +133,6 @@ fun HomeScreen(
                     Header(
                         greetingText = greetingText,
                         headingText = headingText,
-                        greetingIcon = Icons.Outlined.WbSunny,
-                        actionIcon = Icons.Outlined.School,
                         onActionClick = onHeaderActionClick
                     )
                 }
