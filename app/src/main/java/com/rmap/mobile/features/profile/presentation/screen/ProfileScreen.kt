@@ -34,7 +34,7 @@ fun ProfileScreen(
     onSettingClick: (ProfileSettingAction) -> Unit,
     onDestinationSelected: (NavBarDestination) -> Unit,
     modifier: Modifier = Modifier,
-    selectedDestination: NavBarDestination = NavBarDestination.Profile
+    selectedDestination: NavBarDestination = NavBarDestination.More
 ) {
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)

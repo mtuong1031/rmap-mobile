@@ -118,6 +118,7 @@
     <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
     <string name="content_description_filter">Filter results</string>
     <string name="content_description_bookmark">Toggle bookmark</string>
+    <string name="content_description_header_action">Open profile</string>
     <string name="content_description_share">Share roadmap</string>
     <string name="skill_part_of_format">Part of: %1$s</string>
     <string name="skill_advanced_css_layouts">Advanced CSS Layouts</string>
