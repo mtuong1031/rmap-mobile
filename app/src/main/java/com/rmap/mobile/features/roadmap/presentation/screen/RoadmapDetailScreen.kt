@@ -44,7 +44,6 @@ import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -123,7 +122,7 @@ fun RoadmapDetailScreen(
                         Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
                             SectionHeader(
                                 title = section.title,
-                                dotColor = if (index == 0) MaterialTheme.colorScheme.primary else NeutralDisabledColor
+                                dotColor = if (index == 0) MaterialTheme.colorScheme.primary else Color(0xFF99A1AF)
                             )
                             section.modules.forEach { module ->
                                 ModuleCard(item = module)

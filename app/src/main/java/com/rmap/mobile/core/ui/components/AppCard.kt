@@ -13,17 +13,15 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.rmap.mobile.core.ui.theme.AppShapes
-import com.rmap.mobile.core.ui.theme.CardBorderColor
-import com.rmap.mobile.core.ui.theme.CardShadowColor
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 object AppCardDefaults {
     val shape = AppShapes.largeCard
     val borderWidth: Dp = Dimens.borderThin
-    val borderColor = CardBorderColor
+    val borderColor = Color(0x80F9FAFB)
     val shadowElevation: Dp = Dimens.cardElevationSm
-    val shadowColor = CardShadowColor
+    val shadowColor = Color(0x0F000000)
 
     fun border(
         color: Color = borderColor,

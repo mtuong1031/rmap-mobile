@@ -48,8 +48,6 @@ import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
-import com.rmap.mobile.core.ui.theme.CardDividerColor
-import com.rmap.mobile.core.ui.theme.CardShadowSubtleColor
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -71,8 +69,8 @@ fun ExploreSearchBar(
             .fillMaxWidth()
             .height(Dimens.exploreSearchBarHeight),
         shape = ExploreSearchBarShape,
-        border = AppCardDefaults.border(color = CardDividerColor),
-        shadowColor = CardShadowSubtleColor
+        border = AppCardDefaults.border(color = Color(0xFFF3F4F6)),
+        shadowColor = Color(0x0A000000)
     ) {
         Row(
             modifier = Modifier

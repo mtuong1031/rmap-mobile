@@ -33,22 +33,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
-import com.rmap.mobile.core.ui.theme.CardDividerStrongColor
-import com.rmap.mobile.core.ui.theme.CardPrimaryGlowMediumColor
-import com.rmap.mobile.core.ui.theme.CardPrimaryGlowSubtleColor
-import com.rmap.mobile.core.ui.theme.CardPrimaryGlowStrongColor
-import com.rmap.mobile.core.ui.theme.DifficultyBeginnerContainerColor
-import com.rmap.mobile.core.ui.theme.DifficultyExpertContainerColor
-import com.rmap.mobile.core.ui.theme.DifficultyExpertContentColor
-import com.rmap.mobile.core.ui.theme.DifficultyHardContainerColor
-import com.rmap.mobile.core.ui.theme.DifficultyIntermediateContainerColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.PrimaryBlueOverlayFaintColor
-import com.rmap.mobile.core.ui.theme.PrimaryBlueOverlaySoftColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.core.ui.theme.StatusCompletedContentColor
-import com.rmap.mobile.core.ui.theme.StatusHardContentColor
 
 private val RoadmapCardShape = AppCardDefaults.shape
 private val RoadmapIconFrameShape = AppShapes.card
@@ -59,20 +46,20 @@ enum class RoadmapDifficulty(
     val textColor: Color
 ) {
     Expert(
-        backgroundColor = DifficultyExpertContainerColor,
-        textColor = DifficultyExpertContentColor
+        backgroundColor = Color(0xFFFAF5FF),
+        textColor = Color(0xFF9810FA)
     ),
     Beginner(
-        backgroundColor = DifficultyBeginnerContainerColor,
-        textColor = StatusCompletedContentColor
+        backgroundColor = Color(0xFFF0FDF4),
+        textColor = Color(0xFF009966)
     ),
     Intermediate(
-        backgroundColor = DifficultyIntermediateContainerColor,
+        backgroundColor = Color(0xFFDBEAFE),
         textColor = PrimaryLight
     ),
     Hard(
-        backgroundColor = DifficultyHardContainerColor,
-        textColor = StatusHardContentColor
+        backgroundColor = Color(0xFFFFEDD4),
+        textColor = Color(0xFFF54900)
     )
 }
 
@@ -157,7 +144,7 @@ fun RoadmapCard(
                     }
                 }
 
-                HorizontalDivider(Modifier, thickness = Dimens.borderThin, color = CardDividerStrongColor)
+                HorizontalDivider(Modifier, thickness = Dimens.borderThin, color = Color(0xCCF3F4F6))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -189,9 +176,9 @@ fun RoadmapCard(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            CardPrimaryGlowStrongColor,
-                            CardPrimaryGlowMediumColor,
-                            CardPrimaryGlowSubtleColor,
+                            Color(0x4D2B7FFF),
+                            Color(0x262B7FFF),
+                            Color(0x0F2B7FFF),
                             Color.Transparent
                         )
                     ),
@@ -223,8 +210,8 @@ private fun RoadmapIconFrame(icon: ImageVector) {
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            PrimaryBlueOverlaySoftColor,
-                            PrimaryBlueOverlayFaintColor
+                            Color(0x262B7FFF),
+                            Color(0x0D2B7FFF)
                         )
                     ),
                     shape = RoadmapIconContainerShape

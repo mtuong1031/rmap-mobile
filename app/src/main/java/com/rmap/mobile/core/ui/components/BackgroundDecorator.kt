@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -17,9 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import com.rmap.mobile.core.ui.theme.AccentBlueColor
-import com.rmap.mobile.core.ui.theme.AccentCyanColor
-import com.rmap.mobile.core.ui.theme.AccentPurpleGlowColor
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -56,21 +54,21 @@ fun BackgroundDecorator(
             offsetX = Dimens.backgroundGlowTopOffsetX,
             offsetY = Dimens.spacingNone,
             size = Dimens.backgroundGlowSizeLg,
-            tint = AccentBlueColor,
+            tint = MaterialTheme.colorScheme.primary,
             alpha = 0.15f
         )
         SoftGlow(
             offsetX = Dimens.backgroundGlowMidOffsetX,
             offsetY = Dimens.backgroundGlowMidOffsetY,
             size = Dimens.backgroundGlowMidSize,
-            tint = AccentPurpleGlowColor,
+            tint = Color(0xFFC27AFF),
             alpha = 0.14f
         )
         SoftGlow(
             offsetX = Dimens.backgroundGlowBottomOffsetX,
             offsetY = Dimens.backgroundGlowBottomOffsetY,
             size = Dimens.backgroundGlowSizeLg,
-            tint = AccentCyanColor,
+            tint = Color(0xFF00D3F3),
             alpha = 0.15f
         )
     }

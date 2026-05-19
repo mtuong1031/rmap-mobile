@@ -37,7 +37,6 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.FilledTonalButton
 import com.rmap.mobile.core.ui.theme.AppShapes
-import com.rmap.mobile.core.ui.theme.AuthHeroPlaceholderColor
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -50,7 +49,7 @@ fun AuthScreen(
 ) {
     val isPreview = LocalInspectionMode.current
     val resolvedHeroPainter = heroPainter ?: if (isPreview) {
-        ColorPainter(AuthHeroPlaceholderColor)
+        ColorPainter(Color(0xFFE8DDFF))
     } else {
         painterResource(id = R.drawable.auth_hero)
     }
@@ -227,7 +226,7 @@ private fun AuthScreenPreview() {
         AuthScreen(
             onContinueWithGoogle = {},
             onContinueWithFacebook = {},
-            heroPainter = ColorPainter(AuthHeroPlaceholderColor)
+            heroPainter = ColorPainter(Color(0xFFE8DDFF))
         )
     }
 }

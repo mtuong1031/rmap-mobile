@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -40,8 +41,6 @@ import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import coil.compose.AsyncImage
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.theme.Neutral900Color
-import com.rmap.mobile.core.ui.theme.PrimaryAvatarShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -66,8 +65,8 @@ fun ProfileCard(
                     .shadow(
                         elevation = Dimens.cardElevationLg,
                         shape = AppShapes.largeCard,
-                        ambientColor = PrimaryAvatarShadowColor,
-                        spotColor = PrimaryAvatarShadowColor
+                        ambientColor = Color(0x33298CF7),
+                        spotColor = Color(0x33298CF7)
                     )
                     .border(
                         width = Dimens.borderThick,
@@ -75,7 +74,7 @@ fun ProfileCard(
                         shape = AppShapes.largeCard
                     )
                     .clip(AppShapes.largeCard)
-                    .background(Neutral900Color)
+                    .background(Color(0xFF000000))
             ) {
                 AvatarPlaceholder()
                 AsyncImage(

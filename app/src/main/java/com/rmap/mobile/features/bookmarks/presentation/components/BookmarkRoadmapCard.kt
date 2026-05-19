@@ -43,17 +43,7 @@ import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.BackgroundLight
-import com.rmap.mobile.core.ui.theme.CardPrimaryBorderColor
-import com.rmap.mobile.core.ui.theme.CardPrimaryGlowColor
-import com.rmap.mobile.core.ui.theme.CardPrimaryGlowFaintColor
-import com.rmap.mobile.core.ui.theme.CardPrimaryGlowSoftColor
-import com.rmap.mobile.core.ui.theme.CardShadowOverlayColor
-import com.rmap.mobile.core.ui.theme.CoverPreviewSurfaceColor
-import com.rmap.mobile.core.ui.theme.CoverScrimColor
-import com.rmap.mobile.core.ui.theme.CoverSurfaceColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.NeutralDividerDotColor
-import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val BookmarkRoadmapCardShape = AppCardDefaults.shape
@@ -103,8 +93,8 @@ fun BookmarkRoadmapCard(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            CardPrimaryGlowSoftColor,
-                            CardPrimaryGlowFaintColor,
+                            Color(0x142B7FFF),
+                            Color(0x0A2B7FFF),
                             Color.Transparent
                         )
                     ),
@@ -123,7 +113,7 @@ private fun CoverImageSection(
         modifier = Modifier
             .fillMaxWidth()
             .height(Dimens.bookmarkCoverHeight)
-            .background(CoverSurfaceColor)
+            .background(Color(0xFF0F172B))
     ) {
         if (coverPlaceholderRes != null) {
             val isPreview = LocalInspectionMode.current
@@ -139,7 +129,7 @@ private fun CoverImageSection(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(CoverPreviewSurfaceColor.copy(alpha = 0.6f))
+                        .background(Color(0xFF1E3A8A).copy(alpha = 0.6f))
                 )
             }
         }
@@ -151,7 +141,7 @@ private fun CoverImageSection(
                     Brush.verticalGradient(
                         colors = listOf(
                             Color.Transparent,
-                            CoverScrimColor
+                            Color(0x99000000)
                         )
                     )
                 )
@@ -167,8 +157,8 @@ private fun CoverImageSection(
                     .shadow(
                         elevation = Dimens.cardElevationMd,
                         shape = AppShapes.iconContainerLarge,
-                        spotColor = CardShadowOverlayColor,
-                        ambientColor = CardShadowOverlayColor
+                        spotColor = Color(0x1A000000),
+                        ambientColor = Color(0x1A000000)
                     ),
                 colors = IconButtonDefaults.iconButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface
@@ -229,7 +219,7 @@ private fun ContentSection(
                         text = item.difficultyLabel,
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            color = NeutralTextMutedColor
+                            color = Color(0xFF6A7282)
                         ),
                         maxLines = 1
                     )
@@ -243,14 +233,14 @@ private fun ContentSection(
                         modifier = Modifier
                             .size(Dimens.spacingXs)
                             .background(
-                                color = NeutralDividerDotColor,
+                                color = Color(0xFFD1D5DC),
                                 shape = CircleShape
                             )
                     )
                     Text(
                         text = item.durationLabel,
                         style = AppTextStyles.badge.copy(
-                            color = NeutralTextMutedColor
+                            color = Color(0xFF6A7282)
                         ),
                         maxLines = 1
                     )
@@ -273,8 +263,8 @@ private fun ContentSection(
                         .size(Dimens.bookmarkShareButtonSize),
                     shape = BookmarkShareButtonShape,
                     color = BackgroundLight,
-                    border = AppCardDefaults.border(color = CardPrimaryBorderColor),
-                    shadowColor = CardPrimaryGlowColor
+                    border = AppCardDefaults.border(color = Color(0x1A2B7FFF)),
+                    shadowColor = Color(0xCCF4F8FF)
                 ) {
                     IconButton(
                         onClick = onShareClick ?: {},

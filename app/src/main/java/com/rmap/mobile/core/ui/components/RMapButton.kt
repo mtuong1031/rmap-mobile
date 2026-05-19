@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,29 +59,29 @@ object RMapButtonDefaults {
             RMapButtonVariant.Primary -> MaterialButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f),
-                disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(0xFF99A1AF)
             )
 
             RMapButtonVariant.Secondary -> MaterialButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(0xFF99A1AF)
             )
 
             RMapButtonVariant.Outline -> MaterialButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = MaterialTheme.colorScheme.surface,
-                disabledContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(0xFF99A1AF)
             )
 
             RMapButtonVariant.Neutral -> MaterialButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                disabledContentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(0xFF99A1AF)
             )
         }
     }
@@ -116,7 +117,12 @@ object RMapButtonDefaults {
     }
 
     @Composable
-    fun border(variant: RMapButtonVariant): BorderStroke? {
+    fun border(
+        variant: RMapButtonVariant,
+        enabled: Boolean
+    ): BorderStroke? {
+        if (!enabled) return null
+
         return when (variant) {
             RMapButtonVariant.Primary,
             RMapButtonVariant.Neutral -> null
@@ -165,7 +171,7 @@ fun RMapButton(
         shape = RoundedCornerShape(size.radius),
         colors = RMapButtonDefaults.colors(variant),
         elevation = RMapButtonDefaults.elevation(variant),
-        border = RMapButtonDefaults.border(variant),
+        border = RMapButtonDefaults.border(variant, enabled),
         contentPadding = RMapButtonDefaults.contentPadding(size)
     ) {
         RMapButtonContent(
@@ -278,6 +284,55 @@ private fun RMapButtonPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 variant = RMapButtonVariant.Neutral,
                 size = RMapButtonSize.XSmall
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RMapButtonDisabledPreview() {
+    RMapTheme(dynamicColor = false) {
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimens.spacingLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+        ) {
+            RMapButton(
+                text = "Continue",
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Primary,
+                size = RMapButtonSize.Large,
+                enabled = false
+            )
+
+            RMapButton(
+                text = "Explore ready-made",
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Secondary,
+                size = RMapButtonSize.Large,
+                enabled = false
+            )
+
+            RMapButton(
+                text = "Start",
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Outline,
+                size = RMapButtonSize.Medium,
+                enabled = false
+            )
+
+            RMapButton(
+                text = "Start",
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Neutral,
+                size = RMapButtonSize.XSmall,
+                enabled = false
             )
         }
     }

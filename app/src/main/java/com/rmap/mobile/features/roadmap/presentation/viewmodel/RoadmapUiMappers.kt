@@ -14,12 +14,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
-import com.rmap.mobile.core.ui.theme.DifficultyExpertContentColor
-import com.rmap.mobile.core.ui.theme.ExploreBlueContainerColor
-import com.rmap.mobile.core.ui.theme.ExploreGreenContainerColor
-import com.rmap.mobile.core.ui.theme.ExplorePurpleContainerColor
-import com.rmap.mobile.core.ui.theme.ExploreRoseContainerColor
-import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.RecommendedCardUiModel
@@ -137,17 +131,17 @@ fun LearningDifficulty.toLabel(): String {
 
 private fun LearningTopicIcon.toCategoryBackgroundColor(): Color {
     return when (this) {
-        LearningTopicIcon.Code -> ExploreBlueContainerColor
-        LearningTopicIcon.Devices -> ExploreRoseContainerColor
-        LearningTopicIcon.SmartToy -> ExplorePurpleContainerColor
-        LearningTopicIcon.Terminal -> ExploreGreenContainerColor
-        else -> NeutralSoftSurfaceColor
+        LearningTopicIcon.Code -> Color(0xFFEFF6FF)
+        LearningTopicIcon.Devices -> Color(0xFFFDF2F8)
+        LearningTopicIcon.SmartToy -> Color(0xFFEEF2FF)
+        LearningTopicIcon.Terminal -> Color(0xFFF0FDF4)
+        else -> Color(0xFFF3F4F6)
     }
 }
 
 private fun RoadmapSummary.toRecommendedAccentColor(): Color {
     return when (icon) {
-        LearningTopicIcon.SmartToy -> DifficultyExpertContentColor
+        LearningTopicIcon.SmartToy -> Color(0xFF9810FA)
         else -> PrimaryLight
     }
 }

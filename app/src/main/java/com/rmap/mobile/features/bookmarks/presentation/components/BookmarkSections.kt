@@ -25,7 +25,6 @@ import com.rmap.mobile.core.ui.components.SkillCard
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -122,7 +121,7 @@ fun FooterHint(modifier: Modifier = Modifier) {
         Icon(
             imageVector = Icons.Outlined.AutoAwesome,
             contentDescription = null,
-            tint = NeutralDisabledColor,
+            tint = Color(0xFF99A1AF),
             modifier = Modifier.size(Dimens.controlSm)
         )
 
@@ -130,7 +129,7 @@ fun FooterHint(modifier: Modifier = Modifier) {
             text = stringResource(R.string.bookmarks_footer_hint),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Medium,
-                color = NeutralDisabledColor,
+                color = Color(0xFF99A1AF),
                 textAlign = TextAlign.Center
             )
         )
