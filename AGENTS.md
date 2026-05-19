@@ -41,7 +41,10 @@
 3. Always apply `project-rules` checklist before generating any code.
 4. For platform-specific work (navigation, insets, build), check `android-skills` first.
 5. Apply the skill steps and checklist items.
-6. Report results and explicitly note any steps that could not be performed.
+6. After completing any task that changes files, always run lint and type check:
+   - Lint: `./gradlew lint`
+   - Type check: `./gradlew :app:compileDebugKotlin`
+7. Report results and explicitly note any steps that could not be performed.
 
 ## Project overview
 
@@ -68,6 +71,7 @@ All generated code must follow both the relevant project skill and `project-rule
 - Install on device: `./gradlew installDebug`
 - Run all checks: `./gradlew check`
 - Run lint: `./gradlew lint`
+- Run type check: `./gradlew :app:compileDebugKotlin`
 - Run unit tests: `./gradlew test`
 - Run instrumented tests: `./gradlew connectedAndroidTest`
 - Clean build: `./gradlew clean`
@@ -205,6 +209,8 @@ All new dependencies must be declared in `gradle/libs.versions.toml` before addi
 
 ## Testing Instructions
 
+- After every completed task that changes files, run both `./gradlew lint` and `./gradlew :app:compileDebugKotlin`.
+- If either command cannot be run, explicitly report why and include the highest-signal alternative verification that was performed.
 - Run all unit tests: `./gradlew test`
 - Run instrumented tests: `./gradlew connectedAndroidTest`
 - Coverage report: `./gradlew testDebugUnitTestCoverage`
@@ -219,7 +225,7 @@ All new dependencies must be declared in `gradle/libs.versions.toml` before addi
 - **Instrumented / UI tests** (`src/androidTest/`): Test Compose screens and navigation.
     - Use `Compose UI Test` (`composeTestRule`) for screen-level tests.
     - Use `Espresso` for legacy/integration scenarios if needed.
-- Before creating a PR, run: `./gradlew lint test assembleDebug`
+- Before creating a PR, run: `./gradlew lint :app:compileDebugKotlin test assembleDebug`
 
 ## Security Considerations
 
