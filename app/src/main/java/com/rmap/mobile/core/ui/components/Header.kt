@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -35,8 +36,6 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.icons.RMapIcons
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
-import com.rmap.mobile.core.ui.theme.CardDividerColor
-import com.rmap.mobile.core.ui.theme.CardShadowOverlayColor
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -142,7 +141,7 @@ fun Header(
                 )
                 .border(
                     width = Dimens.borderThin,
-                    color = CardDividerColor,
+                    color = Color(0xFFF3F4F6),
                     shape = HeaderDefaults.ActionButtonShape
                 )
                 .then(actionSemanticsModifier)

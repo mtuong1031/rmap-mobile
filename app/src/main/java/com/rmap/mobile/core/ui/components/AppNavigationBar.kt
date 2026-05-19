@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -31,9 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
-import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.navigation.NavBarDestination
 
@@ -66,7 +65,7 @@ fun AppNavigationBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.borderThin)
-                    .background(CardDividerColor)
+                    .background(Color(0xFFF3F4F6))
             )
 
             Row(
@@ -107,7 +106,7 @@ private fun NavBarItem(
     val contentColor = if (isSelected) {
         MaterialTheme.colorScheme.primary
     } else {
-        NeutralDisabledColor
+        Color(0xFF99A1AF)
     }
 
     Column(
