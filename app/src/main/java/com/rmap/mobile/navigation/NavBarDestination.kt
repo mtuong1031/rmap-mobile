@@ -30,7 +30,7 @@ enum class NavBarDestination(
         labelRes = R.string.nav_ai,
         icon = Icons.Outlined.AutoAwesome,
     ),
-    Profile(
+    More(
         labelRes = R.string.nav_more,
         icon = Icons.Outlined.Menu,
     )

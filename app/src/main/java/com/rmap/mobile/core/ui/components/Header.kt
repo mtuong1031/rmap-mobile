@@ -22,10 +22,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.icons.RMapIcons
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
@@ -41,7 +47,6 @@ object HeaderDefaults {
     val ActionButtonShape = HeaderActionShape
     val ActionIconSize: Dp = Dimens.iconMdPlus
     val GreetingIconSize: Dp = Dimens.iconSm
-    val HeadingSpacing: Dp = Dimens.spacingXxl
     val GreetingSpacing: Dp = Dimens.spacingSm
     val SectionSpacing: Dp = Dimens.spacingXsPlus
     val TextMaxWidth: Dp = 274.dp
@@ -55,10 +60,23 @@ fun Header(
     greetingIcon: ImageVector = RMapIcons.Map,
     actionIcon: ImageVector = Icons.Outlined.Person,
     actionContentDescription: String? = null,
-    actionVerticalAlignment: Alignment.Vertical = Alignment.Top,
     onActionClick: (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val resolvedActionContentDescription = actionContentDescription
+        ?: if (onActionClick != null) {
+            stringResource(R.string.content_description_header_action)
+        } else {
+            null
+        }
+    val actionSemanticsModifier = if (resolvedActionContentDescription != null) {
+        Modifier.semantics {
+            contentDescription = resolvedActionContentDescription
+            role = Role.Button
+        }
+    } else {
+        Modifier
+    }
     val actionModifier = if (onActionClick != null) {
         Modifier.clickable(
             interactionSource = interactionSource,
@@ -72,7 +90,7 @@ fun Header(
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = actionVerticalAlignment
+        verticalAlignment = Alignment.Top
     ) {
         Column(
             modifier = Modifier
@@ -128,12 +146,13 @@ fun Header(
                     color = CardDividerColor,
                     shape = HeaderDefaults.ActionButtonShape
                 )
+                .then(actionSemanticsModifier)
                 .then(actionModifier),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = actionIcon,
-                contentDescription = actionContentDescription,
+                contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(HeaderDefaults.ActionIconSize)
             )

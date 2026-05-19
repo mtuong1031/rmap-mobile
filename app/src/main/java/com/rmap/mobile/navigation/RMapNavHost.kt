@@ -50,7 +50,7 @@ fun RMapNavHost(navController: NavHostController) {
             NavBarDestination.Home -> AppRoutes.HOME
             NavBarDestination.Bookmarks -> AppRoutes.BOOKMARKS
             NavBarDestination.Explore -> AppRoutes.EXPLORE
-            NavBarDestination.Profile -> AppRoutes.PROFILE
+            NavBarDestination.More -> AppRoutes.PROFILE
             NavBarDestination.AiAssistant -> return
         }
 
@@ -158,7 +158,7 @@ fun RMapNavHost(navController: NavHostController) {
 
                 ProfileScreen(
                     uiState = uiState,
-                    selectedDestination = NavBarDestination.Profile,
+                    selectedDestination = NavBarDestination.More,
                     onDestinationSelected = ::handleDestinationSelected,
                     onEditProfile = viewModel::onEditProfile,
                     onSettingClick = viewModel::onSettingClick

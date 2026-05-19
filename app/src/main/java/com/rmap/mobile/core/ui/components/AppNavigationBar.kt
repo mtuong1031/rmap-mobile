@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -43,6 +44,7 @@ private object AppNavigationBarDefaults {
     val ItemHeight: Dp = 55.dp
     val IconSize: Dp = Dimens.iconLg
     val ItemSpacing: Dp = Dimens.spacingXsPlus
+    val MinItemWidth: Dp = Dimens.controlLg
     val SelectedIndicatorSize: Dp = Dimens.spacingXs
     val UnselectedBottomSpacer: Dp = Dimens.spacingSmPlus
 }
@@ -111,6 +113,7 @@ private fun NavBarItem(
     Column(
         modifier = Modifier
             .height(AppNavigationBarDefaults.ItemHeight)
+            .widthIn(min = AppNavigationBarDefaults.MinItemWidth)
             .clip(AppShapes.small)
             .clickable(
                 interactionSource = interactionSource,
