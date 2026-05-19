@@ -35,12 +35,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Immutable
-data class RoadmapTextInputColors(
+data class RMapTextInputColors(
     val containerColor: Color,
     val contentColor: Color,
     val placeholderColor: Color,
@@ -49,7 +51,7 @@ data class RoadmapTextInputColors(
     val shadowColor: Color
 )
 
-object RoadmapTextInputDefaults {
+object RMapTextInputDefaults {
     val Shape: Shape = AppShapes.searchBar
     val Height: Dp = Dimens.controlXl
     val BorderWidth: Dp = Dimens.borderThin
@@ -66,12 +68,12 @@ object RoadmapTextInputDefaults {
     fun colors(
         containerColor: Color = MaterialTheme.colorScheme.surface,
         contentColor: Color = MaterialTheme.colorScheme.onSurface,
-        placeholderColor: Color = Color(0xFF99A1AF),
+        placeholderColor: Color = Color(OnSurfacePlaceholderLight.value),
         cursorColor: Color = MaterialTheme.colorScheme.primary,
-        borderColor: Color = Color(0xFFF3F4F6),
+        borderColor: Color = MaterialTheme.colorScheme.secondaryContainer,
         shadowColor: Color = ShadowColor
-    ): RoadmapTextInputColors {
-        return RoadmapTextInputColors(
+    ): RMapTextInputColors {
+        return RMapTextInputColors(
             containerColor = containerColor,
             contentColor = contentColor,
             placeholderColor = placeholderColor,
@@ -90,7 +92,7 @@ object RoadmapTextInputDefaults {
 }
 
 @Composable
-fun RoadmapTextInput(
+fun RMapTextInput(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -99,13 +101,13 @@ fun RoadmapTextInput(
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     textStyle: TextStyle = MaterialTheme.typography.titleLarge,
-    colors: RoadmapTextInputColors = RoadmapTextInputDefaults.colors(),
-    shape: Shape = RoadmapTextInputDefaults.Shape,
+    colors: RMapTextInputColors = RMapTextInputDefaults.colors(),
+    shape: Shape = RMapTextInputDefaults.Shape,
     width: Dp? = null,
-    height: Dp = RoadmapTextInputDefaults.Height,
-    contentPadding: PaddingValues = RoadmapTextInputDefaults.ContentPadding,
-    leadingIconSpacing: Dp = RoadmapTextInputDefaults.LeadingIconSpacing,
-    border: BorderStroke? = RoadmapTextInputDefaults.border(colors.borderColor),
+    height: Dp = RMapTextInputDefaults.Height,
+    contentPadding: PaddingValues = RMapTextInputDefaults.ContentPadding,
+    leadingIconSpacing: Dp = RMapTextInputDefaults.LeadingIconSpacing,
+    border: BorderStroke? = RMapTextInputDefaults.border(colors.borderColor),
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -119,13 +121,13 @@ fun RoadmapTextInput(
             .then(if (width != null) Modifier.width(width) else Modifier.fillMaxWidth())
             .height(height)
             .shadow(
-                elevation = RoadmapTextInputDefaults.ShadowElevationSmall,
+                elevation = RMapTextInputDefaults.ShadowElevationSmall,
                 shape = shape,
                 ambientColor = colors.shadowColor,
                 spotColor = colors.shadowColor
             )
             .shadow(
-                elevation = RoadmapTextInputDefaults.ShadowElevationMedium,
+                elevation = RMapTextInputDefaults.ShadowElevationMedium,
                 shape = shape,
                 ambientColor = colors.shadowColor,
                 spotColor = colors.shadowColor
@@ -182,6 +184,7 @@ fun RoadmapTextInput(
                         Text(
                             text = placeholder,
                             style = textStyle.copy(color = colors.placeholderColor),
+                            fontSize = 16.sp,
                             maxLines = 1
                         )
                     }
@@ -195,9 +198,9 @@ fun RoadmapTextInput(
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable
-private fun RoadmapTextInputPreview() {
+private fun RMapTextInputPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        RoadmapTextInput(
+        RMapTextInput(
             value = "",
             onValueChange = {},
             modifier = Modifier.padding(Dimens.spacingXxl),
@@ -207,7 +210,7 @@ private fun RoadmapTextInputPreview() {
                 Icon(
                     imageVector = Icons.Outlined.Search,
                     contentDescription = null,
-                    tint = RoadmapTextInputDefaults.colors().placeholderColor
+                    tint = RMapTextInputDefaults.colors().placeholderColor,
                 )
             }
         )

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.AppNavigationBar
+import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -43,7 +43,7 @@ fun ProfileScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            AppNavigationBar(
+            RMapNavigationBar(
                 selectedDestination = selectedDestination,
                 onDestinationSelected = onDestinationSelected,
                 modifier = Modifier.fillMaxWidth()

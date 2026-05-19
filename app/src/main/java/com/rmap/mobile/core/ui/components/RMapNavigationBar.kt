@@ -30,13 +30,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.navigation.NavBarDestination
 
-private object AppNavigationBarDefaults {
+private object RMapNavigationBarDefaults {
     val HorizontalPadding: Dp = Dimens.spacingXxl
     val TopPadding: Dp = Dimens.spacingXl
     val BottomPadding: Dp = Dimens.spacingXl
@@ -44,12 +46,11 @@ private object AppNavigationBarDefaults {
     val IconSize: Dp = Dimens.iconLg
     val ItemSpacing: Dp = Dimens.spacingXsPlus
     val MinItemWidth: Dp = Dimens.controlLg
-    val SelectedIndicatorSize: Dp = Dimens.spacingXs
     val UnselectedBottomSpacer: Dp = Dimens.spacingSmPlus
 }
 
 @Composable
-fun AppNavigationBar(
+fun RMapNavigationBar(
     selectedDestination: NavBarDestination,
     onDestinationSelected: (NavBarDestination) -> Unit,
     modifier: Modifier = Modifier,
@@ -65,7 +66,7 @@ fun AppNavigationBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(Dimens.borderThin)
-                    .background(Color(0xFFF3F4F6))
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
             )
 
             Row(
@@ -73,10 +74,10 @@ fun AppNavigationBar(
                     .fillMaxWidth()
                     .navigationBarsPadding()
                     .padding(
-                        start = AppNavigationBarDefaults.HorizontalPadding,
-                        top = AppNavigationBarDefaults.TopPadding,
-                        end = AppNavigationBarDefaults.HorizontalPadding,
-                        bottom = AppNavigationBarDefaults.BottomPadding
+                        start = RMapNavigationBarDefaults.HorizontalPadding,
+                        top = RMapNavigationBarDefaults.TopPadding,
+                        end = RMapNavigationBarDefaults.HorizontalPadding,
+                        bottom = RMapNavigationBarDefaults.BottomPadding
                     ),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -106,13 +107,13 @@ private fun NavBarItem(
     val contentColor = if (isSelected) {
         MaterialTheme.colorScheme.primary
     } else {
-        Color(0xFF99A1AF)
+        Color(OnSurfacePlaceholderLight.value)
     }
 
     Column(
         modifier = Modifier
-            .height(AppNavigationBarDefaults.ItemHeight)
-            .widthIn(min = AppNavigationBarDefaults.MinItemWidth)
+            .height(RMapNavigationBarDefaults.ItemHeight)
+            .widthIn(min = RMapNavigationBarDefaults.MinItemWidth)
             .clip(AppShapes.small)
             .clickable(
                 interactionSource = interactionSource,
@@ -125,16 +126,17 @@ private fun NavBarItem(
             imageVector = destination.icon,
             contentDescription = stringResource(id = destination.labelRes),
             tint = contentColor,
-            modifier = Modifier.size(AppNavigationBarDefaults.IconSize)
+            modifier = Modifier.size(RMapNavigationBarDefaults.IconSize)
         )
 
-        Spacer(modifier = Modifier.height(AppNavigationBarDefaults.ItemSpacing))
+        Spacer(modifier = Modifier.height(RMapNavigationBarDefaults.ItemSpacing))
 
         Text(
             text = stringResource(id = destination.labelRes),
             color = contentColor,
             style = AppTextStyles.navigationLabel.copy(
-                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                fontSize = 11.sp
             ),
             maxLines = 1,
             softWrap = false,
@@ -142,26 +144,26 @@ private fun NavBarItem(
         )
 
         if (isSelected) {
-            Spacer(modifier = Modifier.height(AppNavigationBarDefaults.ItemSpacing))
+            Spacer(modifier = Modifier.height(RMapNavigationBarDefaults.ItemSpacing))
             Box(
                 modifier = Modifier
-                    .size(AppNavigationBarDefaults.SelectedIndicatorSize)
+                    .size(width = 18.dp, height = 3.dp)
                     .background(
                         color = MaterialTheme.colorScheme.primary,
                         shape = AppShapes.pill
                     )
             )
         } else {
-            Spacer(modifier = Modifier.height(AppNavigationBarDefaults.UnselectedBottomSpacer))
+            Spacer(modifier = Modifier.height(RMapNavigationBarDefaults.UnselectedBottomSpacer))
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 120)
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 96)
 @Composable
 private fun RMapNavigationBarPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
-        AppNavigationBar(
+        RMapNavigationBar(
             selectedDestination = NavBarDestination.Home,
             onDestinationSelected = {},
             modifier = Modifier.fillMaxWidth()

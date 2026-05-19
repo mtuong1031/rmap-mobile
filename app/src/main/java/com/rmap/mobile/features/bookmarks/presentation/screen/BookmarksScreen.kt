@@ -19,12 +19,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
-import com.rmap.mobile.core.ui.components.AppNavigationBar
+import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTabSwitcher
 import com.rmap.mobile.features.bookmarks.presentation.components.CuratedPathsSection
 import com.rmap.mobile.features.bookmarks.presentation.components.FooterHint
-import com.rmap.mobile.core.ui.components.Header
+import com.rmap.mobile.core.ui.components.RMapHeader
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
@@ -60,7 +60,7 @@ fun BookmarksScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            AppNavigationBar(
+            RMapNavigationBar(
                 selectedDestination = selectedDestination,
                 onDestinationSelected = onDestinationSelected,
                 modifier = Modifier.fillMaxWidth()
@@ -85,7 +85,7 @@ fun BookmarksScreen(
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxxl)
             ) {
                 item {
-                    Header(
+                    RMapHeader(
                         greetingText = greetingText,
                         headingText = headingText,
                         onActionClick = onHeaderActionClick
