@@ -31,8 +31,6 @@ import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.HeadingTextColor
-import com.rmap.mobile.core.ui.theme.PrimaryHeroShadowColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val LearningProgressCardShape = AppShapes.heroCard
@@ -54,8 +52,8 @@ fun LearningProgressCard(
             .appCardShadow(
                 elevation = AppCardDefaults.shadowElevation,
                 shape = LearningProgressCardShape,
-                spotColor = PrimaryHeroShadowColor,
-                ambientColor = PrimaryHeroShadowColor
+                spotColor = Color(0x66155DFC),
+                ambientColor = Color(0x66155DFC)
             )
             .background(
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -201,7 +199,7 @@ fun TrendingRoadmapsHeader(
         Text(
             text = stringResource(R.string.roadmap_trending_title),
             style = AppTextStyles.sectionTitle.copy(
-                color = HeadingTextColor
+                color = Color(0xFF000000)
             )
         )
 

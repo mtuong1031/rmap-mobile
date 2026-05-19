@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -28,14 +29,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
-import com.rmap.mobile.core.ui.theme.AccentPurpleColor
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
-import com.rmap.mobile.core.ui.theme.AiTipContainerEndColor
 import com.rmap.mobile.core.ui.theme.BackgroundLight
-import com.rmap.mobile.core.ui.theme.CardShadowSoftColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.NeutralTextBodyColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -50,12 +47,12 @@ fun AiScholarTipCard(
 ) {
     val gradientColors = listOf(
         PrimaryLight,
-        AccentPurpleColor
+        Color(0xFF6366F1)
     )
 
     val bgGradientColors = listOf(
         BackgroundLight,
-        AiTipContainerEndColor
+        Color(0xFFEAF3FF)
     )
 
     Box(
@@ -63,8 +60,8 @@ fun AiScholarTipCard(
             .fillMaxWidth()
             .appCardShadow(
                 shape = AiScholarTipCardShape,
-                ambientColor = CardShadowSoftColor,
-                spotColor = CardShadowSoftColor
+                ambientColor = Color(0x08000000),
+                spotColor = Color(0x08000000)
             )
             .background(
                 brush = Brush.linearGradient(colors = bgGradientColors),
@@ -123,7 +120,7 @@ fun AiScholarTipCard(
                 },
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
-                    color = NeutralTextBodyColor
+                    color = Color(0xFF4A5565)
                 )
             )
         }

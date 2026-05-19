@@ -33,12 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.InfoContainerColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.core.ui.theme.StatusSuccessContainerColor
-import com.rmap.mobile.core.ui.theme.StatusSuccessContentColor
-import com.rmap.mobile.core.ui.theme.StatusWarningContainerColor
-import com.rmap.mobile.core.ui.theme.StatusWarningContentColor
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 
 private val HighlightStatCardShape = AppShapes.statCard
@@ -68,23 +63,23 @@ object HighlightStatCardDefaults {
     @Composable
     fun streakStyle(): HighlightStatCardStyle {
         return HighlightStatCardStyle(
-            iconColor = StatusWarningContentColor,
-            iconContainerColor = StatusWarningContainerColor
+            iconColor = Color(0xFFF59E0B),
+            iconContainerColor = Color(0xFFFFFBEB)
         )
     }
 
     @Composable
     fun goalStyle(): HighlightStatCardStyle {
         return HighlightStatCardStyle(
-            iconContainerColor = StatusSuccessContainerColor,
-            iconColor = StatusSuccessContentColor,
+            iconContainerColor = Color(0xFFECFDF5),
+            iconColor = Color(0xFF10B981),
         )
     }
 
     @Composable
     fun completedStyle(): HighlightStatCardStyle {
         return HighlightStatCardStyle(
-            iconContainerColor = InfoContainerColor,
+            iconContainerColor = Color(0xFFEFF6FF),
             iconColor = PrimaryLight,
         )
     }

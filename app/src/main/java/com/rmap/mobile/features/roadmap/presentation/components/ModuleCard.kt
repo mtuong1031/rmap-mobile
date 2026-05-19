@@ -45,13 +45,8 @@ import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.BackgroundLight
-import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
-import com.rmap.mobile.core.ui.theme.NeutralSoftSurfaceColor
-import com.rmap.mobile.core.ui.theme.NeutralTextMutedColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.core.ui.theme.StatusCompletedContentColor
 
 enum class ModuleStatus {
     COMPLETED, IN_PROGRESS, LOCKED
@@ -85,9 +80,9 @@ fun ModuleCard(
     } else {
         MaterialTheme.colorScheme.surface
     }
-    val titleColor = if (isLocked) NeutralDisabledColor else MaterialTheme.colorScheme.onSurface
-    val iconBg = if (isLocked) NeutralSoftSurfaceColor else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-    val iconTint = if (isLocked) NeutralDisabledColor else MaterialTheme.colorScheme.primary
+    val titleColor = if (isLocked) Color(0xFF99A1AF) else MaterialTheme.colorScheme.onSurface
+    val iconBg = if (isLocked) Color(0xFFF3F4F6) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+    val iconTint = if (isLocked) Color(0xFF99A1AF) else MaterialTheme.colorScheme.primary
 
     AppCard(
         modifier = modifier.fillMaxWidth(),
@@ -153,9 +148,9 @@ fun ModuleCard(
                         }
 
                         val statusColor = when (item.status) {
-                            ModuleStatus.COMPLETED -> StatusCompletedContentColor
-                            ModuleStatus.IN_PROGRESS -> NeutralTextMutedColor
-                            ModuleStatus.LOCKED -> NeutralDisabledColor
+                            ModuleStatus.COMPLETED -> Color(0xFF009966)
+                            ModuleStatus.IN_PROGRESS -> Color(0xFF6A7282)
+                            ModuleStatus.LOCKED -> Color(0xFF99A1AF)
                         }
 
                         Text(
@@ -172,14 +167,14 @@ fun ModuleCard(
                     Icon(
                         imageVector = Icons.Default.Lock,
                         contentDescription = null,
-                        tint = NeutralDisabledColor,
+                        tint = Color(0xFF99A1AF),
                         modifier = Modifier.size(Dimens.iconLg)
                     )
                 } else {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
-                        tint = NeutralDisabledColor,
+                        tint = Color(0xFF99A1AF),
                         modifier = Modifier
                             .size(Dimens.iconLg)
                             .rotate(rotation)
@@ -252,13 +247,13 @@ fun ModuleCard(
                                                 modifier = Modifier
                                                     .size(Dimens.iconMd)
                                                     .clip(CircleShape)
-                                                    .background(CardDividerColor),
+                                                    .background(Color(0xFFF3F4F6)),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Lock,
                                                     contentDescription = null,
-                                                    tint = NeutralDisabledColor,
+                                                    tint = Color(0xFF99A1AF),
                                                     modifier = Modifier.size(Dimens.spacingSmPlus)
                                                 )
                                             }
@@ -284,7 +279,7 @@ fun ModuleCard(
                                 text = lesson.title,
                                 style = AppTextStyles.badgeSmall.copy(
                                     fontWeight = if (lesson.status == ModuleStatus.IN_PROGRESS) FontWeight.SemiBold else FontWeight.Medium,
-                                    color = if (lesson.status == ModuleStatus.LOCKED) NeutralDisabledColor else MaterialTheme.colorScheme.onSurface
+                                    color = if (lesson.status == ModuleStatus.LOCKED) Color(0xFF99A1AF) else MaterialTheme.colorScheme.onSurface
                                 )
                             )
                         }

@@ -132,10 +132,9 @@ fun Header(
             modifier = Modifier
                 .size(HeaderDefaults.ActionButtonSize)
                 .shadow(
-                    elevation = Dimens.cardElevationPressed,
-                    shape = HeaderDefaults.ActionButtonShape,
-                    spotColor = CardShadowOverlayColor,
-                    ambientColor = CardShadowOverlayColor
+                    elevation = Dimens.cardElevationHeader,
+                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
                 )
                 .background(
                     color = MaterialTheme.colorScheme.surface,
