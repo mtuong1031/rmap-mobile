@@ -21,12 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.AppShapes
-import com.rmap.mobile.core.ui.theme.CardShadowColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.InfoContainerColor
-import com.rmap.mobile.core.ui.theme.NeutralBorderColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.core.ui.theme.StatusSuccessContainerColor
 
 @Immutable
 data class RoadmapPathCardCornerAccents(
@@ -44,9 +40,9 @@ object RoadmapPathCardDefaults {
     val Shape: Shape = AppShapes.largeCard
     val MinHeight: Dp = 288.dp
     val BorderWidth: Dp = Dimens.borderThin
-    val BorderColor: Color = NeutralBorderColor
+    val BorderColor: Color = Color(0xFFE5E7EB)
     val ShadowElevation: Dp = Dimens.cardElevationSm
-    val ShadowColor: Color = CardShadowColor
+    val ShadowColor: Color = Color(0x0F000000)
     val CornerAccentTopEndSize: Dp = 220.dp
     val CornerAccentBottomStartSize: Dp = 180.dp
 
@@ -58,8 +54,8 @@ object RoadmapPathCardDefaults {
     }
 
     fun cornerAccents(
-        topEndColor: Color = InfoContainerColor.copy(alpha = 0.5f),
-        bottomStartColor: Color = StatusSuccessContainerColor.copy(alpha = 0.55f),
+        topEndColor: Color = Color(0xFFEFF6FF).copy(alpha = 0.5f),
+        bottomStartColor: Color = Color(0xFFECFDF5).copy(alpha = 0.55f),
         topEndSize: Dp = CornerAccentTopEndSize,
         bottomStartSize: Dp = CornerAccentBottomStartSize,
         topEndOffsetX: Dp = 86.dp,

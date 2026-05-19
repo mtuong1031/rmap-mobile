@@ -36,9 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.AppShapes
-import com.rmap.mobile.core.ui.theme.CardDividerColor
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.NeutralDisabledColor
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Immutable
@@ -68,9 +66,9 @@ object RoadmapTextInputDefaults {
     fun colors(
         containerColor: Color = MaterialTheme.colorScheme.surface,
         contentColor: Color = MaterialTheme.colorScheme.onSurface,
-        placeholderColor: Color = NeutralDisabledColor,
+        placeholderColor: Color = Color(0xFF99A1AF),
         cursorColor: Color = MaterialTheme.colorScheme.primary,
-        borderColor: Color = CardDividerColor,
+        borderColor: Color = Color(0xFFF3F4F6),
         shadowColor: Color = ShadowColor
     ): RoadmapTextInputColors {
         return RoadmapTextInputColors(
