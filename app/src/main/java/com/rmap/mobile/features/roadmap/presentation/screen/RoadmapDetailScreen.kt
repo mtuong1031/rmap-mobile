@@ -40,7 +40,7 @@ import com.rmap.mobile.features.roadmap.presentation.components.AiScholarTipCard
 import com.rmap.mobile.features.roadmap.presentation.components.ModuleCard
 import com.rmap.mobile.features.roadmap.presentation.components.RoadmapHeroCard
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailUiState
-import com.rmap.mobile.core.ui.components.BackgroundDecorator
+import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -70,7 +70,7 @@ fun RoadmapDetailScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            BackgroundDecorator(
+            RMapHeroSectionBackground(
                 scrollOffsetY = scrollY,
                 modifier = Modifier.fillMaxSize()
             )

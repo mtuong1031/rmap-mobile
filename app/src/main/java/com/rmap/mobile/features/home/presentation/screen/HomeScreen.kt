@@ -28,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
 import com.rmap.mobile.core.ui.components.RMapNavigationBar
-import com.rmap.mobile.core.ui.components.BackgroundDecorator
 import com.rmap.mobile.core.ui.components.RMapHeader
 import com.rmap.mobile.core.ui.components.HighlightStatCardDefaults
 import com.rmap.mobile.core.ui.components.HighlightStatCardRow
@@ -37,10 +36,9 @@ import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.RoadmapStatCardRow
 import com.rmap.mobile.core.ui.components.RoadmapStatItemUiModel
-import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.home.presentation.components.LearningProgressCard
+import com.rmap.mobile.features.home.presentation.components.HomeHeroSection
 import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapsHeader
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeUiState
 
@@ -51,16 +49,17 @@ fun HomeScreen(
     selectedDestination: NavBarDestination = NavBarDestination.Home,
     onHeaderActionClick: () -> Unit = {},
     onSeeAllClick: () -> Unit = {},
+    onContinueLearningClick: () -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onHighlightItemClick: ((index: Int, item: HighlightStatItemUiModel) -> Unit)? = null,
     onRoadmapStatItemClick: ((index: Int, item: RoadmapStatItemUiModel) -> Unit)? = null,
     onRoadmapClick: ((RoadmapCardUiModel) -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
-    val scrollY = rememberBackgroundScrollOffsetY(listState)
 
     val greetingText = stringResource(R.string.home_greeting, uiState.userName)
     val headingText = stringResource(R.string.home_heading_ready_to_learn)
+    val progressPercent = (uiState.progressFraction.coerceIn(0f, 1f) * 100).toInt()
 
     val highlightItems = listOf(
         HighlightStatItemUiModel(
@@ -113,11 +112,6 @@ fun HomeScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            BackgroundDecorator(
-                scrollOffsetY = scrollY,
-                modifier = Modifier.fillMaxSize()
-            )
-
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
@@ -146,11 +140,24 @@ fun HomeScreen(
                 }
 
                 item {
-                    LearningProgressCard(
+                    HomeHeroSection(
+                        sectionTitle = stringResource(R.string.home_learning_plan_title),
+                        roadmapTitle = stringResource(R.string.home_roadmap_title_frontend_pro),
+                        skillTitle = stringResource(R.string.roadmap_detail_lesson_async_js),
+                        chapterText = stringResource(R.string.home_hero_chapter, 1, 6),
+                        requiredSkillText = stringResource(R.string.home_hero_required_skill),
+                        timeLeftText = stringResource(R.string.home_hero_time_left, 25),
+                        progressText = stringResource(
+                            R.string.home_hero_nodes_complete,
+                            uiState.completedLessons,
+                            uiState.totalLessons
+                        ),
+                        progressPercentText = stringResource(R.string.home_progress_percent_short, progressPercent),
                         progressFraction = uiState.progressFraction,
-                        completedLessons = uiState.completedLessons,
-                        totalLessons = uiState.totalLessons,
-                        onPrimaryIconClick = {}
+                        continueText = stringResource(R.string.home_hero_continue),
+                        nextUnlockPrefix = stringResource(R.string.home_hero_next_unlock_prefix),
+                        nextUnlockText = stringResource(R.string.roadmap_detail_lesson_dom_manipulation),
+                        onContinueClick = onContinueLearningClick
                     )
                 }
 
@@ -199,7 +206,8 @@ private fun HomeScreenPreview() {
             selectedDestination = selectedDestination,
             onDestinationSelected = { selectedDestination = it },
             onHeaderActionClick = {},
-            onSeeAllClick = {}
+            onSeeAllClick = {},
+            onContinueLearningClick = {}
         )
     }
 }

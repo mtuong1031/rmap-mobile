@@ -10,6 +10,7 @@
     <string name="button_continue_with_facebook">Continue with Facebook</string>
     <string name="auth_sign_in_failed">Unable to sign in. Please try again.</string>
     <string name="coming_soon_message">This action is coming soon.</string>
+    <string name="separator_bullet">•</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
@@ -44,6 +45,13 @@
     <string name="home_progress_percent_short">%1$d%%</string>
     <string name="home_progress_percent_complete">%1$d%% Complete</string>
     <string name="home_progress_lessons_completed">%1$d of %2$d lessons completed</string>
+    <string name="home_learning_plan_title">Today\'s Learning Plan</string>
+    <string name="home_hero_chapter">Chapter %1$d/%2$d</string>
+    <string name="home_hero_required_skill">Required Skill</string>
+    <string name="home_hero_time_left">%1$d min left</string>
+    <string name="home_hero_nodes_complete">%1$d of %2$d required nodes complete</string>
+    <string name="home_hero_continue">Continue</string>
+    <string name="home_hero_next_unlock_prefix">Next unlock: </string>
 
     <string name="home_roadmap_total_lessons_value">107</string>
     <string name="home_roadmap_total_lessons_label">Total Lessons</string>
