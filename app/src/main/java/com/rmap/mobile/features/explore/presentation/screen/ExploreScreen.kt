@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.navigation.NavBarDestination
 import com.rmap.mobile.core.ui.components.RMapNavigationBar
-import com.rmap.mobile.core.ui.components.BackgroundDecorator
+import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.components.RMapHeader
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
@@ -63,7 +63,7 @@ fun ExploreScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            BackgroundDecorator(
+            RMapHeroSectionBackground(
                 scrollOffsetY = scrollY,
                 modifier = Modifier.fillMaxSize()
             )

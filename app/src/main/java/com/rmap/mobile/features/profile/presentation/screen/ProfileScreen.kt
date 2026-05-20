@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapNavigationBar
-import com.rmap.mobile.core.ui.components.BackgroundDecorator
+import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -51,7 +51,7 @@ fun ProfileScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            BackgroundDecorator(
+            RMapHeroSectionBackground(
                 scrollOffsetY = scrollY,
                 modifier = Modifier.fillMaxSize()
             )
