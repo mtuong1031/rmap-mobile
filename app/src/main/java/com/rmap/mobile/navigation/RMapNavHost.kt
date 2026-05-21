@@ -40,8 +40,10 @@ import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSk
 import com.rmap.mobile.features.home.presentation.screen.HomeScreen
 import com.rmap.mobile.features.home.presentation.screen.HomeSearchScreen
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeViewModel
+import com.rmap.mobile.features.profile.presentation.screen.NotificationSettingsScreen
 import com.rmap.mobile.features.profile.presentation.screen.ProfileScreen
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileEvent
+import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsViewModel
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileViewModel
 import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapDetailScreen
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailViewModel
@@ -252,6 +254,7 @@ fun RMapNavHost(navController: NavHostController) {
                 LaunchedEffect(viewModel) {
                     viewModel.events.collect { event ->
                         when (event) {
+                            ProfileEvent.NavigateToNotificationSettings -> navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
                             ProfileEvent.ShowComingSoon -> snackbarHostState.showSnackbar(profileComingSoonMessage)
                             ProfileEvent.SignedOut -> navController.navigate(AppRoutes.AUTH) {
                                 popUpTo(AppRoutes.HOME) { inclusive = true }
@@ -266,6 +269,27 @@ fun RMapNavHost(navController: NavHostController) {
                     onDestinationSelected = ::handleDestinationSelected,
                     onEditProfile = viewModel::onEditProfile,
                     onSettingClick = viewModel::onSettingClick
+                )
+            }
+
+            composable(AppRoutes.NOTIFICATION_SETTINGS) {
+                val viewModel: NotificationSettingsViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                NotificationSettingsScreen(
+                    uiState = uiState,
+                    selectedDestination = NavBarDestination.More,
+                    onBackClick = { navController.popBackStack() },
+                    onAllowNotificationsChange = viewModel::onAllowNotificationsChange,
+                    onReminderTimeSelected = viewModel::onReminderTimeSelected,
+                    onReminderFrequencySelected = viewModel::onReminderFrequencySelected,
+                    onDestinationSelected = { destination ->
+                        if (destination == NavBarDestination.AiAssistant) {
+                            coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                        } else {
+                            navigateFromBottomBar(destination)
+                        }
+                    }
                 )
             }
 

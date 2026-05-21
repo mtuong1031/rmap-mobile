@@ -9,8 +9,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -23,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -38,10 +39,12 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 fun SettingsItem(
     icon: ImageVector,
     title: String,
+    subtitle: String? = null,
     isDestructive: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    showArrow: Boolean = true
+    showArrow: Boolean = true,
+    showDivider: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -51,61 +54,95 @@ fun SettingsItem(
         label = "settings_item_scale"
     )
 
-    val iconContainerColor = if (isDestructive) Color(0xFFFEF2F2) else Color(0xFFF3F0FF)
-    val iconTint = if (isDestructive) Color(0xFFFB2C36) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
-    val textColor = if (isDestructive) Color(0xFFFB2C36) else MaterialTheme.colorScheme.onSurface
+    val iconContainerColor = if (isDestructive) {
+        MaterialTheme.colorScheme.errorContainer
+    } else {
+        MaterialTheme.colorScheme.outlineVariant
+    }
+    val iconTint = if (isDestructive) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+    }
+    val textColor = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .clickable(
-                interactionSource = interactionSource,
-                indication = LocalIndication.current,
-                onClick = onClick
-            )
-            .padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingLg),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current,
+                    onClick = onClick
+                )
+                .padding(Dimens.spacingLg),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .size(Dimens.controlSm)
-                    .background(iconContainerColor, AppShapes.iconContainer),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(Dimens.iconXxl)
+                        .background(iconContainerColor, AppShapes.pill),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(Dimens.iconSm)
+                    )
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = textColor
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            if (showArrow) {
                 Icon(
-                    imageVector = icon,
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(Dimens.iconMd)
+                    tint = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier.size(Dimens.iconSm)
                 )
             }
-
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = textColor
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
         }
 
-        if (showArrow) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.28f),
-                modifier = Modifier.size(Dimens.iconMd)
+        if (showDivider) {
+            Box(
+                modifier = Modifier
+                    .padding(start = Dimens.spacingLg, end = Dimens.spacingLg)
+                    .height(Dimens.borderThin)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.outlineVariant)
             )
         }
     }

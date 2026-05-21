@@ -23,8 +23,31 @@ object AppCardDefaults {
     val shadowElevation: Dp = Dimens.cardElevationSm
     val shadowColor = Color(0x0F000000)
 
+    @Composable
+    fun containerColor(): Color {
+        return MaterialTheme.colorScheme.surface
+    }
+
+    @Composable
+    fun themedBorderColor(): Color {
+        return MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)
+    }
+
+    @Composable
+    fun themedShadowColor(): Color {
+        return Color(0x14000000)
+    }
+
     fun border(
         color: Color = borderColor,
+        width: Dp = borderWidth
+    ): BorderStroke {
+        return BorderStroke(width = width, color = color)
+    }
+
+    @Composable
+    fun themedBorder(
+        color: Color = themedBorderColor(),
         width: Dp = borderWidth
     ): BorderStroke {
         return BorderStroke(width = width, color = color)
@@ -35,10 +58,10 @@ object AppCardDefaults {
 fun AppCard(
     modifier: Modifier = Modifier,
     shape: Shape = AppCardDefaults.shape,
-    color: Color = MaterialTheme.colorScheme.surface,
-    border: BorderStroke? = AppCardDefaults.border(),
+    color: Color = AppCardDefaults.containerColor(),
+    border: BorderStroke? = AppCardDefaults.themedBorder(),
     shadowElevation: Dp = AppCardDefaults.shadowElevation,
-    shadowColor: Color = AppCardDefaults.shadowColor,
+    shadowColor: Color = AppCardDefaults.themedShadowColor(),
     content: @Composable () -> Unit
 ) {
     Surface(
