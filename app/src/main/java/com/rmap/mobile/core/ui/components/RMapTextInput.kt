@@ -124,7 +124,9 @@ fun RMapTextInput(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    leadingIcon: (@Composable () -> Unit)? = null
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
+    trailingIconSpacing: Dp = RMapTextInputDefaults.LeadingIconSpacing
 ) {
     val isFocused by interactionSource.collectIsFocusedAsState()
     val effectiveBorder = border?.let {
@@ -228,6 +230,7 @@ fun RMapTextInput(
                 if (value.isNotEmpty() && enabled && !readOnly) {
                     Box(
                         modifier = Modifier
+                            .padding(start = trailingIconSpacing)
                             .size(RMapTextInputDefaults.ClearButtonSize)
                             .clip(CircleShape)
                             .background(RMapTextInputDefaults.ClearButtonContainerColor)
@@ -245,6 +248,13 @@ fun RMapTextInput(
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(RMapTextInputDefaults.ClearButtonIconSize)
                         )
+                    }
+                } else if (trailingIcon != null) {
+                    Box(
+                        modifier = Modifier.padding(start = trailingIconSpacing),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        trailingIcon()
                     }
                 }
             }

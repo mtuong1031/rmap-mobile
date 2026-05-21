@@ -158,7 +158,11 @@ fun RMapButton(
     size: RMapButtonSize = RMapButtonSize.Large,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    colors: ButtonColors? = null,
+    elevation: ButtonElevation? = null,
+    border: BorderStroke? = RMapButtonDefaults.border(variant, enabled),
+    textStyle: TextStyle? = null
 ) {
     MaterialButton(
         onClick = onClick,
@@ -167,14 +171,15 @@ fun RMapButton(
             .defaultMinSize(minHeight = size.height),
         enabled = enabled,
         shape = RoundedCornerShape(size.radius),
-        colors = RMapButtonDefaults.colors(variant),
-        elevation = RMapButtonDefaults.elevation(variant),
-        border = RMapButtonDefaults.border(variant, enabled),
+        colors = colors ?: RMapButtonDefaults.colors(variant),
+        elevation = elevation ?: RMapButtonDefaults.elevation(variant),
+        border = border,
         contentPadding = RMapButtonDefaults.contentPadding(size)
     ) {
         RMapButtonContent(
             text = text,
             size = size,
+            textStyle = textStyle,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon
         )
@@ -185,6 +190,7 @@ fun RMapButton(
 private fun RMapButtonContent(
     text: String,
     size: RMapButtonSize,
+    textStyle: TextStyle?,
     leadingIcon: (@Composable () -> Unit)?,
     trailingIcon: (@Composable () -> Unit)?
 ) {
@@ -199,7 +205,7 @@ private fun RMapButtonContent(
 
         Text(
             text = text,
-            style = size.textStyle(),
+            style = textStyle ?: size.textStyle(),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
