@@ -9,15 +9,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +41,8 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import coil.compose.AsyncImage
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun ProfileCard(
@@ -55,25 +56,46 @@ fun ProfileCard(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val interactionSource = remember { MutableInteractionSource() }
+        val isPressed by interactionSource.collectIsPressedAsState()
+        val scale by animateFloatAsState(
+            targetValue = if (isPressed) 0.97f else 1f,
+            animationSpec = spring(stiffness = 620f),
+            label = "profile_avatar_scale"
+        )
+
         Box(
-            modifier = Modifier.wrapContentSize(),
-            contentAlignment = Alignment.BottomEnd
+            modifier = Modifier
+                .wrapContentSize()
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .shadow(
+                    elevation = Dimens.cardElevationPressed,
+                    shape = AppShapes.largeCard,
+                    ambientColor = Color(0x1A000000),
+                    spotColor = Color(0x1A000000)
+                )
+                .clip(AppShapes.largeCard)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onEditClick
+                )
+                .background(MaterialTheme.colorScheme.surface)
+                .border(
+                    width = Dimens.borderThin,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = AppShapes.largeCard
+                )
+                .padding(5.dp),
+            contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
-                    .size(Dimens.profileAvatarSize)
-                    .shadow(
-                        elevation = Dimens.cardElevationLg,
-                        shape = AppShapes.largeCard,
-                        ambientColor = Color(0x33298CF7),
-                        spotColor = Color(0x33298CF7)
-                    )
-                    .border(
-                        width = Dimens.borderThick,
-                        color = MaterialTheme.colorScheme.surface,
-                        shape = AppShapes.largeCard
-                    )
-                    .clip(AppShapes.largeCard)
+                    .size(94.dp)
+                    .clip(AppShapes.heroCard)
                     .background(Color(0xFF000000))
             ) {
                 AvatarPlaceholder()
@@ -84,48 +106,17 @@ fun ProfileCard(
                     contentScale = ContentScale.Crop
                 )
             }
-
-            val interactionSource = remember { MutableInteractionSource() }
-            val isPressed by interactionSource.collectIsPressedAsState()
-            val scale by animateFloatAsState(
-                targetValue = if (isPressed) 0.94f else 1f,
-                animationSpec = spring(stiffness = 620f),
-                label = "edit_button_scale"
-            )
-
-            Box(
-                modifier = Modifier
-                    .size(Dimens.profileEditButtonSize)
-                    .graphicsLayer {
-                        scaleX = scale
-                        scaleY = scale
-                    }
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-                    .border(Dimens.borderMedium, MaterialTheme.colorScheme.surface, CircleShape)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = onEditClick
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Edit,
-                    contentDescription = stringResource(id = R.string.profile_edit_avatar_content_description),
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(Dimens.iconSmPlus)
-                )
-            }
         }
 
-        Spacer(modifier = Modifier.height(Dimens.spacingMdPlus))
+        Spacer(modifier = Modifier.height(Dimens.spacingLg))
 
         Text(
             text = name,
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 22.sp,
+                lineHeight = 28.sp
             ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -136,9 +127,11 @@ fun ProfileCard(
 
         Text(
             text = role,
-            style = MaterialTheme.typography.bodyLarge.copy(
+            style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 15.sp,
+                lineHeight = 22.sp
             ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

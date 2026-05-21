@@ -59,13 +59,15 @@ class ProfileViewModel(
     }
 
     fun onSettingClick(action: ProfileSettingAction) {
-        if (action == ProfileSettingAction.SignOut) {
-            viewModelScope.launch {
-                sessionRepository.signOut()
-                _events.emit(ProfileEvent.SignedOut)
+        viewModelScope.launch {
+            when (action) {
+                ProfileSettingAction.Notifications -> _events.emit(ProfileEvent.NavigateToNotificationSettings)
+                ProfileSettingAction.SignOut -> {
+                    sessionRepository.signOut()
+                    _events.emit(ProfileEvent.SignedOut)
+                }
+                else -> _events.emit(ProfileEvent.ShowComingSoon)
             }
-        } else {
-            emitComingSoon()
         }
     }
 

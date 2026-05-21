@@ -7,6 +7,7 @@ object AppRoutes {
     const val BOOKMARKS = "bookmarks"
     const val EXPLORE = "explore"
     const val PROFILE = "profile"
+    const val NOTIFICATION_SETTINGS = "notification_settings"
     const val ROADMAP_ID_ARG = "roadmapId"
     const val ROADMAP_DETAIL = "roadmap_detail/{$ROADMAP_ID_ARG}"
 

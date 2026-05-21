@@ -81,6 +81,57 @@
     <string name="profile_xp_value">%1$d XP</string>
     <string name="profile_experience_trending_content_description">Experience trend</string>
 
+    <string name="profile_active_roadmaps_title">Active Roadmaps</string>
+    <string name="profile_active_roadmaps_subtitle">2 active paths</string>
+    <string name="profile_manage_roadmaps">Manage roadmaps</string>
+    <string name="profile_show_less_roadmaps">Show less</string>
+    <string name="profile_roadmap_frontend_fresher">Frontend Fresher</string>
+    <string name="profile_roadmap_frontend_time_left">4 months left</string>
+    <string name="profile_roadmap_uiux_master">UI/UX Master</string>
+    <string name="profile_roadmap_uiux_time_left">2 months left</string>
+    <string name="profile_progress_percent_short">%1$d%%</string>
+    <string name="profile_manage_fullstack_title">Full Stack Development</string>
+    <string name="profile_manage_fullstack_description">Career path • 5 months left</string>
+    <string name="profile_manage_mobile_title">Mobile App Development</string>
+    <string name="profile_manage_mobile_description">Career path • 6 months left</string>
+    <string name="profile_manage_data_title">Data Science Starter</string>
+    <string name="profile_manage_data_description">Recommended path • Not started</string>
+
+    <string name="profile_achievements_title">Achievements</string>
+    <string name="profile_achievements_subtitle">Completed roadmaps and skills</string>
+    <string name="profile_see_all">See All</string>
+    <string name="profile_show_less">Show Less</string>
+    <string name="profile_tab_roadmaps">Roadmaps</string>
+    <string name="profile_tab_skills">Skills</string>
+    <string name="profile_achievement_frontend_starter">Frontend Starter</string>
+    <string name="profile_achievement_web_design_basics">Web Design Basics</string>
+    <string name="profile_achievement_mobile_foundations">Mobile Foundations</string>
+    <string name="profile_achievement_api_integration">API Integration Path</string>
+    <string name="profile_achievement_roadmap_completed">Roadmap completed</string>
+    <string name="profile_achievement_skill_mastered">Skill mastered</string>
+    <string name="profile_achievement_completed_yesterday">Completed yesterday</string>
+    <string name="profile_achievement_completed_two_days">Completed 2 days ago</string>
+    <string name="profile_achievement_completed_one_week">Completed 1 week ago</string>
+    <string name="profile_achievement_completed_two_weeks">Completed 2 weeks ago</string>
+    <string name="profile_achievement_completed_one_month">Completed 1 month ago</string>
+    <string name="profile_achievement_completed_two_months">Completed 2 months ago</string>
+    <string name="profile_achievement_completed_three_months">Completed 3 months ago</string>
+    <string name="profile_skill_react_components">React Components</string>
+    <string name="profile_skill_css_layouts">Advanced CSS Layouts</string>
+    <string name="profile_skill_accessibility">Accessibility Basics</string>
+    <string name="profile_skill_prototyping">Interactive Prototyping</string>
+
+    <string name="profile_weekly_activity_title">Weekly Activity</string>
+    <string name="profile_weekly_activity_subtitle">4 active days this week</string>
+    <string name="profile_weekly_activity_best">Best: 5d</string>
+    <string name="profile_day_monday">M</string>
+    <string name="profile_day_tuesday">T</string>
+    <string name="profile_day_wednesday">W</string>
+    <string name="profile_day_thursday">T</string>
+    <string name="profile_day_friday">F</string>
+    <string name="profile_day_saturday">S</string>
+    <string name="profile_day_sunday">S</string>
+
     <string name="profile_current_streak_title">Current Streak</string>
     <string name="profile_certificates_title">Certificates</string>
     <string name="profile_streak_value">%1$d Days</string>
@@ -88,9 +139,10 @@
 
     <string name="profile_account_settings_title">ACCOUNT SETTINGS</string>
     <string name="profile_setting_personal_info">Personal Information</string>
-    <string name="profile_setting_notifications">Notification Settings</string>
-    <string name="profile_setting_learning_goals">Learning Goals</string>
-    <string name="profile_setting_privacy">Privacy Policy</string>
+    <string name="profile_setting_notifications">Notifications</string>
+    <string name="profile_setting_notifications_subtitle">Reminder and learning alerts</string>
+    <string name="profile_setting_privacy">Privacy &amp; Security</string>
+    <string name="profile_setting_connected_accounts">Connected Accounts</string>
     <string name="profile_setting_sign_out">Sign Out</string>
 
     <!-- Bookmarks Screen -->
@@ -118,6 +170,18 @@
 
     <!-- Roadmap Detail Screen -->
     <string name="content_description_back">Back</string>
+    <string name="action_done">Done</string>
+
+    <!-- Notification Settings Screen -->
+    <string name="notification_settings_title">Notifications</string>
+    <string name="notification_allow_title">Allow notifications</string>
+    <string name="notification_reminder_time_title">Reminder time</string>
+    <string name="notification_reminder_frequency_title">Reminder frequency</string>
+    <string name="notification_reminder_frequency_subtitle">Daily / Weekly</string>
+    <string name="notification_frequency_daily">Daily</string>
+    <string name="notification_frequency_weekly">Weekly</string>
+    <string name="notification_time_dialog_title">Reminder time</string>
+
     <string name="roadmap_detail_section_core_web_fundamentals">Core Web Fundamentals</string>
     <string name="roadmap_detail_section_framework_ecosystem">Framework Ecosystem</string>
     <string name="roadmap_detail_module_html_css">HTML &amp; CSS</string>

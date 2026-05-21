@@ -74,19 +74,65 @@ object RoadmapPathCardDefaults {
             bottomStartOffsetY = bottomStartOffsetY
         )
     }
+
+    @Composable
+    fun containerColor(): Color {
+        return MaterialTheme.colorScheme.surface
+    }
+
+    @Composable
+    fun borderColor(): Color {
+        return MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)
+    }
+
+    @Composable
+    fun shadowColor(): Color {
+        return Color(0x14000000)
+    }
+
+    @Composable
+    fun themedBorder(
+        color: Color = borderColor(),
+        width: Dp = BorderWidth
+    ): BorderStroke {
+        return BorderStroke(width = width, color = color)
+    }
+
+    @Composable
+    fun themedCornerAccents(
+        topEndColor: Color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f),
+        bottomStartColor: Color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.26f),
+        topEndSize: Dp = CornerAccentTopEndSize,
+        bottomStartSize: Dp = CornerAccentBottomStartSize,
+        topEndOffsetX: Dp = 86.dp,
+        topEndOffsetY: Dp = (-104).dp,
+        bottomStartOffsetX: Dp = (-94).dp,
+        bottomStartOffsetY: Dp = 84.dp
+    ): RoadmapPathCardCornerAccents {
+        return RoadmapPathCardCornerAccents(
+            topEndColor = topEndColor,
+            bottomStartColor = bottomStartColor,
+            topEndSize = topEndSize,
+            bottomStartSize = bottomStartSize,
+            topEndOffsetX = topEndOffsetX,
+            topEndOffsetY = topEndOffsetY,
+            bottomStartOffsetX = bottomStartOffsetX,
+            bottomStartOffsetY = bottomStartOffsetY
+        )
+    }
 }
 
 @Composable
 fun RoadmapPathCard(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.surface,
+    color: Color = RoadmapPathCardDefaults.containerColor(),
     shape: Shape = RoadmapPathCardDefaults.Shape,
     minHeight: Dp = RoadmapPathCardDefaults.MinHeight,
-    border: BorderStroke? = RoadmapPathCardDefaults.border(),
+    border: BorderStroke? = RoadmapPathCardDefaults.themedBorder(),
     shadowElevation: Dp = RoadmapPathCardDefaults.ShadowElevation,
-    shadowColor: Color = RoadmapPathCardDefaults.ShadowColor,
+    shadowColor: Color = RoadmapPathCardDefaults.shadowColor(),
     showCornerAccents: Boolean = true,
-    cornerAccents: RoadmapPathCardCornerAccents = RoadmapPathCardDefaults.cornerAccents()
+    cornerAccents: RoadmapPathCardCornerAccents = RoadmapPathCardDefaults.themedCornerAccents()
 ) {
     AppCard(
         modifier = modifier
