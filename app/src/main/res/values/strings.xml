@@ -181,6 +181,37 @@
     <string name="notification_frequency_daily">Daily</string>
     <string name="notification_frequency_weekly">Weekly</string>
     <string name="notification_time_dialog_title">Reminder time</string>
+    <string name="notification_permission_required_title">Notification permission needed</string>
+    <string name="notification_permission_required_body">Turn on notification permission so RMap can remind you to learn and keep your streak.</string>
+    <string name="notification_permission_required_snackbar">Please allow notifications to enable learning reminders.</string>
+    <string name="notification_channel_learning_name">Learning reminders</string>
+    <string name="notification_channel_learning_description">Cheerful reminders to learn and protect your streak.</string>
+    <string name="notification_action_start_learning">Start learning</string>
+    <string name="notification_action_mark_streak">Mark streak</string>
+    <string name="notification_debug_send_test">Send test notification</string>
+    <string name="notification_debug_sent_snackbar">Test notification requested.</string>
+    <string name="notification_learning_body_with_streak">You are on a %1$d-day streak. Open RMap for a quick lesson and keep the momentum bright.</string>
+    <string name="notification_streak_marked_body">%1$d-day streak marked. Small steps, real progress.</string>
+    <string name="notification_streak_already_marked_title">Streak already glowing</string>
+    <string name="notification_streak_already_marked_body">Your %1$d-day streak is already marked for today. Come back for a focused lesson.</string>
+    <string-array name="notification_learning_titles">
+        <item>Your roadmap is waiting</item>
+        <item>One small lesson today?</item>
+        <item>Keep your streak glowing</item>
+        <item>Ready for a quick win?</item>
+    </string-array>
+    <string-array name="notification_learning_bodies">
+        <item>A short learning session is enough to build momentum. Open RMap and mark today\'s streak.</item>
+        <item>Your future developer self will thank you. Learn a little and keep your streak alive.</item>
+        <item>Five focused minutes can move your roadmap forward. Let\'s keep the streak warm.</item>
+        <item>Pick up where you left off and turn today into another active learning day.</item>
+    </string-array>
+    <string-array name="notification_streak_titles">
+        <item>Streak marked</item>
+        <item>Momentum saved</item>
+        <item>Nice check-in</item>
+        <item>Today counts</item>
+    </string-array>
 
     <string name="roadmap_detail_section_core_web_fundamentals">Core Web Fundamentals</string>
     <string name="roadmap_detail_section_framework_ecosystem">Framework Ecosystem</string>

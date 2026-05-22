@@ -1,5 +1,11 @@
 package com.rmap.mobile.features.profile.presentation.screen
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +29,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -33,15 +40,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCard
 import com.rmap.mobile.core.ui.components.RMapNavigationBar
@@ -56,13 +67,36 @@ import com.rmap.mobile.navigation.NavBarDestination
 fun NotificationSettingsScreen(
     uiState: NotificationSettingsUiState,
     onBackClick: () -> Unit,
+    onNotificationPermissionStateChanged: (Boolean) -> Unit,
+    onNotificationPermissionDenied: () -> Unit,
     onAllowNotificationsChange: (Boolean) -> Unit,
     onReminderTimeSelected: (String) -> Unit,
     onReminderFrequencySelected: (ReminderFrequency) -> Unit,
     onDestinationSelected: (NavBarDestination) -> Unit,
     modifier: Modifier = Modifier,
-    selectedDestination: NavBarDestination = NavBarDestination.More
+    selectedDestination: NavBarDestination = NavBarDestination.More,
+    isDebugNotificationTestVisible: Boolean = false,
+    onSendTestNotificationClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    var hasNotificationPermission by remember {
+        mutableStateOf(context.hasNotificationPermission())
+    }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasNotificationPermission = isGranted || context.hasNotificationPermission()
+        if (hasNotificationPermission) {
+            onAllowNotificationsChange(true)
+        } else {
+            onNotificationPermissionDenied()
+        }
+    }
+
+    LaunchedEffect(hasNotificationPermission) {
+        onNotificationPermissionStateChanged(hasNotificationPermission)
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -84,8 +118,18 @@ fun NotificationSettingsScreen(
             NotificationSettingsContent(
                 uiState = uiState,
                 onAllowNotificationsChange = onAllowNotificationsChange,
+                onRequestNotificationPermission = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        hasNotificationPermission = true
+                        onAllowNotificationsChange(true)
+                    }
+                },
                 onReminderTimeSelected = onReminderTimeSelected,
                 onReminderFrequencySelected = onReminderFrequencySelected,
+                isDebugNotificationTestVisible = isDebugNotificationTestVisible,
+                onSendTestNotificationClick = onSendTestNotificationClick,
                 modifier = Modifier.padding(
                     start = Dimens.spacingXl,
                     top = 49.dp,
@@ -148,70 +192,61 @@ private fun NotificationSettingsHeader(
 private fun NotificationSettingsContent(
     uiState: NotificationSettingsUiState,
     onAllowNotificationsChange: (Boolean) -> Unit,
+    onRequestNotificationPermission: () -> Unit,
     onReminderTimeSelected: (String) -> Unit,
     onReminderFrequencySelected: (ReminderFrequency) -> Unit,
+    isDebugNotificationTestVisible: Boolean,
+    onSendTestNotificationClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isTimeDialogVisible by remember { mutableStateOf(false) }
     var isFrequencyMenuVisible by remember { mutableStateOf(false) }
 
-    AppCard(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        shape = AppShapes.card,
-        border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)),
-        shadowElevation = Dimens.cardElevationSm,
-        shadowColor = Color(0x10298CF7)
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
     ) {
-        Column(modifier = Modifier.padding(Dimens.spacingSm)) {
-            NotificationSettingRow(
-                title = stringResource(id = R.string.notification_allow_title),
-                trailingContent = {
-                    Switch(
-                        checked = uiState.allowNotifications,
-                        onCheckedChange = onAllowNotificationsChange,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.surface,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary,
-                            uncheckedThumbColor = MaterialTheme.colorScheme.surface,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
-                }
-            )
-
-            NotificationSettingRow(
-                title = stringResource(id = R.string.notification_reminder_time_title),
-                onClick = { isTimeDialogVisible = true },
-                trailingContent = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = uiState.reminderTime,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 15.sp
+        AppCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = AppShapes.card,
+            border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)),
+            shadowElevation = Dimens.cardElevationSm,
+            shadowColor = Color(0x10298CF7)
+        ) {
+            Column(modifier = Modifier.padding(Dimens.spacingSm)) {
+                NotificationSettingRow(
+                    title = stringResource(id = R.string.notification_allow_title),
+                    trailingContent = {
+                        Switch(
+                            checked = uiState.allowNotifications,
+                            onCheckedChange = { isAllowed ->
+                                if (isAllowed && !uiState.isNotificationPermissionGranted) {
+                                    onRequestNotificationPermission()
+                                } else {
+                                    onAllowNotificationsChange(isAllowed)
+                                }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.surface,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.surface,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant
                             )
                         )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.size(Dimens.iconSm)
-                        )
                     }
-                }
-            )
+                )
 
-            Box {
+                if (!uiState.isNotificationPermissionGranted) {
+                    NotificationPermissionNotice()
+                }
+
                 NotificationSettingRow(
-                    title = stringResource(id = R.string.notification_reminder_frequency_title),
-                    subtitle = stringResource(id = R.string.notification_reminder_frequency_subtitle),
-                    showDivider = false,
-                    onClick = { isFrequencyMenuVisible = true },
+                    title = stringResource(id = R.string.notification_reminder_time_title),
+                    onClick = { isTimeDialogVisible = true },
                     trailingContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = uiState.reminderFrequency.label(),
+                                text = uiState.reminderTime,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = FontWeight.Medium,
@@ -228,21 +263,55 @@ private fun NotificationSettingsContent(
                     }
                 )
 
-                DropdownMenu(
-                    expanded = isFrequencyMenuVisible,
-                    onDismissRequest = { isFrequencyMenuVisible = false }
-                ) {
-                    ReminderFrequency.entries.forEach { frequency ->
-                        DropdownMenuItem(
-                            text = { Text(text = frequency.label()) },
-                            onClick = {
-                                onReminderFrequencySelected(frequency)
-                                isFrequencyMenuVisible = false
+                Box {
+                    NotificationSettingRow(
+                        title = stringResource(id = R.string.notification_reminder_frequency_title),
+                        subtitle = stringResource(id = R.string.notification_reminder_frequency_subtitle),
+                        showDivider = false,
+                        onClick = { isFrequencyMenuVisible = true },
+                        trailingContent = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = uiState.reminderFrequency.label(),
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 15.sp
+                                    )
+                                )
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.outline,
+                                    modifier = Modifier.size(Dimens.iconSm)
+                                )
                             }
-                        )
+                        }
+                    )
+
+                    DropdownMenu(
+                        expanded = isFrequencyMenuVisible,
+                        onDismissRequest = { isFrequencyMenuVisible = false }
+                    ) {
+                        ReminderFrequency.entries.forEach { frequency ->
+                            DropdownMenuItem(
+                                text = { Text(text = frequency.label()) },
+                                onClick = {
+                                    onReminderFrequencySelected(frequency)
+                                    isFrequencyMenuVisible = false
+                                }
+                            )
+                        }
                     }
                 }
             }
+        }
+
+        if (isDebugNotificationTestVisible) {
+            DebugNotificationTestButton(
+                isEnabled = uiState.isNotificationPermissionGranted,
+                onClick = onSendTestNotificationClick
+            )
         }
     }
 
@@ -254,6 +323,55 @@ private fun NotificationSettingsContent(
                 onReminderTimeSelected(reminderTime)
                 isTimeDialogVisible = false
             }
+        )
+    }
+}
+
+@Composable
+private fun DebugNotificationTestButton(
+    isEnabled: Boolean,
+    onClick: () -> Unit
+) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = isEnabled,
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.button
+    ) {
+        Text(
+            text = stringResource(id = R.string.notification_debug_send_test),
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+}
+
+@Composable
+private fun NotificationPermissionNotice() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingSm)
+            .clip(AppShapes.button)
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(Dimens.spacingMd),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
+    ) {
+        Text(
+            text = stringResource(id = R.string.notification_permission_required_title),
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Text(
+            text = stringResource(id = R.string.notification_permission_required_body),
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 18.sp
+            )
         )
     }
 }
@@ -380,6 +498,14 @@ private fun ReminderFrequency.label(): String {
     }
 }
 
+private fun Context.hasNotificationPermission(): Boolean {
+    val runtimePermissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+        PackageManager.PERMISSION_GRANTED
+
+    return runtimePermissionGranted && NotificationManagerCompat.from(this).areNotificationsEnabled()
+}
+
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 844)
 @Composable
 private fun NotificationSettingsScreenPreview() {
@@ -387,6 +513,8 @@ private fun NotificationSettingsScreenPreview() {
         NotificationSettingsScreen(
             uiState = NotificationSettingsUiState(),
             onBackClick = {},
+            onNotificationPermissionStateChanged = {},
+            onNotificationPermissionDenied = {},
             onAllowNotificationsChange = {},
             onReminderTimeSelected = {},
             onReminderFrequencySelected = {},
