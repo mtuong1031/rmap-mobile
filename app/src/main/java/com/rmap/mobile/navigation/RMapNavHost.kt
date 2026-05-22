@@ -1,5 +1,6 @@
 package com.rmap.mobile.navigation
 
+import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -15,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -42,6 +44,7 @@ import com.rmap.mobile.features.home.presentation.screen.HomeSearchScreen
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeViewModel
 import com.rmap.mobile.features.profile.presentation.screen.NotificationSettingsScreen
 import com.rmap.mobile.features.profile.presentation.screen.ProfileScreen
+import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsEvent
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileEvent
 import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsViewModel
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileViewModel
@@ -51,11 +54,16 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RMapNavHost(navController: NavHostController) {
+    val context = LocalContext.current
     val isAuthenticated by RMapAppGraph.sessionRepository.isAuthenticated.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val comingSoonMessage = stringResource(R.string.coming_soon_message)
+    val debugNotificationSentMessage = stringResource(R.string.notification_debug_sent_snackbar)
     val startDestination = if (isAuthenticated) AppRoutes.HOME else AppRoutes.AUTH
+    val isDebugBuild = remember(context) {
+        context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    }
 
     fun navigateFromBottomBar(destination: NavBarDestination) {
         val route = when (destination) {
@@ -275,14 +283,32 @@ fun RMapNavHost(navController: NavHostController) {
             composable(AppRoutes.NOTIFICATION_SETTINGS) {
                 val viewModel: NotificationSettingsViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val permissionRequiredMessage = stringResource(R.string.notification_permission_required_snackbar)
+
+                LaunchedEffect(viewModel) {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            NotificationSettingsEvent.ShowNotificationPermissionRequired -> {
+                                snackbarHostState.showSnackbar(permissionRequiredMessage)
+                            }
+                        }
+                    }
+                }
 
                 NotificationSettingsScreen(
                     uiState = uiState,
                     selectedDestination = NavBarDestination.More,
                     onBackClick = { navController.popBackStack() },
+                    onNotificationPermissionStateChanged = viewModel::onNotificationPermissionStateChanged,
+                    onNotificationPermissionDenied = viewModel::onNotificationPermissionDenied,
                     onAllowNotificationsChange = viewModel::onAllowNotificationsChange,
                     onReminderTimeSelected = viewModel::onReminderTimeSelected,
                     onReminderFrequencySelected = viewModel::onReminderFrequencySelected,
+                    isDebugNotificationTestVisible = isDebugBuild,
+                    onSendTestNotificationClick = {
+                        RMapAppGraph.learningNotificationNotifier.showLearningReminder()
+                        coroutineScope.launch { snackbarHostState.showSnackbar(debugNotificationSentMessage) }
+                    },
                     onDestinationSelected = { destination ->
                         if (destination == NavBarDestination.AiAssistant) {
                             coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
