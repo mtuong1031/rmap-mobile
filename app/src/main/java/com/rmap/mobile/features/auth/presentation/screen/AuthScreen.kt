@@ -33,12 +33,15 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.FilledTonalButton
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+
+private val AuthHeroHeight = 400.dp
 
 @Composable
 fun AuthScreen(
@@ -63,7 +66,7 @@ fun AuthScreen(
             painter = resolvedHeroPainter,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Dimens.authHeroHeight)
+                .height(AuthHeroHeight)
         )
 
         Surface(
