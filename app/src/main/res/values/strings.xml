@@ -22,54 +22,23 @@
     <!-- Home Screen -->
     <string name="roadmap_trending_title">Trending Roadmaps</string>
     <string name="roadmap_see_all">See All</string>
-    <string name="roadmap_lessons_count">%1$d lessons</string>
-    <string name="roadmap_level_expert">Expert</string>
-    <string name="roadmap_level_beginner">Beginner</string>
-    <string name="roadmap_level_intermediate">Intermediate</string>
-    <string name="roadmap_level_hard">Hard</string>
 
-    <string name="home_greeting">Good morning, %1$s</string>
-    <string name="home_heading_ready_to_learn">Ready to learn today?</string>
+    <string name="home_heading_next_skill">Ready for your next skill?</string>
+    <string name="home_search_placeholder">Search roadmap, skill, or role...</string>
 
-    <string name="home_streak_value">%1$d days</string>
     <string name="home_streak_label">Streak</string>
-    <string name="home_goal_value">%1$d/%2$d</string>
-    <string name="home_goal_label">Today\'s Goal</string>
-    <string name="home_completed_value">1</string>
-    <string name="home_completed_label">Completed</string>
-
-    <string name="home_progress_title_line_1">Learning</string>
-    <string name="home_progress_title_line_2">Progress</string>
-    <string name="home_progress_subtitle">Keep up the great work!</string>
-    <string name="home_progress_done">Done</string>
-    <string name="home_progress_percent_short">%1$d%%</string>
-    <string name="home_progress_percent_complete">%1$d%% Complete</string>
-    <string name="home_progress_lessons_completed">%1$d of %2$d lessons completed</string>
     <string name="home_learning_plan_title">Today\'s Learning Plan</string>
-    <string name="home_hero_chapter">Chapter %1$d/%2$d</string>
     <string name="home_hero_required_skill">Required Skill</string>
-    <string name="home_hero_time_left">%1$d min left</string>
-    <string name="home_hero_nodes_complete">%1$d of %2$d required nodes complete</string>
     <string name="home_hero_continue">Continue</string>
     <string name="home_hero_next_unlock_prefix">Next unlock: </string>
+    <string name="home_stat_roadmap_label">Roadmap</string>
+    <string name="home_stat_readiness_label">Readiness</string>
+    <string name="home_pace_alert_action">Adjust plan</string>
 
-    <string name="home_roadmap_total_lessons_value">107</string>
-    <string name="home_roadmap_total_lessons_label">Total Lessons</string>
-    <string name="home_roadmap_completed_lessons_value">1</string>
-    <string name="home_roadmap_completed_lessons_label">Completed</string>
-    <string name="home_roadmap_remaining_lessons_value">106</string>
-    <string name="home_roadmap_remaining_lessons_label">Remaining</string>
-
-    <string name="home_roadmap_title_frontend_pro">Frontend Pro</string>
-    <string name="home_roadmap_title_devops_specialist">DevOps Specialist</string>
-    <string name="home_roadmap_title_ui_ux_master">UI/UX Master</string>
-    <string name="home_roadmap_title_full_stack_development">Full Stack Development</string>
-    <string name="home_roadmap_title_ui_ux_masterclass">UI/UX Masterclass</string>
-    <string name="home_roadmap_title_data_science">Data Science</string>
-    <string name="home_roadmap_duration_2_months">2 months</string>
-    <string name="home_roadmap_duration_3_months">3 months</string>
-    <string name="home_roadmap_duration_4_months">4 months</string>
-    <string name="home_roadmap_duration_6_months">6 months</string>
+    <string name="home_recommended_title">Recommended for your goal</string>
+    <string name="home_roadmap_view_action">View roadmap</string>
+    <string name="home_categories_title">Browse by Category</string>
+    <string name="home_categories_subtitle">Find roadmap domains based on your current path</string>
 
     <!-- Explore Screen -->
     <string name="explore_title">Explore roadmaps</string>
@@ -109,7 +78,6 @@
     <string name="profile_setting_learning_goals">Learning Goals</string>
     <string name="profile_setting_privacy">Privacy Policy</string>
     <string name="profile_setting_sign_out">Sign Out</string>
-    <string name="home_roadmap_duration_8_months">8 months</string>
 
     <!-- Bookmarks Screen -->
     <string name="bookmarks_heading">Your bookmarks</string>
@@ -145,7 +113,7 @@
     <string name="roadmap_detail_lesson_css_flexbox_grid">CSS Flexbox &amp; Grid</string>
     <string name="roadmap_detail_lesson_responsive_design">Responsive Design</string>
     <string name="roadmap_detail_lesson_es6_syntax">ES6+ Syntax</string>
-    <string name="roadmap_detail_lesson_async_js">Asynchronous JS</string>
+    <string name="roadmap_detail_lesson_async_js">Asynchronous Ronaldo Dos Santoss </string>
     <string name="roadmap_detail_lesson_dom_manipulation">DOM Manipulation</string>
     <string name="roadmap_detail_topic_promises">Promises</string>
     <string name="roadmap_detail_chapter_tag">Chapter</string>

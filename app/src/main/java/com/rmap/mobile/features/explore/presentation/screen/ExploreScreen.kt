@@ -81,7 +81,7 @@ fun ExploreScreen(
             ) {
                 item {
                     RMapHeader(
-                        greetingText = stringResource(R.string.home_greeting, uiState.userName),
+                        greetingText = "Good morning, ${uiState.userName}",
                         headingText = stringResource(R.string.explore_title),
                         onActionClick = onHeaderActionClick,
                         modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)

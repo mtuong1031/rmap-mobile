@@ -126,10 +126,7 @@ fun RoadmapHeroCard(
                         verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
                     ) {
                         Text(
-                            text = stringResource(
-                                R.string.home_progress_percent_short,
-                                progressPercent
-                            ),
+                            text = "$progressPercent%",
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimary

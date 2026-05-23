@@ -22,10 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.AppCardDefaults
 import com.rmap.mobile.core.ui.components.appCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
@@ -52,8 +50,8 @@ fun LearningProgressCard(
             .appCardShadow(
                 elevation = AppCardDefaults.shadowElevation,
                 shape = LearningProgressCardShape,
-                spotColor = Color(0x66155DFC),
-                ambientColor = Color(0x66155DFC)
+                spotColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.4f),
+                ambientColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.4f)
             )
             .background(
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -95,19 +93,19 @@ fun LearningProgressCard(
                         verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
                     ) {
                         Text(
-                            text = stringResource(R.string.home_progress_title_line_1),
+                            text = "Learning",
                             style = AppTextStyles.progressTitle.copy(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                         Text(
-                            text = stringResource(R.string.home_progress_title_line_2),
+                            text = "Progress",
                             style = AppTextStyles.progressTitle.copy(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                         Text(
-                            text = stringResource(R.string.home_progress_subtitle),
+                            text = "Keep up the great work!",
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -143,17 +141,14 @@ fun LearningProgressCard(
                         verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
                     ) {
                         Text(
-                            text = stringResource(
-                                R.string.home_progress_percent_short,
-                                progressPercent
-                            ),
+                            text = "$progressPercent%",
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         )
                         Text(
-                            text = stringResource(R.string.home_progress_done),
+                            text = "Done",
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -165,17 +160,13 @@ fun LearningProgressCard(
 
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)) {
                 Text(
-                    text = stringResource(R.string.home_progress_percent_complete, progressPercent),
+                    text = "$progressPercent% Complete",
                     style = AppTextStyles.progressValue.copy(
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 )
                 Text(
-                    text = stringResource(
-                        R.string.home_progress_lessons_completed,
-                        completedLessons,
-                        totalLessons
-                    ),
+                    text = "$completedLessons of $totalLessons lessons completed",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -185,43 +176,6 @@ fun LearningProgressCard(
         }
     }
 }
-
-@Composable
-fun TrendingRoadmapsHeader(
-    onSeeAllClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(R.string.roadmap_trending_title),
-            style = AppTextStyles.sectionTitle.copy(
-                color = Color(0xFF000000)
-            )
-        )
-
-        Text(
-            text = stringResource(R.string.roadmap_see_all),
-            modifier = Modifier
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onSeeAllClick
-                )
-                .background(Color.Transparent, AppShapes.small)
-                .padding(horizontal = Dimens.spacingXxs),
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                letterSpacing = AppTextStyles.badge.letterSpacing
-            )
-        )
-    }
-}
-
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable
