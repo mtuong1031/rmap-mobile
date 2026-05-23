@@ -3,6 +3,7 @@ package com.rmap.mobile.navigation
 object AppRoutes {
     const val AUTH = "auth"
     const val HOME = "home"
+    const val HOME_SEARCH = "home_search"
     const val BOOKMARKS = "bookmarks"
     const val EXPLORE = "explore"
     const val PROFILE = "profile"

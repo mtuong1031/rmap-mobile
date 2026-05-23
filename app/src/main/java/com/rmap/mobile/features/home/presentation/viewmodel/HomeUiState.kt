@@ -11,6 +11,7 @@ data class HomeUiState(
     val todayGoalCompleted: Int = 0,
     val todayGoalTotal: Int = 0,
     val completedRoadmaps: Int = 0,
+    val hasInProgressRoadmap: Boolean = true,
     val trendingRoadmaps: List<TrendingRoadmapCardUiModel> = emptyList(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,

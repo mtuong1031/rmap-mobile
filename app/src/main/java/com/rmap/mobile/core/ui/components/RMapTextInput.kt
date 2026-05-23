@@ -3,7 +3,9 @@ package com.rmap.mobile.core.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,25 +13,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,7 +65,11 @@ object RMapTextInputDefaults {
     val BorderWidth: Dp = Dimens.borderThin
     val ShadowElevationSmall: Dp = Dimens.cardElevationPressed
     val ShadowElevationMedium: Dp = 3.dp
+    val FocusShadowElevation: Dp = Dimens.cardElevationSm
     val ShadowColor: Color = Color(0x1A000000)
+    val ClearButtonSize: Dp = Dimens.iconLg
+    val ClearButtonIconSize: Dp = Dimens.iconXs
+    val ClearButtonContainerColor: Color = Color(0xFFF3F4F6)
     val ContentPadding = PaddingValues(
         start = Dimens.spacingLg,
         end = Dimens.spacingLg
@@ -114,6 +126,23 @@ fun RMapTextInput(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     leadingIcon: (@Composable () -> Unit)? = null
 ) {
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    val effectiveBorder = border?.let {
+        if (isFocused) {
+            RMapTextInputDefaults.border(
+                color = MaterialTheme.colorScheme.primary,
+                width = it.width
+            )
+        } else {
+            it
+        }
+    }
+    val effectiveShadowColor = if (isFocused) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
+    } else {
+        colors.shadowColor
+    }
+
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -123,19 +152,23 @@ fun RMapTextInput(
             .shadow(
                 elevation = RMapTextInputDefaults.ShadowElevationSmall,
                 shape = shape,
-                ambientColor = colors.shadowColor,
-                spotColor = colors.shadowColor
+                ambientColor = effectiveShadowColor,
+                spotColor = effectiveShadowColor
             )
             .shadow(
-                elevation = RMapTextInputDefaults.ShadowElevationMedium,
+                elevation = if (isFocused) {
+                    RMapTextInputDefaults.FocusShadowElevation
+                } else {
+                    RMapTextInputDefaults.ShadowElevationMedium
+                },
                 shape = shape,
-                ambientColor = colors.shadowColor,
-                spotColor = colors.shadowColor
+                ambientColor = effectiveShadowColor,
+                spotColor = effectiveShadowColor
             )
             .then(
-                if (border != null) {
+                if (effectiveBorder != null) {
                     Modifier.border(
-                        border = border,
+                        border = effectiveBorder,
                         shape = shape
                     )
                 } else {
@@ -191,6 +224,29 @@ fun RMapTextInput(
 
                     innerTextField()
                 }
+
+                if (value.isNotEmpty() && enabled && !readOnly) {
+                    Box(
+                        modifier = Modifier
+                            .size(RMapTextInputDefaults.ClearButtonSize)
+                            .clip(CircleShape)
+                            .background(RMapTextInputDefaults.ClearButtonContainerColor)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                role = Role.Button,
+                                onClick = { onValueChange("") }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(RMapTextInputDefaults.ClearButtonIconSize)
+                        )
+                    }
+                }
             }
         }
     )
@@ -201,7 +257,7 @@ fun RMapTextInput(
 private fun RMapTextInputPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         RMapTextInput(
-            value = "",
+            value = "Frontend",
             onValueChange = {},
             modifier = Modifier.padding(Dimens.spacingXxl),
             width = 342.dp,

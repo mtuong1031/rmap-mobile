@@ -2,6 +2,8 @@ package com.rmap.mobile.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
@@ -9,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,7 +32,13 @@ import com.rmap.mobile.features.bookmarks.presentation.screen.BookmarksScreen
 import com.rmap.mobile.features.bookmarks.presentation.viewmodel.BookmarksViewModel
 import com.rmap.mobile.features.explore.presentation.screen.ExploreScreen
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreViewModel
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchAiSuggestionUiModel
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemDefaults
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemUiModel
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillItemUiModel
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillStatusDefaults
 import com.rmap.mobile.features.home.presentation.screen.HomeScreen
+import com.rmap.mobile.features.home.presentation.screen.HomeSearchScreen
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeViewModel
 import com.rmap.mobile.features.profile.presentation.screen.ProfileScreen
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileEvent
@@ -101,8 +111,99 @@ fun RMapNavHost(navController: NavHostController) {
                     uiState = uiState,
                     selectedDestination = NavBarDestination.Home,
                     onDestinationSelected = ::handleDestinationSelected,
+                    onSearchClick = {
+                        navController.navigate(AppRoutes.HOME_SEARCH) {
+                            launchSingleTop = true
+                        }
+                    },
                     onRoadmapClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
+                    }
+                )
+            }
+
+            composable(AppRoutes.HOME_SEARCH) {
+                var searchQuery by rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
+
+                HomeSearchScreen(
+                    query = searchQuery,
+                    suggestions = listOf("Frontend", "Backend", "React", "AI", "DevOps"),
+                    recentSearches = listOf(
+                        "React roadmap",
+                        "CSS Grid",
+                        "Backend developer",
+                        "DevOps",
+                        "AI Engineer"
+                    ),
+                    popularSearches = listOf(
+                        "Frontend",
+                        "React",
+                        "Backend",
+                        "DevOps",
+                        "Data Analyst",
+                        "AI Engineer"
+                    ),
+                    recommendedRoadmaps = listOf(
+                        HomeSearchRoadmapItemUiModel(
+                            id = "react-fundamentals",
+                            title = "React Fundamentals",
+                            categoryLabel = "Web Development",
+                            metadataText = "4 weeks",
+                            leadingIcon = Icons.Outlined.TrackChanges,
+                            style = HomeSearchRoadmapItemDefaults.reactStyle()
+                        ),
+                        HomeSearchRoadmapItemUiModel(
+                            id = "frontend-starter",
+                            title = "Frontend Interview Prep",
+                            categoryLabel = "Web Development",
+                            metadataText = "3 weeks",
+                            leadingText = "FI",
+                            style = HomeSearchRoadmapItemDefaults.starterStyle()
+                        )
+                    ),
+                    skills = listOf(
+                        HomeSearchSkillItemUiModel(
+                            id = "frontend-react",
+                            title = "Frontend",
+                            parentText = "Part of: React Fundamentals",
+                            statusText = "Not started",
+                            statusStyle = HomeSearchSkillStatusDefaults.notStartedStyle()
+                        ),
+                        HomeSearchSkillItemUiModel(
+                            id = "frontend-pro",
+                            title = "Frontend",
+                            parentText = "Part of: Frontend Pro",
+                            statusText = "In progress",
+                            statusStyle = HomeSearchSkillStatusDefaults.inProgressStyle()
+                        )
+                    ),
+                    aiSuggestion = HomeSearchAiSuggestionUiModel(
+                        id = "react-roadmap",
+                        title = "Create a personalized React roadmap",
+                        description = "Generate a roadmap based on your goal, current skills, and timeline.",
+                        actionText = "Create with AI"
+                    ),
+                    onQueryChange = { searchQuery = it },
+                    onBackClick = { navController.popBackStack() },
+                    onFilterClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onSuggestionClick = { searchQuery = it },
+                    onClearRecentSearchesClick = {},
+                    onRecentSearchClick = { searchQuery = it },
+                    onRemoveRecentSearchClick = {},
+                    onPopularSearchClick = { searchQuery = it },
+                    onRecommendedRoadmapClick = { item ->
+                        navController.navigate(AppRoutes.roadmapDetail(item.id))
+                    },
+                    onRecommendedRoadmapBookmarkClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onSkillClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onCreateWithAiClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     }
                 )
             }

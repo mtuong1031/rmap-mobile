@@ -25,18 +25,31 @@
 
     <string name="home_heading_next_skill">Ready for your next skill?</string>
     <string name="home_search_placeholder">Search roadmap, skill, or role...</string>
+    <string name="home_search_screen_placeholder">Search roadmap, lessons...</string>
+    <string name="home_search_recent_title">Recent searches</string>
+    <string name="home_search_clear_all">Clear all</string>
+    <string name="home_search_popular_title">Popular searches</string>
+    <string name="home_search_recommended_title">Recommended roadmaps</string>
+    <string name="home_search_roadmaps_title">Roadmaps</string>
+    <string name="home_search_skills_title">Skills</string>
+    <string name="home_search_ai_suggestion_title">AI suggestion</string>
 
     <string name="home_streak_label">Streak</string>
     <string name="home_learning_plan_title">Today\'s Learning Plan</string>
     <string name="home_hero_required_skill">Required Skill</string>
     <string name="home_hero_continue">Continue</string>
     <string name="home_hero_next_unlock_prefix">Next unlock: </string>
+    <string name="home_empty_roadmap_title">Ready to start learning?</string>
+    <string name="home_empty_roadmap_description">You don\'t have an active roadmap yet. Search a skill, choose a role, or create one with AI.</string>
+    <string name="home_empty_roadmap_create_ai">Create roadmap with AI</string>
+    <string name="home_empty_roadmap_explore">Explore ready-made</string>
     <string name="home_stat_roadmap_label">Roadmap</string>
     <string name="home_stat_readiness_label">Readiness</string>
     <string name="home_pace_alert_action">Adjust plan</string>
 
     <string name="home_recommended_title">Recommended for your goal</string>
     <string name="home_roadmap_view_action">View roadmap</string>
+    <string name="home_roadmap_starter_badge">Starter</string>
     <string name="home_categories_title">Browse by Category</string>
     <string name="home_categories_subtitle">Find roadmap domains based on your current path</string>
 

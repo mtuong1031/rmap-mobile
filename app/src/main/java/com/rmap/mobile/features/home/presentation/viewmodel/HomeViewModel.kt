@@ -52,6 +52,8 @@ class HomeViewModel(
                 todayGoalCompleted = progress.todayGoalCompleted,
                 todayGoalTotal = progress.todayGoalTotal,
                 completedRoadmaps = progress.completedRoadmaps,
+                hasInProgressRoadmap = progress.totalLessons > 0 &&
+                    progress.completedLessons < progress.totalLessons,
                 trendingRoadmaps = roadmapResult.getOrThrow()
                     .take(3)
                     .mapIndexed { index, roadmap ->

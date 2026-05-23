@@ -91,7 +91,6 @@ object RMapButtonDefaults {
     fun elevation(variant: RMapButtonVariant): ButtonElevation {
         return when (variant) {
             RMapButtonVariant.Primary -> MaterialButtonDefaults.buttonElevation(
-                defaultElevation = Dimens.cardElevationSm,
                 pressedElevation = Dimens.cardElevationPressed,
                 focusedElevation = Dimens.cardElevationSm,
                 hoveredElevation = Dimens.cardElevationSm,
@@ -99,7 +98,6 @@ object RMapButtonDefaults {
             )
 
             RMapButtonVariant.Secondary -> MaterialButtonDefaults.buttonElevation(
-                defaultElevation = Dimens.cardElevationXs,
                 pressedElevation = Dimens.cardElevationXs,
                 focusedElevation = Dimens.cardElevationXs,
                 hoveredElevation = Dimens.cardElevationXs,
@@ -108,7 +106,6 @@ object RMapButtonDefaults {
 
             RMapButtonVariant.Outline,
             RMapButtonVariant.Neutral -> MaterialButtonDefaults.buttonElevation(
-                defaultElevation = Dimens.cardElevationNone,
                 pressedElevation = Dimens.cardElevationNone,
                 focusedElevation = Dimens.cardElevationNone,
                 hoveredElevation = Dimens.cardElevationNone,

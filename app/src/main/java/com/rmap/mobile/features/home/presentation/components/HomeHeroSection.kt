@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -42,6 +45,7 @@ import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
+import com.rmap.mobile.core.ui.icons.RMapIcons
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -49,9 +53,12 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val HomeHeroContentPadding = 20.dp
 private val HomeHeroProgressHeight = 10.dp
+private val HomeHeroEmptyCardHorizontalPadding = 32.dp
+private val HomeHeroEmptyIconTileSize = 72.dp
 
 @Composable
 fun HomeHeroSection(
+    modifier: Modifier = Modifier,
     sectionTitle: String,
     roadmapTitle: String,
     skillTitle: String,
@@ -65,7 +72,9 @@ fun HomeHeroSection(
     nextUnlockPrefix: String,
     nextUnlockText: String,
     onContinueClick: () -> Unit,
-    modifier: Modifier = Modifier
+    hasInProgressRoadmap: Boolean = true,
+    onCreateRoadmapWithAiClick: () -> Unit = {},
+    onExploreReadyMadeClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -73,20 +82,129 @@ fun HomeHeroSection(
     ) {
         RMapSectionTitle(text = sectionTitle)
 
-        HomeHeroCard(
-            roadmapTitle = roadmapTitle,
-            skillTitle = skillTitle,
-            chapterText = chapterText,
-            requiredSkillText = requiredSkillText,
-            timeLeftText = timeLeftText,
-            progressText = progressText,
-            progressPercentText = progressPercentText,
-            progressFraction = progressFraction,
-            continueText = continueText,
-            nextUnlockPrefix = nextUnlockPrefix,
-            nextUnlockText = nextUnlockText,
-            onContinueClick = onContinueClick
-        )
+        if (hasInProgressRoadmap) {
+            HomeHeroCard(
+                roadmapTitle = roadmapTitle,
+                skillTitle = skillTitle,
+                chapterText = chapterText,
+                requiredSkillText = requiredSkillText,
+                timeLeftText = timeLeftText,
+                progressText = progressText,
+                progressPercentText = progressPercentText,
+                progressFraction = progressFraction,
+                continueText = continueText,
+                nextUnlockPrefix = nextUnlockPrefix,
+                nextUnlockText = nextUnlockText,
+                onContinueClick = onContinueClick
+            )
+        } else {
+            HomeHeroEmptyRoadmapCard(
+                onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
+                onExploreReadyMadeClick = onExploreReadyMadeClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeHeroEmptyRoadmapCard(
+    onCreateRoadmapWithAiClick: () -> Unit,
+    onExploreReadyMadeClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        RMapHeroSectionBackground(modifier = Modifier.matchParentSize())
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = HomeHeroEmptyCardHorizontalPadding,
+                    vertical = Dimens.spacingHuge
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(HomeHeroEmptyIconTileSize)
+                    .clip(RoundedCornerShape(Dimens.cardRadiusXl))
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .border(
+                        width = Dimens.borderThin,
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(Dimens.cardRadiusXl)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = RMapIcons.Map,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(Dimens.iconXxl)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.spacingXl))
+
+            Text(
+                text = stringResource(R.string.home_empty_roadmap_title),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = 20.sp,
+                    lineHeight = 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
+                )
+            )
+
+            Spacer(modifier = Modifier.height(Dimens.spacingSmPlus))
+
+            Text(
+                text = stringResource(R.string.home_empty_roadmap_description),
+                modifier = Modifier.widthIn(max = 278.dp),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary,
+                    textAlign = TextAlign.Center
+                )
+            )
+
+            Spacer(modifier = Modifier.height(Dimens.spacingHuge))
+
+            RMapButton(
+                text = stringResource(R.string.home_empty_roadmap_create_ai),
+                onClick = onCreateRoadmapWithAiClick,
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Primary,
+                size = RMapButtonSize.Large,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.AutoAwesome,
+                        contentDescription = null,
+                        modifier = Modifier.size(Dimens.iconSm)
+                    )
+                }
+            )
+
+            Spacer(modifier = Modifier.height(Dimens.spacingMd))
+
+            RMapButton(
+                text = stringResource(R.string.home_empty_roadmap_explore),
+                onClick = onExploreReadyMadeClick,
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Secondary,
+                size = RMapButtonSize.Large,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Explore,
+                        contentDescription = null,
+                        modifier = Modifier.size(Dimens.iconSm)
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -371,6 +489,31 @@ private fun HomeHeroSectionPreview() {
                 continueText = "Continue",
                 nextUnlockPrefix = "Next unlock: ",
                 nextUnlockText = "DOM Manipulation",
+                onContinueClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun HomeHeroSectionEmptyPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
+            HomeHeroSection(
+                sectionTitle = "Today's Learning Plan",
+                roadmapTitle = "",
+                skillTitle = "",
+                chapterText = "",
+                requiredSkillText = "",
+                timeLeftText = "",
+                progressText = "",
+                progressPercentText = "",
+                progressFraction = 0f,
+                continueText = "",
+                nextUnlockPrefix = "",
+                nextUnlockText = "",
+                hasInProgressRoadmap = false,
                 onContinueClick = {}
             )
         }

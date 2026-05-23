@@ -1,6 +1,8 @@
 package com.rmap.mobile.features.home.presentation.screen
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapHeader
@@ -71,8 +74,11 @@ fun HomeScreen(
     onHeaderActionClick: () -> Unit = {},
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
+    onSearchClick: () -> Unit = {},
     onSeeAllClick: () -> Unit = {},
     onContinueLearningClick: () -> Unit = {},
+    onCreateRoadmapWithAiClick: () -> Unit = {},
+    onExploreReadyMadeClick: () -> Unit = {},
     onAdjustPlanClick: () -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onHomeStatItemClick: ((index: Int, item: HomeStatItemUiModel) -> Unit)? = null,
@@ -123,7 +129,8 @@ fun HomeScreen(
             durationText = "4 weeks",
             actionText = stringResource(R.string.home_roadmap_view_action),
             icon = Icons.Outlined.Code,
-            style = HomeRoadmapCardDefaults.webDevelopmentStyle()
+            style = HomeRoadmapCardDefaults.webDevelopmentStyle(),
+            isBeginner = true
         ),
         HomeRoadmapCardUiModel(
             id = "frontend-interview",
@@ -218,20 +225,33 @@ fun HomeScreen(
                 }
 
                 item {
-                    RMapTextInput(
-                        value = searchQuery,
-                        onValueChange = onSearchQueryChange,
-                        placeholder = stringResource(R.string.home_search_placeholder),
-                        textStyle = MaterialTheme.typography.bodyLarge,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = null,
-                                tint = RMapTextInputDefaults.colors().placeholderColor,
-                            )
-                        },
-                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
-                    )
+                    Box(modifier = Modifier.padding(horizontal = sectionHorizontalPadding)) {
+                        RMapTextInput(
+                            value = searchQuery,
+                            onValueChange = onSearchQueryChange,
+                            placeholder = stringResource(R.string.home_search_placeholder),
+                            readOnly = true,
+                            textStyle = MaterialTheme.typography.bodyLarge,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Search,
+                                    contentDescription = null,
+                                    tint = RMapTextInputDefaults.colors().placeholderColor,
+                                )
+                            }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    role = Role.Button,
+                                    onClick = onSearchClick
+                                )
+                        )
+                    }
                 }
 
                 item {
@@ -248,7 +268,10 @@ fun HomeScreen(
                         continueText = stringResource(R.string.home_hero_continue),
                         nextUnlockPrefix = stringResource(R.string.home_hero_next_unlock_prefix),
                         nextUnlockText = "DOM Manipulation",
+                        hasInProgressRoadmap = uiState.hasInProgressRoadmap,
                         onContinueClick = onContinueLearningClick,
+                        onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
+                        onExploreReadyMadeClick = onExploreReadyMadeClick,
                         modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                     )
                 }
@@ -277,6 +300,7 @@ fun HomeScreen(
                         subtitle = "Recommended because you're learning Frontend Pro",
                         roadmaps = recommendedRoadmaps,
                         metadataSeparatorText = stringResource(R.string.separator_bullet),
+                        starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
                         bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
                         onRoadmapClick = onRecommendedRoadmapClick,
                         onBookmarkClick = onRecommendedRoadmapBookmarkClick,
