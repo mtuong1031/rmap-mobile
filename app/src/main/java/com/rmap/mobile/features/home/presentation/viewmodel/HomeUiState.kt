@@ -1,6 +1,6 @@
 package com.rmap.mobile.features.home.presentation.viewmodel
 
-import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
+import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCardUiModel
 
 data class HomeUiState(
     val userName: String = "",
@@ -11,7 +11,7 @@ data class HomeUiState(
     val todayGoalCompleted: Int = 0,
     val todayGoalTotal: Int = 0,
     val completedRoadmaps: Int = 0,
-    val trendingRoadmaps: List<RoadmapCardUiModel> = emptyList(),
+    val trendingRoadmaps: List<TrendingRoadmapCardUiModel> = emptyList(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
 )

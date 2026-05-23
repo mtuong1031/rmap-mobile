@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -45,6 +46,9 @@ import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+
+private val HomeHeroContentPadding = 20.dp
+private val HomeHeroProgressHeight = 10.dp
 
 @Composable
 fun HomeHeroSection(
@@ -103,16 +107,14 @@ private fun HomeHeroCard(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(Dimens.homeHeroCardHeight)
+        modifier = modifier.fillMaxWidth()
     ) {
         RMapHeroSectionBackground(modifier = Modifier.matchParentSize())
 
         Column(
             modifier = Modifier
-                .matchParentSize()
-                .padding(Dimens.homeHeroContentPadding)
+                .fillMaxWidth()
+                .padding(HomeHeroContentPadding)
         ) {
             HomeHeroTitleRow(
                 roadmapTitle = roadmapTitle,
@@ -183,14 +185,14 @@ private fun HomeHeroTitleRow(
     chapterText: String,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = roadmapTitle.uppercase(),
@@ -203,35 +205,35 @@ private fun HomeHeroTitleRow(
             )
 
             Text(
-                text = skillTitle,
-                style = MaterialTheme.typography.titleLarge.copy(
+                text = chapterText,
+                modifier = Modifier
+                    .padding(start = Dimens.spacingMd)
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = AppShapes.pill
+                    )
+                    .border(
+                        width = Dimens.borderThin,
+                        color = Color(0xFFBEDBFF),
+                        shape = AppShapes.pill
+                    )
+                    .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXsPlus),
+                style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.primary
                 ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 1
             )
         }
 
         Text(
-            text = chapterText,
-            modifier = Modifier
-                .padding(start = Dimens.spacingMd)
-                .background(
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    shape = AppShapes.pill
-                )
-                .border(
-                    width = Dimens.borderThin,
-                    color = Color(0xFFBEDBFF),
-                    shape = AppShapes.pill
-                )
-                .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXsPlus),
-            style = MaterialTheme.typography.labelSmall.copy(
+            text = skillTitle,
+            style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onSurface
             ),
-            maxLines = 1
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -342,10 +344,11 @@ private fun HomeHeroProgress(
             progress = { normalizedProgress },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(Dimens.homeHeroProgressHeight)
+                .height(HomeHeroProgressHeight)
                 .clip(AppShapes.pill),
             color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            strokeCap = StrokeCap.Round
         )
     }
 }
