@@ -62,4 +62,3 @@ val ScrimLight = Color(0x99000000)
 
 // Custom Colors
 val OnSurfacePlaceholderLight = RMapTextTertiary
-val OnSurfaceDisabledLight = RMapTextTertiary

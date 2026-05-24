@@ -49,7 +49,7 @@ fun BookmarksScreen(
     val listState = rememberLazyListState()
     val scrollY = rememberBackgroundScrollOffsetY(listState)
 
-    val greetingText = stringResource(R.string.home_greeting, uiState.userName)
+    val greetingText = "Good morning, ${uiState.userName}"
     val headingText = stringResource(R.string.bookmarks_heading)
     val tabs = listOf(
         stringResource(R.string.bookmarks_tab_saved_roadmaps),

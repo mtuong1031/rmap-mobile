@@ -29,10 +29,6 @@ object Dimens {
     val spacingScreenBottomCompact = spacingMassive
     val spacingScreenTop = 72.dp
     val spacingScreenBottom = 72.dp
-    val authHeroHeight = 400.dp
-    val homeHeroCardHeight = 327.5.dp
-    val homeHeroContentPadding = 20.dp
-    val homeHeroProgressHeight = 10.dp
 
     // Icon and control sizes
     val iconXxs = 12.dp

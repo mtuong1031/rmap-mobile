@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
-import com.rmap.mobile.features.roadmap.presentation.viewmodel.toRoadmapCardUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,7 +52,13 @@ class HomeViewModel(
                 todayGoalCompleted = progress.todayGoalCompleted,
                 todayGoalTotal = progress.todayGoalTotal,
                 completedRoadmaps = progress.completedRoadmaps,
-                trendingRoadmaps = roadmapResult.getOrThrow().map { it.toRoadmapCardUiModel() },
+                hasInProgressRoadmap = progress.totalLessons > 0 &&
+                    progress.completedLessons < progress.totalLessons,
+                trendingRoadmaps = roadmapResult.getOrThrow()
+                    .take(3)
+                    .mapIndexed { index, roadmap ->
+                        roadmap.toTrendingRoadmapCardUiModel(rank = index + 1)
+                    },
                 isLoading = false
             )
         }

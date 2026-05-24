@@ -27,10 +27,8 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -115,8 +113,7 @@ fun RoadmapCard(
                             text = item.title,
                             style = AppTextStyles.compactCardTitle.copy(
                                 color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            maxLines = 1
+                            )
                         )
 
                         Row(
@@ -130,10 +127,7 @@ fun RoadmapCard(
                                 modifier = Modifier.size(Dimens.iconSm)
                             )
                             Text(
-                                text = stringResource(
-                                    id = R.string.roadmap_lessons_count,
-                                    item.totalLessonsCount
-                                ),
+                                text = "${item.totalLessonsCount} lessons",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.SemiBold,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
