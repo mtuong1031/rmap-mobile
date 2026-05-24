@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.profile.presentation.components
+package com.rmap.mobile.features.profile.presentation.components.header
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
