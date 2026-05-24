@@ -23,6 +23,7 @@
     <string name="roadmap_trending_title">Trending Roadmaps</string>
     <string name="roadmap_see_all">SEE ALL</string>
 
+    <string name="home_greeting">Good morning, %1$s</string>
     <string name="home_heading_next_skill">Ready for your next skill?</string>
     <string name="home_search_placeholder">Search roadmap, skill, or role...</string>
     <string name="home_search_screen_placeholder">Search roadmap, lessons...</string>
