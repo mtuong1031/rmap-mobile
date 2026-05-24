@@ -32,7 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.AppCard
+import com.rmap.mobile.core.ui.components.RMapCard
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -57,7 +57,7 @@ fun SettingsSection(
             )
         )
 
-        AppCard(
+        RMapCard(
             modifier = Modifier.fillMaxWidth(),
             shape = AppShapes.card,
             border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)),
@@ -104,7 +104,7 @@ private fun SignOutButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(AppShapes.button)
@@ -155,3 +155,5 @@ private fun SettingsSectionPreview() {
         SettingsSection(onItemClick = {})
     }
 }
+
+

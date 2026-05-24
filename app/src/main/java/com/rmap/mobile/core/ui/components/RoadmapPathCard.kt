@@ -134,7 +134,7 @@ fun RoadmapPathCard(
     showCornerAccents: Boolean = true,
     cornerAccents: RoadmapPathCardCornerAccents = RoadmapPathCardDefaults.themedCornerAccents()
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = minHeight),
@@ -196,3 +196,4 @@ private fun RoadmapPathCardPreview() {
         RoadmapPathCard(modifier = Modifier.padding(Dimens.spacingLg))
     }
 }
+

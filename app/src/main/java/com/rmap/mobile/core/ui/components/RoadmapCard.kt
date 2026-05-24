@@ -35,7 +35,7 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val RoadmapCardShape = AppCardDefaults.shape
+private val RoadmapCardShape = RMapCardDefaults.shape
 private val RoadmapIconFrameShape = AppShapes.card
 private val RoadmapIconContainerShape = AppShapes.iconFrameInner
 
@@ -83,7 +83,7 @@ fun RoadmapCard(
         Modifier
     }
 
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth()
             .then(clickModifier),
@@ -264,3 +264,4 @@ private fun TrendingRoadmapsSectionPreview() {
         )
     }
 }
+

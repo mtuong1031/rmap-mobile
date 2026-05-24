@@ -23,8 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.AppCard
-import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.RMapCard
+import com.rmap.mobile.core.ui.components.RMapCardDefaults
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -34,10 +34,10 @@ fun ExperienceCard(
     xp: Int,
     modifier: Modifier = Modifier
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth(),
-        shape = AppCardDefaults.shape
+        shape = RMapCardDefaults.shape
     ) {
         Row(
             modifier = Modifier
@@ -101,3 +101,4 @@ private fun ExperienceCardPreview() {
         ExperienceCard(xp = 450)
     }
 }
+

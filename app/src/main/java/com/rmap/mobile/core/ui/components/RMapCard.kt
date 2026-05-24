@@ -16,7 +16,7 @@ import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-object AppCardDefaults {
+object RMapCardDefaults {
     val shape = AppShapes.largeCard
     val borderWidth: Dp = Dimens.borderThin
     val borderColor = Color(0x80F9FAFB)
@@ -55,17 +55,17 @@ object AppCardDefaults {
 }
 
 @Composable
-fun AppCard(
+fun RMapCard(
     modifier: Modifier = Modifier,
-    shape: Shape = AppCardDefaults.shape,
-    color: Color = AppCardDefaults.containerColor(),
-    border: BorderStroke? = AppCardDefaults.themedBorder(),
-    shadowElevation: Dp = AppCardDefaults.shadowElevation,
-    shadowColor: Color = AppCardDefaults.themedShadowColor(),
+    shape: Shape = RMapCardDefaults.shape,
+    color: Color = RMapCardDefaults.containerColor(),
+    border: BorderStroke? = RMapCardDefaults.themedBorder(),
+    shadowElevation: Dp = RMapCardDefaults.shadowElevation,
+    shadowColor: Color = RMapCardDefaults.themedShadowColor(),
     content: @Composable () -> Unit
 ) {
     Surface(
-        modifier = modifier.appCardShadow(
+        modifier = modifier.rmapCardShadow(
             shape = shape,
             elevation = shadowElevation,
             ambientColor = shadowColor,
@@ -78,11 +78,11 @@ fun AppCard(
     )
 }
 
-fun Modifier.appCardShadow(
-    shape: Shape = AppCardDefaults.shape,
-    elevation: Dp = AppCardDefaults.shadowElevation,
-    ambientColor: Color = AppCardDefaults.shadowColor,
-    spotColor: Color = AppCardDefaults.shadowColor
+fun Modifier.rmapCardShadow(
+    shape: Shape = RMapCardDefaults.shape,
+    elevation: Dp = RMapCardDefaults.shadowElevation,
+    ambientColor: Color = RMapCardDefaults.shadowColor,
+    spotColor: Color = RMapCardDefaults.shadowColor
 ): Modifier {
     return shadow(
         elevation = elevation,
@@ -94,7 +94,7 @@ fun Modifier.appCardShadow(
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF)
 @Composable
-private fun AppCardDefaultsPreview() {
+private fun RMapCardDefaultsPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         RoadmapCard(
             item = RoadmapCardUiModel(

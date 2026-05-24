@@ -27,8 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.AppCardDefaults
-import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.components.RMapCardDefaults
+import com.rmap.mobile.core.ui.components.rmapCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.BackgroundLight
@@ -58,7 +58,7 @@ fun AiScholarTipCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .appCardShadow(
+            .rmapCardShadow(
                 shape = AiScholarTipCardShape,
                 ambientColor = Color(0x08000000),
                 spotColor = Color(0x08000000)
@@ -68,7 +68,7 @@ fun AiScholarTipCard(
                 shape = AiScholarTipCardShape
             )
             .border(
-                width = AppCardDefaults.borderWidth,
+                width = RMapCardDefaults.borderWidth,
                 color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
                 shape = AiScholarTipCardShape
             )
@@ -140,3 +140,5 @@ private fun AiScholarTipCardPreview() {
         }
     }
 }
+
+
