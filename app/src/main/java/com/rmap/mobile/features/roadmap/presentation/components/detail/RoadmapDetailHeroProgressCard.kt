@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +34,8 @@ import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapLinearProgress
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
 
 @Composable
 fun RoadmapDetailHeroProgressCard(

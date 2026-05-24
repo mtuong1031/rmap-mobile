@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -29,6 +29,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.roadmap.presentation.components.RoadmapSearchCard
+import com.rmap.mobile.features.roadmap.presentation.components.RoadmapSearchSection
+import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapMilestoneCompactCard
+import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapNodeItem
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupState
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneState

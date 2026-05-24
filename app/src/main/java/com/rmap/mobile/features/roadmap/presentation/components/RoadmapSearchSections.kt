@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 
 @Composable
 internal fun RoadmapSearchSection(

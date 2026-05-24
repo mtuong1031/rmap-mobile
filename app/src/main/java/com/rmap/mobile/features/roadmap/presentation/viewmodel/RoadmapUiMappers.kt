@@ -14,21 +14,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
+import com.rmap.mobile.core.ui.theme.PrimaryContainerLight
 import com.rmap.mobile.core.ui.theme.PrimaryLight
+import com.rmap.mobile.core.ui.theme.SecondaryContainerLight
+import com.rmap.mobile.core.ui.theme.TertiaryLight
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.RecommendedCardUiModel
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
-import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
-import com.rmap.mobile.features.roadmap.domain.model.SubLesson
-import com.rmap.mobile.features.roadmap.presentation.components.ModuleCardUiModel
-import com.rmap.mobile.features.roadmap.presentation.components.ModuleStatus
-import com.rmap.mobile.features.roadmap.presentation.components.SubLessonUiModel
 
 fun RoadmapSummary.toRoadmapCardUiModel(): RoadmapCardUiModel {
     return RoadmapCardUiModel(
@@ -64,27 +62,45 @@ fun RoadmapSummary.toRecommendedCardUiModel(): RecommendedCardUiModel {
 }
 
 fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
+    val firstSectionTitle = sections.firstOrNull()?.title.orEmpty()
+    val frameworkSectionTitle = sections.getOrNull(1)?.title.orEmpty()
+    val nextNodeTitle = sections
+        .flatMap { section -> section.modules }
+        .flatMap { module -> module.subLessons }
+        .firstOrNull { lesson -> lesson.status == LearningStatus.InProgress }
+        ?.title
+        ?: sections.firstOrNull()
+            ?.modules
+            ?.firstOrNull { module -> module.status == LearningStatus.InProgress }
+            ?.title
+            .orEmpty()
+    val nextUnlockTitle = sections
+        .flatMap { section -> section.modules }
+        .flatMap { module -> module.subLessons }
+        .firstOrNull { lesson -> lesson.status == LearningStatus.Locked }
+        ?.title
+        ?: ""
+
     return RoadmapDetailUiState(
         roadmapId = id,
         title = title,
+        categoryLabel = "Web Development",
         progressFraction = progressFraction,
         completedLessons = completedLessons,
         totalLessons = totalLessons,
-        sections = sections.map { section ->
-            RoadmapModuleSectionUiModel(
-                title = section.title,
-                modules = section.modules.map(LearningModule::toModuleCardUiModel)
-            )
-        },
-        aiTip = aiTip?.let {
-            AiScholarTipUiModel(
-                currentModule = it.currentModule,
-                recommendedTopic = it.recommendedTopic,
-                nextModule = it.nextModule
-            )
-        },
+        completedRequiredNodes = 6,
+        totalRequiredNodes = 8,
+        nextActionTitle = nextNodeTitle,
+        nextUnlockTitle = nextUnlockTitle,
+        groups = buildRoadmapDetailGroups(
+            firstSectionTitle = firstSectionTitle,
+            frameworkSectionTitle = frameworkSectionTitle,
+            nextNodeTitle = nextNodeTitle,
+            nextUnlockTitle = nextUnlockTitle
+        ),
+        milestones = buildRoadmapDetailMilestones(),
         isLoading = false,
-        errorMessage = null
+        errorMessageResId = null
     )
 }
 
@@ -131,40 +147,151 @@ fun LearningDifficulty.toLabel(): String {
 
 private fun LearningTopicIcon.toCategoryBackgroundColor(): Color {
     return when (this) {
-        LearningTopicIcon.Code -> Color(0xFFEFF6FF)
-        LearningTopicIcon.Devices -> Color(0xFFFDF2F8)
-        LearningTopicIcon.SmartToy -> Color(0xFFEEF2FF)
-        LearningTopicIcon.Terminal -> Color(0xFFF0FDF4)
-        else -> Color(0xFFF3F4F6)
+        LearningTopicIcon.Code -> PrimaryContainerLight
+        LearningTopicIcon.Devices -> CategoryDevicesBackground
+        LearningTopicIcon.SmartToy -> CategoryAiBackground
+        LearningTopicIcon.Terminal -> CategoryTerminalBackground
+        else -> SecondaryContainerLight
     }
 }
 
 private fun RoadmapSummary.toRecommendedAccentColor(): Color {
     return when (icon) {
-        LearningTopicIcon.SmartToy -> Color(0xFF9810FA)
+        LearningTopicIcon.SmartToy -> TertiaryLight
         else -> PrimaryLight
     }
 }
 
-private fun LearningModule.toModuleCardUiModel(): ModuleCardUiModel {
-    return ModuleCardUiModel(
-        title = title,
-        status = status.toModuleStatus(),
-        progressPercent = progressPercent,
-        icon = icon.toImageVector(),
-        subLessons = subLessons.map(SubLesson::toSubLessonUiModel)
+private val CategoryDevicesBackground = Color(0xFFFDF2F8)
+private val CategoryAiBackground = Color(0xFFEEF2FF)
+private val CategoryTerminalBackground = Color(0xFFF0FDF4)
+
+private fun buildRoadmapDetailGroups(
+    firstSectionTitle: String,
+    frameworkSectionTitle: String,
+    nextNodeTitle: String,
+    nextUnlockTitle: String
+): List<RoadmapGroupUiModel> {
+    val coreTitle = firstSectionTitle.ifBlank { "Core Web Fundamentals" }
+    val frameworkTitle = frameworkSectionTitle.ifBlank { "Framework Ecosystem" }
+    val activeNodeTitle = nextNodeTitle.ifBlank { "Asynchronous JS" }
+    val lockedNodeTitle = nextUnlockTitle.ifBlank { "DOM Manipulation" }
+
+    return listOf(
+        RoadmapGroupUiModel(
+            id = "core-web-fundamentals-expanded",
+            title = coreTitle,
+            completedRequiredNodes = 2,
+            totalRequiredNodes = 3,
+            progressFraction = 2f / 3f,
+            state = RoadmapGroupState.Expanded,
+            nodes = listOf(
+                RoadmapNodeUiModel(
+                    id = "html-css",
+                    title = "HTML & CSS",
+                    icon = LearningTopicIcon.Code.toImageVector(),
+                    status = RoadmapNodeStatus.Completed,
+                    requirement = RoadmapNodeRequirement.Required,
+                    descriptionResId = R.string.roadmap_detail_completed_recently,
+                    action = RoadmapNodeAction.Review
+                ),
+                RoadmapNodeUiModel(
+                    id = "async-js",
+                    title = activeNodeTitle,
+                    icon = LearningTopicIcon.DataObject.toImageVector(),
+                    status = RoadmapNodeStatus.InProgress,
+                    requirement = RoadmapNodeRequirement.Required,
+                    descriptionResId = R.string.roadmap_detail_async_description,
+                    action = RoadmapNodeAction.Continue
+                ),
+                RoadmapNodeUiModel(
+                    id = "dom-manipulation",
+                    title = lockedNodeTitle,
+                    icon = LearningTopicIcon.Code.toImageVector(),
+                    status = RoadmapNodeStatus.Locked,
+                    requirement = RoadmapNodeRequirement.Required,
+                    descriptionResId = R.string.roadmap_detail_unlock_by_completing,
+                    descriptionArgs = listOf(activeNodeTitle)
+                ),
+                RoadmapNodeUiModel(
+                    id = "css-animation",
+                    title = "CSS Animation",
+                    icon = LearningTopicIcon.Devices.toImageVector(),
+                    status = RoadmapNodeStatus.Locked,
+                    requirement = RoadmapNodeRequirement.Optional,
+                    descriptionResId = R.string.roadmap_detail_css_animation_description
+                )
+            )
+        ),
+        RoadmapGroupUiModel(
+            id = "core-web-fundamentals-completed",
+            title = coreTitle,
+            completedRequiredNodes = 3,
+            totalRequiredNodes = 3,
+            progressFraction = 1f,
+            state = RoadmapGroupState.Completed,
+            nodes = listOf(
+                RoadmapNodeUiModel(
+                    id = "html-css-completed",
+                    title = "HTML & CSS",
+                    icon = LearningTopicIcon.Code.toImageVector(),
+                    status = RoadmapNodeStatus.Completed,
+                    requirement = RoadmapNodeRequirement.Required,
+                    descriptionResId = R.string.roadmap_detail_completed_recently
+                ),
+                RoadmapNodeUiModel(
+                    id = "async-js-completed",
+                    title = activeNodeTitle,
+                    icon = LearningTopicIcon.DataObject.toImageVector(),
+                    status = RoadmapNodeStatus.Completed,
+                    requirement = RoadmapNodeRequirement.Required,
+                    descriptionResId = R.string.roadmap_detail_completed_recently
+                ),
+                RoadmapNodeUiModel(
+                    id = "dom-manipulation-completed",
+                    title = lockedNodeTitle,
+                    icon = LearningTopicIcon.Code.toImageVector(),
+                    status = RoadmapNodeStatus.Completed,
+                    requirement = RoadmapNodeRequirement.Required,
+                    descriptionResId = R.string.roadmap_detail_completed_recently
+                ),
+                RoadmapNodeUiModel(
+                    id = "css-animation-completed",
+                    title = "CSS Animation",
+                    icon = LearningTopicIcon.Devices.toImageVector(),
+                    status = RoadmapNodeStatus.Completed,
+                    requirement = RoadmapNodeRequirement.Optional,
+                    descriptionResId = R.string.roadmap_detail_css_animation_description
+                )
+            )
+        ),
+        RoadmapGroupUiModel(
+            id = "framework-ecosystem-locked",
+            title = frameworkTitle,
+            completedRequiredNodes = 0,
+            totalRequiredNodes = 1,
+            progressFraction = 0f,
+            state = RoadmapGroupState.Locked,
+            lockedDescriptionResId = R.string.roadmap_detail_locked_group_description,
+            lockedDescriptionArgs = listOf(coreTitle, "React Fundamentals"),
+            lockedExpandedDescriptionResId = R.string.roadmap_detail_framework_ecosystem_description
+        )
     )
 }
 
-private fun SubLesson.toSubLessonUiModel(): SubLessonUiModel {
-    return SubLessonUiModel(title = title, status = status.toModuleStatus())
-}
-
-fun LearningStatus.toModuleStatus(): ModuleStatus {
-    return when (this) {
-        LearningStatus.Completed -> ModuleStatus.COMPLETED
-        LearningStatus.InProgress -> ModuleStatus.IN_PROGRESS
-        LearningStatus.Locked -> ModuleStatus.LOCKED
-        LearningStatus.NotStarted -> ModuleStatus.LOCKED
-    }
+private fun buildRoadmapDetailMilestones(): List<RoadmapMilestoneUiModel> {
+    return listOf(
+        RoadmapMilestoneUiModel(
+            id = "first-landing-page",
+            titleResId = R.string.roadmap_detail_milestone_landing_title,
+            descriptionResId = R.string.roadmap_detail_milestone_landing_description,
+            state = RoadmapMilestoneState.Available
+        ),
+        RoadmapMilestoneUiModel(
+            id = "first-landing-page-locked",
+            titleResId = R.string.roadmap_detail_milestone_landing_title,
+            descriptionResId = R.string.roadmap_detail_milestone_landing_description,
+            state = RoadmapMilestoneState.Locked
+        )
+    )
 }

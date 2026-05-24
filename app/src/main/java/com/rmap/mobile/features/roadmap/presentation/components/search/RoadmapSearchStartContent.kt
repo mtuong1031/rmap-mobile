@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +13,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.roadmap.presentation.components.RoadmapSearchCard
+import com.rmap.mobile.features.roadmap.presentation.components.RoadmapSearchSection
+import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapMilestoneCompactCard
+import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapNodeItem
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneState
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
