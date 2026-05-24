@@ -21,7 +21,7 @@
 
     <!-- Home Screen -->
     <string name="roadmap_trending_title">Trending Roadmaps</string>
-    <string name="roadmap_see_all">See All</string>
+    <string name="roadmap_see_all">SEE ALL</string>
 
     <string name="home_heading_next_skill">Ready for your next skill?</string>
     <string name="home_search_placeholder">Search roadmap, skill, or role...</string>
@@ -39,6 +39,7 @@
     <string name="home_hero_required_skill">Required Skill</string>
     <string name="home_hero_continue">Continue</string>
     <string name="home_hero_next_unlock_prefix">Next unlock: </string>
+    <string name="home_hero_progress_format">%1$d of %2$d required nodes complete</string>
     <string name="home_empty_roadmap_title">Ready to start learning?</string>
     <string name="home_empty_roadmap_description">You don\'t have an active roadmap yet. Search a skill, choose a role, or create one with AI.</string>
     <string name="home_empty_roadmap_create_ai">Create roadmap with AI</string>

@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.home.presentation.components
+package com.rmap.mobile.features.home.presentation.components.category
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

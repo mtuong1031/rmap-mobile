@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.home.presentation.components
+package com.rmap.mobile.features.home.presentation.components.stat
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

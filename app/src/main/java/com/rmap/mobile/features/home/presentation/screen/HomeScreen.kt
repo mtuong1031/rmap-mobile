@@ -48,20 +48,21 @@ import com.rmap.mobile.core.ui.components.RMapTextInput
 import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.home.presentation.components.HomeCategoryCardRow
-import com.rmap.mobile.features.home.presentation.components.HomeCategoryItemUiModel
-import com.rmap.mobile.features.home.presentation.components.HomeHeroSection
-import com.rmap.mobile.features.home.presentation.components.HomePaceAlertCard
-import com.rmap.mobile.features.home.presentation.components.HomeRecommendedRoadmapsSection
-import com.rmap.mobile.features.home.presentation.components.HomeRoadmapCardDefaults
-import com.rmap.mobile.features.home.presentation.components.HomeRoadmapCardUiModel
-import com.rmap.mobile.features.home.presentation.components.HomeStatCardDefaults
-import com.rmap.mobile.features.home.presentation.components.HomeStatCardRow
-import com.rmap.mobile.features.home.presentation.components.HomeStatItemUiModel
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCard
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCardDefaults
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCardUiModel
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapsHeader
+import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryCardRow
+import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryItemUiModel
+import com.rmap.mobile.features.home.presentation.components.hero.HomeHeroSection
+import com.rmap.mobile.features.home.presentation.components.hero.HomeLearningPlanUiModel
+import com.rmap.mobile.features.home.presentation.components.insight.HomePaceAlertCard
+import com.rmap.mobile.features.home.presentation.components.recommend.HomeRecommendedRoadmapsSection
+import com.rmap.mobile.features.home.presentation.components.recommend.HomeRoadmapCardDefaults
+import com.rmap.mobile.features.home.presentation.components.recommend.HomeRoadmapCardUiModel
+import com.rmap.mobile.features.home.presentation.components.stat.HomeStatCardDefaults
+import com.rmap.mobile.features.home.presentation.components.stat.HomeStatCardRow
+import com.rmap.mobile.features.home.presentation.components.stat.HomeStatItemUiModel
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCard
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardDefaults
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapsHeader
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeUiState
 import com.rmap.mobile.navigation.NavBarDestination
 
@@ -76,7 +77,9 @@ fun HomeScreen(
     onSearchQueryChange: (String) -> Unit = {},
     onSearchClick: () -> Unit = {},
     onSeeAllClick: () -> Unit = {},
+    onViewAllInProgressRoadmapsClick: () -> Unit = {},
     onContinueLearningClick: () -> Unit = {},
+    onContinueLearningPlanClick: ((HomeLearningPlanUiModel) -> Unit)? = null,
     onCreateRoadmapWithAiClick: () -> Unit = {},
     onExploreReadyMadeClick: () -> Unit = {},
     onAdjustPlanClick: () -> Unit = {},
@@ -97,6 +100,57 @@ fun HomeScreen(
         ((uiState.todayGoalCompleted.toFloat() / uiState.todayGoalTotal.toFloat()).coerceIn(0f, 1f) * 100).toInt()
     } else {
         0
+    }
+    val learningPlans = if (uiState.hasInProgressRoadmap) {
+        listOf(
+            HomeLearningPlanUiModel(
+                id = "frontend-pro",
+                roadmapTitle = "Frontend Pro",
+                skillTitle = "Asynchronous Ronaldo",
+                chapterText = "Chapter 1/6",
+                requiredSkillText = stringResource(R.string.home_hero_required_skill),
+                timeLeftText = "25 min left",
+                completedRequiredNodes = uiState.completedLessons,
+                totalRequiredNodes = uiState.totalLessons,
+                progressPercentage = progressPercent,
+                nextUnlockText = "DOM Manipulation",
+                currentNodeId = "asynchronous-js",
+                lastStudiedAtMillis = 3_000L,
+                startedAtMillis = 1_000L
+            ),
+            HomeLearningPlanUiModel(
+                id = "react-fundamentals",
+                roadmapTitle = "React Fundamentals",
+                skillTitle = "Hooks and State Management",
+                chapterText = "Chapter 2/5",
+                requiredSkillText = stringResource(R.string.home_hero_required_skill),
+                timeLeftText = "18 min left",
+                completedRequiredNodes = 9,
+                totalRequiredNodes = 16,
+                progressPercentage = 56,
+                nextUnlockText = "React Query",
+                currentNodeId = "hooks-state",
+                lastStudiedAtMillis = 5_000L,
+                startedAtMillis = 2_000L
+            ),
+            HomeLearningPlanUiModel(
+                id = "backend-foundations",
+                roadmapTitle = "Backend Foundations",
+                skillTitle = "REST API Design for Production Services",
+                chapterText = "Chapter 3/8",
+                requiredSkillText = stringResource(R.string.home_hero_required_skill),
+                timeLeftText = "32 min left",
+                completedRequiredNodes = 18,
+                totalRequiredNodes = 30,
+                progressPercentage = 60,
+                nextUnlockText = "Authentication Middleware",
+                currentNodeId = "rest-api-design",
+                lastStudiedAtMillis = 4_000L,
+                startedAtMillis = 1_500L
+            )
+        )
+    } else {
+        emptyList()
     }
 
     val homeStatItems = listOf(
@@ -257,22 +311,18 @@ fun HomeScreen(
                 item {
                     HomeHeroSection(
                         sectionTitle = stringResource(R.string.home_learning_plan_title),
-                        roadmapTitle = "Frontend Pro",
-                        skillTitle = "Asynchronous Ronaldo Dos Santoss",
-                        chapterText = "Chapter 1/6",
-                        requiredSkillText = stringResource(R.string.home_hero_required_skill),
-                        timeLeftText = "25 min left",
-                        progressText = "${uiState.completedLessons} of ${uiState.totalLessons} required nodes complete",
-                        progressPercentText = "$progressPercent%",
-                        progressFraction = uiState.progressFraction,
                         continueText = stringResource(R.string.home_hero_continue),
                         nextUnlockPrefix = stringResource(R.string.home_hero_next_unlock_prefix),
-                        nextUnlockText = "DOM Manipulation",
-                        hasInProgressRoadmap = uiState.hasInProgressRoadmap,
-                        onContinueClick = onContinueLearningClick,
+                        viewAllText = stringResource(R.string.roadmap_see_all),
+                        sectionHorizontalPadding = sectionHorizontalPadding,
+                        learningPlans = learningPlans,
+                        onContinueClick = { item ->
+                            onContinueLearningPlanClick?.invoke(item) ?: onContinueLearningClick()
+                        },
+                        onViewAllClick = onViewAllInProgressRoadmapsClick,
                         onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
                         onExploreReadyMadeClick = onExploreReadyMadeClick,
-                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 

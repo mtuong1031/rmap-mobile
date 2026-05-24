@@ -4,9 +4,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCardDefaults
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCardStyle
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCardUiModel
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardDefaults
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardStyle
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector

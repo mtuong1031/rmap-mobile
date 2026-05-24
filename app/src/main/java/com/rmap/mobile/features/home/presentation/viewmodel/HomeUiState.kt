@@ -1,6 +1,6 @@
 package com.rmap.mobile.features.home.presentation.viewmodel
 
-import com.rmap.mobile.features.home.presentation.components.TrendingRoadmapCardUiModel
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 
 data class HomeUiState(
     val userName: String = "",
