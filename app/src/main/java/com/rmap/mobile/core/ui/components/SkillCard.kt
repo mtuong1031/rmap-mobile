@@ -41,7 +41,7 @@ import com.rmap.mobile.core.ui.theme.OnPrimaryLight
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val SkillCardShape = AppCardDefaults.shape
+private val SkillCardShape = RMapCardDefaults.shape
 private val SkillIconFrameShape = AppShapes.card
 private val SkillIconContainerShape = AppShapes.iconFrameInner
 
@@ -73,7 +73,7 @@ fun SkillCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth(),
         shape = SkillCardShape,
@@ -271,3 +271,4 @@ private fun SkillCardPreview() {
         }
     }
 }
+

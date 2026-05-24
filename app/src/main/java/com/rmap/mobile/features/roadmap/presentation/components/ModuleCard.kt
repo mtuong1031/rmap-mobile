@@ -40,8 +40,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.AppCard
-import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.RMapCard
+import com.rmap.mobile.core.ui.components.RMapCardDefaults
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.BackgroundLight
@@ -84,14 +84,14 @@ fun ModuleCard(
     val iconBg = if (isLocked) Color(0xFFF3F4F6) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
     val iconTint = if (isLocked) Color(0xFF99A1AF) else MaterialTheme.colorScheme.primary
 
-    AppCard(
+    RMapCard(
         modifier = modifier.fillMaxWidth(),
         shape = AppShapes.card,
         color = cardBg,
-        border = AppCardDefaults.border(
-            color = if (isLocked) AppCardDefaults.borderColor.copy(alpha = 0.5f) else AppCardDefaults.borderColor
+        border = RMapCardDefaults.border(
+            color = if (isLocked) RMapCardDefaults.borderColor.copy(alpha = 0.5f) else RMapCardDefaults.borderColor
         ),
-        shadowElevation = if (isLocked) Dimens.cardElevationNone else AppCardDefaults.shadowElevation
+        shadowElevation = if (isLocked) Dimens.cardElevationNone else RMapCardDefaults.shadowElevation
     ) {
         Column(
             modifier = Modifier.padding(Dimens.spacingLg)
@@ -311,3 +311,4 @@ private fun ModuleCardPreview() {
         }
     }
 }
+

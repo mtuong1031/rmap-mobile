@@ -41,11 +41,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.AppCard
-import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.RMapCard
+import com.rmap.mobile.core.ui.components.RMapCardDefaults
 import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
-import com.rmap.mobile.core.ui.components.appCardShadow
+import com.rmap.mobile.core.ui.components.rmapCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -64,12 +64,12 @@ fun ExploreSearchBar(
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth()
             .height(Dimens.exploreSearchBarHeight),
         shape = ExploreSearchBarShape,
-        border = AppCardDefaults.border(color = Color(0xFFF3F4F6)),
+        border = RMapCardDefaults.border(color = Color(0xFFF3F4F6)),
         shadowColor = Color(0x0A000000)
     ) {
         Row(
@@ -245,8 +245,8 @@ fun RecommendedCard(
         modifier = Modifier
             .width(Dimens.recommendedCardWidth)
             .height(Dimens.recommendedCardHeight)
-            .appCardShadow(
-                elevation = AppCardDefaults.shadowElevation,
+            .rmapCardShadow(
+                elevation = RMapCardDefaults.shadowElevation,
                 shape = RecommendedCardShape,
                 ambientColor = item.accentColor.copy(alpha = 0.3f),
                 spotColor = item.accentColor.copy(alpha = 0.3f)
@@ -395,3 +395,5 @@ private fun RecommendedCardPreview() {
         }
     }
 }
+
+

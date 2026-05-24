@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import com.rmap.mobile.core.ui.components.AppCard
+import com.rmap.mobile.core.ui.components.RMapCard
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 
@@ -21,7 +21,7 @@ internal fun ProfileSectionCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier.fillMaxWidth(),
         shape = AppShapes.card,
         border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)),
@@ -61,3 +61,4 @@ internal fun ProfileSectionHeader(
         )
     }
 }
+

@@ -36,8 +36,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.AppCard
-import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.RMapCard
+import com.rmap.mobile.core.ui.components.RMapCardDefaults
 import com.rmap.mobile.core.ui.components.FilledButton
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.theme.AppShapes
@@ -46,7 +46,7 @@ import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val BookmarkRoadmapCardShape = AppCardDefaults.shape
+private val BookmarkRoadmapCardShape = RMapCardDefaults.shape
 private val BookmarkShareButtonShape = AppShapes.button
 
 data class BookmarkRoadmapCardUiModel(
@@ -67,7 +67,7 @@ fun BookmarkRoadmapCard(
     onShareClick: (() -> Unit)? = null,
     onBookmarkClick: (() -> Unit)? = null
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth(),
         shape = BookmarkRoadmapCardShape
@@ -258,12 +258,12 @@ private fun ContentSection(
                     modifier = Modifier.weight(1f)
                 )
 
-                AppCard(
+                RMapCard(
                     modifier = Modifier
                         .size(Dimens.bookmarkShareButtonSize),
                     shape = BookmarkShareButtonShape,
                     color = BackgroundLight,
-                    border = AppCardDefaults.border(color = Color(0x1A2B7FFF)),
+                    border = RMapCardDefaults.border(color = Color(0x1A2B7FFF)),
                     shadowColor = Color(0xCCF4F8FF)
                 ) {
                     IconButton(
@@ -323,3 +323,4 @@ private fun BookmarkRoadmapCardPreview() {
         }
     }
 }
+

@@ -68,7 +68,7 @@ fun RoadmapStatCard(
         Modifier
     }
 
-    AppCard(
+    RMapCard(
         modifier = modifier
             .defaultMinSize(
                 minWidth = RoadmapStatCardDefaults.CardMinWidth,
@@ -168,3 +168,4 @@ private fun RoadmapStatCardRowPreview() {
         )
     }
 }
+

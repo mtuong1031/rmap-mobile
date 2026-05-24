@@ -21,8 +21,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import com.rmap.mobile.core.ui.components.AppCard
-import com.rmap.mobile.core.ui.components.AppCardDefaults
+import com.rmap.mobile.core.ui.components.RMapCard
+import com.rmap.mobile.core.ui.components.RMapCardDefaults
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -33,10 +33,10 @@ fun StatCard(
     value: String,
     modifier: Modifier = Modifier
 ) {
-    AppCard(
+    RMapCard(
         modifier = modifier
             .fillMaxWidth(),
-        shape = AppCardDefaults.shape
+        shape = RMapCardDefaults.shape
     ) {
         Column(
             modifier = Modifier.padding(horizontal = Dimens.spacingXl, vertical = Dimens.spacingXl),
@@ -90,3 +90,4 @@ private fun StatCardPreview() {
         )
     }
 }
+

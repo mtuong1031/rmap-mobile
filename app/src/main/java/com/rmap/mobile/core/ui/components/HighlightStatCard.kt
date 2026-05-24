@@ -105,7 +105,7 @@ fun HighlightStatCard(
         Modifier
     }
 
-    AppCard(
+    RMapCard(
         modifier = modifier
             .defaultMinSize(
                 minWidth = HighlightStatCardDefaults.CardMinWidth,
@@ -113,7 +113,7 @@ fun HighlightStatCard(
             )
             .then(clickableModifier),
         shape = HighlightStatCardDefaults.CardShape,
-        border = AppCardDefaults.border(color = style.iconColor.copy(alpha = 0.5f))
+        border = RMapCardDefaults.border(color = style.iconColor.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier.padding(vertical = Dimens.spacingLg),
@@ -223,3 +223,4 @@ private fun HighlightStatCardRowPreview() {
         )
     }
 }
+
