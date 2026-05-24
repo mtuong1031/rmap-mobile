@@ -81,8 +81,8 @@ fun ProfileScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = Dimens.spacingXl,
-                    end = Dimens.spacingXl,
+                    start = Dimens.spacingLg,
+                    end = Dimens.spacingLg,
                     top = Dimens.spacingScreenTopCompact,
                     bottom = innerPadding.calculateBottomPadding() + Dimens.spacingXxxl
                 ),
