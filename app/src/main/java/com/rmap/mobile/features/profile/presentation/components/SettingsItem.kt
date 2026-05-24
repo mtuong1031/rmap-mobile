@@ -115,7 +115,7 @@ fun SettingsItem(
                     if (subtitle != null) {
                         Text(
                             text = subtitle,
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             ),

@@ -305,7 +305,7 @@ private fun ProfileScreenPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         ProfileScreen(
             uiState = ProfileUiState(
-                name = "Thinh Duy",
+                name = "Username",
                 role = "Aspiring Frontend Developer",
                 avatarUrl = "",
                 xp = 450,
