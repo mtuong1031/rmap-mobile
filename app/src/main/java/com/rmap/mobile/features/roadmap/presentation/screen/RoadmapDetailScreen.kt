@@ -118,9 +118,9 @@ fun RoadmapDetailScreen(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
-                        start = Dimens.spacingXxl,
+                        start = Dimens.spacingScreenHorizontal,
                         top = Dimens.controlXl + Dimens.spacingXs,
-                        end = Dimens.spacingXxl,
+                        end = Dimens.spacingScreenHorizontal,
                         bottom = RoadmapDetailContentBottomPadding
                     )
                 ) {
@@ -219,8 +219,8 @@ fun RoadmapDetailScreen(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(
-                            start = Dimens.spacingXxl,
-                            end = Dimens.spacingXxl,
+                            start = Dimens.spacingScreenHorizontal,
+                            end = Dimens.spacingScreenHorizontal,
                             bottom = Dimens.spacingXl
                         )
                 )

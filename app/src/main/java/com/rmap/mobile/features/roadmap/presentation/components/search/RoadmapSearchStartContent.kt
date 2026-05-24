@@ -37,7 +37,7 @@ fun RoadmapSearchStartContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.spacingXxl),
+            .padding(horizontal = Dimens.spacingScreenHorizontal),
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
     ) {
         currentNode?.let { node ->
