@@ -1,6 +1,5 @@
 package com.rmap.mobile.features.roadmap.presentation.components.search
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,29 +22,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.cardShadow
-
-@Immutable
-data class RoadmapQuickFilterUiModel(
-    val id: String,
-    @param:StringRes val labelResId: Int,
-    val selected: Boolean = false
-)
-
-fun defaultRoadmapQuickFilters(): List<RoadmapQuickFilterUiModel> {
-    return listOf(
-        RoadmapQuickFilterUiModel(id = "required", labelResId = R.string.roadmap_detail_status_required),
-        RoadmapQuickFilterUiModel(id = "optional", labelResId = R.string.roadmap_detail_status_optional),
-        RoadmapQuickFilterUiModel(id = "completed", labelResId = R.string.roadmap_detail_status_completed),
-        RoadmapQuickFilterUiModel(id = "locked", labelResId = R.string.roadmap_detail_locked),
-        RoadmapQuickFilterUiModel(id = "milestone", labelResId = R.string.roadmap_detail_milestone_label),
-        RoadmapQuickFilterUiModel(id = "chapter", labelResId = R.string.roadmap_detail_chapter_tag)
-    )
-}
 
 @Composable
 fun RoadmapQuickFilterRow(

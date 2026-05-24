@@ -26,8 +26,8 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.roadmap.presentation.components.detail.RoadmapDetailHeroProgressCard
 import com.rmap.mobile.features.roadmap.presentation.components.detail.RoadmapDetailTopBar
 import com.rmap.mobile.features.roadmap.presentation.components.detail.RoadmapNextActionBar
-import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapGroupCard
-import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapMilestoneCard
+import com.rmap.mobile.features.roadmap.presentation.components.content.RoadmapMilestoneCard
+import com.rmap.mobile.features.roadmap.presentation.components.content.group.RoadmapGroupCard
 import com.rmap.mobile.features.roadmap.presentation.components.search.RoadmapLocalSearchSection
 import com.rmap.mobile.features.roadmap.presentation.components.search.defaultRoadmapQuickFilters
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailUiState

@@ -43,12 +43,6 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-enum class RoadmapLocalSearchMode {
-    Inline,
-    Active,
-    Typing
-}
-
 @Composable
 fun RoadmapLocalSearchSection(
     roadmapTitle: String,
