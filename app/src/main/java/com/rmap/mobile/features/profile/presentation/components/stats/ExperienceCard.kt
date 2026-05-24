@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.profile.presentation.components
+package com.rmap.mobile.features.profile.presentation.components.stats
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

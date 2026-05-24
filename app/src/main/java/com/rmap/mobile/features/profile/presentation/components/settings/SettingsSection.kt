@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.profile.presentation.components
+package com.rmap.mobile.features.profile.presentation.components.settings
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
