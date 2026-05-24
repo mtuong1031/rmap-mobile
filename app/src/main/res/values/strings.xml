@@ -40,6 +40,7 @@
     <string name="home_hero_continue">Continue</string>
     <string name="home_hero_next_unlock_prefix">Next unlock: </string>
     <string name="home_hero_progress_format">%1$d of %2$d required nodes complete</string>
+    <string name="home_progress_percent_short">%1$d%%</string>
     <string name="home_empty_roadmap_title">Ready to start learning?</string>
     <string name="home_empty_roadmap_description">You don\'t have an active roadmap yet. Search a
         skill, choose a role, or create one with AI.</string>

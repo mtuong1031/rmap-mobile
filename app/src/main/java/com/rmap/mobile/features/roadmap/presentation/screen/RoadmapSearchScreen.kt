@@ -101,7 +101,7 @@ fun RoadmapSearchScreen(
                     onSearchFocusChange = onSearchFocusChange,
                     onClearClick = onSearchClearClick,
                     inputFocusRequester = searchFocusRequester,
-                    modifier = Modifier.padding(horizontal = Dimens.spacingLg)
+                    modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
                 )
             }
 
