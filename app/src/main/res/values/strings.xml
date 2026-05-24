@@ -149,16 +149,29 @@
 
     <!-- Bookmarks Screen -->
     <string name="bookmarks_heading">Your bookmarks</string>
-    <string name="bookmarks_tab_saved_roadmaps">Roadmaps</string>
-    <string name="bookmarks_tab_saved_skills">Skills</string>
-    <string name="bookmarks_section_curated_paths">Curated Paths</string>
-    <string name="bookmarks_section_specific_skills">Specific Skills</string>
-    <string name="bookmarks_saved_count">%1$d Saved</string>
+    <string name="bookmarks_search_placeholder">Search saved roadmaps or skills...</string>
+    <string name="bookmarks_tab_saved_roadmaps">Saved Roadmaps</string>
+    <string name="bookmarks_tab_saved_skills">Saved Skills</string>
+    <string name="bookmarks_section_curated_paths">Saved Roadmaps</string>
+    <string name="bookmarks_section_specific_skills">Saved Skills</string>
+    <string name="bookmarks_saved_count">%1$d saved</string>
     <string name="bookmarks_pins_count">%1$d Pins</string>
     <string name="bookmarks_continue_path">Continue Path</string>
     <string name="bookmarks_join_now">Join Now</string>
+    <string name="bookmarks_start">Start</string>
+    <string name="bookmarks_status_filter_all">All</string>
     <string name="bookmarks_status_in_progress">In Progress</string>
     <string name="bookmarks_status_not_started">Not Started</string>
+    <string name="bookmarks_status_completed">Completed</string>
+    <string name="bookmarks_empty_title">No bookmarks yet</string>
+    <string name="bookmarks_empty_description">Save roadmaps and skill nodes you want to learn later.</string>
+    <string name="bookmarks_empty_explore_roadmaps">Explore roadmaps</string>
+    <string name="bookmarks_empty_browse_categories">Browse categories</string>
+    <string name="bookmarks_empty_suggested_domains">SUGGESTED DOMAINS</string>
+    <string name="bookmarks_empty_domain_web_development">Web Development</string>
+    <string name="bookmarks_empty_domain_data">Data</string>
+    <string name="bookmarks_empty_domain_devops">DevOps</string>
+    <string name="bookmarks_empty_domain_design">Design</string>
     <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
     <string name="content_description_filter">Filter results</string>
     <string name="content_description_clear_search">Clear search</string>

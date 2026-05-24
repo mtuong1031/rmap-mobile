@@ -53,6 +53,10 @@ enum class SkillStatus(
         backgroundColor = PrimaryLight,
         textColor = OnPrimaryLight
     ),
+    COMPLETED(
+        backgroundColor = Color(0xFFDCFCE7),
+        textColor = Color(0xFF008236)
+    ),
     NOT_STARTED(
         backgroundColor = Color(0xFFF3F4F6),
         textColor = Color(0xFF6A7282)
