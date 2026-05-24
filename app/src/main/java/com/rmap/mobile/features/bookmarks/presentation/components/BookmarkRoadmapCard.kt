@@ -263,8 +263,7 @@ private fun ContentSection(
                         .size(Dimens.bookmarkShareButtonSize),
                     shape = BookmarkShareButtonShape,
                     color = BackgroundLight,
-                    border = RMapCardDefaults.border(color = Color(0x1A2B7FFF)),
-                    shadowColor = Color(0xCCF4F8FF)
+                    border = RMapCardDefaults.border(color = Color(0x1A2B7FFF))
                 ) {
                     IconButton(
                         onClick = onShareClick ?: {},
@@ -323,4 +322,5 @@ private fun BookmarkRoadmapCardPreview() {
         }
     }
 }
+
 

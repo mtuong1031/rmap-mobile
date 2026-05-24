@@ -26,12 +26,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.RMapCardDefaults
-import com.rmap.mobile.core.ui.components.rmapCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.cardShadow
 
 private val RoadmapHeroCardShape = AppShapes.heroCard
 
@@ -48,12 +47,7 @@ fun RoadmapHeroCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .rmapCardShadow(
-                elevation = RMapCardDefaults.shadowElevation,
-                shape = RoadmapHeroCardShape,
-                spotColor = Color(0x66155DFC),
-                ambientColor = Color(0x66155DFC)
-            )
+            .cardShadow(shape = RoadmapHeroCardShape)
             .background(
                 color = MaterialTheme.colorScheme.primary,
                 shape = RoadmapHeroCardShape
@@ -184,5 +178,4 @@ private fun RoadmapHeroCardPreview() {
         }
     }
 }
-
 

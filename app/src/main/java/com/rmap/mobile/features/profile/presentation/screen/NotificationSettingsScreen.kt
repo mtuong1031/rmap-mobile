@@ -212,9 +212,7 @@ private fun NotificationSettingsContent(
         RMapCard(
             modifier = Modifier.fillMaxWidth(),
             shape = AppShapes.card,
-            border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)),
-            shadowElevation = Dimens.cardElevationSm,
-            shadowColor = Color(0x10298CF7)
+            border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f))
         ) {
             Column(modifier = Modifier.padding(Dimens.spacingSm)) {
                 NotificationSettingRow(
@@ -252,8 +250,7 @@ private fun NotificationSettingsContent(
                                 text = uiState.reminderTime,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontWeight = FontWeight.Medium,
-                                )
+                                    fontWeight = FontWeight.Medium)
                             )
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
@@ -410,8 +407,7 @@ private fun NotificationSettingRow(
                     text = title,
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold,
-                    )
+                        fontWeight = FontWeight.Bold)
                 )
 
                 if (subtitle != null) {
@@ -419,8 +415,7 @@ private fun NotificationSettingRow(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = OnSurfacePlaceholderLight,
-                            fontWeight = FontWeight.Medium,
-                        )
+                            fontWeight = FontWeight.Medium)
                     )
                 }
             }
@@ -520,4 +515,5 @@ private fun NotificationSettingsScreenPreview() {
         )
     }
 }
+
 

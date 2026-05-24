@@ -28,13 +28,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapCardDefaults
-import com.rmap.mobile.core.ui.components.rmapCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.BackgroundLight
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.cardShadow
 
 private val AiScholarTipCardShape = AppShapes.card
 
@@ -58,11 +58,7 @@ fun AiScholarTipCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .rmapCardShadow(
-                shape = AiScholarTipCardShape,
-                ambientColor = Color(0x08000000),
-                spotColor = Color(0x08000000)
-            )
+            .cardShadow(shape = AiScholarTipCardShape)
             .background(
                 brush = Brush.linearGradient(colors = bgGradientColors),
                 shape = AiScholarTipCardShape
@@ -140,5 +136,4 @@ private fun AiScholarTipCardPreview() {
         }
     }
 }
-
 

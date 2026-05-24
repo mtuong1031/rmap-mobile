@@ -60,9 +60,7 @@ fun SettingsSection(
         RMapCard(
             modifier = Modifier.fillMaxWidth(),
             shape = AppShapes.card,
-            border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)),
-            shadowElevation = Dimens.cardElevationSm,
-            shadowColor = Color(0x10298CF7)
+            border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f))
         ) {
             Column(modifier = Modifier.padding(Dimens.spacingSm)) {
                 SettingsItem(
@@ -110,9 +108,7 @@ private fun SignOutButton(
             .clip(AppShapes.button)
             .clickable(onClick = onClick),
         shape = AppShapes.button,
-        border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.error.copy(alpha = 0.6f)),
-        shadowElevation = Dimens.cardElevationSm,
-        shadowColor = Color(0x14EF4444)
+        border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
     ) {
         Row(
             modifier = Modifier
@@ -141,8 +137,7 @@ private fun SignOutButton(
                 modifier = Modifier.padding(start = Dimens.spacingMd),
                 style = MaterialTheme.typography.titleMedium.copy(
                     color = MaterialTheme.colorScheme.error,
-                    fontWeight = FontWeight.Bold,
-                )
+                    fontWeight = FontWeight.Bold)
             )
         }
     }
@@ -155,5 +150,6 @@ private fun SettingsSectionPreview() {
         SettingsSection(onItemClick = {})
     }
 }
+
 
 
