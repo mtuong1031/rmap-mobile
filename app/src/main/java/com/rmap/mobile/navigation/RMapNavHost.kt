@@ -89,6 +89,19 @@ fun RMapNavHost(navController: NavHostController) {
         }
     }
 
+    fun navigateBackFromRoadmapDetail() {
+        if (!navController.popBackStack()) {
+            val currentRoute = navController.currentDestination?.route
+
+            navController.navigate(startDestination) {
+                currentRoute?.let { route ->
+                    popUpTo(route) { inclusive = true }
+                }
+                launchSingleTop = true
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         NavHost(navController = navController, startDestination = startDestination) {
             composable(AppRoutes.AUTH) {
@@ -333,16 +346,26 @@ fun RMapNavHost(navController: NavHostController) {
 
                 RoadmapDetailScreen(
                     uiState = uiState,
-                    onBackClick = { navController.popBackStack() },
-                    selectedDestination = NavBarDestination.Home,
-                    onDestinationSelected = { destination ->
-                        if (destination == NavBarDestination.Home) {
-                            navController.popBackStack(AppRoutes.HOME, false)
-                        } else if (destination == NavBarDestination.AiAssistant) {
-                            coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
-                        } else {
-                            navigateFromBottomBar(destination)
-                        }
+                    onBackClick = ::navigateBackFromRoadmapDetail,
+                    onMoreClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onContinueClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onSearchQueryChange = viewModel::onSearchQueryChange,
+                    onSearchFocus = viewModel::onSearchFocus,
+                    onSearchFocusChange = viewModel::onSearchFocusChange,
+                    onSearchClearClick = viewModel::onSearchClearClick,
+                    onSearchBackClick = viewModel::onSearchBackClick,
+                    onNodeActionClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onGroupClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onMilestoneClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     }
                 )
             }

@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.group
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -38,6 +38,18 @@ import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.roadmap.presentation.components.RoadmapSearchCard
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmber
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmberBg
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmberBorder
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmberDark
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmberText
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapInk
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapMilestoneIconBg
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapMilestoneLockedBorder
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapMilestoneSoftBg
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneState
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneUiModel
 

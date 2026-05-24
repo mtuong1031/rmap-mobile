@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.common
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background

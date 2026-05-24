@@ -41,7 +41,8 @@
     <string name="home_hero_next_unlock_prefix">Next unlock: </string>
     <string name="home_hero_progress_format">%1$d of %2$d required nodes complete</string>
     <string name="home_empty_roadmap_title">Ready to start learning?</string>
-    <string name="home_empty_roadmap_description">You don\'t have an active roadmap yet. Search a skill, choose a role, or create one with AI.</string>
+    <string name="home_empty_roadmap_description">You don\'t have an active roadmap yet. Search a
+        skill, choose a role, or create one with AI.</string>
     <string name="home_empty_roadmap_create_ai">Create roadmap with AI</string>
     <string name="home_empty_roadmap_explore">Explore ready-made</string>
     <string name="home_stat_roadmap_label">Roadmap</string>
@@ -159,6 +160,7 @@
     <string name="bookmarks_status_not_started">Not Started</string>
     <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
     <string name="content_description_filter">Filter results</string>
+    <string name="content_description_clear_search">Clear search</string>
     <string name="content_description_bookmark">Toggle bookmark</string>
     <string name="content_description_header_action">Open profile</string>
     <string name="content_description_share">Share roadmap</string>
@@ -171,6 +173,69 @@
     <!-- Roadmap Detail Screen -->
     <string name="content_description_back">Back</string>
     <string name="action_done">Done</string>
+    <string name="content_description_more_options">More options</string>
+    <string name="roadmap_detail_label_roadmap">Roadmap</string>
+    <string name="roadmap_detail_error_load_failed">Unable to load this roadmap. Please try again.</string>
+    <string name="roadmap_detail_category_web_development">Web Development</string>
+    <string name="roadmap_detail_section_core_web_fundamentals">Core Web Fundamentals</string>
+    <string name="roadmap_detail_section_framework_ecosystem">Framework Ecosystem</string>
+    <string name="roadmap_detail_module_html_css">HTML &amp; CSS</string>
+    <string name="roadmap_detail_module_javascript_basics">JavaScript Basics</string>
+    <string name="roadmap_detail_module_react_fundamentals">React Fundamentals</string>
+    <string name="roadmap_detail_node_css_animation">CSS Animation</string>
+    <string name="roadmap_detail_lesson_semantic_html">Semantic HTML</string>
+    <string name="roadmap_detail_lesson_css_flexbox_grid">CSS Flexbox &amp; Grid</string>
+    <string name="roadmap_detail_lesson_responsive_design">Responsive Design</string>
+    <string name="roadmap_detail_lesson_es6_syntax">ES6+ Syntax</string>
+    <string name="roadmap_detail_lesson_async_js">Asynchronous Ronaldo Dos Santoss </string>
+    <string name="roadmap_detail_lesson_dom_manipulation">DOM Manipulation</string>
+    <string name="roadmap_detail_topic_promises">Promises</string>
+    <string name="roadmap_detail_search_placeholder">Search lessons in %1$s...</string>
+    <string name="roadmap_detail_search_caption">Local search: Chapters, Skill Lessons, Milestones
+        in this roadmap.</string>
+    <string name="roadmap_search_placeholder">Search nodes in %1$s...</string>
+    <string name="roadmap_search_inside_label">Searching inside %1$s</string>
+    <string name="roadmap_search_section_skill_lessons">Skill lessons</string>
+    <string name="roadmap_search_section_groups">Groups</string>
+    <string name="roadmap_search_section_milestones">Milestones</string>
+    <string name="roadmap_search_section_current_node">Current node</string>
+    <string name="roadmap_search_section_quick_filters">Quick filters</string>
+    <string name="roadmap_search_section_recently_viewed">Recently viewed</string>
+    <string name="roadmap_search_recent_milestone_project">Milestone Project</string>
+    <string name="roadmap_detail_chapter_tag">Chapter</string>
+    <string name="roadmap_detail_done_label">Done</string>
+    <string name="roadmap_detail_lessons_completed">%1$d of %2$d lessons completed</string>
+    <string name="roadmap_detail_required_nodes_completed">%1$d of %2$d required nodes completed</string>
+    <string name="roadmap_detail_group_required_complete">%1$d/%2$d required complete</string>
+    <string name="roadmap_detail_completed">%1$d%% Completed</string>
+    <string name="roadmap_detail_in_progress">%1$d%% In-Progress</string>
+    <string name="roadmap_detail_locked">Locked</string>
+    <string name="roadmap_detail_status_required">Required</string>
+    <string name="roadmap_detail_status_optional">Optional</string>
+    <string name="roadmap_detail_status_completed">Completed</string>
+    <string name="roadmap_detail_status_in_progress">In Progress</string>
+    <string name="roadmap_detail_action_review">Review</string>
+    <string name="roadmap_detail_action_continue">Continue</string>
+    <string name="roadmap_detail_continue_title">Continue: %1$s</string>
+    <string name="roadmap_detail_next_unlock">Next unlock: %1$s</string>
+    <string name="roadmap_detail_completed_recently">Completed 2 days ago</string>
+    <string name="roadmap_detail_async_description">Dive into Promises and Async/Await</string>
+    <string name="roadmap_detail_unlock_by_completing">Unlock by completing %1$s</string>
+    <string name="roadmap_detail_css_animation_description">Add life to your interfaces</string>
+    <string name="roadmap_detail_milestone_label">Milestone</string>
+    <string name="roadmap_detail_milestone_landing_title">Build your first landing page</string>
+    <string name="roadmap_detail_milestone_landing_description">Apply HTML, CSS, and JavaScript
+        basics in a portfolio-ready project.</string>
+    <string name="roadmap_detail_action_view_project">View project</string>
+    <string name="roadmap_detail_locked_group_description">Complete %1$s to unlock %2$s</string>
+    <string name="roadmap_detail_framework_ecosystem_description">Master the essential web
+        development ecosystem concepts required before starting React Fundamentals.</string>
+    <string name="roadmap_detail_next_action_label">Next Action</string>
+    <string name="roadmap_detail_next_action_continue">Continue %1$s</string>
+    <string name="roadmap_detail_ai_tip_heading">AI Scholar Tip</string>
+    <string name="roadmap_detail_ai_tip_prefix">Based on your progress in \"%1$s\", we recommend
+        focusing on </string>
+    <string name="roadmap_detail_ai_tip_suffix"> before moving to %1$s.</string>
 
     <!-- Notification Settings Screen -->
     <string name="notification_settings_title">Notifications</string>
@@ -182,18 +247,24 @@
     <string name="notification_frequency_weekly">Weekly</string>
     <string name="notification_time_dialog_title">Reminder time</string>
     <string name="notification_permission_required_title">Notification permission needed</string>
-    <string name="notification_permission_required_body">Turn on notification permission so RMap can remind you to learn and keep your streak.</string>
-    <string name="notification_permission_required_snackbar">Please allow notifications to enable learning reminders.</string>
+    <string name="notification_permission_required_body">Turn on notification permission so RMap can
+        remind you to learn and keep your streak.</string>
+    <string name="notification_permission_required_snackbar">Please allow notifications to enable
+        learning reminders.</string>
     <string name="notification_channel_learning_name">Learning reminders</string>
-    <string name="notification_channel_learning_description">Cheerful reminders to learn and protect your streak.</string>
+    <string name="notification_channel_learning_description">Cheerful reminders to learn and protect
+        your streak.</string>
     <string name="notification_action_start_learning">Start learning</string>
     <string name="notification_action_mark_streak">Mark streak</string>
     <string name="notification_debug_send_test">Send test notification</string>
     <string name="notification_debug_sent_snackbar">Test notification requested.</string>
-    <string name="notification_learning_body_with_streak">You are on a %1$d-day streak. Open RMap for a quick lesson and keep the momentum bright.</string>
-    <string name="notification_streak_marked_body">%1$d-day streak marked. Small steps, real progress.</string>
+    <string name="notification_learning_body_with_streak">You are on a %1$d-day streak. Open RMap
+        for a quick lesson and keep the momentum bright.</string>
+    <string name="notification_streak_marked_body">%1$d-day streak marked. Small steps, real
+        progress.</string>
     <string name="notification_streak_already_marked_title">Streak already glowing</string>
-    <string name="notification_streak_already_marked_body">Your %1$d-day streak is already marked for today. Come back for a focused lesson.</string>
+    <string name="notification_streak_already_marked_body">Your %1$d-day streak is already marked
+        for today. Come back for a focused lesson.</string>
     <string-array name="notification_learning_titles">
         <item>Your roadmap is waiting</item>
         <item>One small lesson today?</item>
@@ -201,7 +272,8 @@
         <item>Ready for a quick win?</item>
     </string-array>
     <string-array name="notification_learning_bodies">
-        <item>A short learning session is enough to build momentum. Open RMap and mark today\'s streak.</item>
+        <item>A short learning session is enough to build momentum. Open RMap and mark today\'s
+            streak.</item>
         <item>Your future developer self will thank you. Learn a little and keep your streak alive.</item>
         <item>Five focused minutes can move your roadmap forward. Let\'s keep the streak warm.</item>
         <item>Pick up where you left off and turn today into another active learning day.</item>
@@ -212,26 +284,4 @@
         <item>Nice check-in</item>
         <item>Today counts</item>
     </string-array>
-
-    <string name="roadmap_detail_section_core_web_fundamentals">Core Web Fundamentals</string>
-    <string name="roadmap_detail_section_framework_ecosystem">Framework Ecosystem</string>
-    <string name="roadmap_detail_module_html_css">HTML &amp; CSS</string>
-    <string name="roadmap_detail_module_javascript_basics">JavaScript Basics</string>
-    <string name="roadmap_detail_module_react_fundamentals">React Fundamentals</string>
-    <string name="roadmap_detail_lesson_semantic_html">Semantic HTML</string>
-    <string name="roadmap_detail_lesson_css_flexbox_grid">CSS Flexbox &amp; Grid</string>
-    <string name="roadmap_detail_lesson_responsive_design">Responsive Design</string>
-    <string name="roadmap_detail_lesson_es6_syntax">ES6+ Syntax</string>
-    <string name="roadmap_detail_lesson_async_js">Asynchronous Ronaldo Dos Santoss </string>
-    <string name="roadmap_detail_lesson_dom_manipulation">DOM Manipulation</string>
-    <string name="roadmap_detail_topic_promises">Promises</string>
-    <string name="roadmap_detail_chapter_tag">Chapter</string>
-    <string name="roadmap_detail_done_label">Done</string>
-    <string name="roadmap_detail_lessons_completed">%1$d of %2$d lessons completed</string>
-    <string name="roadmap_detail_completed">%1$d%% Completed</string>
-    <string name="roadmap_detail_in_progress">%1$d%% In-Progress</string>
-    <string name="roadmap_detail_locked">Locked Content</string>
-    <string name="roadmap_detail_ai_tip_heading">AI Scholar Tip</string>
-    <string name="roadmap_detail_ai_tip_prefix">Based on your progress in \"%1$s\", we recommend focusing on </string>
-    <string name="roadmap_detail_ai_tip_suffix"> before moving to %1$s.</string>
 </resources>

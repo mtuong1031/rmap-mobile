@@ -1,24 +1,143 @@
 package com.rmap.mobile.features.roadmap.presentation.viewmodel
 
+import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.vector.ImageVector
+
 data class RoadmapDetailUiState(
     val roadmapId: String = "",
     val title: String = "",
+    val categoryLabel: String = "",
     val progressFraction: Float = 0f,
     val completedLessons: Int = 0,
     val totalLessons: Int = 0,
-    val sections: List<RoadmapModuleSectionUiModel> = emptyList(),
-    val aiTip: AiScholarTipUiModel? = null,
+    val completedRequiredNodes: Int = 0,
+    val totalRequiredNodes: Int = 0,
+    val nextActionTitle: String = "",
+    val nextUnlockTitle: String = "",
+    val searchQuery: String = "",
+    val isSearchActive: Boolean = false,
+    val isSearchInputFocused: Boolean = false,
+    val groups: List<RoadmapGroupUiModel> = emptyList(),
+    val milestones: List<RoadmapMilestoneUiModel> = emptyList(),
     val isLoading: Boolean = true,
-    val errorMessage: String? = null,
+    @StringRes val errorMessageResId: Int? = null,
 )
 
-data class RoadmapModuleSectionUiModel(
+data class RoadmapGroupUiModel(
+    val id: String,
     val title: String,
-    val modules: List<com.rmap.mobile.features.roadmap.presentation.components.ModuleCardUiModel>
+    val completedRequiredNodes: Int,
+    val totalRequiredNodes: Int,
+    val progressFraction: Float,
+    val state: RoadmapGroupState,
+    val nodes: List<RoadmapNodeUiModel> = emptyList(),
+    @StringRes val lockedDescriptionResId: Int? = null,
+    val lockedDescriptionArgs: List<String> = emptyList(),
+    @StringRes val lockedExpandedDescriptionResId: Int? = null
 )
 
-data class AiScholarTipUiModel(
-    val currentModule: String,
-    val recommendedTopic: String,
-    val nextModule: String
+enum class RoadmapGroupState {
+    Expanded,
+    Completed,
+    Locked
+}
+
+data class RoadmapNodeUiModel(
+    val id: String,
+    val title: String,
+    val icon: ImageVector,
+    val status: RoadmapNodeStatus,
+    val requirement: RoadmapNodeRequirement,
+    @StringRes val descriptionResId: Int,
+    val descriptionArgs: List<String> = emptyList(),
+    val action: RoadmapNodeAction? = null
 )
+
+enum class RoadmapNodeStatus {
+    Completed,
+    InProgress,
+    Locked
+}
+
+enum class RoadmapNodeRequirement {
+    Required,
+    Optional
+}
+
+enum class RoadmapNodeAction {
+    Review,
+    Continue
+}
+
+data class RoadmapMilestoneUiModel(
+    val id: String,
+    @StringRes val titleResId: Int,
+    @StringRes val descriptionResId: Int,
+    val state: RoadmapMilestoneState
+)
+
+enum class RoadmapMilestoneState {
+    Available,
+    Locked
+}
+
+internal fun RoadmapDetailUiState.currentSearchNode(): RoadmapNodeUiModel? {
+    val nodes = allSearchNodes()
+    return nodes.firstOrNull { it.status == RoadmapNodeStatus.InProgress }
+        ?: nodes.firstOrNull { it.action == RoadmapNodeAction.Continue }
+}
+
+internal fun RoadmapDetailUiState.recentSearchNodes(): List<RoadmapNodeUiModel> {
+    val currentNodeId = currentSearchNode()?.id
+    return allSearchNodes()
+        .filter { it.id != currentNodeId }
+        .take(SearchPreviewRecentNodeLimit)
+}
+
+internal fun RoadmapDetailUiState.recentSearchMilestones(): List<RoadmapMilestoneUiModel> {
+    return milestones.take(SearchPreviewRecentMilestoneLimit)
+}
+
+internal fun RoadmapDetailUiState.searchResultNodes(): List<RoadmapNodeUiModel> {
+    val query = searchQuery.trim()
+    if (query.isEmpty()) return emptyList()
+    val nodes = allSearchNodes()
+
+    return nodes
+        .filter { node ->
+            node.title.contains(query, ignoreCase = true) ||
+                node.descriptionArgs.any { it.contains(query, ignoreCase = true) }
+        }
+        .ifEmpty { nodes.take(SearchPreviewResultNodeFallbackLimit) }
+}
+
+internal fun RoadmapDetailUiState.searchResultGroups(): List<RoadmapGroupUiModel> {
+    val query = searchQuery.trim()
+    if (query.isEmpty()) return emptyList()
+
+    return groups
+        .filter { group ->
+            group.title.contains(query, ignoreCase = true) ||
+                group.nodes.any { it.title.contains(query, ignoreCase = true) }
+        }
+        .ifEmpty { groups.take(SearchPreviewResultGroupFallbackLimit) }
+}
+
+internal fun RoadmapDetailUiState.searchResultMilestones(): List<RoadmapMilestoneUiModel> {
+    val query = searchQuery.trim()
+    if (query.isEmpty()) return emptyList()
+
+    return milestones
+        .filter { it.id.contains(query, ignoreCase = true) }
+        .ifEmpty { milestones.take(SearchPreviewResultMilestoneFallbackLimit) }
+}
+
+private fun RoadmapDetailUiState.allSearchNodes(): List<RoadmapNodeUiModel> {
+    return groups.flatMap { it.nodes }
+}
+
+private const val SearchPreviewRecentNodeLimit = 2
+private const val SearchPreviewRecentMilestoneLimit = 1
+private const val SearchPreviewResultNodeFallbackLimit = 2
+private const val SearchPreviewResultGroupFallbackLimit = 1
+private const val SearchPreviewResultMilestoneFallbackLimit = 1

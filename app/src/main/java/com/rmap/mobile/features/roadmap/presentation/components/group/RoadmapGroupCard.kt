@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.group
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -49,6 +49,14 @@ import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapLinearProgress
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
+import com.rmap.mobile.features.roadmap.presentation.components.common.formattedString
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapLockedText
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBg
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBorder
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupState
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction

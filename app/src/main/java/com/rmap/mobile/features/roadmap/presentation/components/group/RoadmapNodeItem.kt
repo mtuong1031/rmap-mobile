@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.group
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -38,6 +38,14 @@ import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.cardShadow
+import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
+import com.rmap.mobile.features.roadmap.presentation.components.common.formattedString
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapDeepBlue
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapFocusedRequirementBg
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapInk
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBg
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBorder
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeRequirement
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeStatus
