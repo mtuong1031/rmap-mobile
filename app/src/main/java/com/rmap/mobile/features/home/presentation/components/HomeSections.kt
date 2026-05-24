@@ -25,12 +25,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.RMapCardDefaults
-import com.rmap.mobile.core.ui.components.rmapCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.cardShadow
 
 private val LearningProgressCardShape = AppShapes.heroCard
 
@@ -48,12 +47,7 @@ fun LearningProgressCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .rmapCardShadow(
-                elevation = RMapCardDefaults.shadowElevation,
-                shape = LearningProgressCardShape,
-                spotColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.4f),
-                ambientColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.4f)
-            )
+            .cardShadow(shape = LearningProgressCardShape)
             .background(
                 color = MaterialTheme.colorScheme.primaryContainer,
                 shape = LearningProgressCardShape
@@ -192,5 +186,4 @@ private fun LearningProgressCardPreview() {
         }
     }
 }
-
 

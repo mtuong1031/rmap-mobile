@@ -24,9 +24,7 @@ internal fun ProfileSectionCard(
     RMapCard(
         modifier = modifier.fillMaxWidth(),
         shape = AppShapes.card,
-        border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f)),
-        shadowElevation = Dimens.cardElevationSm,
-        shadowColor = Color(0x10298CF7)
+        border = BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.9f))
     ) {
         Column(
             modifier = Modifier
@@ -49,15 +47,13 @@ internal fun ProfileSectionHeader(
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(
                 color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Bold,
-            )
+                fontWeight = FontWeight.Bold)
         )
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium,
-            )
+                fontWeight = FontWeight.Medium)
         )
     }
 }

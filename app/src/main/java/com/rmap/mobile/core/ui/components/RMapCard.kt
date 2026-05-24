@@ -7,21 +7,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.cardShadow
 
 object RMapCardDefaults {
     val shape = AppShapes.largeCard
     val borderWidth: Dp = Dimens.borderThin
-    val borderColor = Color(0x80F9FAFB)
+    val borderColor: Color
+        @Composable
+        get() = MaterialTheme.colorScheme.secondaryContainer
     val shadowElevation: Dp = Dimens.cardElevationSm
-    val shadowColor = Color(0x0F000000)
 
     @Composable
     fun containerColor(): Color {
@@ -34,10 +36,6 @@ object RMapCardDefaults {
     }
 
     @Composable
-    fun themedShadowColor(): Color {
-        return Color(0x14000000)
-    }
-
     fun border(
         color: Color = borderColor,
         width: Dp = borderWidth
@@ -61,16 +59,16 @@ fun RMapCard(
     color: Color = RMapCardDefaults.containerColor(),
     border: BorderStroke? = RMapCardDefaults.themedBorder(),
     shadowElevation: Dp = RMapCardDefaults.shadowElevation,
-    shadowColor: Color = RMapCardDefaults.themedShadowColor(),
     content: @Composable () -> Unit
 ) {
+    val cardModifier = if (shadowElevation > 0.dp) {
+        modifier.cardShadow(shape = shape)
+    } else {
+        modifier
+    }
+
     Surface(
-        modifier = modifier.rmapCardShadow(
-            shape = shape,
-            elevation = shadowElevation,
-            ambientColor = shadowColor,
-            spotColor = shadowColor
-        ),
+        modifier = cardModifier,
         shape = shape,
         color = color,
         border = border,
@@ -78,19 +76,13 @@ fun RMapCard(
     )
 }
 
-fun Modifier.rmapCardShadow(
-    shape: Shape = RMapCardDefaults.shape,
-    elevation: Dp = RMapCardDefaults.shadowElevation,
-    ambientColor: Color = RMapCardDefaults.shadowColor,
-    spotColor: Color = RMapCardDefaults.shadowColor
-): Modifier {
-    return shadow(
-        elevation = elevation,
-        shape = shape,
-        ambientColor = ambientColor,
-        spotColor = spotColor
+@Deprecated(
+    message = "Use Modifier.cardShadow from core.ui.theme for consistent app shadows.",
+    replaceWith = ReplaceWith(
+        expression = "this.cardShadow(shape = shape)",
+        imports = ["com.rmap.mobile.core.ui.theme.cardShadow"]
     )
-}
+)
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF)
 @Composable

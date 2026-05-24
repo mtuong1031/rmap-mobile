@@ -355,7 +355,7 @@ fun HomeScreen(
 
                 item {
                     Column(
-                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
+                        modifier = Modifier.padding(start = sectionHorizontalPadding),
                         verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
                     ) {
                         RMapSectionTitle(

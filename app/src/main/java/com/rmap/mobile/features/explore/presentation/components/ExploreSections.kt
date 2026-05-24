@@ -45,12 +45,12 @@ import com.rmap.mobile.core.ui.components.RMapCard
 import com.rmap.mobile.core.ui.components.RMapCardDefaults
 import com.rmap.mobile.core.ui.components.RoadmapCard
 import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
-import com.rmap.mobile.core.ui.components.rmapCardShadow
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.cardShadow
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.RecommendedCardUiModel
 
@@ -69,8 +69,7 @@ fun ExploreSearchBar(
             .fillMaxWidth()
             .height(Dimens.exploreSearchBarHeight),
         shape = ExploreSearchBarShape,
-        border = RMapCardDefaults.border(color = Color(0xFFF3F4F6)),
-        shadowColor = Color(0x0A000000)
+        border = RMapCardDefaults.border(color = Color(0xFFF3F4F6))
     ) {
         Row(
             modifier = Modifier
@@ -102,8 +101,7 @@ fun ExploreSearchBar(
                     unfocusedContainerColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                ),
+                    unfocusedIndicatorColor = Color.Transparent),
                 singleLine = true
             )
 
@@ -245,12 +243,7 @@ fun RecommendedCard(
         modifier = Modifier
             .width(Dimens.recommendedCardWidth)
             .height(Dimens.recommendedCardHeight)
-            .rmapCardShadow(
-                elevation = RMapCardDefaults.shadowElevation,
-                shape = RecommendedCardShape,
-                ambientColor = item.accentColor.copy(alpha = 0.3f),
-                spotColor = item.accentColor.copy(alpha = 0.3f)
-            )
+            .cardShadow(shape = RecommendedCardShape)
             .clip(RecommendedCardShape)
             .clickable(onClick = onClick)
             .background(
