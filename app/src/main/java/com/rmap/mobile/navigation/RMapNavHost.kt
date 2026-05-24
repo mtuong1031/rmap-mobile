@@ -121,11 +121,6 @@ fun RMapNavHost(navController: NavHostController) {
                     },
                     onContinueLearningPlanClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
-                    onViewAllInProgressRoadmapsClick = {
-                        navController.navigate(AppRoutes.EXPLORE) {
-                            launchSingleTop = true
-                        }
                     }
                 )
             }

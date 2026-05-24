@@ -328,36 +328,12 @@ private val TrendingRoadmapOrange = Color(0xFFFF6900)
 
 @Composable
 fun TrendingRoadmapsHeader(
-    onSeeAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RMapSectionTitle(
-            text = stringResource(R.string.roadmap_trending_title),
-            modifier = Modifier.weight(1f)
-        )
-
-        Text(
-            text = stringResource(R.string.roadmap_see_all).uppercase(),
-            modifier = Modifier
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onSeeAllClick
-                )
-                .background(Color.Transparent, AppShapes.small)
-                .padding(horizontal = Dimens.spacingXxs),
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                letterSpacing = AppTextStyles.badge.letterSpacing
-            )
-        )
-    }
+    RMapSectionTitle(
+        text = stringResource(R.string.roadmap_trending_title),
+        modifier = modifier.fillMaxWidth()
+    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)

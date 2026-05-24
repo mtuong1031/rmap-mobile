@@ -1,21 +1,12 @@
 package com.rmap.mobile.features.home.presentation.components.hero
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
@@ -30,9 +21,7 @@ fun HomeHeroSection(
     continueText: String,
     nextUnlockPrefix: String,
     learningPlans: List<HomeLearningPlanUiModel>,
-    viewAllText: String,
     onContinueClick: (HomeLearningPlanUiModel) -> Unit,
-    onViewAllClick: () -> Unit = {},
     onCreateRoadmapWithAiClick: () -> Unit = {},
     onExploreReadyMadeClick: () -> Unit = {},
 ) {
@@ -42,10 +31,8 @@ fun HomeHeroSection(
         learningPlans = learningPlans,
         continueText = continueText,
         nextUnlockPrefix = nextUnlockPrefix,
-        viewAllText = viewAllText,
         sectionHorizontalPadding = sectionHorizontalPadding,
         onContinueClick = onContinueClick,
-        onViewAllClick = onViewAllClick,
         onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
         onExploreReadyMadeClick = onExploreReadyMadeClick
     )
@@ -57,10 +44,8 @@ private fun LearningPlanSection(
     learningPlans: List<HomeLearningPlanUiModel>,
     continueText: String,
     nextUnlockPrefix: String,
-    viewAllText: String,
     sectionHorizontalPadding: Dp,
     onContinueClick: (HomeLearningPlanUiModel) -> Unit,
-    onViewAllClick: () -> Unit,
     onCreateRoadmapWithAiClick: () -> Unit,
     onExploreReadyMadeClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -73,9 +58,6 @@ private fun LearningPlanSection(
     ) {
         LearningPlanHeader(
             title = sectionTitle,
-            viewAllText = viewAllText,
-            showViewAll = inProgressRoadmaps.size >= 2,
-            onViewAllClick = onViewAllClick,
             modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
         )
 
@@ -115,35 +97,12 @@ private fun LearningPlanSection(
 @Composable
 private fun LearningPlanHeader(
     title: String,
-    viewAllText: String,
-    showViewAll: Boolean,
-    onViewAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RMapSectionTitle(text = title)
-
-        if (showViewAll) {
-            Text(
-                text = viewAllText,
-                modifier = Modifier.clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    role = Role.Button,
-                    onClick = onViewAllClick
-                ),
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                maxLines = 1
-            )
-        }
-    }
+    RMapSectionTitle(
+        text = title,
+        modifier = modifier.fillMaxWidth()
+    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
@@ -155,7 +114,6 @@ private fun HomeHeroSectionPreview() {
                 sectionTitle = "Today's Learning Plan",
                 continueText = "Continue",
                 nextUnlockPrefix = "Next unlock: ",
-                viewAllText = "See All",
                 learningPlans = listOf(
                     HomeLearningPlanUiModel(
                         id = "frontend-pro",
@@ -185,7 +143,6 @@ private fun HomeHeroSectionCarouselPreview() {
                 sectionTitle = "Today's Learning Plan",
                 continueText = "Continue",
                 nextUnlockPrefix = "Next unlock: ",
-                viewAllText = "See All",
                 learningPlans = listOf(
                     HomeLearningPlanUiModel(
                         id = "frontend-pro",
@@ -227,7 +184,6 @@ private fun HomeHeroSectionEmptyPreview() {
                 sectionTitle = "Today's Learning Plan",
                 continueText = "",
                 nextUnlockPrefix = "",
-                viewAllText = "",
                 learningPlans = emptyList(),
                 onContinueClick = {}
             )

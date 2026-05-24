@@ -13,9 +13,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
@@ -37,7 +41,9 @@ import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSu
 import kotlinx.coroutines.delay
 
 private const val SearchSkeletonDurationMillis = 3_000L
+private const val SearchAutoFocusDelayMillis = 100L
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun HomeSearchScreen(
     query: String,
@@ -62,7 +68,15 @@ fun HomeSearchScreen(
     modifier: Modifier = Modifier
 ) {
     val showSearchResults = query.isNotBlank()
+    val searchFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     var isSearchLoading by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(SearchAutoFocusDelayMillis)
+        searchFocusRequester.requestFocus()
+        keyboardController?.show()
+    }
 
     LaunchedEffect(query, showSearchResults) {
         if (showSearchResults) {
@@ -94,7 +108,8 @@ fun HomeSearchScreen(
                     placeholder = stringResource(R.string.home_search_screen_placeholder),
                     onQueryChange = onQueryChange,
                     onBackClick = onBackClick,
-                    onFilterClick = onFilterClick
+                    onFilterClick = onFilterClick,
+                    focusRequester = searchFocusRequester
                 )
 
                 HomeSearchSuggestionChipsRow(

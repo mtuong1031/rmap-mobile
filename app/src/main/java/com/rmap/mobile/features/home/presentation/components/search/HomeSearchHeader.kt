@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +41,8 @@ fun HomeSearchHeader(
     onQueryChange: (String) -> Unit,
     onBackClick: () -> Unit,
     onFilterClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null
 ) {
     Row(
         modifier = modifier
@@ -53,7 +56,8 @@ fun HomeSearchHeader(
             query = query,
             placeholder = placeholder,
             onQueryChange = onQueryChange,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            focusRequester = focusRequester
         )
         HomeSearchIconButton(
             icon = Icons.Outlined.Tune,
@@ -68,12 +72,15 @@ private fun HomeSearchTextField(
     query: String,
     placeholder: String,
     onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null
 ) {
     RMapTextInput(
         value = query,
         onValueChange = onQueryChange,
-        modifier = modifier,
+        modifier = modifier.then(
+            focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
+        ),
         placeholder = placeholder,
         leadingIcon = {
             Icon(

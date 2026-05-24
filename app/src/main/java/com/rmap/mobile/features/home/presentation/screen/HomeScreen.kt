@@ -76,8 +76,6 @@ fun HomeScreen(
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
     onSearchClick: () -> Unit = {},
-    onSeeAllClick: () -> Unit = {},
-    onViewAllInProgressRoadmapsClick: () -> Unit = {},
     onContinueLearningClick: () -> Unit = {},
     onContinueLearningPlanClick: ((HomeLearningPlanUiModel) -> Unit)? = null,
     onCreateRoadmapWithAiClick: () -> Unit = {},
@@ -313,13 +311,11 @@ fun HomeScreen(
                         sectionTitle = stringResource(R.string.home_learning_plan_title),
                         continueText = stringResource(R.string.home_hero_continue),
                         nextUnlockPrefix = stringResource(R.string.home_hero_next_unlock_prefix),
-                        viewAllText = stringResource(R.string.roadmap_see_all),
                         sectionHorizontalPadding = sectionHorizontalPadding,
                         learningPlans = learningPlans,
                         onContinueClick = { item ->
                             onContinueLearningPlanClick?.invoke(item) ?: onContinueLearningClick()
                         },
-                        onViewAllClick = onViewAllInProgressRoadmapsClick,
                         onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
                         onExploreReadyMadeClick = onExploreReadyMadeClick,
                         modifier = Modifier.fillMaxWidth()
@@ -379,7 +375,7 @@ fun HomeScreen(
                         modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
                         verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
                     ) {
-                        TrendingRoadmapsHeader(onSeeAllClick = onSeeAllClick)
+                        TrendingRoadmapsHeader()
                         uiState.trendingRoadmaps.forEach { item ->
                             TrendingRoadmapCard(
                                 item = item,
@@ -449,7 +445,6 @@ private fun HomeScreenPreview() {
             selectedDestination = selectedDestination,
             onDestinationSelected = { selectedDestination = it },
             onHeaderActionClick = {},
-            onSeeAllClick = {},
             onContinueLearningClick = {},
             onAdjustPlanClick = {}
         )
