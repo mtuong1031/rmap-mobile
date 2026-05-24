@@ -122,31 +122,20 @@ fun ActiveRoadmapsCard(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = Dimens.borderThin,
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    shape = AppShapes.extraSmall
-                )
-        )
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(AppShapes.chip)
                 .clickable(onClick = onManageRoadmapsClick)
-                .padding(vertical = Dimens.spacingXs),
+                .padding(vertical = Dimens.spacingSm),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = if (isManagedRoadmapsVisible) collapseLabel else manageLabel,
-                style = MaterialTheme.typography.labelMedium.copy(
+                style = MaterialTheme.typography.labelLarge.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp
                 )
             )
             Icon(
@@ -185,10 +174,9 @@ fun AchievementsCard(
                     .clip(AppShapes.chip)
                     .clickable(onClick = onSeeAllClick)
                     .padding(horizontal = Dimens.spacingXs, vertical = Dimens.spacingXs),
-                style = MaterialTheme.typography.labelMedium.copy(
+                style = MaterialTheme.typography.labelLarge.copy(
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp
                 )
             )
         }
@@ -226,13 +214,12 @@ fun WeeklyActivityCard(
             Text(
                 text = bestLabel,
                 modifier = Modifier
-                    .clip(AppShapes.chip)
+                    .clip(AppShapes.small)
                     .background(MaterialTheme.colorScheme.primaryContainer)
                     .padding(horizontal = Dimens.spacingSm, vertical = Dimens.spacingXs),
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp
+                    fontWeight = FontWeight.SemiBold,
                 )
             )
         }
@@ -283,17 +270,13 @@ private fun ProfileSectionHeader(
             style = MaterialTheme.typography.titleMedium.copy(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                lineHeight = 24.sp
             )
         )
         Text(
             text = subtitle,
-            style = MaterialTheme.typography.bodySmall.copy(
+            style = MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Medium,
-                fontSize = 13.sp,
-                lineHeight = 20.sp
             )
         )
     }
@@ -333,17 +316,13 @@ private fun RoadmapProgressRow(item: ProfileRoadmapProgressUiModel) {
                         style = MaterialTheme.typography.titleSmall.copy(
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
                         ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = stringResource(id = R.string.profile_progress_percent_short, item.progressPercent),
                         style = MaterialTheme.typography.labelMedium.copy(
                             color = item.accentColor,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
                         )
                     )
                 }
@@ -352,7 +331,6 @@ private fun RoadmapProgressRow(item: ProfileRoadmapProgressUiModel) {
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 12.sp
                     )
                 )
             }
@@ -451,14 +429,13 @@ private fun ProfileSegmentedTab(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium.copy(
+            style = MaterialTheme.typography.labelLarge.copy(
                 color = if (isSelected) {
                     MaterialTheme.colorScheme.onSurface
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
                 fontWeight = FontWeight.Bold,
-                fontSize = 13.sp
             )
         )
     }
@@ -499,31 +476,15 @@ private fun AchievementRow(item: ProfileAchievementUiModel) {
                 text = item.title,
                 style = MaterialTheme.typography.titleSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = item.status,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = item.completedAt,
                 style = MaterialTheme.typography.bodySmall.copy(
                     fontWeight = FontWeight.Medium,
-                    fontSize = 11.sp,
                     color = Color(0xFF94A3B8)
                 ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -544,7 +505,7 @@ private fun ActivityDay(day: ProfileActivityDayUiModel) {
     ) {
         Box(
             modifier = Modifier
-                .size(30.dp)
+                .size(32.dp)
                 .clip(CircleShape)
                 .background(
                     if (day.isComplete) {
@@ -567,14 +528,13 @@ private fun ActivityDay(day: ProfileActivityDayUiModel) {
 
         Text(
             text = day.label,
-            style = MaterialTheme.typography.labelSmall.copy(
+            style = MaterialTheme.typography.labelMedium.copy(
                 color = if (day.isComplete) {
                     MaterialTheme.colorScheme.primary
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
                 fontWeight = FontWeight.Bold,
-                fontSize = 12.sp
             )
         )
     }
@@ -627,6 +587,42 @@ private fun ActiveRoadmapsCardPreview() {
             ),
             isManagedRoadmapsVisible = true,
             onManageRoadmapsClick = {},
+            modifier = Modifier.padding(Dimens.spacingXl)
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AchievementsCardPreview() {
+    val icons = defaultAchievementIcons()
+    val brushes = defaultAchievementBrushes()
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        AchievementsCard(
+            title = "Achievements",
+            subtitle = "Completed roadmaps and skills",
+            seeAllLabel = "See All",
+            roadmapsTabLabel = "Roadmaps",
+            skillsTabLabel = "Skills",
+            selectedTab = ProfileAchievementTab.Roadmaps,
+            achievements = listOf(
+                ProfileAchievementUiModel(
+                    title = "Frontend Starter",
+                    status = "Roadmap completed",
+                    completedAt = "Completed 2 days ago",
+                    icon = icons[0],
+                    brush = brushes[0]
+                ),
+                ProfileAchievementUiModel(
+                    title = "Web Design Basics",
+                    status = "Roadmap completed",
+                    completedAt = "Completed 1 month ago",
+                    icon = icons[1],
+                    brush = brushes[1]
+                )
+            ),
+            onTabSelected = {},
+            onSeeAllClick = {},
             modifier = Modifier.padding(Dimens.spacingXl)
         )
     }

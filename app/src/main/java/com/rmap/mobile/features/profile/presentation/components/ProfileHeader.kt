@@ -1,6 +1,7 @@
 package com.rmap.mobile.features.profile.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -8,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
@@ -17,7 +19,8 @@ fun ProfileHeader(
 ) {
     Text(
         text = title,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
+            .padding(top = 12.dp),
         style = MaterialTheme.typography.headlineSmall.copy(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground

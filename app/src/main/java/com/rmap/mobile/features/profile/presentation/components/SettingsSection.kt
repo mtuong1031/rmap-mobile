@@ -142,7 +142,6 @@ private fun SignOutButton(
                 style = MaterialTheme.typography.titleMedium.copy(
                     color = MaterialTheme.colorScheme.error,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
                 )
             )
         }
