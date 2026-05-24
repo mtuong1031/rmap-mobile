@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components
+package com.rmap.mobile.features.roadmap.presentation.components.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

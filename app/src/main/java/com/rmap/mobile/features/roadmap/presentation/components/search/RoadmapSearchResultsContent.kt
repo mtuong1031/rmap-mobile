@@ -29,10 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.roadmap.presentation.components.RoadmapSearchCard
-import com.rmap.mobile.features.roadmap.presentation.components.RoadmapSearchSection
-import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapMilestoneCompactCard
-import com.rmap.mobile.features.roadmap.presentation.components.group.RoadmapNodeItem
+import com.rmap.mobile.features.roadmap.presentation.components.content.RoadmapMilestoneCompactCard
+import com.rmap.mobile.features.roadmap.presentation.components.content.RoadmapNodeItem
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupState
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneState

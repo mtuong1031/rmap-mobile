@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.roadmap.presentation.components.group
+package com.rmap.mobile.features.roadmap.presentation.components.content
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
