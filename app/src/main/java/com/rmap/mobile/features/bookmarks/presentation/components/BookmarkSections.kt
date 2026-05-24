@@ -2,10 +2,11 @@ package com.rmap.mobile.features.bookmarks.presentation.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Icon
@@ -15,63 +16,38 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.SkillCard
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
-import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-@Composable
-private fun SectionHeader(
-    title: String,
-    badgeText: String,
-    badgeColor: Color = MaterialTheme.colorScheme.primary,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = AppTextStyles.sectionTitle.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        )
-
-        Text(
-            text = badgeText,
-            style = AppTextStyles.badge.copy(
-                color = badgeColor
-            ),
-            modifier = Modifier
-                .padding(horizontal = Dimens.spacingMicro, vertical = Dimens.spacingXsPlus)
-        )
-    }
-}
-
-@Composable
-fun CuratedPathsSection(
+fun LazyListScope.bookmarkRoadmapList(
     roadmapItems: List<BookmarkRoadmapCardUiModel>,
     savedCount: Int,
     onActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
-        SectionHeader(
+    item(key = "bookmark-roadmap-header") {
+        BookmarkSectionHeader(
             title = stringResource(R.string.bookmarks_section_curated_paths),
             badgeText = stringResource(R.string.bookmarks_saved_count, savedCount)
         )
+    }
 
-        roadmapItems.forEach { item ->
-            BookmarkRoadmapCard(
+    if (roadmapItems.isEmpty()) {
+        item(key = "bookmark-roadmap-empty") {
+            EmptyBookmarkState()
+        }
+    } else {
+        items(
+            items = roadmapItems,
+            key = { item -> "bookmark-roadmap-${item.id}" }
+        ) { item ->
+            SavedRoadmapCard(
                 item = item,
                 onActionClick = onActionClick?.let { callback ->
                     { callback(item) }
@@ -85,22 +61,34 @@ fun CuratedPathsSection(
     }
 }
 
-@Composable
-fun SpecificSkillsSection(
+fun LazyListScope.bookmarkSkillList(
     skillItems: List<SkillCardUiModel>,
     pinsCount: Int,
     onSkillClick: ((SkillCardUiModel) -> Unit)?
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
-        SectionHeader(
+    item(key = "bookmark-skill-header") {
+        BookmarkSectionHeader(
             title = stringResource(R.string.bookmarks_section_specific_skills),
             badgeText = stringResource(R.string.bookmarks_pins_count, pinsCount)
         )
+    }
 
-        skillItems.forEach { item ->
-            SkillCard(
+    if (skillItems.isEmpty()) {
+        item(key = "bookmark-skill-empty") {
+            EmptyBookmarkState()
+        }
+    } else {
+        items(
+            items = skillItems,
+            key = { item -> "bookmark-skill-${item.title}-${item.parentPathName}" }
+        ) { item ->
+            SavedRoadmapSkill(
                 item = item,
+                actionLabel = stringResource(R.string.home_hero_continue),
                 onClick = onSkillClick?.let { callback ->
+                    { callback(item) }
+                },
+                onActionClick = onSkillClick?.let { callback ->
                     { callback(item) }
                 }
             )
@@ -121,7 +109,7 @@ fun FooterHint(modifier: Modifier = Modifier) {
         Icon(
             imageVector = Icons.Outlined.AutoAwesome,
             contentDescription = null,
-            tint = Color(0xFF99A1AF),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(Dimens.controlSm)
         )
 
@@ -129,13 +117,12 @@ fun FooterHint(modifier: Modifier = Modifier) {
             text = stringResource(R.string.bookmarks_footer_hint),
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF99A1AF),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         )
     }
 }
-
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable

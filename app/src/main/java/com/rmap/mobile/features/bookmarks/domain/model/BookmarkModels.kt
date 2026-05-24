@@ -8,6 +8,13 @@ enum class BookmarkTab {
     Skills
 }
 
+enum class BookmarkStatusFilter {
+    All,
+    InProgress,
+    NotStarted,
+    Completed
+}
+
 data class SkillBookmark(
     val title: String,
     val parentPathName: String,

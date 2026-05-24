@@ -2,6 +2,7 @@ package com.rmap.mobile.navigation
 
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.TrackChanges
@@ -27,6 +28,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.rmap.mobile.R
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.features.bookmarks.presentation.screen.BookmarkWindowSizeClass
 import com.rmap.mobile.features.auth.presentation.screen.AuthScreen
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthEvent
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthViewModel
@@ -103,7 +105,10 @@ fun RMapNavHost(navController: NavHostController) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        NavHost(navController = navController, startDestination = startDestination) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val bookmarkWindowSizeClass = BookmarkWindowSizeClass.fromWidth(maxWidth)
+
+            NavHost(navController = navController, startDestination = startDestination) {
             composable(AppRoutes.AUTH) {
                 val viewModel: AuthViewModel = viewModel()
                 val signInFailedMessage = stringResource(R.string.auth_sign_in_failed)
@@ -255,9 +260,12 @@ fun RMapNavHost(navController: NavHostController) {
 
                 BookmarksScreen(
                     uiState = uiState,
+                    windowSizeClass = bookmarkWindowSizeClass,
                     selectedDestination = NavBarDestination.Bookmarks,
                     onDestinationSelected = ::handleDestinationSelected,
+                    onSearchQueryChange = viewModel::onSearchQueryChange,
                     onTabSelected = viewModel::onTabSelected,
+                    onStatusFilterSelected = viewModel::onStatusFilterSelected,
                     onRoadmapActionClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     },
@@ -368,6 +376,7 @@ fun RMapNavHost(navController: NavHostController) {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     }
                 )
+            }
             }
         }
 
