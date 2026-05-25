@@ -29,13 +29,12 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
+import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTextStyles
 
 private val BookmarkEmptyContentMaxWidth = 278.dp
-private val BookmarkEmptyTopDecorMinSize = 80.dp
-private val BookmarkEmptyTopDecorMaxSize = 120.dp
 private val BookmarkEmptyIconContainerShape = RoundedCornerShape(24.dp)
 private val BookmarkEmptyMinHeight = 460.dp
 private val BookmarkEmptyMaxHeight = 547.dp
@@ -49,10 +48,6 @@ fun EmptyBookmarkState(
     onBrowseCategoriesClick: (() -> Unit)? = null
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        val topDecorSize = (maxWidth * 0.35f).coerceIn(
-            minimumValue = BookmarkEmptyTopDecorMinSize,
-            maximumValue = BookmarkEmptyTopDecorMaxSize
-        )
         val horizontalPadding = if (maxWidth < 320.dp) {
             Dimens.spacingXxl
         } else {
@@ -68,17 +63,7 @@ fun EmptyBookmarkState(
                 .fillMaxWidth()
                 .heightIn(min = cardMinHeight)
         ) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(topDecorSize)
-                    .clip(
-                        RoundedCornerShape(
-                            bottomStart = topDecorSize
-                        )
-                    )
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f))
-            )
+            RMapHeroSectionBackground(modifier = Modifier.matchParentSize())
 
             Box(
                 modifier = Modifier
