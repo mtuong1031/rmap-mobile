@@ -3,16 +3,18 @@ package com.rmap.mobile.features.explore.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.features.home.presentation.viewmodel.toTrendingRoadmapCardUiModel
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toCategoryUiModel
-import com.rmap.mobile.features.roadmap.presentation.viewmodel.toRecommendedCardUiModel
-import com.rmap.mobile.features.roadmap.presentation.viewmodel.toRoadmapCardUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val LibraryPageSize = 10
 
 class ExploreViewModel(
     private val roadmapRepository: RoadmapRepository = RMapAppGraph.roadmapRepository,
@@ -31,10 +33,10 @@ class ExploreViewModel(
 
             val profileResult = profileRepository.getProfile()
             val categoryResult = roadmapRepository.getExploreCategories()
-            val recommendedResult = roadmapRepository.getRecommendedRoadmaps()
-            val popularResult = roadmapRepository.searchRoadmaps(_uiState.value.searchQuery)
+            val popularResult = roadmapRepository.getTrendingRoadmaps()
+            val libraryResult = roadmapRepository.searchRoadmaps(_uiState.value.searchQuery)
 
-            val failure = listOf(profileResult, categoryResult, recommendedResult, popularResult)
+            val failure = listOf(profileResult, categoryResult, popularResult, libraryResult)
                 .firstOrNull { it.isFailure }
             if (failure != null) {
                 _uiState.update {
@@ -49,22 +51,121 @@ class ExploreViewModel(
             _uiState.value = ExploreUiState(
                 userName = profileResult.getOrThrow().userName,
                 searchQuery = _uiState.value.searchQuery,
-                categories = categoryResult.getOrThrow().map { it.toCategoryUiModel() },
-                recommendedItems = recommendedResult.getOrThrow().map { it.toRecommendedCardUiModel() },
-                popularRoadmaps = popularResult.getOrThrow().map { it.toRoadmapCardUiModel() },
+                selectedCategoryId = _uiState.value.selectedCategoryId,
+                categories = categoryResult.getOrThrow().let { categories ->
+                    val categoryCounts = libraryResult.getOrThrow().categoryCounts()
+                    categories.map { category ->
+                        category.toCategoryUiModel(roadmapCount = categoryCounts[category.id] ?: 0)
+                    }
+                },
+                popularRoadmaps = popularResult.getOrThrow().mapIndexed { index, roadmap ->
+                    roadmap.toTrendingRoadmapCardUiModel(rank = index + 1)
+                },
+                libraryRoadmaps = libraryResult.getOrThrow().toVisibleLibraryRoadmaps(
+                    selectedCategoryId = _uiState.value.selectedCategoryId,
+                    categoryLabels = categoryResult.getOrThrow().associate { it.id to it.name },
+                    visibleCount = LibraryPageSize
+                ),
+                totalLibraryCount = libraryResult.getOrThrow()
+                    .filterByCategory(_uiState.value.selectedCategoryId)
+                    .size,
+                libraryVisibleCount = LibraryPageSize,
                 isLoading = false
             )
         }
     }
 
     fun onSearchQueryChange(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
+        _uiState.update { it.copy(searchQuery = query, libraryVisibleCount = LibraryPageSize) }
+        refreshLibrary(
+            query = query,
+            selectedCategoryId = _uiState.value.selectedCategoryId,
+            visibleCount = LibraryPageSize
+        )
+    }
+
+    fun onCategorySelected(category: CategoryUiModel) {
+        val nextCategoryId = if (_uiState.value.selectedCategoryId == category.id) {
+            null
+        } else {
+            category.id
+        }
+
+        _uiState.update {
+            it.copy(
+                selectedCategoryId = nextCategoryId,
+                libraryVisibleCount = LibraryPageSize
+            )
+        }
+        refreshLibrary(
+            query = _uiState.value.searchQuery,
+            selectedCategoryId = nextCategoryId,
+            visibleCount = LibraryPageSize
+        )
+    }
+
+    fun onViewAllCategories() {
+        _uiState.update {
+            it.copy(
+                selectedCategoryId = null,
+                libraryVisibleCount = LibraryPageSize
+            )
+        }
+        refreshLibrary(
+            query = _uiState.value.searchQuery,
+            selectedCategoryId = null,
+            visibleCount = LibraryPageSize
+        )
+    }
+
+    fun onSeeMoreRoadmaps() {
+        val nextVisibleCount = _uiState.value.libraryVisibleCount + LibraryPageSize
+        _uiState.update { it.copy(libraryVisibleCount = nextVisibleCount) }
+        refreshLibrary(
+            query = _uiState.value.searchQuery,
+            selectedCategoryId = _uiState.value.selectedCategoryId,
+            visibleCount = nextVisibleCount
+        )
+    }
+
+    fun onSeeAllRoadmaps() {
+        refreshLibrary(
+            query = _uiState.value.searchQuery,
+            selectedCategoryId = _uiState.value.selectedCategoryId,
+            visibleCount = Int.MAX_VALUE
+        )
+    }
+
+    fun onSeeLessRoadmaps() {
+        _uiState.update { it.copy(libraryVisibleCount = LibraryPageSize) }
+        refreshLibrary(
+            query = _uiState.value.searchQuery,
+            selectedCategoryId = _uiState.value.selectedCategoryId,
+            visibleCount = LibraryPageSize
+        )
+    }
+
+    private fun refreshLibrary(
+        query: String,
+        selectedCategoryId: String?,
+        visibleCount: Int
+    ) {
         viewModelScope.launch {
             roadmapRepository.searchRoadmaps(query)
                 .onSuccess { roadmaps ->
+                    val categoryCounts = roadmaps.categoryCounts()
+                    val categoryLabels = _uiState.value.categories.associate { it.id to it.name }
+                    val filteredRoadmaps = roadmaps.filterByCategory(selectedCategoryId)
                     _uiState.update {
                         it.copy(
-                            popularRoadmaps = roadmaps.map { roadmap -> roadmap.toRoadmapCardUiModel() },
+                            categories = it.categories.map { category ->
+                                category.copy(roadmapCount = categoryCounts[category.id] ?: 0)
+                            },
+                            libraryRoadmaps = filteredRoadmaps
+                                .take(visibleCount)
+                                .map { roadmap -> roadmap.toExploreRoadmapCardUiModel(categoryLabels) },
+                            totalLibraryCount = filteredRoadmaps.size,
+                            libraryVisibleCount = visibleCount.coerceAtMost(filteredRoadmaps.size),
                             errorMessage = null
                         )
                     }
@@ -73,5 +174,37 @@ class ExploreViewModel(
                     _uiState.update { it.copy(errorMessage = error.message ?: "Unable to search roadmaps") }
                 }
         }
+    }
+
+    private fun List<RoadmapSummary>.categoryCounts(): Map<String, Int> {
+        return groupingBy { it.categoryId }.eachCount()
+    }
+
+    private fun List<RoadmapSummary>.filterByCategory(categoryId: String?): List<RoadmapSummary> {
+        return if (categoryId == null) {
+            this
+        } else {
+            filter { it.categoryId == categoryId }
+        }
+    }
+
+    private fun List<RoadmapSummary>.toVisibleLibraryRoadmaps(
+        selectedCategoryId: String?,
+        categoryLabels: Map<String, String>,
+        visibleCount: Int
+    ): List<ExploreRoadmapCardUiModel> {
+        return filterByCategory(selectedCategoryId)
+            .take(visibleCount)
+            .map { it.toExploreRoadmapCardUiModel(categoryLabels) }
+    }
+
+    private fun RoadmapSummary.toExploreRoadmapCardUiModel(
+        categoryLabels: Map<String, String>
+    ): ExploreRoadmapCardUiModel {
+        return ExploreRoadmapCardUiModel(
+            id = id,
+            title = title,
+            categoryLabel = categoryLabels[categoryId] ?: categoryId.replaceFirstChar { it.uppercase() }
+        )
     }
 }

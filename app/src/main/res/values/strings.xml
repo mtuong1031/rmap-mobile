@@ -22,6 +22,7 @@
     <!-- Home Screen -->
     <string name="roadmap_trending_title">Trending Roadmaps</string>
     <string name="roadmap_see_all">SEE ALL</string>
+    <string name="roadmap_nodes_count">%1$d nodes</string>
 
     <string name="home_greeting">Good morning, %1$s</string>
     <string name="home_heading_next_skill">Ready for your next skill?</string>
@@ -61,9 +62,18 @@
     <string name="explore_title">Explore roadmaps</string>
     <string name="explore_search_placeholder">Search for skills or roles...</string>
     <string name="explore_categories_title">Categories</string>
+    <string name="explore_categories_subtitle">Choose a domain to narrow the library</string>
     <string name="explore_view_all">VIEW ALL</string>
     <string name="explore_recommended_title">Recommended For You</string>
     <string name="explore_popular_title">Popular Roadmaps</string>
+    <string name="explore_popular_subtitle">Most started by learners this week</string>
+    <string name="explore_roadmap_library_title">Roadmap Library</string>
+    <string name="explore_roadmap_library_subtitle">All available learning paths in RMap</string>
+    <string name="explore_roadmap_library_filtered_subtitle">Filtered by %1$s</string>
+    <string name="explore_roadmap_library_empty">No roadmaps match the current filters.</string>
+    <string name="explore_roadmap_library_see_more">See more %1$d</string>
+    <string name="explore_roadmap_library_see_less">SEE LESS</string>
+    <string name="explore_category_roadmap_count">%1$d paths</string>
     <string name="explore_category_frontend">Frontend</string>
     <string name="explore_category_backend">Backend</string>
     <string name="explore_category_mobile">Mobile</string>

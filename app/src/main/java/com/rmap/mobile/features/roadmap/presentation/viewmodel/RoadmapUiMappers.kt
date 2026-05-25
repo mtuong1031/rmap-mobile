@@ -12,52 +12,24 @@ import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
 import com.rmap.mobile.core.ui.components.RoadmapDifficulty
 import com.rmap.mobile.core.ui.theme.PrimaryContainerLight
-import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.SecondaryContainerLight
-import com.rmap.mobile.core.ui.theme.TertiaryLight
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
-import com.rmap.mobile.features.explore.presentation.viewmodel.RecommendedCardUiModel
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
-import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 
-fun RoadmapSummary.toRoadmapCardUiModel(): RoadmapCardUiModel {
-    return RoadmapCardUiModel(
-        id = id,
-        title = title,
-        totalLessonsCount = totalLessonsCount,
-        difficultyLabel = difficulty.toLabel(),
-        difficulty = difficulty.toRoadmapDifficulty(),
-        durationLabel = durationLabel,
-        icon = icon.toImageVector()
-    )
-}
-
-fun RoadmapCategory.toCategoryUiModel(): CategoryUiModel {
+fun RoadmapCategory.toCategoryUiModel(roadmapCount: Int = 0): CategoryUiModel {
     return CategoryUiModel(
         id = id,
         name = name,
         icon = icon.toImageVector(),
-        backgroundColor = icon.toCategoryBackgroundColor()
-    )
-}
-
-fun RoadmapSummary.toRecommendedCardUiModel(): RecommendedCardUiModel {
-    return RecommendedCardUiModel(
-        id = id,
-        title = title,
-        badgeText = recommendationBadge.orEmpty(),
-        skillNodesCount = skillNodesCount,
-        level = difficulty.toLabel(),
-        coverImageUrl = "",
-        accentColor = toRecommendedAccentColor()
+        backgroundColor = icon.toCategoryBackgroundColor(),
+        roadmapCount = roadmapCount
     )
 }
 
@@ -152,13 +124,6 @@ private fun LearningTopicIcon.toCategoryBackgroundColor(): Color {
         LearningTopicIcon.SmartToy -> CategoryAiBackground
         LearningTopicIcon.Terminal -> CategoryTerminalBackground
         else -> SecondaryContainerLight
-    }
-}
-
-private fun RoadmapSummary.toRecommendedAccentColor(): Color {
-    return when (icon) {
-        LearningTopicIcon.SmartToy -> TertiaryLight
-        else -> PrimaryLight
     }
 }
 
