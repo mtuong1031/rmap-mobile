@@ -29,10 +29,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
@@ -75,8 +79,15 @@ data class SkillCardUiModel(
 fun SkillCard(
     item: SkillCardUiModel,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    titleStyle: TextStyle? = null,
+    titleMaxLines: Int = 2,
+    headerContentEndPadding: Dp = 0.dp
 ) {
+    val resolvedTitleStyle = titleStyle ?: AppTextStyles.compactCardTitle.copy(
+        color = MaterialTheme.colorScheme.onSurface
+    )
+
     RMapCard(
         modifier = modifier
             .fillMaxWidth(),
@@ -97,15 +108,16 @@ fun SkillCard(
                     SkillIconFrame(icon = item.icon)
 
                     Column(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = headerContentEndPadding),
                         verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)
                     ) {
                         Text(
                             text = item.title,
-                            style = AppTextStyles.compactCardTitle.copy(
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                            maxLines = 2
+                            style = resolvedTitleStyle,
+                            maxLines = titleMaxLines,
+                            overflow = TextOverflow.Ellipsis
                         )
 
                         PartOfText(parentPathName = item.parentPathName)
@@ -275,4 +287,3 @@ private fun SkillCardPreview() {
         }
     }
 }
-

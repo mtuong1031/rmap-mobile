@@ -31,6 +31,7 @@ import com.rmap.mobile.core.ui.components.SkillStatus
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTextStyles
 
 @Composable
 fun SavedRoadmapSkill(
@@ -51,7 +52,10 @@ fun SavedRoadmapSkill(
         SkillCard(
             item = item,
             modifier = Modifier.then(clickModifier),
-            onClick = onClick
+            onClick = onClick,
+            titleStyle = BookmarkTextStyles.cardTitle,
+            titleMaxLines = 2,
+            headerContentEndPadding = Dimens.controlMd + Dimens.spacingSm
         )
 
         SavedSkillBookmarkButton(

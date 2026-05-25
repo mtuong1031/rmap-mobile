@@ -64,6 +64,12 @@ object BookmarkTextStyles {
             color = MaterialTheme.colorScheme.onSurface
         )
 
+    val roadmapCardTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.titleLarge.copy(
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
     val metadata: TextStyle
         @Composable get() = AppTextStyles.metadata
 
