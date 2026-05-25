@@ -15,23 +15,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.navigation.NavBarDestination
-import com.rmap.mobile.core.ui.components.RMapNavigationBar
-import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.components.RMapHeader
-import com.rmap.mobile.core.ui.components.RoadmapCardUiModel
-import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
+import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.explore.presentation.components.CategorySection
+import com.rmap.mobile.features.explore.presentation.components.ExploreCategorySection
 import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBar
 import com.rmap.mobile.features.explore.presentation.components.PopularRoadmapsSection
-import com.rmap.mobile.features.explore.presentation.components.RecommendedCard
-import com.rmap.mobile.features.explore.presentation.components.RecommendedSection
+import com.rmap.mobile.features.explore.presentation.components.RoadmapLibrarySection
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
+import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreRoadmapCardUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreUiState
-import com.rmap.mobile.features.explore.presentation.viewmodel.RecommendedCardUiModel
+import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
+import com.rmap.mobile.navigation.NavBarDestination
 
 @Composable
 fun ExploreScreen(
@@ -41,15 +37,19 @@ fun ExploreScreen(
     onHeaderActionClick: () -> Unit = {},
     onFilterClick: () -> Unit = {},
     onViewAllCategoriesClick: () -> Unit = {},
-    onSeeAllPopularClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onCategoryClick: (CategoryUiModel) -> Unit = {},
-    onRecommendedClick: (RecommendedCardUiModel) -> Unit = {},
-    onRoadmapClick: (RoadmapCardUiModel) -> Unit = {},
+    onPopularRoadmapClick: (TrendingRoadmapCardUiModel) -> Unit = {},
+    onRoadmapClick: (ExploreRoadmapCardUiModel) -> Unit = {},
+    onSeeMoreRoadmapsClick: () -> Unit = {},
+    onSeeAllRoadmapsClick: () -> Unit = {},
+    onSeeLessRoadmapsClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
-    val scrollY = rememberBackgroundScrollOffsetY(listState)
+    val selectedCategoryName = uiState.categories
+        .firstOrNull { it.id == uiState.selectedCategoryId }
+        ?.name
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -63,21 +63,16 @@ fun ExploreScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
-            RMapHeroSectionBackground(
-                scrollOffsetY = scrollY,
-                modifier = Modifier.fillMaxSize()
-            )
-
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = Dimens.spacingNone,
                     end = Dimens.spacingNone,
-                    top = Dimens.spacingScreenTop,
-                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottom
+                    top = Dimens.spacingScreenTopCompact,
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
                 ),
-                verticalArrangement = Arrangement.spacedBy(Dimens.spacingHuge)
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
             ) {
                 item {
                     RMapHeader(
@@ -89,35 +84,42 @@ fun ExploreScreen(
                 }
 
                 item {
-                    ExploreSearchBar(
-                        query = uiState.searchQuery,
-                        onQueryChange = onSearchQueryChange,
-                        onFilterClick = onFilterClick,
-                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
-                    )
+                    Box(
+                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+                    ) {
+                        ExploreSearchBar(
+                            query = uiState.searchQuery,
+                            onQueryChange = onSearchQueryChange,
+                            onFilterClick = onFilterClick
+                        )
+                    }
                 }
 
                 item {
-                    CategorySection(
+                    ExploreCategorySection(
                         categories = uiState.categories,
+                        selectedCategoryId = uiState.selectedCategoryId,
                         onCategoryClick = onCategoryClick,
                         onViewAllClick = onViewAllCategoriesClick
                     )
                 }
 
                 item {
-                    RecommendedSection(
-                        items = uiState.recommendedItems,
-                        onItemClick = onRecommendedClick
+                    PopularRoadmapsSection(
+                        roadmaps = uiState.popularRoadmaps,
+                        onRoadmapClick = onPopularRoadmapClick
                     )
                 }
 
                 item {
-                    PopularRoadmapsSection(
-                        roadmaps = uiState.popularRoadmaps,
+                    RoadmapLibrarySection(
+                        roadmaps = uiState.libraryRoadmaps,
+                        selectedCategoryName = selectedCategoryName,
+                        totalCount = uiState.totalLibraryCount,
                         onRoadmapClick = onRoadmapClick,
-                        onSeeAllClick = onSeeAllPopularClick,
-                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontalWide)
+                        onSeeMoreClick = onSeeMoreRoadmapsClick,
+                        onSeeAllClick = onSeeAllRoadmapsClick,
+                        onSeeLessClick = onSeeLessRoadmapsClick
                     )
                 }
             }
@@ -152,27 +154,6 @@ private fun SearchBarPreview() {
                 query = "",
                 onQueryChange = {},
                 onFilterClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Recommended Card")
-@Composable
-private fun RecommendedCardPreview() {
-    RMapTheme {
-        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
-            RecommendedCard(
-                item = RecommendedCardUiModel(
-                    "1",
-                    "Mastering React & Next.js",
-                    "MOST POPULAR",
-                    48,
-                    "Expert",
-                    "",
-                    PrimaryLight
-                ),
-                onClick = {}
             )
         }
     }

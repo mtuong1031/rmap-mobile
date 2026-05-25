@@ -248,6 +248,14 @@ fun RMapNavHost(navController: NavHostController) {
                     selectedDestination = NavBarDestination.Explore,
                     onDestinationSelected = ::handleDestinationSelected,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
+                    onCategoryClick = viewModel::onCategorySelected,
+                    onViewAllCategoriesClick = viewModel::onViewAllCategories,
+                    onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmaps,
+                    onSeeAllRoadmapsClick = viewModel::onSeeAllRoadmaps,
+                    onSeeLessRoadmapsClick = viewModel::onSeeLessRoadmaps,
+                    onPopularRoadmapClick = { item ->
+                        navController.navigate(AppRoutes.roadmapDetail(item.id))
+                    },
                     onRoadmapClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     }

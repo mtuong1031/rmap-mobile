@@ -30,7 +30,15 @@ class FakeRoadmapRepository : RoadmapRepository {
         RoadmapSummary("data-science", "Data Science", 240, 0, LearningDifficulty.Hard, "4 months", LearningTopicIcon.Science, "ai"),
         RoadmapSummary("ai-engineering", "AI Engineering Path", 64, 0, LearningDifficulty.Advanced, "4 months", LearningTopicIcon.SmartToy, "ai", "CAREER PATH", 64),
         RoadmapSummary("full-stack-development", "Full Stack Development", 160, 24, LearningDifficulty.Intermediate, "8 months", LearningTopicIcon.Code, "backend", coverPlaceholder = RoadmapCoverPlaceholder.FullStack),
-        RoadmapSummary("ui-ux-masterclass", "UI/UX Masterclass", 72, 0, LearningDifficulty.Beginner, "4 months", LearningTopicIcon.Palette, "frontend", coverPlaceholder = RoadmapCoverPlaceholder.UiUx)
+        RoadmapSummary("ui-ux-masterclass", "UI/UX Masterclass", 72, 0, LearningDifficulty.Beginner, "4 months", LearningTopicIcon.Palette, "frontend", coverPlaceholder = RoadmapCoverPlaceholder.UiUx),
+        RoadmapSummary("android-foundations", "Android Foundations", 88, 0, LearningDifficulty.Beginner, "3 months", LearningTopicIcon.Devices, "mobile"),
+        RoadmapSummary("ios-swift-starter", "iOS Swift Starter", 76, 0, LearningDifficulty.Beginner, "3 months", LearningTopicIcon.Devices, "mobile"),
+        RoadmapSummary("backend-api-design", "Backend API Design", 112, 0, LearningDifficulty.Intermediate, "4 months", LearningTopicIcon.Storage, "backend"),
+        RoadmapSummary("kotlin-server-side", "Kotlin Server Side", 98, 0, LearningDifficulty.Intermediate, "4 months", LearningTopicIcon.Code, "backend"),
+        RoadmapSummary("cloud-devops", "Cloud DevOps", 132, 0, LearningDifficulty.Advanced, "5 months", LearningTopicIcon.Terminal, "devops"),
+        RoadmapSummary("ci-cd-automation", "CI/CD Automation", 84, 0, LearningDifficulty.Intermediate, "2 months", LearningTopicIcon.Terminal, "devops"),
+        RoadmapSummary("machine-learning-basics", "Machine Learning Basics", 128, 0, LearningDifficulty.Intermediate, "5 months", LearningTopicIcon.Science, "ai"),
+        RoadmapSummary("prompt-engineering", "Prompt Engineering", 54, 0, LearningDifficulty.Beginner, "1 month", LearningTopicIcon.SmartToy, "ai")
     )
 
     private val details = mapOf(
@@ -99,7 +107,7 @@ class FakeRoadmapRepository : RoadmapRepository {
     override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
         val normalizedQuery = query.trim()
         val result = if (normalizedQuery.isBlank()) {
-            roadmaps.take(4)
+            roadmaps
         } else {
             roadmaps.filter { roadmap ->
                 roadmap.title.contains(normalizedQuery, ignoreCase = true) ||
