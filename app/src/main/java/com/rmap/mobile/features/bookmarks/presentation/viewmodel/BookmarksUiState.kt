@@ -3,7 +3,7 @@ package com.rmap.mobile.features.bookmarks.presentation.viewmodel
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkStatusFilter
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.BookmarkRoadmapCardUiModel
 
 data class BookmarksUiState(
     val userName: String = "",

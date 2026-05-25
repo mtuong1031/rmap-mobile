@@ -51,18 +51,18 @@ import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkErrorState
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkLoadingState
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkSearchBar
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkSectionHeader
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkStatusFilter
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTopBar
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTypeTabs
-import com.rmap.mobile.features.bookmarks.presentation.components.EmptyBookmarkState
-import com.rmap.mobile.features.bookmarks.presentation.components.FooterHint
-import com.rmap.mobile.features.bookmarks.presentation.components.SavedRoadmapCard
-import com.rmap.mobile.features.bookmarks.presentation.components.SavedRoadmapSkill
+import com.rmap.mobile.features.bookmarks.presentation.components.controls.BookmarkSearchBar
+import com.rmap.mobile.features.bookmarks.presentation.components.controls.BookmarkStatusFilter
+import com.rmap.mobile.features.bookmarks.presentation.components.controls.BookmarkTypeTabs
+import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.BookmarkRoadmapCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.SavedRoadmapCard
+import com.rmap.mobile.features.bookmarks.presentation.components.section.BookmarkSectionHeader
+import com.rmap.mobile.features.bookmarks.presentation.components.section.FooterHint
+import com.rmap.mobile.features.bookmarks.presentation.components.skill.SavedRoadmapSkill
+import com.rmap.mobile.features.bookmarks.presentation.components.state.BookmarkErrorState
+import com.rmap.mobile.features.bookmarks.presentation.components.state.BookmarkLoadingState
+import com.rmap.mobile.features.bookmarks.presentation.components.state.EmptyBookmarkState
 import com.rmap.mobile.features.bookmarks.presentation.viewmodel.BookmarksUiState
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.navigation.NavBarDestination
@@ -101,8 +101,6 @@ fun BookmarksScreen(
     )
     val roadmapSectionTitle = stringResource(R.string.bookmarks_section_curated_paths)
     val skillSectionTitle = stringResource(R.string.bookmarks_section_specific_skills)
-    val roadmapBadgeText = stringResource(R.string.bookmarks_saved_count, uiState.roadmapItems.size)
-    val skillBadgeText = stringResource(R.string.bookmarks_pins_count, uiState.skillItems.size)
     val continueLabel = stringResource(R.string.home_hero_continue)
     val startLabel = stringResource(R.string.bookmarks_start)
 
@@ -130,8 +128,6 @@ fun BookmarksScreen(
                     statusFilters = statusFilters,
                     roadmapSectionTitle = roadmapSectionTitle,
                     skillSectionTitle = skillSectionTitle,
-                    roadmapBadgeText = roadmapBadgeText,
-                    skillBadgeText = skillBadgeText,
                     continueLabel = continueLabel,
                     startLabel = startLabel,
                     bottomPadding = innerPadding.calculateBottomPadding(),
@@ -162,8 +158,6 @@ fun BookmarksScreen(
                         statusFilters = statusFilters,
                         roadmapSectionTitle = roadmapSectionTitle,
                         skillSectionTitle = skillSectionTitle,
-                        roadmapBadgeText = roadmapBadgeText,
-                        skillBadgeText = skillBadgeText,
                         continueLabel = continueLabel,
                         startLabel = startLabel,
                         onHeaderActionClick = onHeaderActionClick,
@@ -197,8 +191,6 @@ fun BookmarksScreen(
                         statusFilters = statusFilters,
                         roadmapSectionTitle = roadmapSectionTitle,
                         skillSectionTitle = skillSectionTitle,
-                        roadmapBadgeText = roadmapBadgeText,
-                        skillBadgeText = skillBadgeText,
                         continueLabel = continueLabel,
                         startLabel = startLabel,
                         onHeaderActionClick = onHeaderActionClick,
@@ -225,8 +217,6 @@ private fun BookmarkCompactContent(
     statusFilters: List<String>,
     roadmapSectionTitle: String,
     skillSectionTitle: String,
-    roadmapBadgeText: String,
-    skillBadgeText: String,
     continueLabel: String,
     startLabel: String,
     bottomPadding: Dp,
@@ -266,8 +256,6 @@ private fun BookmarkCompactContent(
                 statusFilters = statusFilters,
                 roadmapSectionTitle = roadmapSectionTitle,
                 skillSectionTitle = skillSectionTitle,
-                roadmapBadgeText = roadmapBadgeText,
-                skillBadgeText = skillBadgeText,
                 continueLabel = continueLabel,
                 startLabel = startLabel,
                 onHeaderActionClick = onHeaderActionClick,
@@ -293,8 +281,6 @@ private fun BookmarkGridContent(
     statusFilters: List<String>,
     roadmapSectionTitle: String,
     skillSectionTitle: String,
-    roadmapBadgeText: String,
-    skillBadgeText: String,
     continueLabel: String,
     startLabel: String,
     onHeaderActionClick: () -> Unit,
@@ -338,8 +324,6 @@ private fun BookmarkGridContent(
                 statusFilters = statusFilters,
                 roadmapSectionTitle = roadmapSectionTitle,
                 skillSectionTitle = skillSectionTitle,
-                roadmapBadgeText = roadmapBadgeText,
-                skillBadgeText = skillBadgeText,
                 continueLabel = continueLabel,
                 startLabel = startLabel,
                 onHeaderActionClick = onHeaderActionClick,
@@ -364,8 +348,6 @@ private fun LazyListScope.bookmarkListItems(
     statusFilters: List<String>,
     roadmapSectionTitle: String,
     skillSectionTitle: String,
-    roadmapBadgeText: String,
-    skillBadgeText: String,
     continueLabel: String,
     startLabel: String,
     onHeaderActionClick: () -> Unit,
@@ -384,18 +366,22 @@ private fun LazyListScope.bookmarkListItems(
             headingText = headingText,
             searchPlaceholder = searchPlaceholder,
             tabs = tabs,
-            statusFilters = statusFilters,
             onHeaderActionClick = onHeaderActionClick,
             onSearchQueryChange = onSearchQueryChange,
             onTabSelected = onTabSelected,
-            onStatusFilterSelected = onStatusFilterSelected
         )
     }
 
     item(key = "bookmark-section-header") {
         BookmarkSectionHeader(
             title = if (uiState.selectedTab == BookmarkTab.Roadmaps) roadmapSectionTitle else skillSectionTitle,
-            badgeText = if (uiState.selectedTab == BookmarkTab.Roadmaps) roadmapBadgeText else skillBadgeText
+            trailingContent = {
+                BookmarkStatusFilter(
+                    filters = statusFilters,
+                    selectedIndex = uiState.selectedStatusFilter.ordinal,
+                    onFilterSelected = onStatusFilterSelected
+                )
+            }
         )
     }
 
@@ -473,8 +459,6 @@ private fun LazyGridScope.bookmarkGridItems(
     statusFilters: List<String>,
     roadmapSectionTitle: String,
     skillSectionTitle: String,
-    roadmapBadgeText: String,
-    skillBadgeText: String,
     continueLabel: String,
     startLabel: String,
     onHeaderActionClick: () -> Unit,
@@ -496,11 +480,9 @@ private fun LazyGridScope.bookmarkGridItems(
             headingText = headingText,
             searchPlaceholder = searchPlaceholder,
             tabs = tabs,
-            statusFilters = statusFilters,
             onHeaderActionClick = onHeaderActionClick,
             onSearchQueryChange = onSearchQueryChange,
             onTabSelected = onTabSelected,
-            onStatusFilterSelected = onStatusFilterSelected
         )
     }
 
@@ -510,7 +492,13 @@ private fun LazyGridScope.bookmarkGridItems(
     ) {
         BookmarkSectionHeader(
             title = if (uiState.selectedTab == BookmarkTab.Roadmaps) roadmapSectionTitle else skillSectionTitle,
-            badgeText = if (uiState.selectedTab == BookmarkTab.Roadmaps) roadmapBadgeText else skillBadgeText
+            trailingContent = {
+                BookmarkStatusFilter(
+                    filters = statusFilters,
+                    selectedIndex = uiState.selectedStatusFilter.ordinal,
+                    onFilterSelected = onStatusFilterSelected
+                )
+            }
         )
     }
 
@@ -601,11 +589,9 @@ private fun BookmarkHeaderControls(
     headingText: String,
     searchPlaceholder: String,
     tabs: List<String>,
-    statusFilters: List<String>,
     onHeaderActionClick: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onTabSelected: (Int) -> Unit,
-    onStatusFilterSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (layoutMode == BookmarkLayoutMode.Expanded) {
@@ -623,10 +609,8 @@ private fun BookmarkHeaderControls(
                 uiState = uiState,
                 searchPlaceholder = searchPlaceholder,
                 tabs = tabs,
-                statusFilters = statusFilters,
                 onSearchQueryChange = onSearchQueryChange,
                 onTabSelected = onTabSelected,
-                onStatusFilterSelected = onStatusFilterSelected,
                 modifier = Modifier.weight(0.6f)
             )
         }
@@ -644,10 +628,8 @@ private fun BookmarkHeaderControls(
                 uiState = uiState,
                 searchPlaceholder = searchPlaceholder,
                 tabs = tabs,
-                statusFilters = statusFilters,
                 onSearchQueryChange = onSearchQueryChange,
                 onTabSelected = onTabSelected,
-                onStatusFilterSelected = onStatusFilterSelected
             )
         }
     }
@@ -658,10 +640,8 @@ private fun BookmarkControls(
     uiState: BookmarksUiState,
     searchPlaceholder: String,
     tabs: List<String>,
-    statusFilters: List<String>,
     onSearchQueryChange: (String) -> Unit,
     onTabSelected: (Int) -> Unit,
-    onStatusFilterSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -677,11 +657,6 @@ private fun BookmarkControls(
             tabs = tabs,
             selectedIndex = uiState.selectedTab.ordinal,
             onTabSelected = onTabSelected
-        )
-        BookmarkStatusFilter(
-            filters = statusFilters,
-            selectedIndex = uiState.selectedStatusFilter.ordinal,
-            onFilterSelected = onStatusFilterSelected
         )
     }
 }

@@ -1,7 +1,6 @@
-package com.rmap.mobile.features.bookmarks.presentation.components
+package com.rmap.mobile.features.bookmarks.presentation.components.roadmap
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -19,126 +18,35 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bookmark
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.OnPrimaryContainerLight
-import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
-import com.rmap.mobile.core.ui.theme.PrimaryContainerLight
-import com.rmap.mobile.core.ui.theme.PrimaryLight
-import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.core.ui.theme.SecondaryLight
-import com.rmap.mobile.core.ui.theme.SurfaceContainerHighLight
-import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
-
-typealias BookmarkRoadmapCardUiModel = SavedRoadmapCardUiModel
-
-private val SavedRoadmapCardShape = AppShapes.card
-private val SavedRoadmapCardShadowColor = Color(0x1A000000)
-
-data class SavedRoadmapCardUiModel(
-    val id: String,
-    val title: String,
-    val categoryLabel: String,
-    val categoryIcon: ImageVector,
-    val categoryBackgroundColor: Color = PrimaryContainerLight,
-    val categoryContentColor: Color = OnPrimaryContainerLight,
-    val nodesLabel: String,
-    val durationLabel: String,
-    val savedAtLabel: String,
-    val actionLabel: String,
-    val status: LearningStatus = LearningStatus.NotStarted,
-    val statusLabel: String = "",
-    val progressPercent: Int? = null
-)
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTextStyles
+import com.rmap.mobile.features.bookmarks.presentation.components.colors
 
 @Composable
-fun SavedRoadmapCard(
-    item: SavedRoadmapCardUiModel,
-    modifier: Modifier = Modifier,
-    onActionClick: (() -> Unit)? = null,
-    onShareClick: (() -> Unit)? = null,
-    onBookmarkClick: (() -> Unit)? = null
-) {
-    val showProgress = item.status == LearningStatus.InProgress && item.progressPercent != null
-
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = Dimens.cardElevationXs,
-                shape = SavedRoadmapCardShape,
-                ambientColor = SavedRoadmapCardShadowColor,
-                spotColor = SavedRoadmapCardShadowColor
-            ),
-        shape = SavedRoadmapCardShape,
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(
-            width = Dimens.borderThin,
-            color = SurfaceContainerHighLight
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimens.spacingXl),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)
-        ) {
-            TopRow(
-                item = item,
-                onBookmarkClick = onBookmarkClick,
-                onShareClick = onShareClick
-            )
-
-            RoadmapInfo(item = item)
-
-            if (showProgress) {
-                ProgressSection(
-                    label = item.statusLabel,
-                    progressPercent = item.progressPercent
-                )
-            }
-
-            ActionButton(
-                text = item.actionLabel,
-                filled = showProgress,
-                onClick = onActionClick
-            )
-        }
-    }
-}
-
-@Composable
-private fun TopRow(
+internal fun SavedRoadmapTopRow(
     item: SavedRoadmapCardUiModel,
     onBookmarkClick: (() -> Unit)?,
-    onShareClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -146,39 +54,33 @@ private fun TopRow(
         horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CategoryBadge(
-            item = item,
-            modifier = Modifier.weight(1f, fill = false)
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
-            verticalAlignment = Alignment.CenterVertically
+        Box(
+            modifier = Modifier.weight(1f),
+            contentAlignment = Alignment.CenterStart
         ) {
-            IconAction(
-                icon = Icons.Outlined.Bookmark,
-                tint = PrimaryLight,
-                onClick = onBookmarkClick
-            )
-            IconAction(
-                icon = Icons.Outlined.MoreVert,
-                tint = OnSurfacePlaceholderLight,
-                onClick = onShareClick
-            )
+            SavedRoadmapCategoryBadge(item = item)
         }
+
+        SavedRoadmapIconAction(
+            icon = Icons.Outlined.Bookmark,
+            tint = MaterialTheme.colorScheme.primary,
+            onClick = onBookmarkClick
+        )
     }
 }
 
 @Composable
-private fun CategoryBadge(
+private fun SavedRoadmapCategoryBadge(
     item: SavedRoadmapCardUiModel,
     modifier: Modifier = Modifier
 ) {
+    val categoryColors = item.categoryStyle.colors()
+
     Row(
         modifier = modifier
             .widthIn(min = Dimens.controlSm)
             .clip(AppShapes.chip)
-            .background(item.categoryBackgroundColor)
+            .background(categoryColors.containerColor)
             .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXsPlus),
         horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus),
         verticalAlignment = Alignment.CenterVertically
@@ -186,18 +88,13 @@ private fun CategoryBadge(
         Icon(
             imageVector = item.categoryIcon,
             contentDescription = null,
-            tint = item.categoryContentColor,
+            tint = categoryColors.contentColor,
             modifier = Modifier.size(Dimens.iconSm)
         )
         Text(
             text = item.categoryLabel,
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontSize = 12.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.sp
-            ),
-            color = item.categoryContentColor,
+            style = BookmarkTextStyles.badge,
+            color = categoryColors.contentColor,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -205,7 +102,7 @@ private fun CategoryBadge(
 }
 
 @Composable
-private fun IconAction(
+private fun SavedRoadmapIconAction(
     icon: ImageVector,
     tint: Color,
     onClick: (() -> Unit)?
@@ -230,14 +127,14 @@ private fun IconAction(
             imageVector = icon,
             contentDescription = null,
             tint = tint,
-            modifier = Modifier.size(Dimens.iconSmPlus)
+            modifier = Modifier.size(Dimens.iconMdPlus)
         )
     }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RoadmapInfo(
+internal fun SavedRoadmapInfo(
     item: SavedRoadmapCardUiModel,
     modifier: Modifier = Modifier
 ) {
@@ -247,25 +144,19 @@ private fun RoadmapInfo(
     ) {
         Text(
             text = item.title,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontSize = 18.sp,
-                lineHeight = 22.5.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            ),
+            style = BookmarkTextStyles.cardTitle,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
 
-        RoadmapMetadata(item = item)
+        SavedRoadmapMetadata(item = item)
 
-        MetadataItem(
+        SavedRoadmapMetadataItem(
             icon = {
                 Icon(
                     imageVector = Icons.Outlined.Bookmark,
                     contentDescription = null,
-                    tint = SecondaryLight,
+                    tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(Dimens.iconXs)
                 )
             },
@@ -275,7 +166,7 @@ private fun RoadmapInfo(
 }
 
 @Composable
-private fun RoadmapMetadata(
+private fun SavedRoadmapMetadata(
     item: SavedRoadmapCardUiModel,
     modifier: Modifier = Modifier
 ) {
@@ -284,11 +175,11 @@ private fun RoadmapMetadata(
             Column(
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
             ) {
-                MetadataItem(
+                SavedRoadmapMetadataItem(
                     icon = { NodesIcon() },
                     text = item.nodesLabel
                 )
-                MetadataItem(
+                SavedRoadmapMetadataItem(
                     icon = { ClockIcon() },
                     text = item.durationLabel
                 )
@@ -299,11 +190,11 @@ private fun RoadmapMetadata(
                 horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                MetadataItem(
+                SavedRoadmapMetadataItem(
                     icon = { NodesIcon() },
                     text = item.nodesLabel
                 )
-                MetadataItem(
+                SavedRoadmapMetadataItem(
                     icon = { ClockIcon() },
                     text = item.durationLabel
                 )
@@ -313,7 +204,7 @@ private fun RoadmapMetadata(
 }
 
 @Composable
-private fun MetadataItem(
+private fun SavedRoadmapMetadataItem(
     text: String,
     icon: @Composable () -> Unit,
     modifier: Modifier = Modifier
@@ -326,13 +217,8 @@ private fun MetadataItem(
         icon()
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 13.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 0.sp
-            ),
-            color = SecondaryLight,
+            style = BookmarkTextStyles.metadata,
+            color = MaterialTheme.colorScheme.secondary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -340,7 +226,7 @@ private fun MetadataItem(
 }
 
 @Composable
-private fun ProgressSection(
+internal fun SavedRoadmapProgress(
     label: String,
     progressPercent: Int,
     modifier: Modifier = Modifier
@@ -358,27 +244,18 @@ private fun ProgressSection(
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.sp
-                ),
-                color = PrimaryLight,
+                style = BookmarkTextStyles.progressLabel,
+                color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
             Text(
                 text = "$progressPercent%",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontSize = 12.sp,
-                    lineHeight = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.sp,
+                style = BookmarkTextStyles.progressLabel.copy(
                     textAlign = TextAlign.End
                 ),
-                color = OnSurfacePlaceholderLight,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1
             )
         }
@@ -388,21 +265,21 @@ private fun ProgressSection(
                 .fillMaxWidth()
                 .height(Dimens.spacingXsPlus)
                 .clip(AppShapes.pill)
-                .background(PrimaryContainerLight)
+                .background(MaterialTheme.colorScheme.primaryContainer)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(progress)
                     .height(Dimens.spacingXsPlus)
                     .clip(AppShapes.pill)
-                    .background(PrimaryLight)
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
     }
 }
 
 @Composable
-private fun ActionButton(
+internal fun SavedRoadmapActionButton(
     text: String,
     filled: Boolean,
     onClick: (() -> Unit)?,
@@ -419,9 +296,10 @@ private fun ActionButton(
 
 @Composable
 private fun NodesIcon() {
+    val color = MaterialTheme.colorScheme.secondary
+
     Canvas(modifier = Modifier.size(Dimens.iconXs)) {
         val strokeWidth = 1.3.dp.toPx()
-        val color = SecondaryLight
         drawRect(
             color = color,
             topLeft = Offset(strokeWidth, strokeWidth),
@@ -445,9 +323,10 @@ private fun NodesIcon() {
 
 @Composable
 private fun ClockIcon() {
+    val color = MaterialTheme.colorScheme.secondary
+
     Canvas(modifier = Modifier.size(Dimens.iconXs)) {
         val strokeWidth = 1.3.dp.toPx()
-        val color = SecondaryLight
         drawCircle(
             color = color,
             radius = (size.minDimension - strokeWidth * 2) / 2,
@@ -467,49 +346,6 @@ private fun ClockIcon() {
             end = Offset(center.x + size.width * 0.18f, center.y + size.height * 0.12f),
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round
-        )
-    }
-}
-
-@Composable
-fun BookmarkRoadmapCard(
-    item: BookmarkRoadmapCardUiModel,
-    modifier: Modifier = Modifier,
-    onActionClick: (() -> Unit)? = null,
-    onShareClick: (() -> Unit)? = null,
-    onBookmarkClick: (() -> Unit)? = null
-) {
-    SavedRoadmapCard(
-        item = item,
-        modifier = modifier,
-        onActionClick = onActionClick,
-        onShareClick = onShareClick,
-        onBookmarkClick = onBookmarkClick
-    )
-}
-
-@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
-@Composable
-private fun SavedRoadmapCardPreview() {
-    RMapTheme(darkTheme = false, dynamicColor = false) {
-        SavedRoadmapCard(
-            item = SavedRoadmapCardUiModel(
-                id = "full-stack-development",
-                title = "Full Stack Development",
-                categoryLabel = "Web Development",
-                categoryIcon = Icons.Outlined.Code,
-                nodesLabel = "64 Nodes",
-                durationLabel = "8 months",
-                savedAtLabel = "Last saved yesterday",
-                actionLabel = "Continue",
-                status = LearningStatus.InProgress,
-                statusLabel = "In Progress",
-                progressPercent = 45
-            ),
-            modifier = Modifier.padding(Dimens.spacingLg),
-            onActionClick = {},
-            onBookmarkClick = {},
-            onShareClick = {}
         )
     }
 }

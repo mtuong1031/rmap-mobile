@@ -2,17 +2,15 @@ package com.rmap.mobile.features.bookmarks.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.compose.ui.graphics.Color
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.core.ui.components.SkillStatus
-import com.rmap.mobile.core.ui.theme.OnPrimaryContainerLight
-import com.rmap.mobile.core.ui.theme.PrimaryContainerLight
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkStatusFilter
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
-import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkRoadmapCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkCategoryStyle
+import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.BookmarkRoadmapCardUiModel
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
@@ -23,6 +21,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+private const val BOOKMARKS_LOAD_ERROR_MESSAGE = "Unable to load bookmarks"
+private const val BOOKMARK_CATEGORY_DESIGN = "Design"
+private const val BOOKMARK_CATEGORY_DEVOPS = "DevOps"
+private const val BOOKMARK_CATEGORY_WEB_DEVELOPMENT = "Web Development"
+private const val BOOKMARK_ACTION_CONTINUE = "Continue"
+private const val BOOKMARK_ACTION_START = "Start"
+private const val BOOKMARK_STATUS_COMPLETED = "Completed"
+private const val BOOKMARK_STATUS_IN_PROGRESS = "In Progress"
+private const val BOOKMARK_STATUS_NOT_STARTED = "Not Started"
+private const val BOOKMARK_SAVED_RECENTLY = "Last saved yesterday"
+private const val BOOKMARK_SAVED_DEFAULT = "Saved 3 days ago"
 
 class BookmarksViewModel(
     private val bookmarkRepository: BookmarkRepository = RMapAppGraph.bookmarkRepository,
@@ -49,7 +59,7 @@ class BookmarksViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = failure.exceptionOrNull()?.message ?: "Unable to load bookmarks"
+                        errorMessage = failure.exceptionOrNull()?.message ?: BOOKMARKS_LOAD_ERROR_MESSAGE
                     )
                 }
                 return@launch
@@ -123,11 +133,10 @@ private fun RoadmapSummary.toBookmarkRoadmapCardUiModel(): BookmarkRoadmapCardUi
         title = title,
         categoryLabel = icon.toBookmarkCategoryLabel(),
         categoryIcon = icon.toImageVector(),
-        categoryBackgroundColor = icon.toBookmarkCategoryBackgroundColor(),
-        categoryContentColor = icon.toBookmarkCategoryContentColor(),
+        categoryStyle = icon.toBookmarkCategoryStyle(),
         nodesLabel = "$skillNodesCount Nodes",
         durationLabel = durationLabel,
-        actionLabel = if (completedLessonsCount > 0) "Continue" else "Start",
+        actionLabel = if (completedLessonsCount > 0) BOOKMARK_ACTION_CONTINUE else BOOKMARK_ACTION_START,
         status = status,
         statusLabel = status.toBookmarkStatusLabel(),
         progressPercent = if (status == LearningStatus.InProgress && totalLessonsCount > 0) {
@@ -135,7 +144,7 @@ private fun RoadmapSummary.toBookmarkRoadmapCardUiModel(): BookmarkRoadmapCardUi
         } else {
             null
         },
-        savedAtLabel = if (completedLessonsCount > 0) "Last saved yesterday" else "Saved 3 days ago"
+        savedAtLabel = if (completedLessonsCount > 0) BOOKMARK_SAVED_RECENTLY else BOOKMARK_SAVED_DEFAULT
     )
 }
 
@@ -146,9 +155,9 @@ private fun SkillBookmark.toSkillCardUiModel(): SkillCardUiModel {
         else -> SkillStatus.NOT_STARTED
     }
     val statusLabel = when (status) {
-        LearningStatus.Completed -> "Completed"
-        LearningStatus.InProgress -> "In Progress"
-        else -> "Not Started"
+        LearningStatus.Completed -> BOOKMARK_STATUS_COMPLETED
+        LearningStatus.InProgress -> BOOKMARK_STATUS_IN_PROGRESS
+        else -> BOOKMARK_STATUS_NOT_STARTED
     }
 
     return SkillCardUiModel(
@@ -208,33 +217,25 @@ private fun List<SkillCardUiModel>.filterSkillsByQuery(
 
 private fun LearningTopicIcon.toBookmarkCategoryLabel(): String {
     return when (this) {
-        LearningTopicIcon.Palette -> "Design"
-        LearningTopicIcon.Terminal -> "DevOps"
-        else -> "Web Development"
+        LearningTopicIcon.Palette -> BOOKMARK_CATEGORY_DESIGN
+        LearningTopicIcon.Terminal -> BOOKMARK_CATEGORY_DEVOPS
+        else -> BOOKMARK_CATEGORY_WEB_DEVELOPMENT
     }
 }
 
-private fun LearningTopicIcon.toBookmarkCategoryBackgroundColor(): Color {
+private fun LearningTopicIcon.toBookmarkCategoryStyle(): BookmarkCategoryStyle {
     return when (this) {
-        LearningTopicIcon.Palette -> Color(0xFFFAF5FF)
-        LearningTopicIcon.Terminal -> Color(0xFFFFF7ED)
-        else -> PrimaryContainerLight
-    }
-}
-
-private fun LearningTopicIcon.toBookmarkCategoryContentColor(): Color {
-    return when (this) {
-        LearningTopicIcon.Palette -> Color(0xFF9810FA)
-        LearningTopicIcon.Terminal -> Color(0xFFF54900)
-        else -> OnPrimaryContainerLight
+        LearningTopicIcon.Palette -> BookmarkCategoryStyle.Design
+        LearningTopicIcon.Terminal -> BookmarkCategoryStyle.DevOps
+        else -> BookmarkCategoryStyle.WebDevelopment
     }
 }
 
 private fun LearningStatus.toBookmarkStatusLabel(): String {
     return when (this) {
-        LearningStatus.Completed -> "Completed"
-        LearningStatus.InProgress -> "In Progress"
+        LearningStatus.Completed -> BOOKMARK_STATUS_COMPLETED
+        LearningStatus.InProgress -> BOOKMARK_STATUS_IN_PROGRESS
         LearningStatus.Locked,
-        LearningStatus.NotStarted -> "Not Started"
+        LearningStatus.NotStarted -> BOOKMARK_STATUS_NOT_STARTED
     }
 }
