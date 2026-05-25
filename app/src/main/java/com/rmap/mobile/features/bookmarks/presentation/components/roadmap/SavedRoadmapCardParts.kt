@@ -143,7 +143,7 @@ internal fun SavedRoadmapInfo(
     ) {
         Text(
             text = item.title,
-            style = BookmarkTextStyles.cardTitle,
+            style = BookmarkTextStyles.roadmapCardTitle,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
