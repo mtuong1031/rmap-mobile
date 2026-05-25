@@ -53,7 +53,8 @@ fun EmptyBookmarkState(
 ) {
     BookmarkStateContainer(
         modifier = modifier,
-        showBorder = false
+        showBorder = false,
+        shadowElevation = Dimens.cardElevationNone
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val topDecorSize = (maxWidth * 0.35f).coerceIn(
