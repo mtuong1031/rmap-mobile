@@ -58,7 +58,6 @@ import com.rmap.mobile.features.bookmarks.presentation.components.controls.Bookm
 import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.BookmarkRoadmapCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.SavedRoadmapCard
 import com.rmap.mobile.features.bookmarks.presentation.components.section.BookmarkSectionHeader
-import com.rmap.mobile.features.bookmarks.presentation.components.section.FooterHint
 import com.rmap.mobile.features.bookmarks.presentation.components.skill.SavedRoadmapSkill
 import com.rmap.mobile.features.bookmarks.presentation.components.state.BookmarkErrorState
 import com.rmap.mobile.features.bookmarks.presentation.components.state.BookmarkLoadingState
@@ -442,11 +441,6 @@ private fun LazyListScope.bookmarkListItems(
         }
     }
 
-    if (!uiState.isLoading && uiState.errorMessage == null) {
-        item(key = "bookmark-footer") {
-            FooterHint()
-        }
-    }
 }
 
 private fun LazyGridScope.bookmarkGridItems(
@@ -571,14 +565,6 @@ private fun LazyGridScope.bookmarkGridItems(
         }
     }
 
-    if (!uiState.isLoading && uiState.errorMessage == null) {
-        item(
-            key = "bookmark-footer",
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
-            FooterHint()
-        }
-    }
 }
 
 @Composable
