@@ -60,8 +60,7 @@ object BookmarkTextStyles {
         )
 
     val cardTitle: TextStyle
-        @Composable get() = MaterialTheme.typography.titleMedium.copy(
-            fontWeight = FontWeight.Bold,
+        @Composable get() = AppTextStyles.compactCardTitle.copy(
             color = MaterialTheme.colorScheme.onSurface
         )
 

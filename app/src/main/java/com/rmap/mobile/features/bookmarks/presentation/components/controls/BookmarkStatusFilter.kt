@@ -134,7 +134,7 @@ private fun BookmarkStatusFilterButton(
 }
 
 private fun String.toBookmarkStatusButtonLabel(): String {
-    return replace(" ", "").uppercase()
+    return uppercase()
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)

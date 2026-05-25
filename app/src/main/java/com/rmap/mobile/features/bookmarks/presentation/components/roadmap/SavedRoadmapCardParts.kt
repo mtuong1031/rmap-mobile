@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Bookmark
@@ -32,9 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
@@ -110,11 +111,9 @@ private fun SavedRoadmapIconAction(
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = Modifier
-            .sizeIn(
-                minWidth = Dimens.controlMd,
-                minHeight = Dimens.controlMd
-            )
+            .size(Dimens.controlMd)
             .clip(AppShapes.pill)
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -125,9 +124,9 @@ private fun SavedRoadmapIconAction(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = stringResource(R.string.content_description_bookmark),
             tint = tint,
-            modifier = Modifier.size(Dimens.iconMdPlus)
+            modifier = Modifier.size(Dimens.iconMd)
         )
     }
 }
