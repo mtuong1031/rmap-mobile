@@ -1,7 +1,6 @@
 package com.rmap.mobile.features.bookmarks.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -43,11 +41,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.core.ui.components.SkillStatus
-import com.rmap.mobile.core.ui.components.rememberBackgroundScrollOffsetY
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
@@ -227,45 +223,34 @@ private fun BookmarkCompactContent(
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onSkillClick: ((SkillCardUiModel) -> Unit)?
 ) {
-    val listState = rememberLazyListState()
-    val scrollY = rememberBackgroundScrollOffsetY(listState)
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        RMapHeroSectionBackground(
-            scrollOffsetY = scrollY,
-            modifier = Modifier.fillMaxSize()
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = bookmarkContentPadding(
+            layoutMode = BookmarkLayoutMode.Compact,
+            bottomPadding = bottomPadding
+        ),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+    ) {
+        bookmarkListItems(
+            uiState = uiState,
+            layoutMode = BookmarkLayoutMode.Compact,
+            greetingText = greetingText,
+            headingText = headingText,
+            searchPlaceholder = searchPlaceholder,
+            tabs = tabs,
+            statusFilters = statusFilters,
+            roadmapSectionTitle = roadmapSectionTitle,
+            skillSectionTitle = skillSectionTitle,
+            continueLabel = continueLabel,
+            startLabel = startLabel,
+            onHeaderActionClick = onHeaderActionClick,
+            onSearchQueryChange = onSearchQueryChange,
+            onTabSelected = onTabSelected,
+            onStatusFilterSelected = onStatusFilterSelected,
+            onRoadmapActionClick = onRoadmapActionClick,
+            onRoadmapShareClick = onRoadmapShareClick,
+            onSkillClick = onSkillClick
         )
-
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = bookmarkContentPadding(
-                layoutMode = BookmarkLayoutMode.Compact,
-                bottomPadding = bottomPadding
-            ),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-        ) {
-            bookmarkListItems(
-                uiState = uiState,
-                layoutMode = BookmarkLayoutMode.Compact,
-                greetingText = greetingText,
-                headingText = headingText,
-                searchPlaceholder = searchPlaceholder,
-                tabs = tabs,
-                statusFilters = statusFilters,
-                roadmapSectionTitle = roadmapSectionTitle,
-                skillSectionTitle = skillSectionTitle,
-                continueLabel = continueLabel,
-                startLabel = startLabel,
-                onHeaderActionClick = onHeaderActionClick,
-                onSearchQueryChange = onSearchQueryChange,
-                onTabSelected = onTabSelected,
-                onStatusFilterSelected = onStatusFilterSelected,
-                onRoadmapActionClick = onRoadmapActionClick,
-                onRoadmapShareClick = onRoadmapShareClick,
-                onSkillClick = onSkillClick
-            )
-        }
     }
 }
 
@@ -291,49 +276,42 @@ private fun BookmarkGridContent(
     onSkillClick: ((SkillCardUiModel) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
-        RMapHeroSectionBackground(
-            scrollOffsetY = 0f,
-            modifier = Modifier.fillMaxSize()
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(
+            minSize = if (layoutMode == BookmarkLayoutMode.Expanded) {
+                BookmarkExpandedGridMinCellWidth
+            } else {
+                BookmarkGridMinCellWidth
+            }
+        ),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = bookmarkContentPadding(
+            layoutMode = layoutMode,
+            bottomPadding = Dimens.spacingNone
+        ),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+    ) {
+        bookmarkGridItems(
+            uiState = uiState,
+            layoutMode = layoutMode,
+            greetingText = greetingText,
+            headingText = headingText,
+            searchPlaceholder = searchPlaceholder,
+            tabs = tabs,
+            statusFilters = statusFilters,
+            roadmapSectionTitle = roadmapSectionTitle,
+            skillSectionTitle = skillSectionTitle,
+            continueLabel = continueLabel,
+            startLabel = startLabel,
+            onHeaderActionClick = onHeaderActionClick,
+            onSearchQueryChange = onSearchQueryChange,
+            onTabSelected = onTabSelected,
+            onStatusFilterSelected = onStatusFilterSelected,
+            onRoadmapActionClick = onRoadmapActionClick,
+            onRoadmapShareClick = onRoadmapShareClick,
+            onSkillClick = onSkillClick
         )
-
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(
-                minSize = if (layoutMode == BookmarkLayoutMode.Expanded) {
-                    BookmarkExpandedGridMinCellWidth
-                } else {
-                    BookmarkGridMinCellWidth
-                }
-            ),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = bookmarkContentPadding(
-                layoutMode = layoutMode,
-                bottomPadding = Dimens.spacingNone
-            ),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-        ) {
-            bookmarkGridItems(
-                uiState = uiState,
-                layoutMode = layoutMode,
-                greetingText = greetingText,
-                headingText = headingText,
-                searchPlaceholder = searchPlaceholder,
-                tabs = tabs,
-                statusFilters = statusFilters,
-                roadmapSectionTitle = roadmapSectionTitle,
-                skillSectionTitle = skillSectionTitle,
-                continueLabel = continueLabel,
-                startLabel = startLabel,
-                onHeaderActionClick = onHeaderActionClick,
-                onSearchQueryChange = onSearchQueryChange,
-                onTabSelected = onTabSelected,
-                onStatusFilterSelected = onStatusFilterSelected,
-                onRoadmapActionClick = onRoadmapActionClick,
-                onRoadmapShareClick = onRoadmapShareClick,
-                onSkillClick = onSkillClick
-            )
-        }
     }
 }
 
