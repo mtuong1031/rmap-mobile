@@ -11,6 +11,7 @@
     <string name="auth_sign_in_failed">Unable to sign in. Please try again.</string>
     <string name="coming_soon_message">This action is coming soon.</string>
     <string name="separator_bullet">•</string>
+    <string name="action_cancel">Cancel</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
@@ -57,6 +58,70 @@
     <string name="home_roadmap_starter_badge">Starter</string>
     <string name="home_categories_title">Browse by Category</string>
     <string name="home_categories_subtitle">Find roadmap domains based on your current path</string>
+
+    <!-- AI Roadmap Screen -->
+    <string name="ai_roadmap_eyebrow">AI Roadmap</string>
+    <string name="ai_roadmap_title">Create a personalized roadmap</string>
+    <string name="ai_roadmap_description">Tell RMap your goal, timeline, and learning pace. Then answer a few follow-up questions so the roadmap can fit your context.</string>
+    <string name="ai_roadmap_setup_title">Create roadmap</string>
+    <string name="ai_roadmap_setup_description">Set the goal, deadline, and daily pace. RMap will ask a few follow-up questions next.</string>
+    <string name="ai_roadmap_library_eyebrow">AI Library</string>
+    <string name="ai_roadmap_library_title">Your AI roadmaps</string>
+    <string name="ai_roadmap_library_description">Search generated roadmaps, continue learning, or create a new plan from your current goal.</string>
+    <string name="ai_roadmap_library_search_placeholder">Search AI roadmaps...</string>
+    <string name="ai_roadmap_library_create">Create roadmap with AI</string>
+    <string name="ai_roadmap_library_section_title">Generated roadmaps</string>
+    <string name="ai_roadmap_library_section_subtitle">Personalized plans created from your goals, deadlines, and learning pace.</string>
+    <string name="ai_roadmap_library_empty_title">No AI roadmaps yet</string>
+    <string name="ai_roadmap_library_empty_body">Create your first personalized roadmap from your topic, deadline, and learning pace.</string>
+    <string name="ai_roadmap_library_search_empty_title">No matching roadmaps</string>
+    <string name="ai_roadmap_library_search_empty_body">Try a different keyword, create a new AI roadmap, or explore ready-made learning paths.</string>
+    <string name="ai_roadmap_library_metadata">%1$d lessons • %2$d weeks</string>
+    <string name="ai_roadmap_created_today">Generated today</string>
+    <plurals name="ai_roadmap_created_days_ago">
+        <item quantity="one">Generated %1$d day ago</item>
+        <item quantity="other">Generated %1$d days ago</item>
+    </plurals>
+    <string name="ai_roadmap_topic_label">Roadmap topic</string>
+    <string name="ai_roadmap_topic_placeholder">Example: Android Developer, React, Backend API</string>
+    <string name="ai_roadmap_deadline_label">Target deadline</string>
+    <string name="ai_roadmap_deadline_placeholder">Choose a deadline</string>
+    <string name="ai_roadmap_daily_hours_label">Daily study time</string>
+    <string name="ai_roadmap_daily_hours_value">%1$.1f hours/day</string>
+    <string name="ai_roadmap_submit_setup">Get personalized questions</string>
+    <string name="ai_roadmap_loading_questions">Preparing questions...</string>
+    <string name="ai_roadmap_question_progress">Question %1$d of %2$d</string>
+    <string name="ai_roadmap_answered_count">%1$d/%2$d answered</string>
+    <string name="ai_roadmap_custom_answer_label">Custom answer</string>
+    <string name="ai_roadmap_custom_answer_placeholder">Write your own answer if the options do not fit...</string>
+    <string name="ai_roadmap_previous">Previous</string>
+    <string name="ai_roadmap_next">Next</string>
+    <string name="ai_roadmap_generate">Generate</string>
+    <string name="ai_roadmap_generating_title">Your roadmap is being created</string>
+    <string name="ai_roadmap_generating_body">This can take around one to two minutes. You can explore the app while RMap keeps the generation running in the background.</string>
+    <string name="ai_roadmap_generation_progress">%1$d%%</string>
+    <string name="ai_roadmap_explore_while_generating">Explore app</string>
+    <string name="ai_roadmap_cancel_generation">Cancel</string>
+    <string name="ai_roadmap_banner_title">Roadmap generation in progress</string>
+    <string name="ai_roadmap_banner_action">View</string>
+    <string name="ai_roadmap_permission_title">Show roadmap progress in notifications?</string>
+    <string name="ai_roadmap_permission_body">Allow notifications so you can track roadmap generation from the notification shade while using other apps.</string>
+    <string name="ai_roadmap_permission_allow">Allow</string>
+    <string name="ai_roadmap_permission_skip">Skip</string>
+    <string name="ai_roadmap_error_topic_required">Enter a roadmap topic with at least two characters.</string>
+    <string name="ai_roadmap_error_deadline_required">Choose a target deadline.</string>
+    <string name="ai_roadmap_error_deadline_past">Choose a future deadline.</string>
+    <string name="ai_roadmap_error_questions">Unable to prepare personalized questions. Please try again.</string>
+    <string name="ai_roadmap_error_answer_all">Answer every question before continuing.</string>
+    <string name="ai_roadmap_error_generation">Roadmap generation failed. Please try again later.</string>
+    <string name="ai_roadmap_notification_channel_name">Roadmap generation</string>
+    <string name="ai_roadmap_notification_channel_description">Progress updates while RMap creates your AI roadmap.</string>
+    <string name="ai_roadmap_notification_title">Creating your roadmap</string>
+    <string name="ai_roadmap_notification_body">%1$s: %2$s</string>
+    <string name="ai_roadmap_notification_action_open">View progress</string>
+    <string name="ai_roadmap_notification_action_cancel">Cancel</string>
+    <string name="ai_roadmap_notification_ready_title">Roadmap ready</string>
+    <string name="ai_roadmap_notification_ready_body">Your %1$s roadmap is ready to view.</string>
 
     <!-- Explore Screen -->
     <string name="explore_title">Explore roadmaps</string>
