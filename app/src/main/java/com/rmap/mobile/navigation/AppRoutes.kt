@@ -6,6 +6,7 @@ object AppRoutes {
     const val HOME_SEARCH = "home_search"
     const val BOOKMARKS = "bookmarks"
     const val EXPLORE = "explore"
+    const val AI_ROADMAP = "ai_roadmap"
     const val PROFILE = "profile"
     const val NOTIFICATION_SETTINGS = "notification_settings"
     const val ROADMAP_ID_ARG = "roadmapId"

@@ -1,6 +1,8 @@
 package com.rmap.mobile.core.utils
 
 import android.content.Context
+import com.rmap.mobile.features.airoadmap.data.FakeAiRoadmapRepository
+import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
 import com.rmap.mobile.features.auth.data.FakeSessionRepository
 import com.rmap.mobile.features.auth.domain.repository.SessionRepository
 import com.rmap.mobile.features.bookmarks.data.FakeBookmarkRepository
@@ -20,6 +22,8 @@ object RMapAppGraph {
     val profileRepository: ProfileRepository = FakeProfileRepository()
     val sessionRepository: SessionRepository = FakeSessionRepository()
 
+    lateinit var aiRoadmapRepository: AiRoadmapRepository
+        private set
     lateinit var notificationSettingsRepository: NotificationSettingsRepository
         private set
     lateinit var learningNotificationNotifier: LearningNotificationNotifier
@@ -30,6 +34,7 @@ object RMapAppGraph {
 
         val applicationContext = context.applicationContext
         val scheduler = LearningReminderScheduler(applicationContext)
+        aiRoadmapRepository = FakeAiRoadmapRepository(applicationContext)
         learningNotificationNotifier = LearningNotificationNotifier(applicationContext)
         learningNotificationNotifier.ensureNotificationChannel()
         notificationSettingsRepository = SharedPreferencesNotificationSettingsRepository(
