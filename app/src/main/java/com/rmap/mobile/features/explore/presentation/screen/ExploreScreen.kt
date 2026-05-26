@@ -35,7 +35,6 @@ fun ExploreScreen(
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.Explore,
     onHeaderActionClick: () -> Unit = {},
-    onFilterClick: () -> Unit = {},
     onViewAllCategoriesClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
@@ -89,8 +88,7 @@ fun ExploreScreen(
                     ) {
                         ExploreSearchBar(
                             query = uiState.searchQuery,
-                            onQueryChange = onSearchQueryChange,
-                            onFilterClick = onFilterClick
+                            onQueryChange = onSearchQueryChange
                         )
                     }
                 }
@@ -152,8 +150,7 @@ private fun SearchBarPreview() {
         Box(modifier = Modifier.padding(Dimens.spacingLg)) {
             ExploreSearchBar(
                 query = "",
-                onQueryChange = {},
-                onFilterClick = {}
+                onQueryChange = {}
             )
         }
     }
