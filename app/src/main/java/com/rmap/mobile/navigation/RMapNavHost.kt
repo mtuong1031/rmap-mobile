@@ -4,6 +4,9 @@ import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.SnackbarHost
@@ -24,10 +27,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.navArgument
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.features.airoadmap.presentation.components.AiRoadmapProgressBanner
+import com.rmap.mobile.features.airoadmap.presentation.screen.AiRoadmapScreen
+import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapEvent
+import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapViewModel
 import com.rmap.mobile.features.bookmarks.presentation.screen.BookmarkWindowSizeClass
 import com.rmap.mobile.features.auth.presentation.screen.AuthScreen
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthEvent
@@ -73,7 +82,7 @@ fun RMapNavHost(navController: NavHostController) {
             NavBarDestination.Bookmarks -> AppRoutes.BOOKMARKS
             NavBarDestination.Explore -> AppRoutes.EXPLORE
             NavBarDestination.More -> AppRoutes.PROFILE
-            NavBarDestination.AiAssistant -> return
+            NavBarDestination.AiAssistant -> AppRoutes.AI_ROADMAP
         }
 
         navController.navigate(route) {
@@ -84,11 +93,7 @@ fun RMapNavHost(navController: NavHostController) {
     }
 
     fun handleDestinationSelected(destination: NavBarDestination) {
-        if (destination == NavBarDestination.AiAssistant) {
-            coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
-        } else {
-            navigateFromBottomBar(destination)
-        }
+        navigateFromBottomBar(destination)
     }
 
     fun navigateBackFromRoadmapDetail() {
@@ -105,6 +110,10 @@ fun RMapNavHost(navController: NavHostController) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
+        val currentBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = currentBackStackEntry?.destination?.route
+
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val bookmarkWindowSizeClass = BookmarkWindowSizeClass.fromWidth(maxWidth)
 
@@ -149,6 +158,11 @@ fun RMapNavHost(navController: NavHostController) {
                     },
                     onContinueLearningPlanClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
+                    },
+                    onCreateRoadmapWithAiClick = {
+                        navController.navigate(AppRoutes.AI_ROADMAP) {
+                            launchSingleTop = true
+                        }
                     }
                 )
             }
@@ -234,8 +248,56 @@ fun RMapNavHost(navController: NavHostController) {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
                     onCreateWithAiClick = {
-                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                        navController.navigate(AppRoutes.AI_ROADMAP) {
+                            launchSingleTop = true
+                        }
                     }
+                )
+            }
+
+            composable(AppRoutes.AI_ROADMAP) {
+                val viewModel: AiRoadmapViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(viewModel) {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            is AiRoadmapEvent.NavigateToRoadmapDetail -> {
+                                navController.navigate(AppRoutes.roadmapDetail(event.roadmapId))
+                            }
+                        }
+                    }
+                }
+
+                AiRoadmapScreen(
+                    uiState = uiState,
+                    selectedDestination = NavBarDestination.AiAssistant,
+                    onDestinationSelected = ::handleDestinationSelected,
+                    onSearchQueryChange = viewModel::onSearchQueryChange,
+                    onCreateRoadmapClick = viewModel::onCreateRoadmapClick,
+                    onSeeMoreGeneratedRoadmaps = viewModel::onSeeMoreGeneratedRoadmaps,
+                    onSeeAllGeneratedRoadmaps = viewModel::onSeeAllGeneratedRoadmaps,
+                    onSeeLessGeneratedRoadmaps = viewModel::onSeeLessGeneratedRoadmaps,
+                    onBackToLibrary = viewModel::onBackToLibrary,
+                    onTopicChange = viewModel::onTopicChange,
+                    onDeadlineSelected = viewModel::onDeadlineSelected,
+                    onDailyStudyHoursChange = viewModel::onDailyStudyHoursChange,
+                    onSubmitSetup = viewModel::onSubmitSetup,
+                    onOptionSelected = viewModel::onOptionSelected,
+                    onCustomAnswerChange = viewModel::onCustomAnswerChange,
+                    onPreviousQuestion = viewModel::onPreviousQuestion,
+                    onNextQuestion = viewModel::onNextQuestion,
+                    onSubmitAnswers = viewModel::onSubmitAnswers,
+                    onCancelGeneration = viewModel::onCancelGeneration,
+                    onExploreClick = {
+                        navController.navigate(AppRoutes.HOME) {
+                            launchSingleTop = true
+                        }
+                    },
+                    onExploreRoadmapsClick = {
+                        navigateFromBottomBar(NavBarDestination.Explore)
+                    },
+                    onRoadmapSelected = viewModel::onRoadmapSelected
                 )
             }
 
@@ -339,11 +401,7 @@ fun RMapNavHost(navController: NavHostController) {
                         coroutineScope.launch { snackbarHostState.showSnackbar(debugNotificationSentMessage) }
                     },
                     onDestinationSelected = { destination ->
-                        if (destination == NavBarDestination.AiAssistant) {
-                            coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
-                        } else {
-                            navigateFromBottomBar(destination)
-                        }
+                        navigateFromBottomBar(destination)
                     }
                 )
             }
@@ -386,6 +444,24 @@ fun RMapNavHost(navController: NavHostController) {
                 )
             }
             }
+        }
+
+        if (aiGenerationStatus.isActive && currentRoute != AppRoutes.AI_ROADMAP) {
+            AiRoadmapProgressBanner(
+                status = aiGenerationStatus,
+                title = stringResource(R.string.ai_roadmap_banner_title),
+                actionText = stringResource(R.string.ai_roadmap_banner_action),
+                onClick = {
+                    navController.navigate(AppRoutes.AI_ROADMAP) {
+                        launchSingleTop = true
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(horizontal = Dimens.spacingScreenHorizontal, vertical = Dimens.spacingMd)
+                    .fillMaxWidth()
+            )
         }
 
         SnackbarHost(
