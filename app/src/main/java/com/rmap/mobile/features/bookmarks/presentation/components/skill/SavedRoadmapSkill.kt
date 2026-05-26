@@ -25,9 +25,6 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
-import com.rmap.mobile.core.ui.components.SkillCard
-import com.rmap.mobile.core.ui.components.SkillCardUiModel
-import com.rmap.mobile.core.ui.components.SkillStatus
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -35,7 +32,7 @@ import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkTextSt
 
 @Composable
 fun SavedRoadmapSkill(
-    item: SkillCardUiModel,
+    item: BookmarkSkillCardUiModel,
     actionLabel: String,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
@@ -49,10 +46,9 @@ fun SavedRoadmapSkill(
     }
 
     Box(modifier = modifier.fillMaxWidth()) {
-        SkillCard(
+        BookmarkSkillCard(
             item = item,
             modifier = Modifier.then(clickModifier),
-            onClick = onClick,
             titleStyle = BookmarkTextStyles.cardTitle,
             titleMaxLines = 2,
             headerContentEndPadding = Dimens.controlMd + Dimens.spacingSm
@@ -116,10 +112,10 @@ private fun SavedSkillBookmarkButton(
 private fun SavedRoadmapSkillPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         SavedRoadmapSkill(
-            item = SkillCardUiModel(
+            item = BookmarkSkillCardUiModel(
                 title = "NoSQL Data Modeling",
                 parentPathName = "Backend Systems",
-                status = SkillStatus.NOT_STARTED,
+                status = BookmarkSkillStatus.NOT_STARTED,
                 statusLabel = "Not Started",
                 icon = Icons.Outlined.DataObject
             ),

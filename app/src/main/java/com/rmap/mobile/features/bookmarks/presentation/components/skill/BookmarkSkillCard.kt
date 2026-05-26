@@ -1,4 +1,4 @@
-package com.rmap.mobile.core.ui.components
+package com.rmap.mobile.features.bookmarks.presentation.components.skill
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,6 +38,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.RMapCard
+import com.rmap.mobile.core.ui.components.RMapCardDefaults
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -45,11 +47,11 @@ import com.rmap.mobile.core.ui.theme.OnPrimaryLight
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val SkillCardShape = RMapCardDefaults.shape
-private val SkillIconFrameShape = AppShapes.card
-private val SkillIconContainerShape = AppShapes.iconFrameInner
+private val BookmarkSkillCardShape = RMapCardDefaults.shape
+private val BookmarkSkillIconFrameShape = AppShapes.card
+private val BookmarkSkillIconContainerShape = AppShapes.iconFrameInner
 
-enum class SkillStatus(
+enum class BookmarkSkillStatus(
     val backgroundColor: Color,
     val textColor: Color
 ) {
@@ -67,19 +69,18 @@ enum class SkillStatus(
     )
 }
 
-data class SkillCardUiModel(
+data class BookmarkSkillCardUiModel(
     val title: String,
     val parentPathName: String,
-    val status: SkillStatus,
+    val status: BookmarkSkillStatus,
     val statusLabel: String,
     val icon: ImageVector
 )
 
 @Composable
-fun SkillCard(
-    item: SkillCardUiModel,
+fun BookmarkSkillCard(
+    item: BookmarkSkillCardUiModel,
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null,
     titleStyle: TextStyle? = null,
     titleMaxLines: Int = 2,
     headerContentEndPadding: Dp = 0.dp
@@ -91,7 +92,7 @@ fun SkillCard(
     RMapCard(
         modifier = modifier
             .fillMaxWidth(),
-        shape = SkillCardShape,
+        shape = BookmarkSkillCardShape,
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
@@ -105,7 +106,7 @@ fun SkillCard(
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    SkillIconFrame(icon = item.icon)
+                    BookmarkSkillIconFrame(icon = item.icon)
 
                     Column(
                         modifier = Modifier
@@ -134,7 +135,7 @@ fun SkillCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    StatusBadge(
+                    BookmarkSkillStatusBadge(
                         text = item.statusLabel,
                         status = item.status
                     )
@@ -169,14 +170,14 @@ fun SkillCard(
 }
 
 @Composable
-private fun SkillIconFrame(icon: ImageVector) {
+private fun BookmarkSkillIconFrame(icon: ImageVector) {
     Box(
         modifier = Modifier
             .size(Dimens.iconFrameSize)
             .border(
                 width = Dimens.borderMedium,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                shape = SkillIconFrameShape
+                shape = BookmarkSkillIconFrameShape
             )
             .padding(Dimens.iconFramePadding),
         contentAlignment = Alignment.Center
@@ -191,7 +192,7 @@ private fun SkillIconFrame(icon: ImageVector) {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
                         )
                     ),
-                    shape = SkillIconContainerShape
+                    shape = BookmarkSkillIconContainerShape
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -235,9 +236,9 @@ private fun PartOfText(parentPathName: String) {
 }
 
 @Composable
-private fun StatusBadge(
+private fun BookmarkSkillStatusBadge(
     text: String,
-    status: SkillStatus
+    status: BookmarkSkillStatus
 ) {
     Box(
         modifier = Modifier
@@ -260,26 +261,26 @@ private fun StatusBadge(
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable
-private fun SkillCardPreview() {
+private fun BookmarkSkillCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Column(
             modifier = Modifier.padding(Dimens.spacingLg),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
-            SkillCard(
-                item = SkillCardUiModel(
+            BookmarkSkillCard(
+                item = BookmarkSkillCardUiModel(
                     title = "Advanced CSS Layouts",
                     parentPathName = "Frontend Dev",
-                    status = SkillStatus.IN_PROGRESS,
+                    status = BookmarkSkillStatus.IN_PROGRESS,
                     statusLabel = "In Progress",
                     icon = Icons.Outlined.Code
                 )
             )
-            SkillCard(
-                item = SkillCardUiModel(
+            BookmarkSkillCard(
+                item = BookmarkSkillCardUiModel(
                     title = "NoSQL Data Modeling",
                     parentPathName = "Backend Systems",
-                    status = SkillStatus.NOT_STARTED,
+                    status = BookmarkSkillStatus.NOT_STARTED,
                     statusLabel = "Not Started",
                     icon = Icons.Outlined.DataObject
                 )
