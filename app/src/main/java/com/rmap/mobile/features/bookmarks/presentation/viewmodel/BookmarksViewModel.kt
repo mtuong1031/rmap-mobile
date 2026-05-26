@@ -3,14 +3,14 @@ package com.rmap.mobile.features.bookmarks.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
-import com.rmap.mobile.core.ui.components.SkillCardUiModel
-import com.rmap.mobile.core.ui.components.SkillStatus
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkStatusFilter
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkCategoryStyle
 import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.BookmarkRoadmapCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.skill.BookmarkSkillCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.skill.BookmarkSkillStatus
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
@@ -41,7 +41,7 @@ class BookmarksViewModel(
     private val _uiState = MutableStateFlow(BookmarksUiState())
     val uiState: StateFlow<BookmarksUiState> = _uiState.asStateFlow()
     private var allRoadmapItems: List<BookmarkRoadmapCardUiModel> = emptyList()
-    private var allSkillItems: List<SkillCardUiModel> = emptyList()
+    private var allSkillItems: List<BookmarkSkillCardUiModel> = emptyList()
 
     init {
         loadBookmarks()
@@ -148,11 +148,11 @@ private fun RoadmapSummary.toBookmarkRoadmapCardUiModel(): BookmarkRoadmapCardUi
     )
 }
 
-private fun SkillBookmark.toSkillCardUiModel(): SkillCardUiModel {
+private fun SkillBookmark.toSkillCardUiModel(): BookmarkSkillCardUiModel {
     val skillStatus = when (status) {
-        LearningStatus.Completed -> SkillStatus.COMPLETED
-        LearningStatus.InProgress -> SkillStatus.IN_PROGRESS
-        else -> SkillStatus.NOT_STARTED
+        LearningStatus.Completed -> BookmarkSkillStatus.COMPLETED
+        LearningStatus.InProgress -> BookmarkSkillStatus.IN_PROGRESS
+        else -> BookmarkSkillStatus.NOT_STARTED
     }
     val statusLabel = when (status) {
         LearningStatus.Completed -> BOOKMARK_STATUS_COMPLETED
@@ -160,7 +160,7 @@ private fun SkillBookmark.toSkillCardUiModel(): SkillCardUiModel {
         else -> BOOKMARK_STATUS_NOT_STARTED
     }
 
-    return SkillCardUiModel(
+    return BookmarkSkillCardUiModel(
         title = title,
         parentPathName = parentPathName,
         status = skillStatus,
@@ -192,20 +192,20 @@ private fun List<BookmarkRoadmapCardUiModel>.filterRoadmapsByQuery(
     }
 }
 
-private fun List<SkillCardUiModel>.filterSkillsByStatus(
+private fun List<BookmarkSkillCardUiModel>.filterSkillsByStatus(
     statusFilter: BookmarkStatusFilter
-): List<SkillCardUiModel> {
+): List<BookmarkSkillCardUiModel> {
     return when (statusFilter) {
         BookmarkStatusFilter.All -> this
-        BookmarkStatusFilter.InProgress -> filter { it.status == SkillStatus.IN_PROGRESS }
-        BookmarkStatusFilter.NotStarted -> filter { it.status == SkillStatus.NOT_STARTED }
-        BookmarkStatusFilter.Completed -> filter { it.status == SkillStatus.COMPLETED }
+        BookmarkStatusFilter.InProgress -> filter { it.status == BookmarkSkillStatus.IN_PROGRESS }
+        BookmarkStatusFilter.NotStarted -> filter { it.status == BookmarkSkillStatus.NOT_STARTED }
+        BookmarkStatusFilter.Completed -> filter { it.status == BookmarkSkillStatus.COMPLETED }
     }
 }
 
-private fun List<SkillCardUiModel>.filterSkillsByQuery(
+private fun List<BookmarkSkillCardUiModel>.filterSkillsByQuery(
     query: String
-): List<SkillCardUiModel> {
+): List<BookmarkSkillCardUiModel> {
     val normalizedQuery = query.trim()
     if (normalizedQuery.isEmpty()) return this
 

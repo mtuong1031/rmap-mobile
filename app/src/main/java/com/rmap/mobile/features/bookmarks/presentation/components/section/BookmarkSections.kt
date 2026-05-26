@@ -4,9 +4,9 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.res.stringResource
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.SkillCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.BookmarkRoadmapCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.SavedRoadmapCard
+import com.rmap.mobile.features.bookmarks.presentation.components.skill.BookmarkSkillCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.skill.SavedRoadmapSkill
 import com.rmap.mobile.features.bookmarks.presentation.components.state.EmptyBookmarkState
 
@@ -45,8 +45,8 @@ fun LazyListScope.bookmarkRoadmapList(
 }
 
 fun LazyListScope.bookmarkSkillList(
-    skillItems: List<SkillCardUiModel>,
-    onSkillClick: ((SkillCardUiModel) -> Unit)?
+    skillItems: List<BookmarkSkillCardUiModel>,
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
 ) {
     item(key = "bookmark-skill-header") {
         BookmarkSectionHeader(

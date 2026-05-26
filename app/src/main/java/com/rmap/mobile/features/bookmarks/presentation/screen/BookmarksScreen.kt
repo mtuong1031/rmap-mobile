@@ -42,8 +42,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapNavigationBar
-import com.rmap.mobile.core.ui.components.SkillCardUiModel
-import com.rmap.mobile.core.ui.components.SkillStatus
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
@@ -54,6 +52,8 @@ import com.rmap.mobile.features.bookmarks.presentation.components.controls.Bookm
 import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.BookmarkRoadmapCardUiModel
 import com.rmap.mobile.features.bookmarks.presentation.components.roadmap.SavedRoadmapCard
 import com.rmap.mobile.features.bookmarks.presentation.components.section.BookmarkSectionHeader
+import com.rmap.mobile.features.bookmarks.presentation.components.skill.BookmarkSkillCardUiModel
+import com.rmap.mobile.features.bookmarks.presentation.components.skill.BookmarkSkillStatus
 import com.rmap.mobile.features.bookmarks.presentation.components.skill.SavedRoadmapSkill
 import com.rmap.mobile.features.bookmarks.presentation.components.state.BookmarkErrorState
 import com.rmap.mobile.features.bookmarks.presentation.components.state.BookmarkLoadingState
@@ -78,7 +78,7 @@ fun BookmarksScreen(
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
     onTabSelected: (Int) -> Unit = {},
     onStatusFilterSelected: (Int) -> Unit = {},
-    onSkillClick: ((SkillCardUiModel) -> Unit)? = null
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)? = null
 ) {
     val layoutMode = windowSizeClass.toBookmarkLayoutMode()
     val greetingText = stringResource(R.string.home_greeting, uiState.userName)
@@ -221,7 +221,7 @@ private fun BookmarkCompactContent(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onSkillClick: ((SkillCardUiModel) -> Unit)?
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -273,7 +273,7 @@ private fun BookmarkGridContent(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onSkillClick: ((SkillCardUiModel) -> Unit)?,
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -333,7 +333,7 @@ private fun LazyListScope.bookmarkListItems(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onSkillClick: ((SkillCardUiModel) -> Unit)?
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
 ) {
     item(key = "bookmark-controls") {
         BookmarkHeaderControls(
@@ -439,7 +439,7 @@ private fun LazyGridScope.bookmarkGridItems(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onSkillClick: ((SkillCardUiModel) -> Unit)?
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
 ) {
     item(
         key = "bookmark-controls",
@@ -711,11 +711,11 @@ private fun bookmarkContentPadding(
     )
 }
 
-private fun SkillCardUiModel.bookmarkActionLabel(
+private fun BookmarkSkillCardUiModel.bookmarkActionLabel(
     continueLabel: String,
     startLabel: String
 ): String {
-    return if (status == SkillStatus.IN_PROGRESS) continueLabel else startLabel
+    return if (status == BookmarkSkillStatus.IN_PROGRESS) continueLabel else startLabel
 }
 
 private enum class BookmarkLayoutMode {
@@ -871,19 +871,19 @@ private fun sampleRoadmaps(): List<BookmarkRoadmapCardUiModel> {
     )
 }
 
-private fun sampleSkills(): List<SkillCardUiModel> {
+private fun sampleSkills(): List<BookmarkSkillCardUiModel> {
     return listOf(
-        SkillCardUiModel(
+        BookmarkSkillCardUiModel(
             title = "Advanced CSS Layouts",
             parentPathName = "Frontend Pro",
-            status = SkillStatus.IN_PROGRESS,
+            status = BookmarkSkillStatus.IN_PROGRESS,
             statusLabel = "In Progress",
             icon = Icons.Outlined.Code
         ),
-        SkillCardUiModel(
+        BookmarkSkillCardUiModel(
             title = "NoSQL Data Modeling",
             parentPathName = "Backend Systems",
-            status = SkillStatus.NOT_STARTED,
+            status = BookmarkSkillStatus.NOT_STARTED,
             statusLabel = "Not Started",
             icon = Icons.Outlined.DataObject
         )
