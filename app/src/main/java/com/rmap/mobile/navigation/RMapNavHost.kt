@@ -136,7 +136,12 @@ fun RMapNavHost(navController: NavHostController) {
 
                 AuthScreen(
                     onContinueWithGoogle = viewModel::onContinueWithGoogle,
-                    onContinueWithFacebook = viewModel::onContinueWithFacebook
+                    onContinueWithFacebook = viewModel::onContinueWithFacebook,
+                    onSignInWithPassword = viewModel::onSignInWithPassword,
+                    onCreateAccountWithPassword = viewModel::onCreateAccountWithPassword,
+                    onForgotPassword = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    }
                 )
             }
 

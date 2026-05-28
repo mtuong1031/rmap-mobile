@@ -125,6 +125,7 @@ fun RMapTextInput(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     leadingIcon: (@Composable () -> Unit)? = null,
+    showClearButton: Boolean = true,
     trailingIcon: (@Composable () -> Unit)? = null,
     trailingIconSpacing: Dp = RMapTextInputDefaults.LeadingIconSpacing
 ) {
@@ -227,7 +228,7 @@ fun RMapTextInput(
                     innerTextField()
                 }
 
-                if (value.isNotEmpty() && enabled && !readOnly) {
+                if (showClearButton && value.isNotEmpty() && enabled && !readOnly) {
                     Box(
                         modifier = Modifier
                             .padding(start = trailingIconSpacing)
