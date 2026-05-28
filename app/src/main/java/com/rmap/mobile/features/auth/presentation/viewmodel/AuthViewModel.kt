@@ -23,6 +23,22 @@ class AuthViewModel(
         signIn()
     }
 
+    fun onSignInWithPassword(
+        email: String,
+        password: String
+    ) {
+        signIn()
+    }
+
+    fun onCreateAccountWithPassword(
+        fullName: String,
+        email: String,
+        password: String,
+        confirmPassword: String
+    ) {
+        signIn()
+    }
+
     private fun signIn() {
         viewModelScope.launch {
             sessionRepository.signInWithDemoProvider()
