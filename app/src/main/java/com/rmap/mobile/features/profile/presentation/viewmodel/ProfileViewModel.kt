@@ -3,7 +3,7 @@ package com.rmap.mobile.features.profile.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
-import com.rmap.mobile.features.auth.domain.repository.SessionRepository
+import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val profileRepository: ProfileRepository = RMapAppGraph.profileRepository,
-    private val sessionRepository: SessionRepository = RMapAppGraph.sessionRepository
+    private val logoutUseCase: LogoutUseCase = RMapAppGraph.logoutUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -63,8 +63,9 @@ class ProfileViewModel(
             when (action) {
                 ProfileSettingAction.Notifications -> _events.emit(ProfileEvent.NavigateToNotificationSettings)
                 ProfileSettingAction.SignOut -> {
-                    sessionRepository.signOut()
-                    _events.emit(ProfileEvent.SignedOut)
+                    logoutUseCase()
+                        .onSuccess { _events.emit(ProfileEvent.SignedOut) }
+                        .onFailure { _events.emit(ProfileEvent.SignedOut) }
                 }
                 else -> _events.emit(ProfileEvent.ShowComingSoon)
             }

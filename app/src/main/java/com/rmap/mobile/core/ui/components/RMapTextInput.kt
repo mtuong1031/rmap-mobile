@@ -228,7 +228,14 @@ fun RMapTextInput(
                     innerTextField()
                 }
 
-                if (showClearButton && value.isNotEmpty() && enabled && !readOnly) {
+                if (trailingIcon != null) {
+                    Box(
+                        modifier = Modifier.padding(start = trailingIconSpacing),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        trailingIcon()
+                    }
+                } else if (showClearButton && value.isNotEmpty() && enabled && !readOnly) {
                     Box(
                         modifier = Modifier
                             .padding(start = trailingIconSpacing)
@@ -249,13 +256,6 @@ fun RMapTextInput(
                             tint = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.size(RMapTextInputDefaults.ClearButtonIconSize)
                         )
-                    }
-                } else if (trailingIcon != null) {
-                    Box(
-                        modifier = Modifier.padding(start = trailingIconSpacing),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        trailingIcon()
                     }
                 }
             }

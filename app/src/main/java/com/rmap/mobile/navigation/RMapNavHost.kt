@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +28,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.rmap.mobile.R
+import com.rmap.mobile.core.session.SessionEvent
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.airoadmap.presentation.components.AiRoadmapProgressBanner
@@ -34,6 +36,7 @@ import com.rmap.mobile.features.airoadmap.presentation.screen.AiRoadmapScreen
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapEvent
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapViewModel
 import com.rmap.mobile.features.bookmarks.presentation.screen.BookmarkWindowSizeClass
+import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.presentation.screen.AuthScreen
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthEvent
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthViewModel
@@ -64,7 +67,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RMapNavHost(navController: NavHostController) {
     val context = LocalContext.current
-    val isAuthenticated by RMapAppGraph.sessionRepository.isAuthenticated.collectAsStateWithLifecycle()
+    val authState by RMapAppGraph.authRepository.authState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val comingSoonMessage = stringResource(R.string.coming_soon_message)
@@ -74,9 +77,23 @@ fun RMapNavHost(navController: NavHostController) {
     val skillSavedMessage = stringResource(R.string.bookmarks_skill_saved)
     val skillRemovedMessage = stringResource(R.string.bookmarks_skill_removed)
     val bookmarkFailedMessage = stringResource(R.string.bookmarks_action_failed)
-    val startDestination = if (isAuthenticated) AppRoutes.HOME else AppRoutes.AUTH
+    val startDestination = if (authState is AuthState.Authenticated) AppRoutes.HOME else AppRoutes.AUTH
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    }
+
+    LaunchedEffect(Unit) {
+        RMapAppGraph.getCurrentUserUseCase()
+    }
+
+    if (authState == AuthState.Checking) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
     }
 
     fun navigateFromBottomBar(destination: NavBarDestination) {
@@ -112,6 +129,17 @@ fun RMapNavHost(navController: NavHostController) {
         }
     }
 
+    LaunchedEffect(Unit) {
+        RMapAppGraph.sessionManager.events.collect { event ->
+            when (event) {
+                SessionEvent.SessionExpired -> navController.navigate(AppRoutes.AUTH) {
+                    popUpTo(AppRoutes.HOME) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -123,7 +151,7 @@ fun RMapNavHost(navController: NavHostController) {
             NavHost(navController = navController, startDestination = startDestination) {
             composable(AppRoutes.AUTH) {
                 val viewModel: AuthViewModel = viewModel()
-                val signInFailedMessage = stringResource(R.string.auth_sign_in_failed)
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
                 LaunchedEffect(viewModel) {
                     viewModel.events.collect { event ->
@@ -131,20 +159,18 @@ fun RMapNavHost(navController: NavHostController) {
                             AuthEvent.NavigateToHome -> navController.navigate(AppRoutes.HOME) {
                                 popUpTo(AppRoutes.AUTH) { inclusive = true }
                             }
-
-                            AuthEvent.ShowSignInFailed -> snackbarHostState.showSnackbar(signInFailedMessage)
                         }
                     }
                 }
 
                 AuthScreen(
-                    onContinueWithGoogle = viewModel::onContinueWithGoogle,
-                    onContinueWithFacebook = viewModel::onContinueWithFacebook,
-                    onSignInWithPassword = viewModel::onSignInWithPassword,
-                    onCreateAccountWithPassword = viewModel::onCreateAccountWithPassword,
-                    onForgotPassword = {
-                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
-                    }
+                    uiState = uiState,
+                    onEmailChange = viewModel::onEmailChange,
+                    onPasswordChange = viewModel::onPasswordChange,
+                    onFullNameChange = viewModel::onFullNameChange,
+                    onToggleMode = viewModel::onToggleMode,
+                    onTogglePasswordVisibility = viewModel::onTogglePasswordVisibility,
+                    onSubmit = viewModel::onSubmit
                 )
             }
 
