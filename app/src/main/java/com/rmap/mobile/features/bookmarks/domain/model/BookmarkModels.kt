@@ -2,6 +2,7 @@ package com.rmap.mobile.features.bookmarks.domain.model
 
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 
 enum class BookmarkTab {
     Roadmaps,
@@ -19,5 +20,16 @@ data class SkillBookmark(
     val title: String,
     val parentPathName: String,
     val status: LearningStatus,
-    val icon: LearningTopicIcon
+    val icon: LearningTopicIcon,
+    val skillId: String,
+    val roadmapId: String,
+    val savedAtMillis: Long = 0L,
+    val updatedAtMillis: Long = 0L
+)
+
+data class RoadmapBookmark(
+    val summary: RoadmapSummary,
+    val status: LearningStatus,
+    val savedAtMillis: Long,
+    val updatedAtMillis: Long
 )
