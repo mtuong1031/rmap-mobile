@@ -17,6 +17,7 @@ data class RoadmapDetailUiState(
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
     val isSearchInputFocused: Boolean = false,
+    val isBookmarked: Boolean = false,
     val groups: List<RoadmapGroupUiModel> = emptyList(),
     val milestones: List<RoadmapMilestoneUiModel> = emptyList(),
     val isLoading: Boolean = true,
@@ -50,7 +51,8 @@ data class RoadmapNodeUiModel(
     val requirement: RoadmapNodeRequirement,
     @StringRes val descriptionResId: Int,
     val descriptionArgs: List<String> = emptyList(),
-    val action: RoadmapNodeAction? = null
+    val action: RoadmapNodeAction? = null,
+    val isBookmarked: Boolean = false
 )
 
 enum class RoadmapNodeStatus {

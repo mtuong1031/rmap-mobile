@@ -174,35 +174,38 @@ fun HomeScreen(
 
     val recommendedRoadmaps = listOf(
         HomeRoadmapCardUiModel(
-            id = "react-fundamentals",
-            categoryLabel = "Web Development",
-            title = "React Fundamentals",
-            nodesText = "24 nodes",
-            durationText = "4 weeks",
+            id = "frontend-pro",
+            categoryLabel = "Frontend",
+            title = "Frontend Pro",
+            nodesText = "48 nodes",
+            durationText = "3 months",
             actionText = stringResource(R.string.home_roadmap_view_action),
             icon = Icons.Outlined.Code,
             style = HomeRoadmapCardDefaults.webDevelopmentStyle(),
-            isBeginner = true
+            isBeginner = true,
+            isSaved = uiState.savedRoadmapIds.contains("frontend-pro")
         ),
         HomeRoadmapCardUiModel(
-            id = "frontend-interview",
-            categoryLabel = "Web Development",
-            title = "Frontend Interview",
-            nodesText = "12 nodes",
-            durationText = "2 weeks",
+            id = "ai-engineering",
+            categoryLabel = "AI",
+            title = "AI Engineering Path",
+            nodesText = "64 nodes",
+            durationText = "4 months",
             actionText = stringResource(R.string.home_roadmap_view_action),
             icon = Icons.Outlined.TrackChanges,
-            style = HomeRoadmapCardDefaults.interviewStyle()
+            style = HomeRoadmapCardDefaults.interviewStyle(),
+            isSaved = uiState.savedRoadmapIds.contains("ai-engineering")
         ),
         HomeRoadmapCardUiModel(
-            id = "css-architecture",
-            categoryLabel = "Design",
-            title = "CSS Architecture",
-            nodesText = "18 nodes",
-            durationText = "3 weeks",
+            id = "full-stack-development",
+            categoryLabel = "Backend",
+            title = "Full Stack Development",
+            nodesText = "160 nodes",
+            durationText = "8 months",
             actionText = stringResource(R.string.home_roadmap_view_action),
-            icon = Icons.Outlined.Palette,
-            style = HomeRoadmapCardDefaults.designStyle()
+            icon = Icons.Outlined.Storage,
+            style = HomeRoadmapCardDefaults.designStyle(),
+            isSaved = uiState.savedRoadmapIds.contains("full-stack-development")
         )
     )
 

@@ -22,6 +22,7 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
+import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 
 fun RoadmapCategory.toCategoryUiModel(roadmapCount: Int = 0): CategoryUiModel {
     return CategoryUiModel(
@@ -152,7 +153,7 @@ private fun buildRoadmapDetailGroups(
             state = RoadmapGroupState.Expanded,
             nodes = listOf(
                 RoadmapNodeUiModel(
-                    id = "html-css",
+                    id = "HTML & CSS".toStableLearningId(),
                     title = "HTML & CSS",
                     icon = LearningTopicIcon.Code.toImageVector(),
                     status = RoadmapNodeStatus.Completed,
@@ -161,7 +162,7 @@ private fun buildRoadmapDetailGroups(
                     action = RoadmapNodeAction.Review
                 ),
                 RoadmapNodeUiModel(
-                    id = "async-js",
+                    id = activeNodeTitle.toStableLearningId(),
                     title = activeNodeTitle,
                     icon = LearningTopicIcon.DataObject.toImageVector(),
                     status = RoadmapNodeStatus.InProgress,
@@ -170,7 +171,7 @@ private fun buildRoadmapDetailGroups(
                     action = RoadmapNodeAction.Continue
                 ),
                 RoadmapNodeUiModel(
-                    id = "dom-manipulation",
+                    id = lockedNodeTitle.toStableLearningId(),
                     title = lockedNodeTitle,
                     icon = LearningTopicIcon.Code.toImageVector(),
                     status = RoadmapNodeStatus.Locked,
@@ -179,7 +180,7 @@ private fun buildRoadmapDetailGroups(
                     descriptionArgs = listOf(activeNodeTitle)
                 ),
                 RoadmapNodeUiModel(
-                    id = "css-animation",
+                    id = "CSS Animation".toStableLearningId(),
                     title = "CSS Animation",
                     icon = LearningTopicIcon.Devices.toImageVector(),
                     status = RoadmapNodeStatus.Locked,
@@ -197,7 +198,7 @@ private fun buildRoadmapDetailGroups(
             state = RoadmapGroupState.Completed,
             nodes = listOf(
                 RoadmapNodeUiModel(
-                    id = "html-css-completed",
+                    id = "HTML & CSS".toStableLearningId(),
                     title = "HTML & CSS",
                     icon = LearningTopicIcon.Code.toImageVector(),
                     status = RoadmapNodeStatus.Completed,
@@ -205,7 +206,7 @@ private fun buildRoadmapDetailGroups(
                     descriptionResId = R.string.roadmap_detail_completed_recently
                 ),
                 RoadmapNodeUiModel(
-                    id = "async-js-completed",
+                    id = activeNodeTitle.toStableLearningId(),
                     title = activeNodeTitle,
                     icon = LearningTopicIcon.DataObject.toImageVector(),
                     status = RoadmapNodeStatus.Completed,
@@ -213,7 +214,7 @@ private fun buildRoadmapDetailGroups(
                     descriptionResId = R.string.roadmap_detail_completed_recently
                 ),
                 RoadmapNodeUiModel(
-                    id = "dom-manipulation-completed",
+                    id = lockedNodeTitle.toStableLearningId(),
                     title = lockedNodeTitle,
                     icon = LearningTopicIcon.Code.toImageVector(),
                     status = RoadmapNodeStatus.Completed,
@@ -221,7 +222,7 @@ private fun buildRoadmapDetailGroups(
                     descriptionResId = R.string.roadmap_detail_completed_recently
                 ),
                 RoadmapNodeUiModel(
-                    id = "css-animation-completed",
+                    id = "CSS Animation".toStableLearningId(),
                     title = "CSS Animation",
                     icon = LearningTopicIcon.Devices.toImageVector(),
                     status = RoadmapNodeStatus.Completed,

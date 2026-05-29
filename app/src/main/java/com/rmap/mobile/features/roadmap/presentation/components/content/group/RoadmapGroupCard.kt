@@ -35,6 +35,7 @@ import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeUiMode
 fun RoadmapGroupCard(
     group: RoadmapGroupUiModel,
     onNodeActionClick: (RoadmapNodeUiModel) -> Unit,
+    onNodeBookmarkClick: (RoadmapNodeUiModel) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val isLocked = group.state == RoadmapGroupState.Locked
@@ -106,7 +107,8 @@ fun RoadmapGroupCard(
                                 node = node,
                                 showDivider = index < group.nodes.lastIndex &&
                                     node.status != RoadmapNodeStatus.InProgress,
-                                onActionClick = { onNodeActionClick(node) }
+                                onActionClick = { onNodeActionClick(node) },
+                                onBookmarkClick = { onNodeBookmarkClick(node) }
                             )
                         }
                     }

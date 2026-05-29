@@ -11,11 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -40,7 +36,6 @@ import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSk
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSuggestionChipsRow
 import kotlinx.coroutines.delay
 
-private const val SearchSkeletonDurationMillis = 3_000L
 private const val SearchAutoFocusDelayMillis = 100L
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -53,6 +48,7 @@ fun HomeSearchScreen(
     recommendedRoadmaps: List<HomeSearchRoadmapItemUiModel>,
     skills: List<HomeSearchSkillItemUiModel>,
     aiSuggestion: HomeSearchAiSuggestionUiModel?,
+    isLoading: Boolean,
     onQueryChange: (String) -> Unit,
     onBackClick: () -> Unit,
     onFilterClick: () -> Unit,
@@ -70,22 +66,11 @@ fun HomeSearchScreen(
     val showSearchResults = query.isNotBlank()
     val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    var isSearchLoading by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         delay(SearchAutoFocusDelayMillis)
         searchFocusRequester.requestFocus()
         keyboardController?.show()
-    }
-
-    LaunchedEffect(query, showSearchResults) {
-        if (showSearchResults) {
-            isSearchLoading = true
-            delay(SearchSkeletonDurationMillis)
-            isSearchLoading = false
-        } else {
-            isSearchLoading = false
-        }
     }
 
     LazyColumn(
@@ -122,7 +107,7 @@ fun HomeSearchScreen(
         }
 
         if (showSearchResults) {
-            if (isSearchLoading) {
+            if (isLoading) {
                 item {
                     HomeSearchRecommendedRoadmapsSkeletonSection(
                         modifier = Modifier.padding(horizontal = Dimens.spacingLg)
@@ -260,6 +245,7 @@ private fun HomeSearchScreenPreview() {
                 description = "Generate a roadmap based on your goal, current skills, and timeline.",
                 actionText = "Create with AI"
             ),
+            isLoading = false,
             onQueryChange = {},
             onBackClick = {},
             onFilterClick = {},
