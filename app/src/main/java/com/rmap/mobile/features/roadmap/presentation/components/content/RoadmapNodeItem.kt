@@ -17,10 +17,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,6 +61,7 @@ fun RoadmapNodeItem(
     node: RoadmapNodeUiModel,
     showDivider: Boolean,
     onActionClick: () -> Unit,
+    onBookmarkClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isFocused = node.status == RoadmapNodeStatus.InProgress
@@ -123,6 +127,10 @@ fun RoadmapNodeItem(
                             overflow = TextOverflow.Ellipsis
                         )
                         NodeTypeBadge(node = node)
+                        NodeBookmarkButton(
+                            isBookmarked = node.isBookmarked,
+                            onClick = onBookmarkClick
+                        )
                     }
 
                     NodeStatusBadge(node = node)
@@ -162,6 +170,29 @@ fun RoadmapNodeItem(
                     .background(MaterialTheme.colorScheme.outlineVariant)
             )
         }
+    }
+}
+
+@Composable
+private fun NodeBookmarkButton(
+    isBookmarked: Boolean,
+    onClick: (() -> Unit)?
+) {
+    IconButton(
+        onClick = { onClick?.invoke() },
+        enabled = onClick != null,
+        modifier = Modifier.size(Dimens.controlSm)
+    ) {
+        Icon(
+            imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+            contentDescription = null,
+            tint = if (isBookmarked) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            modifier = Modifier.size(Dimens.iconSm)
+        )
     }
 }
 

@@ -76,9 +76,11 @@ fun BookmarksScreen(
     onSearchQueryChange: (String) -> Unit = {},
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
+    onRoadmapBookmarkClick: ((BookmarkRoadmapCardUiModel) -> Unit)? = null,
     onTabSelected: (Int) -> Unit = {},
     onStatusFilterSelected: (Int) -> Unit = {},
-    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)? = null
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)? = null,
+    onSkillBookmarkClick: ((BookmarkSkillCardUiModel) -> Unit)? = null
 ) {
     val layoutMode = windowSizeClass.toBookmarkLayoutMode()
     val greetingText = stringResource(R.string.home_greeting, uiState.userName)
@@ -132,7 +134,9 @@ fun BookmarksScreen(
                     onStatusFilterSelected = onStatusFilterSelected,
                     onRoadmapActionClick = onRoadmapActionClick,
                     onRoadmapShareClick = onRoadmapShareClick,
-                    onSkillClick = onSkillClick
+                    onRoadmapBookmarkClick = onRoadmapBookmarkClick,
+                    onSkillClick = onSkillClick,
+                    onSkillBookmarkClick = onSkillBookmarkClick
                 )
             }
 
@@ -161,7 +165,9 @@ fun BookmarksScreen(
                         onStatusFilterSelected = onStatusFilterSelected,
                         onRoadmapActionClick = onRoadmapActionClick,
                         onRoadmapShareClick = onRoadmapShareClick,
+                        onRoadmapBookmarkClick = onRoadmapBookmarkClick,
                         onSkillClick = onSkillClick,
+                        onSkillBookmarkClick = onSkillBookmarkClick,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -194,7 +200,9 @@ fun BookmarksScreen(
                         onStatusFilterSelected = onStatusFilterSelected,
                         onRoadmapActionClick = onRoadmapActionClick,
                         onRoadmapShareClick = onRoadmapShareClick,
-                        onSkillClick = onSkillClick
+                        onRoadmapBookmarkClick = onRoadmapBookmarkClick,
+                        onSkillClick = onSkillClick,
+                        onSkillBookmarkClick = onSkillBookmarkClick
                     )
                 }
             }
@@ -221,7 +229,9 @@ private fun BookmarkCompactContent(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
+    onRoadmapBookmarkClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?,
+    onSkillBookmarkClick: ((BookmarkSkillCardUiModel) -> Unit)?
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -249,7 +259,9 @@ private fun BookmarkCompactContent(
             onStatusFilterSelected = onStatusFilterSelected,
             onRoadmapActionClick = onRoadmapActionClick,
             onRoadmapShareClick = onRoadmapShareClick,
-            onSkillClick = onSkillClick
+            onRoadmapBookmarkClick = onRoadmapBookmarkClick,
+            onSkillClick = onSkillClick,
+            onSkillBookmarkClick = onSkillBookmarkClick
         )
     }
 }
@@ -273,7 +285,9 @@ private fun BookmarkGridContent(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
+    onRoadmapBookmarkClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?,
+    onSkillBookmarkClick: ((BookmarkSkillCardUiModel) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -310,7 +324,9 @@ private fun BookmarkGridContent(
             onStatusFilterSelected = onStatusFilterSelected,
             onRoadmapActionClick = onRoadmapActionClick,
             onRoadmapShareClick = onRoadmapShareClick,
-            onSkillClick = onSkillClick
+            onRoadmapBookmarkClick = onRoadmapBookmarkClick,
+            onSkillClick = onSkillClick,
+            onSkillBookmarkClick = onSkillBookmarkClick
         )
     }
 }
@@ -333,7 +349,9 @@ private fun LazyListScope.bookmarkListItems(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
+    onRoadmapBookmarkClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?,
+    onSkillBookmarkClick: ((BookmarkSkillCardUiModel) -> Unit)?
 ) {
     item(key = "bookmark-controls") {
         BookmarkHeaderControls(
@@ -388,7 +406,9 @@ private fun LazyListScope.bookmarkListItems(
                     onShareClick = onRoadmapShareClick?.let { callback ->
                         { callback(item) }
                     },
-                    onBookmarkClick = {}
+                    onBookmarkClick = onRoadmapBookmarkClick?.let { callback ->
+                        { callback(item) }
+                    }
                 )
             }
         }
@@ -412,6 +432,9 @@ private fun LazyListScope.bookmarkListItems(
                         { callback(item) }
                     },
                     onActionClick = onSkillClick?.let { callback ->
+                        { callback(item) }
+                    },
+                    onBookmarkClick = onSkillBookmarkClick?.let { callback ->
                         { callback(item) }
                     }
                 )
@@ -439,7 +462,9 @@ private fun LazyGridScope.bookmarkGridItems(
     onStatusFilterSelected: (Int) -> Unit,
     onRoadmapActionClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
     onRoadmapShareClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
-    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?
+    onRoadmapBookmarkClick: ((BookmarkRoadmapCardUiModel) -> Unit)?,
+    onSkillClick: ((BookmarkSkillCardUiModel) -> Unit)?,
+    onSkillBookmarkClick: ((BookmarkSkillCardUiModel) -> Unit)?
 ) {
     item(
         key = "bookmark-controls",
@@ -509,7 +534,9 @@ private fun LazyGridScope.bookmarkGridItems(
                     onShareClick = onRoadmapShareClick?.let { callback ->
                         { callback(item) }
                     },
-                    onBookmarkClick = {}
+                    onBookmarkClick = onRoadmapBookmarkClick?.let { callback ->
+                        { callback(item) }
+                    }
                 )
             }
         }
@@ -536,6 +563,9 @@ private fun LazyGridScope.bookmarkGridItems(
                         { callback(item) }
                     },
                     onActionClick = onSkillClick?.let { callback ->
+                        { callback(item) }
+                    },
+                    onBookmarkClick = onSkillBookmarkClick?.let { callback ->
                         { callback(item) }
                     }
                 )

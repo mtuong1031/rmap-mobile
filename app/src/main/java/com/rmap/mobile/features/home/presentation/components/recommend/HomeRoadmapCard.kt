@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material3.HorizontalDivider
@@ -73,7 +74,8 @@ data class HomeRoadmapCardUiModel(
     val actionText: String,
     val icon: ImageVector,
     val style: HomeRoadmapCardStyle,
-    val isBeginner: Boolean = false
+    val isBeginner: Boolean = false,
+    val isSaved: Boolean = false
 )
 
 object HomeRoadmapCardDefaults {
@@ -168,6 +170,7 @@ fun HomeRoadmapCard(
 
                 HomeRoadmapBookmarkButton(
                     contentDescription = bookmarkContentDescription,
+                    isSaved = item.isSaved,
                     onClick = onBookmarkClick
                 )
             }
@@ -300,6 +303,7 @@ private fun HomeRoadmapIconTile(
 @Composable
 private fun HomeRoadmapBookmarkButton(
     contentDescription: String?,
+    isSaved: Boolean,
     onClick: (() -> Unit)?
 ) {
     val clickModifier = if (onClick != null) {
@@ -313,20 +317,36 @@ private fun HomeRoadmapBookmarkButton(
         Modifier
     }
 
+    val containerColor = if (isSaved) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
+    val iconColor = if (isSaved) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.secondary
+    }
+    val icon = if (isSaved) {
+        Icons.Filled.Bookmark
+    } else {
+        Icons.Outlined.BookmarkBorder
+    }
+
     Box(
         modifier = Modifier
             .size(HomeRoadmapBookmarkButtonSize)
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = containerColor,
                 shape = AppShapes.pill
             )
             .then(clickModifier),
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = Icons.Outlined.BookmarkBorder,
+            imageVector = icon,
             contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = iconColor,
             modifier = Modifier.size(HomeRoadmapBookmarkIconSize)
         )
     }

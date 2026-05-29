@@ -74,7 +74,8 @@ data class BookmarkSkillCardUiModel(
     val parentPathName: String,
     val status: BookmarkSkillStatus,
     val statusLabel: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val skillId: String = title
 )
 
 @Composable

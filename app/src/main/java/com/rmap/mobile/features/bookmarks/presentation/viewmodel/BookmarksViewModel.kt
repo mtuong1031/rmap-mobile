@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkStatusFilter
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
+import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.bookmarks.presentation.components.BookmarkCategoryStyle
@@ -14,8 +15,10 @@ import com.rmap.mobile.features.bookmarks.presentation.components.skill.Bookmark
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
-import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,47 +45,60 @@ class BookmarksViewModel(
     val uiState: StateFlow<BookmarksUiState> = _uiState.asStateFlow()
     private var allRoadmapItems: List<BookmarkRoadmapCardUiModel> = emptyList()
     private var allSkillItems: List<BookmarkSkillCardUiModel> = emptyList()
+    private var loadJob: Job? = null
 
     init {
         loadBookmarks()
     }
 
     fun loadBookmarks() {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             val profileResult = profileRepository.getProfile()
-            val roadmapResult = bookmarkRepository.getSavedRoadmaps()
-            val skillResult = bookmarkRepository.getSavedSkills()
-            val failure = listOf(profileResult, roadmapResult, skillResult).firstOrNull { it.isFailure }
-            if (failure != null) {
+            if (profileResult.isFailure) {
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = failure.exceptionOrNull()?.message ?: BOOKMARKS_LOAD_ERROR_MESSAGE
+                        errorMessage = profileResult.exceptionOrNull()?.message ?: BOOKMARKS_LOAD_ERROR_MESSAGE
                     )
                 }
                 return@launch
             }
 
-            val selectedStatusFilter = _uiState.value.selectedStatusFilter
-            val searchQuery = _uiState.value.searchQuery
-            allRoadmapItems = roadmapResult.getOrThrow().map { it.toBookmarkRoadmapCardUiModel() }
-            allSkillItems = skillResult.getOrThrow().map { it.toSkillCardUiModel() }
+            combine(
+                bookmarkRepository.observeSavedRoadmaps(),
+                bookmarkRepository.observeSavedSkills()
+            ) { roadmaps, skills -> roadmaps to skills }
+                .catch { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = error.message ?: BOOKMARKS_LOAD_ERROR_MESSAGE
+                        )
+                    }
+                }
+                .collect { (roadmaps, skills) ->
+                    val selectedStatusFilter = _uiState.value.selectedStatusFilter
+                    val searchQuery = _uiState.value.searchQuery
+                    allRoadmapItems = roadmaps.map { it.toBookmarkRoadmapCardUiModel() }
+                    allSkillItems = skills.map { it.toSkillCardUiModel() }
 
-            _uiState.value = BookmarksUiState(
-                userName = profileResult.getOrThrow().userName,
-                searchQuery = searchQuery,
-                selectedTab = _uiState.value.selectedTab,
-                selectedStatusFilter = selectedStatusFilter,
-                roadmapItems = allRoadmapItems
-                    .filterRoadmapsByStatus(selectedStatusFilter)
-                    .filterRoadmapsByQuery(searchQuery),
-                skillItems = allSkillItems
-                    .filterSkillsByStatus(selectedStatusFilter)
-                    .filterSkillsByQuery(searchQuery),
-                isLoading = false
-            )
+                    _uiState.update {
+                        it.copy(
+                            userName = profileResult.getOrThrow().userName,
+                            roadmapItems = allRoadmapItems
+                                .filterRoadmapsByStatus(selectedStatusFilter)
+                                .filterRoadmapsByQuery(searchQuery),
+                            skillItems = allSkillItems
+                                .filterSkillsByStatus(selectedStatusFilter)
+                                .filterSkillsByQuery(searchQuery),
+                            isLoading = false,
+                            errorMessage = null
+                        )
+                    }
+                }
         }
     }
 
@@ -119,32 +135,49 @@ class BookmarksViewModel(
             )
         }
     }
-}
 
-private fun RoadmapSummary.toBookmarkRoadmapCardUiModel(): BookmarkRoadmapCardUiModel {
-    val status = when {
-        totalLessonsCount > 0 && completedLessonsCount >= totalLessonsCount -> LearningStatus.Completed
-        completedLessonsCount > 0 -> LearningStatus.InProgress
-        else -> LearningStatus.NotStarted
+    fun onRoadmapBookmarkClick(item: BookmarkRoadmapCardUiModel) {
+        viewModelScope.launch {
+            bookmarkRepository.deleteRoadmap(item.id)
+                .onFailure { error ->
+                    _uiState.update { it.copy(errorMessage = error.message ?: BOOKMARKS_LOAD_ERROR_MESSAGE) }
+                }
+        }
     }
 
+    fun onSkillBookmarkClick(item: BookmarkSkillCardUiModel) {
+        viewModelScope.launch {
+            bookmarkRepository.deleteSkill(item.skillId)
+                .onFailure { error ->
+                    _uiState.update { it.copy(errorMessage = error.message ?: BOOKMARKS_LOAD_ERROR_MESSAGE) }
+                }
+        }
+    }
+
+}
+
+private fun RoadmapBookmark.toBookmarkRoadmapCardUiModel(): BookmarkRoadmapCardUiModel {
+    val roadmap = summary
+
     return BookmarkRoadmapCardUiModel(
-        id = id,
-        title = title,
-        categoryLabel = icon.toBookmarkCategoryLabel(),
-        categoryIcon = icon.toImageVector(),
-        categoryStyle = icon.toBookmarkCategoryStyle(),
-        nodesLabel = "$skillNodesCount Nodes",
-        durationLabel = durationLabel,
-        actionLabel = if (completedLessonsCount > 0) BOOKMARK_ACTION_CONTINUE else BOOKMARK_ACTION_START,
+        id = roadmap.id,
+        title = roadmap.title,
+        categoryLabel = roadmap.icon.toBookmarkCategoryLabel(),
+        categoryIcon = roadmap.icon.toImageVector(),
+        categoryStyle = roadmap.icon.toBookmarkCategoryStyle(),
+        nodesLabel = "${roadmap.skillNodesCount} Nodes",
+        durationLabel = roadmap.durationLabel,
+        actionLabel = if (status == LearningStatus.InProgress) BOOKMARK_ACTION_CONTINUE else BOOKMARK_ACTION_START,
         status = status,
         statusLabel = status.toBookmarkStatusLabel(),
-        progressPercent = if (status == LearningStatus.InProgress && totalLessonsCount > 0) {
-            ((completedLessonsCount.toFloat() / totalLessonsCount.toFloat()) * 100).toInt().coerceIn(1, 100)
+        progressPercent = if (status == LearningStatus.InProgress && roadmap.totalLessonsCount > 0) {
+            ((roadmap.completedLessonsCount.toFloat() / roadmap.totalLessonsCount.toFloat()) * 100)
+                .toInt()
+                .coerceIn(1, 100)
         } else {
             null
         },
-        savedAtLabel = if (completedLessonsCount > 0) BOOKMARK_SAVED_RECENTLY else BOOKMARK_SAVED_DEFAULT
+        savedAtLabel = if (status == LearningStatus.InProgress) BOOKMARK_SAVED_RECENTLY else BOOKMARK_SAVED_DEFAULT
     )
 }
 
@@ -165,7 +198,8 @@ private fun SkillBookmark.toSkillCardUiModel(): BookmarkSkillCardUiModel {
         parentPathName = parentPathName,
         status = skillStatus,
         statusLabel = statusLabel,
-        icon = icon.toImageVector()
+        icon = icon.toImageVector(),
+        skillId = skillId
     )
 }
 

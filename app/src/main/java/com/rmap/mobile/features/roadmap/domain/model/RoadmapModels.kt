@@ -86,6 +86,22 @@ data class RoadmapDetail(
         }
 }
 
+fun String.toStableLearningId(): String {
+    return trim()
+        .lowercase()
+        .replace(Regex("[^a-z0-9]+"), "-")
+        .trim('-')
+}
+
+fun RoadmapDetail.containsLearningItem(skillId: String): Boolean {
+    return sections.any { section ->
+        section.modules.any { module ->
+            module.toStableLearningId() == skillId ||
+                module.subLessons.any { subLesson -> subLesson.toStableLearningId() == skillId }
+        }
+    }
+}
+
 data class LearningModuleSection(
     val title: String,
     val modules: List<LearningModule>
@@ -103,6 +119,10 @@ data class SubLesson(
     val title: String,
     val status: LearningStatus
 )
+
+fun LearningModule.toStableLearningId(): String = title.toStableLearningId()
+
+fun SubLesson.toStableLearningId(): String = title.toStableLearningId()
 
 data class AiScholarTip(
     val currentModule: String,
