@@ -155,6 +155,24 @@ class AuthRepositoryImplTest {
         assertEquals("Invalid email or password.", result.exceptionOrNull()?.message)
     }
 
+    @Test
+    fun `login unauthorized without api code returns invalid credentials message`() = runTest {
+        val api = FakeAuthApi().apply {
+            loginResponse = Response.error(
+                401,
+                """{"message":"Invalid email or password"}"""
+                    .toResponseBody("application/json".toMediaType())
+            )
+        }
+        val repository = newRepository(api = api)
+
+        val result = repository.login("learner@example.com", "bad-password")
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is AppException)
+        assertEquals("Invalid email or password.", result.exceptionOrNull()?.message)
+    }
+
     private fun newRepository(
         api: FakeAuthApi = FakeAuthApi(),
         sessionManager: SessionManager = SessionManager {}

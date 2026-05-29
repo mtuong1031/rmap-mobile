@@ -41,7 +41,7 @@ class AuthRepositoryImpl(
 
         return when (networkResult) {
             is NetworkResult.Success -> getCurrentUser()
-            is NetworkResult.Error -> Result.failure(networkResult.toAuthException())
+            is NetworkResult.Error -> Result.failure(networkResult.toLoginException())
         }
     }
 
@@ -123,16 +123,28 @@ class AuthRepositoryImpl(
 
     private fun NetworkResult.Error.toAuthException(): AppException {
         return if (apiCode == INVALID_CREDENTIALS_CODE) {
-            AppException(
-                message = "Invalid email or password.",
-                code = code,
-                type = type,
-                apiCode = apiCode,
-                cause = cause
-            )
+            invalidCredentialsException()
         } else {
             toAppException()
         }
+    }
+
+    private fun NetworkResult.Error.toLoginException(): AppException {
+        return if (type == NetworkErrorType.Unauthorized) {
+            invalidCredentialsException()
+        } else {
+            toAuthException()
+        }
+    }
+
+    private fun NetworkResult.Error.invalidCredentialsException(): AppException {
+        return AppException(
+            message = "Invalid email or password.",
+            code = code,
+            type = type,
+            apiCode = apiCode,
+            cause = cause
+        )
     }
 
     private fun invalidAuthResponse(
