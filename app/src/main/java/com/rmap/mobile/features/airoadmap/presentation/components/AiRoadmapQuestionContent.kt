@@ -1,5 +1,12 @@
 package com.rmap.mobile.features.airoadmap.presentation.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +26,8 @@ import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapQuesti
 @Composable
 fun AiRoadmapQuestionContent(
     question: AiRoadmapQuestionUiModel,
+    questions: List<AiRoadmapQuestionUiModel>,
+    currentQuestionIndex: Int,
     questionProgressText: String,
     answeredText: String,
     customAnswerLabel: String,
@@ -69,13 +78,30 @@ fun AiRoadmapQuestionContent(
             )
         }
 
-        AiRoadmapQuestionCard(
-            question = question,
-            customAnswerLabel = customAnswerLabel,
-            customAnswerPlaceholder = customAnswerPlaceholder,
-            onOptionSelected = onOptionSelected,
-            onCustomAnswerChange = onCustomAnswerChange
-        )
+        AnimatedContent(
+            targetState = currentQuestionIndex,
+            transitionSpec = {
+                val direction = if (targetState > initialState) 1 else -1
+                (
+                    slideInHorizontally(animationSpec = tween(QUESTION_CARD_SLIDE_DURATION_MILLIS)) { width ->
+                        direction * width
+                    } + fadeIn(animationSpec = tween(QUESTION_CARD_SLIDE_DURATION_MILLIS))
+                ).togetherWith(
+                    slideOutHorizontally(animationSpec = tween(QUESTION_CARD_SLIDE_DURATION_MILLIS)) { width ->
+                        -direction * width
+                    } + fadeOut(animationSpec = tween(QUESTION_CARD_SLIDE_DURATION_MILLIS))
+                )
+            },
+            label = "QuestionCardTransition"
+        ) { questionIndex ->
+            AiRoadmapQuestionCard(
+                question = questions.getOrNull(questionIndex) ?: question,
+                customAnswerLabel = customAnswerLabel,
+                customAnswerPlaceholder = customAnswerPlaceholder,
+                onOptionSelected = onOptionSelected,
+                onCustomAnswerChange = onCustomAnswerChange
+            )
+        }
 
         if (errorText != null) {
             Text(
@@ -109,3 +135,5 @@ fun AiRoadmapQuestionContent(
         }
     }
 }
+
+private const val QUESTION_CARD_SLIDE_DURATION_MILLIS = 260
