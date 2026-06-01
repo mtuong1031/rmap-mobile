@@ -19,6 +19,9 @@ import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
 import com.rmap.mobile.features.auth.domain.usecase.RegisterUseCase
 import com.rmap.mobile.features.bookmarks.data.repository.RoomBookmarkRepository
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
+import com.rmap.mobile.features.home.data.remote.HomeApi
+import com.rmap.mobile.features.home.data.repository.HomeRepositoryImpl
+import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.profile.data.FakeProfileRepository
 import com.rmap.mobile.features.profile.data.notification.LearningNotificationNotifier
 import com.rmap.mobile.features.profile.data.notification.LearningReminderScheduler
@@ -52,6 +55,8 @@ object RMapAppGraph {
         private set
     lateinit var authRepository: AuthRepository
         private set
+    lateinit var homeRepository: HomeRepository
+        private set
     lateinit var loginUseCase: LoginUseCase
         private set
     lateinit var registerUseCase: RegisterUseCase
@@ -74,6 +79,9 @@ object RMapAppGraph {
         authRepository = AuthRepositoryImpl(
             authApi = apiClient.createService(AuthApi::class.java),
             sessionManager = sessionManager
+        )
+        homeRepository = HomeRepositoryImpl(
+            homeApi = apiClient.createService(HomeApi::class.java)
         )
         loginUseCase = LoginUseCase(authRepository)
         registerUseCase = RegisterUseCase(authRepository)

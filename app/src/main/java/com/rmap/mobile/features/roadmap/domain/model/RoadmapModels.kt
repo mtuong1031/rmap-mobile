@@ -19,8 +19,10 @@ enum class LearningTopicIcon {
     Code,
     DataObject,
     Devices,
+    Game,
     Palette,
     Science,
+    Security,
     SmartToy,
     Storage,
     Terminal

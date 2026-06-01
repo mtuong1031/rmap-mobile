@@ -3,6 +3,7 @@ package com.rmap.mobile.features.bookmarks.data.repository
 import com.rmap.mobile.features.bookmarks.data.local.BookmarkDao
 import com.rmap.mobile.features.bookmarks.data.local.RoadmapBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.local.SkillBookmarkEntity
+import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
@@ -50,6 +51,27 @@ class RoomBookmarkRepositoryTest {
         assertTrue(result.isFailure)
         assertFalse(bookmarkDao.isRoadmapSaved("missing-roadmap"))
         assertTrue(repository.getSavedRoadmaps().getOrThrow().isEmpty())
+    }
+
+    @Test
+    fun `save roadmap snapshot hydrates saved roadmap when id is missing from source repository`() = runTest {
+        val result = repository.saveRoadmap(
+            RoadmapBookmarkSnapshot(
+                roadmapId = "api-roadmap",
+                title = "API Roadmap",
+                categoryId = "WEB_DEVELOPMENT",
+                categoryLabel = "Web Development",
+                nodesTotal = 42,
+                durationLabel = "Self-paced",
+                iconKey = LearningTopicIcon.Code.name
+            )
+        )
+
+        assertTrue(result.isSuccess)
+        val bookmark = repository.getSavedRoadmaps().getOrThrow().single()
+        assertEquals("api-roadmap", bookmark.summary.id)
+        assertEquals("API Roadmap", bookmark.summary.title)
+        assertEquals(42, bookmark.summary.totalLessonsCount)
     }
 
     @Test

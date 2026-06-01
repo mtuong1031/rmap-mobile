@@ -1,11 +1,15 @@
 package com.rmap.mobile.features.home.presentation.components.recommend
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
@@ -15,18 +19,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.TrackChanges
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
+import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+
+private val HomeRecommendCarouselDotHeight = 6.dp
+private val HomeRecommendCarouselActiveDotWidth = 18.dp
+private val HomeRecommendCarouselInactiveDotWidth = 6.dp
 
 @Composable
 fun HomeRecommendedRoadmapsSection(
@@ -58,7 +71,7 @@ fun HomeRecommendedRoadmapsSection(
                 style = titleTextStyle,
                 constraints = Constraints(maxWidth = titleMaxWidthPx)
             ).lineCount
-            item.id to lineCount
+            item.id to lineCount.coerceAtMost(HomeRoadmapTitleMaxLines)
         }
     }
     val maxTitleLineCount = titleLineCounts.values.maxOrNull() ?: 1
@@ -74,32 +87,80 @@ fun HomeRecommendedRoadmapsSection(
             modifier = Modifier.padding(horizontal = Dimens.spacingLg)
         )
 
-        HorizontalPager(
-            state = pagerState,
-            flingBehavior = flingBehavior,
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(
-                start = Dimens.spacingScreenHorizontal,
-                end = Dimens.spacingScreenHorizontal
-            ),
-            pageSize = PageSize.Fixed(HomeRoadmapCardDefaults.CardWidth),
-            pageSpacing = Dimens.spacingLg
-        ) { page ->
-            roadmaps.getOrNull(page)?.let { item ->
-                val titleLineCount = titleLineCounts[item.id] ?: maxTitleLineCount
-                val titleLineGap = (maxTitleLineCount - titleLineCount).coerceAtLeast(0)
-                val metadataBottomSpacing = Dimens.spacingLg + (titleLineHeight.value * titleLineGap).dp
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                flingBehavior = flingBehavior,
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    start = Dimens.spacingScreenHorizontal,
+                    end = Dimens.spacingScreenHorizontal
+                ),
+                pageSize = PageSize.Fixed(HomeRoadmapCardDefaults.CardWidth),
+                pageSpacing = Dimens.spacingMd
+            ) { page ->
+                roadmaps.getOrNull(page)?.let { item ->
+                    val titleLineCount = titleLineCounts[item.id] ?: maxTitleLineCount
+                    val titleLineGap = (maxTitleLineCount - titleLineCount).coerceAtLeast(0)
+                    val metadataBottomSpacing = Dimens.spacingLg + (titleLineHeight.value * titleLineGap).dp
 
-                HomeRoadmapCard(
-                    item = item,
-                    metadataSeparatorText = metadataSeparatorText,
-                    starterBadgeText = starterBadgeText,
-                    metadataBottomSpacing = metadataBottomSpacing,
-                    bookmarkContentDescription = bookmarkContentDescription,
-                    onClick = onRoadmapClick?.let { callback -> { callback(item) } },
-                    onBookmarkClick = onBookmarkClick?.let { callback -> { callback(item) } },
-                )
+                    HomeRoadmapCard(
+                        item = item,
+                        metadataSeparatorText = metadataSeparatorText,
+                        starterBadgeText = starterBadgeText,
+                        modifier = Modifier.fillMaxWidth(),
+                        metadataBottomSpacing = metadataBottomSpacing,
+                        bookmarkContentDescription = bookmarkContentDescription,
+                        onClick = onRoadmapClick?.let { callback -> { callback(item) } },
+                        onBookmarkClick = onBookmarkClick?.let { callback -> { callback(item) } },
+                    )
+                }
             }
+
+            HomeRecommendCarouselDots(
+                pageCount = roadmaps.size,
+                currentPage = pagerState.currentPage,
+                modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeRecommendCarouselDots(
+    pageCount: Int,
+    currentPage: Int,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        repeat(pageCount) { index ->
+            val isSelected = index == currentPage
+            val dotWidth = if (isSelected) {
+                HomeRecommendCarouselActiveDotWidth
+            } else {
+                HomeRecommendCarouselInactiveDotWidth
+            }
+            val dotColor = if (isSelected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerHighest
+            }
+
+            Box(
+                modifier = Modifier
+                    .padding(horizontal = Dimens.spacingXs)
+                    .width(dotWidth)
+                    .height(HomeRecommendCarouselDotHeight)
+                    .clip(AppShapes.pill)
+                    .background(dotColor)
+            )
         }
     }
 }

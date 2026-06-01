@@ -20,21 +20,18 @@ import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Palette
-import androidx.compose.material.icons.outlined.PhoneAndroid
-import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.SmartToy
-import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -48,11 +45,17 @@ import com.rmap.mobile.core.ui.components.RMapTextInput
 import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryCardRow
+import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryCardGrid
 import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryItemUiModel
 import com.rmap.mobile.features.home.presentation.components.hero.HomeHeroSection
 import com.rmap.mobile.features.home.presentation.components.hero.HomeLearningPlanUiModel
 import com.rmap.mobile.features.home.presentation.components.insight.HomePaceAlertCard
+import com.rmap.mobile.features.home.presentation.components.loading.HomeCategoriesSectionSkeleton
+import com.rmap.mobile.features.home.presentation.components.loading.HomeHeroSectionSkeleton
+import com.rmap.mobile.features.home.presentation.components.loading.HomePaceAlertCardSkeleton
+import com.rmap.mobile.features.home.presentation.components.loading.HomeRecommendedRoadmapsSectionSkeleton
+import com.rmap.mobile.features.home.presentation.components.loading.HomeStatCardRowSkeleton
+import com.rmap.mobile.features.home.presentation.components.loading.HomeTrendingRoadmapsSectionSkeleton
 import com.rmap.mobile.features.home.presentation.components.recommend.HomeRecommendedRoadmapsSection
 import com.rmap.mobile.features.home.presentation.components.recommend.HomeRoadmapCardDefaults
 import com.rmap.mobile.features.home.presentation.components.recommend.HomeRoadmapCardUiModel
@@ -63,7 +66,10 @@ import com.rmap.mobile.features.home.presentation.components.trending.TrendingRo
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardDefaults
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapsHeader
+import com.rmap.mobile.features.home.presentation.viewmodel.HomeRecommendedRoadmapState
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeUiState
+import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
 import com.rmap.mobile.navigation.NavBarDestination
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -84,8 +90,8 @@ fun HomeScreen(
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onHomeStatItemClick: ((index: Int, item: HomeStatItemUiModel) -> Unit)? = null,
     onCategoryItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)? = null,
-    onRecommendedRoadmapClick: ((HomeRoadmapCardUiModel) -> Unit)? = null,
-    onRecommendedRoadmapBookmarkClick: ((HomeRoadmapCardUiModel) -> Unit)? = null,
+    onRecommendedRoadmapClick: ((HomeRecommendedRoadmapState) -> Unit)? = null,
+    onRecommendedRoadmapBookmarkClick: ((HomeRecommendedRoadmapState) -> Unit)? = null,
     onRoadmapClick: ((TrendingRoadmapCardUiModel) -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
@@ -93,63 +99,35 @@ fun HomeScreen(
 
     val greetingText = "Good morning, ${uiState.userName}"
     val headingText = stringResource(R.string.home_heading_next_skill)
+    val isLoading = uiState.isLoading
     val progressPercent = (uiState.progressFraction.coerceIn(0f, 1f) * 100).toInt()
-    val readinessPercent = if (uiState.todayGoalTotal > 0) {
-        ((uiState.todayGoalCompleted.toFloat() / uiState.todayGoalTotal.toFloat()).coerceIn(0f, 1f) * 100).toInt()
-    } else {
-        0
-    }
-    val learningPlans = if (uiState.hasInProgressRoadmap) {
-        listOf(
-            HomeLearningPlanUiModel(
-                id = "frontend-pro",
-                roadmapTitle = "Frontend Pro",
-                skillTitle = "Asynchronous Ronaldo",
-                chapterText = "Chapter 1/6",
-                requiredSkillText = stringResource(R.string.home_hero_required_skill),
-                timeLeftText = "25 min left",
-                completedRequiredNodes = uiState.completedLessons,
-                totalRequiredNodes = uiState.totalLessons,
-                progressPercentage = progressPercent,
-                nextUnlockText = "DOM Manipulation",
-                currentNodeId = "asynchronous-js",
-                lastStudiedAtMillis = 3_000L,
-                startedAtMillis = 1_000L
-            ),
-            HomeLearningPlanUiModel(
-                id = "react-fundamentals",
-                roadmapTitle = "React Fundamentals",
-                skillTitle = "Hooks and State Management",
-                chapterText = "Chapter 2/5",
-                requiredSkillText = stringResource(R.string.home_hero_required_skill),
-                timeLeftText = "18 min left",
-                completedRequiredNodes = 9,
-                totalRequiredNodes = 16,
-                progressPercentage = 56,
-                nextUnlockText = "React Query",
-                currentNodeId = "hooks-state",
-                lastStudiedAtMillis = 5_000L,
-                startedAtMillis = 2_000L
-            ),
-            HomeLearningPlanUiModel(
-                id = "backend-foundations",
-                roadmapTitle = "Backend Foundations",
-                skillTitle = "REST API Design for Production Services",
-                chapterText = "Chapter 3/8",
-                requiredSkillText = stringResource(R.string.home_hero_required_skill),
-                timeLeftText = "32 min left",
-                completedRequiredNodes = 18,
-                totalRequiredNodes = 30,
-                progressPercentage = 60,
-                nextUnlockText = "Authentication Middleware",
-                currentNodeId = "rest-api-design",
-                lastStudiedAtMillis = 4_000L,
-                startedAtMillis = 1_500L
-            )
+    val readinessPercent = (uiState.readinessFraction.coerceIn(0f, 1f) * 100).toInt()
+    val learningPlans = uiState.learningPlans.map { plan ->
+        HomeLearningPlanUiModel(
+            id = plan.id,
+            roadmapTitle = plan.roadmapTitle,
+            skillTitle = plan.skillTitle,
+            chapterText = plan.chapterText,
+            requiredSkillText = stringResource(R.string.home_hero_required_skill),
+            timeLeftText = plan.timeLeftText,
+            completedRequiredNodes = plan.completedRequiredNodes,
+            totalRequiredNodes = plan.totalRequiredNodes,
+            progressPercentage = plan.progressPercentage,
+            nextUnlockText = plan.nextUnlockText,
+            currentNodeId = plan.currentNodeId,
+            startedAtMillis = plan.startedAtMillis
         )
-    } else {
-        emptyList()
     }
+    var focusedLearningPlanId by remember { mutableStateOf<String?>(learningPlans.firstOrNull()?.id) }
+    var showAllCategories by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(learningPlans) {
+        if (focusedLearningPlanId !in learningPlans.map { it.id }) {
+            focusedLearningPlanId = learningPlans.firstOrNull()?.id
+        }
+    }
+    val focusedPaceWarning = uiState.learningPlans
+        .firstOrNull { it.id == focusedLearningPlanId }
+        ?.paceWarning
 
     val homeStatItems = listOf(
         HomeStatItemUiModel(
@@ -172,82 +150,36 @@ fun HomeScreen(
         )
     )
 
-    val recommendedRoadmaps = listOf(
-        HomeRoadmapCardUiModel(
-            id = "frontend-pro",
-            categoryLabel = "Frontend",
-            title = "Frontend Pro",
-            nodesText = "48 nodes",
-            durationText = "3 months",
+    val recommendedRoadmaps = uiState.recommendedRoadmaps.map { roadmap ->
+        roadmap to HomeRoadmapCardUiModel(
+            id = roadmap.id,
+            categoryLabel = roadmap.categoryLabel,
+            title = roadmap.title,
+            nodesText = roadmap.nodesText,
+            durationText = roadmap.durationText,
             actionText = stringResource(R.string.home_roadmap_view_action),
-            icon = Icons.Outlined.Code,
-            style = HomeRoadmapCardDefaults.webDevelopmentStyle(),
-            isBeginner = true,
-            isSaved = uiState.savedRoadmapIds.contains("frontend-pro")
-        ),
-        HomeRoadmapCardUiModel(
-            id = "ai-engineering",
-            categoryLabel = "AI",
-            title = "AI Engineering Path",
-            nodesText = "64 nodes",
-            durationText = "4 months",
-            actionText = stringResource(R.string.home_roadmap_view_action),
-            icon = Icons.Outlined.TrackChanges,
-            style = HomeRoadmapCardDefaults.interviewStyle(),
-            isSaved = uiState.savedRoadmapIds.contains("ai-engineering")
-        ),
-        HomeRoadmapCardUiModel(
-            id = "full-stack-development",
-            categoryLabel = "Backend",
-            title = "Full Stack Development",
-            nodesText = "160 nodes",
-            durationText = "8 months",
-            actionText = stringResource(R.string.home_roadmap_view_action),
-            icon = Icons.Outlined.Storage,
-            style = HomeRoadmapCardDefaults.designStyle(),
-            isSaved = uiState.savedRoadmapIds.contains("full-stack-development")
+            icon = roadmap.icon.toImageVector(),
+            style = roadmap.icon.toHomeRoadmapCardStyle(),
+            isBeginner = roadmap.isBeginner,
+            isSaved = uiState.savedRoadmapIds.contains(roadmap.id)
         )
-    )
+    }
 
-    val categoryItems = listOf(
+    val categoryItems = uiState.categories.mapIndexed { index, category ->
         HomeCategoryItemUiModel(
-            id = "on-click",
-            label = "On Click",
-            countText = 24.toString(),
-            icon = Icons.Outlined.Public,
-            selected = true
-        ),
-        HomeCategoryItemUiModel(
-            id = "normal",
-            label = "Normal",
-            countText = 18.toString(),
-            icon = Icons.Outlined.PhoneAndroid
-        ),
-        HomeCategoryItemUiModel(
-            id = "devops",
-            label = "DevOps",
-            countText = 12.toString(),
-            icon = Icons.Outlined.Settings
-        ),
-        HomeCategoryItemUiModel(
-            id = "data",
-            label = "Data",
-            countText = 8.toString(),
-            icon = Icons.Outlined.Storage
-        ),
-        HomeCategoryItemUiModel(
-            id = "design",
-            label = "Design",
-            countText = 15.toString(),
-            icon = Icons.Outlined.Palette
-        ),
-        HomeCategoryItemUiModel(
-            id = "ai",
-            label = "AI",
-            countText = 9.toString(),
-            icon = Icons.Outlined.SmartToy
+            id = category.id,
+            label = category.label,
+            countText = category.countText,
+            icon = category.icon.toImageVector(),
+            selected = false
         )
-    )
+    }
+    val visibleCategoryItems = if (showAllCategories) {
+        categoryItems
+    } else {
+        categoryItems.take(HomeInitialCategoryLimit)
+    }
+    val shouldShowCategoryToggleAction = categoryItems.size > HomeInitialCategoryLimit
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -309,89 +241,169 @@ fun HomeScreen(
                     }
                 }
 
-                item {
-                    HomeHeroSection(
-                        sectionTitle = stringResource(R.string.home_learning_plan_title),
-                        continueText = stringResource(R.string.home_hero_continue),
-                        nextUnlockPrefix = stringResource(R.string.home_hero_next_unlock_prefix),
-                        sectionHorizontalPadding = sectionHorizontalPadding,
-                        learningPlans = learningPlans,
-                        onContinueClick = { item ->
-                            onContinueLearningPlanClick?.invoke(item) ?: onContinueLearningClick()
-                        },
-                        onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
-                        onExploreReadyMadeClick = onExploreReadyMadeClick,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                item {
-                    HomeStatCardRow(
-                        items = homeStatItems,
-                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
-                        horizontalSpacing = Dimens.spacingMd,
-                        onItemClick = onHomeStatItemClick
-                    )
-                }
-
-                item {
-                    HomePaceAlertCard(
-                        message = "You are 15% behind your target pace.\nFinish 1 skill node today to back the track.",
-                        actionText = stringResource(R.string.home_pace_alert_action),
-                        onActionClick = onAdjustPlanClick,
-                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
-                    )
-                }
-
-                item {
-                    HomeRecommendedRoadmapsSection(
-                        title = stringResource(R.string.home_recommended_title),
-                        subtitle = "Recommended because you're learning Frontend Pro",
-                        roadmaps = recommendedRoadmaps,
-                        metadataSeparatorText = stringResource(R.string.separator_bullet),
-                        starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
-                        bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
-                        onRoadmapClick = onRecommendedRoadmapClick,
-                        onBookmarkClick = onRecommendedRoadmapBookmarkClick,
-                    )
-                }
-
-                item {
-                    Column(
-                        modifier = Modifier.padding(start = sectionHorizontalPadding),
-                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-                    ) {
-                        RMapSectionTitle(
-                            text = stringResource(R.string.home_categories_title),
-                            subtitle = stringResource(R.string.home_categories_subtitle)
-                        )
-
-                        HomeCategoryCardRow(
-                            items = categoryItems,
-                            onItemClick = onCategoryItemClick
+                if (isLoading) {
+                    item {
+                        HomeHeroSectionSkeleton(
+                            sectionTitle = stringResource(R.string.home_learning_plan_title),
+                            sectionHorizontalPadding = sectionHorizontalPadding,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
-                }
 
-                item {
-                    Column(
-                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
-                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-                    ) {
-                        TrendingRoadmapsHeader()
-                        uiState.trendingRoadmaps.forEach { item ->
-                            TrendingRoadmapCard(
-                                item = item,
-                                onClick = onRoadmapClick?.let { callback ->
-                                    { callback(item) }
+                    item {
+                        HomeStatCardRowSkeleton(
+                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                        )
+                    }
+
+                    item {
+                        HomePaceAlertCardSkeleton(
+                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                        )
+                    }
+
+                    item {
+                        HomeRecommendedRoadmapsSectionSkeleton(
+                            title = stringResource(R.string.home_recommended_title)
+                        )
+                    }
+
+                    item {
+                        HomeCategoriesSectionSkeleton(
+                            title = stringResource(R.string.home_categories_title),
+                            subtitle = stringResource(R.string.home_categories_subtitle),
+                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                        )
+                    }
+
+                    item {
+                        HomeTrendingRoadmapsSectionSkeleton(
+                            title = stringResource(R.string.roadmap_trending_title),
+                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                        )
+                    }
+                } else {
+                    item {
+                        HomeHeroSection(
+                            sectionTitle = stringResource(R.string.home_learning_plan_title),
+                            continueText = stringResource(R.string.home_hero_continue),
+                            nextUnlockPrefix = stringResource(R.string.home_hero_next_unlock_prefix),
+                            sectionHorizontalPadding = sectionHorizontalPadding,
+                            learningPlans = learningPlans,
+                            onContinueClick = { item ->
+                                onContinueLearningPlanClick?.invoke(item) ?: onContinueLearningClick()
+                            },
+                            onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
+                            onExploreReadyMadeClick = onExploreReadyMadeClick,
+                            onFocusedPlanChange = { focusedLearningPlanId = it.id },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    item {
+                        HomeStatCardRow(
+                            items = homeStatItems,
+                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
+                            horizontalSpacing = Dimens.spacingMd,
+                            onItemClick = onHomeStatItemClick
+                        )
+                    }
+
+                    focusedPaceWarning?.let { warning ->
+                        item {
+                            HomePaceAlertCard(
+                                message = warning.message,
+                                actionText = warning.actionText,
+                                onActionClick = onAdjustPlanClick,
+                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                            )
+                        }
+                    }
+
+                    item {
+                        HomeRecommendedRoadmapsSection(
+                            title = stringResource(R.string.home_recommended_title),
+                            subtitle = "Recommended because you're learning Frontend Pro",
+                            roadmaps = recommendedRoadmaps.map { it.second },
+                            metadataSeparatorText = stringResource(R.string.separator_bullet),
+                            starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
+                            bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
+                            onRoadmapClick = { item ->
+                                recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
+                                    onRecommendedRoadmapClick?.invoke(roadmap)
+                                }
+                            },
+                            onBookmarkClick = { item ->
+                                recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
+                                    onRecommendedRoadmapBookmarkClick?.invoke(roadmap)
+                                }
+                            },
+                        )
+                    }
+
+                    item {
+                        Column(
+                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+                        ) {
+                            RMapSectionTitle(
+                                text = stringResource(R.string.home_categories_title),
+                                subtitle = stringResource(R.string.home_categories_subtitle),
+                                actionText = if (shouldShowCategoryToggleAction) {
+                                    stringResource(
+                                        if (showAllCategories) {
+                                            R.string.action_see_less
+                                        } else {
+                                            R.string.action_see_all
+                                        }
+                                    )
+                                } else {
+                                    null
+                                },
+                                onActionClick = if (shouldShowCategoryToggleAction) {
+                                    { showAllCategories = !showAllCategories }
+                                } else {
+                                    null
                                 }
                             )
+
+                            HomeCategoryCardGrid(
+                                items = visibleCategoryItems,
+                                onItemClick = onCategoryItemClick
+                            )
+                        }
+                    }
+
+                    item {
+                        Column(
+                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+                        ) {
+                            TrendingRoadmapsHeader()
+                            uiState.trendingRoadmaps.forEach { item ->
+                                TrendingRoadmapCard(
+                                    item = item,
+                                    onClick = onRoadmapClick?.let { callback ->
+                                        { callback(item) }
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+private const val HomeInitialCategoryLimit = 6
+
+@Composable
+private fun LearningTopicIcon.toHomeRoadmapCardStyle() = when (this) {
+    LearningTopicIcon.Palette -> HomeRoadmapCardDefaults.designStyle()
+    LearningTopicIcon.SmartToy,
+    LearningTopicIcon.Science -> HomeRoadmapCardDefaults.interviewStyle()
+    else -> HomeRoadmapCardDefaults.webDevelopmentStyle()
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 844)

@@ -48,12 +48,16 @@ class ExploreViewModel(
                 return@launch
             }
 
+            val categories = categoryResult.getOrThrow()
+            val selectedCategoryId = _uiState.value.selectedCategoryId
+                ?.takeIf { id -> categories.any { category -> category.id == id } }
+            val libraryRoadmaps = libraryResult.getOrThrow()
             _uiState.value = ExploreUiState(
                 userName = profileResult.getOrThrow().userName,
                 searchQuery = _uiState.value.searchQuery,
-                selectedCategoryId = _uiState.value.selectedCategoryId,
-                categories = categoryResult.getOrThrow().let { categories ->
-                    val categoryCounts = libraryResult.getOrThrow().categoryCounts()
+                selectedCategoryId = selectedCategoryId,
+                categories = categories.let {
+                    val categoryCounts = libraryRoadmaps.categoryCounts()
                     categories.map { category ->
                         category.toCategoryUiModel(roadmapCount = categoryCounts[category.id] ?: 0)
                     }
@@ -61,13 +65,13 @@ class ExploreViewModel(
                 popularRoadmaps = popularResult.getOrThrow().mapIndexed { index, roadmap ->
                     roadmap.toTrendingRoadmapCardUiModel(rank = index + 1)
                 },
-                libraryRoadmaps = libraryResult.getOrThrow().toVisibleLibraryRoadmaps(
-                    selectedCategoryId = _uiState.value.selectedCategoryId,
-                    categoryLabels = categoryResult.getOrThrow().associate { it.id to it.name },
+                libraryRoadmaps = libraryRoadmaps.toVisibleLibraryRoadmaps(
+                    selectedCategoryId = selectedCategoryId,
+                    categoryLabels = categories.associate { it.id to it.name },
                     visibleCount = LibraryPageSize
                 ),
-                totalLibraryCount = libraryResult.getOrThrow()
-                    .filterByCategory(_uiState.value.selectedCategoryId)
+                totalLibraryCount = libraryRoadmaps
+                    .filterByCategory(selectedCategoryId)
                     .size,
                 libraryVisibleCount = LibraryPageSize,
                 isLoading = false
@@ -100,6 +104,22 @@ class ExploreViewModel(
         refreshLibrary(
             query = _uiState.value.searchQuery,
             selectedCategoryId = nextCategoryId,
+            visibleCount = LibraryPageSize
+        )
+    }
+
+    fun selectCategoryById(categoryId: String) {
+        if (_uiState.value.selectedCategoryId == categoryId) return
+        if (_uiState.value.categories.isNotEmpty() && _uiState.value.categories.none { it.id == categoryId }) return
+        _uiState.update {
+            it.copy(
+                selectedCategoryId = categoryId,
+                libraryVisibleCount = LibraryPageSize
+            )
+        }
+        refreshLibrary(
+            query = _uiState.value.searchQuery,
+            selectedCategoryId = categoryId,
             visibleCount = LibraryPageSize
         )
     }

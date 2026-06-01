@@ -6,6 +6,8 @@ object AppRoutes {
     const val HOME_SEARCH = "home_search"
     const val BOOKMARKS = "bookmarks"
     const val EXPLORE = "explore"
+    const val EXPLORE_CATEGORY_ARG = "category"
+    const val EXPLORE_WITH_CATEGORY = "explore?$EXPLORE_CATEGORY_ARG={$EXPLORE_CATEGORY_ARG}"
     const val AI_ROADMAP = "ai_roadmap"
     const val PROFILE = "profile"
     const val NOTIFICATION_SETTINGS = "notification_settings"
@@ -13,4 +15,5 @@ object AppRoutes {
     const val ROADMAP_DETAIL = "roadmap_detail/{$ROADMAP_ID_ARG}"
 
     fun roadmapDetail(roadmapId: String): String = "roadmap_detail/$roadmapId"
+    fun explore(categoryId: String): String = "explore?$EXPLORE_CATEGORY_ARG=$categoryId"
 }

@@ -33,6 +33,8 @@
     <string name="coming_soon_message">This action is coming soon.</string>
     <string name="separator_bullet">•</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_see_all">SEE ALL</string>
+    <string name="action_see_less">SEE LESS</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>

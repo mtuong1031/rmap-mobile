@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.AppShapes
@@ -82,6 +85,45 @@ fun HomeCategoryCardRow(
 }
 
 @Composable
+fun HomeCategoryCardGrid(
+    items: List<HomeCategoryItemUiModel>,
+    modifier: Modifier = Modifier,
+    horizontalSpacing: androidx.compose.ui.unit.Dp = Dimens.spacingMd,
+    verticalSpacing: androidx.compose.ui.unit.Dp = Dimens.spacingMd,
+    onItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)? = null
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(verticalSpacing)
+    ) {
+        items.chunked(2).forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(horizontalSpacing),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                rowItems.forEach { item ->
+                    val index = items.indexOf(item)
+                    HomeCategoryCard(
+                        item = item,
+                        modifier = Modifier.weight(1f),
+                        onClick = onItemClick?.let { callback ->
+                            {
+                                callback(index, item)
+                            }
+                        }
+                    )
+                }
+
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun HomeCategoryCard(
     item: HomeCategoryItemUiModel,
     modifier: Modifier = Modifier,
@@ -120,6 +162,7 @@ fun HomeCategoryCard(
 
     Row(
         modifier = modifier
+            .fillMaxWidth()
             .cardShadow(shape = HomeCategoryCardDefaults.Shape)
             .clip(HomeCategoryCardDefaults.Shape)
             .background(
@@ -145,10 +188,13 @@ fun HomeCategoryCard(
 
         Text(
             text = item.label,
+            modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = FontWeight.Bold,
                 color = contentColor
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
         HomeCategoryCountBadge(
