@@ -1,6 +1,7 @@
 package com.rmap.mobile.features.airoadmap.presentation.viewmodel
 
 import com.rmap.mobile.MainDispatcherRule
+import com.rmap.mobile.features.airoadmap.domain.model.AiGeneratedRoadmap
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapDraft
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationPhase
@@ -8,15 +9,20 @@ import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationReques
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationStatus
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestion
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestionOption
+import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuizResult
 import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class AiRoadmapViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -43,12 +49,13 @@ class AiRoadmapViewModelTest {
             currentTimeMillis = { now }
         )
 
-        viewModel.onTopicChange("Android")
+        viewModel.onTopicChange("Android Developer")
         viewModel.onDeadlineSelected(futureDeadline)
         viewModel.onSubmitSetup()
 
         assertEquals(AiRoadmapStep.Questions, viewModel.uiState.value.step)
-        assertEquals(2, viewModel.uiState.value.questions.size)
+        assertEquals(7, viewModel.uiState.value.questions.size)
+        assertEquals("MOBILE_DEVELOPMENT", viewModel.uiState.value.roleCategory)
     }
 
     @Test
@@ -62,19 +69,38 @@ class AiRoadmapViewModelTest {
     }
 
     @Test
-    fun onSubmitAnswers_startsGenerationWithCustomAnswer() = runTest {
+    fun onOptionSelected_advancesToNextQuestion() = runTest {
+        val viewModel = preparedViewModel()
+
+        viewModel.onOptionSelected("level", "level-1")
+
+        assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
+        assertEquals("level-1", viewModel.uiState.value.questions.first().selectedOptionId)
+
+        advanceTimeBy(500L)
+        runCurrent()
+
+        assertEquals(1, viewModel.uiState.value.currentQuestionIndex)
+    }
+
+    @Test
+    fun onSubmitAnswers_startsGenerationWithCustomAnswerForQuestionWithoutOptions() = runTest {
         val repository = FakeAiRoadmapRepository()
         val viewModel = preparedViewModel(repository)
 
         viewModel.onOptionSelected("level", "level-1")
-        viewModel.onCustomAnswerChange("level", "I can ship small Android apps")
-        viewModel.onOptionSelected("style", "style-2")
+        (2..6).forEach { index ->
+            viewModel.onOptionSelected("question-$index", "question-$index-option-1")
+        }
+        viewModel.onCustomAnswerChange("question-7", "I can ship small Android apps")
         viewModel.onSubmitAnswers()
 
         val request = repository.startedRequest
         assertTrue(repository.wasGenerationStarted)
-        assertEquals("I can ship small Android apps", request?.answers?.first()?.customAnswer)
-        assertEquals("level-1", request?.answers?.first()?.selectedOptionId)
+        assertEquals("New", request?.answers?.first()?.answer)
+        assertEquals("How comfortable are you?", request?.answers?.first()?.question)
+        assertEquals("I can ship small Android apps", request?.answers?.last()?.answer)
+        assertEquals("Question 7?", request?.answers?.last()?.question)
     }
 
     @Test
@@ -95,7 +121,7 @@ class AiRoadmapViewModelTest {
         assertEquals(AiRoadmapStep.Library, viewModel.uiState.value.step)
         assertEquals("frontend-pro", viewModel.uiState.value.generationStatus.generatedRoadmapId)
         assertEquals("frontend-pro", viewModel.uiState.value.generatedRoadmaps.first().id)
-        assertEquals("Frontend Pro", viewModel.uiState.value.generatedRoadmaps.first().title)
+        assertEquals("Frontend Pro Roadmap", viewModel.uiState.value.generatedRoadmaps.first().title)
     }
 
     private fun preparedViewModel(
@@ -105,7 +131,7 @@ class AiRoadmapViewModelTest {
             repository = repository,
             currentTimeMillis = { now }
         ).apply {
-            onTopicChange("Android")
+            onTopicChange("Android Developer")
             onDeadlineSelected(futureDeadline)
             onSubmitSetup()
         }
@@ -121,30 +147,50 @@ private class FakeAiRoadmapRepository : AiRoadmapRepository {
 
     override val generationStatus: StateFlow<AiRoadmapGenerationStatus> = status
 
-    override suspend fun getPersonalizedQuestions(draft: AiRoadmapDraft): Result<List<AiRoadmapQuestion>> {
+    override suspend fun getGeneratedRoadmaps(): Result<List<AiGeneratedRoadmap>> {
         return Result.success(
             listOf(
-                AiRoadmapQuestion(
-                    id = "level",
+                AiGeneratedRoadmap(
+                    id = "frontend-pro",
+                    title = "Frontend Pro Roadmap",
+                    lessonsCount = 12,
+                    durationWeeks = 8,
+                    generatedAtEpochMillis = 1_000L
+                )
+            )
+        )
+    }
+
+    override suspend fun getPersonalizedQuestions(draft: AiRoadmapDraft): Result<AiRoadmapQuizResult> {
+        return Result.success(
+            AiRoadmapQuizResult(
+                roleCategory = "MOBILE_DEVELOPMENT",
+                questions = listOf(
+                    AiRoadmapQuestion(
+                        id = "level",
+                        skillName = draft.topic,
+                        prompt = "How comfortable are you?",
+                        options = listOf(
+                            AiRoadmapQuestionOption("level-1", "New"),
+                            AiRoadmapQuestionOption("level-2", "Basic"),
+                            AiRoadmapQuestionOption("level-3", "Intermediate"),
+                            AiRoadmapQuestionOption("level-4", "Advanced")
+                        )
+                    )
+                ) + (2..6).map { index ->
+                    AiRoadmapQuestion(
+                        id = "question-$index",
+                        skillName = draft.topic,
+                        prompt = "Question $index?",
+                        options = listOf(
+                            AiRoadmapQuestionOption("question-$index-option-1", "Answer $index")
+                        )
+                    )
+                } + AiRoadmapQuestion(
+                    id = "question-7",
                     skillName = draft.topic,
-                    prompt = "How comfortable are you?",
-                    options = listOf(
-                        AiRoadmapQuestionOption("level-1", "New"),
-                        AiRoadmapQuestionOption("level-2", "Basic"),
-                        AiRoadmapQuestionOption("level-3", "Intermediate"),
-                        AiRoadmapQuestionOption("level-4", "Advanced")
-                    )
-                ),
-                AiRoadmapQuestion(
-                    id = "style",
-                    skillName = "Learning style",
-                    prompt = "How do you learn?",
-                    options = listOf(
-                        AiRoadmapQuestionOption("style-1", "Videos"),
-                        AiRoadmapQuestionOption("style-2", "Projects"),
-                        AiRoadmapQuestionOption("style-3", "Docs"),
-                        AiRoadmapQuestionOption("style-4", "Quizzes")
-                    )
+                    prompt = "Question 7?",
+                    options = emptyList()
                 )
             )
         )
@@ -154,7 +200,7 @@ private class FakeAiRoadmapRepository : AiRoadmapRepository {
         draft: AiRoadmapDraft,
         answers: List<AiRoadmapAnswer>
     ): Result<AiRoadmapGenerationRequest> {
-        return if (answers.all { it.hasAnswer }) {
+        return if (answers.all { it.hasAnswer } && answers.size == 7 && draft.roleCategory != null) {
             Result.success(AiRoadmapGenerationRequest(draft, answers))
         } else {
             Result.failure(IllegalArgumentException("Missing answer"))

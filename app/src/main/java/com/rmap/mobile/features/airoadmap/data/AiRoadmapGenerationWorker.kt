@@ -22,7 +22,18 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.rmap.mobile.MainActivity
 import com.rmap.mobile.R
-import kotlinx.coroutines.delay
+import com.rmap.mobile.core.network.ApiClient
+import com.rmap.mobile.core.network.NetworkResult
+import com.rmap.mobile.core.network.SafeApiCall
+import com.rmap.mobile.core.network.SessionCookieJar
+import com.rmap.mobile.core.storage.SharedPreferencesSessionCookieStorage
+import com.rmap.mobile.features.airoadmap.data.mapper.toBackendRoleCategory
+import com.rmap.mobile.features.airoadmap.data.mapper.toDto
+import com.rmap.mobile.features.airoadmap.data.model.GenerateRoadmapResponseDto
+import com.rmap.mobile.features.airoadmap.data.remote.AiRoadmapApi
+import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
+import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapDraft
+import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationRequest
 
 class AiRoadmapGenerationWorker(
     private val context: Context,
@@ -30,54 +41,114 @@ class AiRoadmapGenerationWorker(
 ) : CoroutineWorker(context, workerParameters) {
 
     override suspend fun doWork(): Result {
-        val topic = inputData.getString(KEY_TOPIC).orEmpty().ifBlank {
-            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_MISSING_TOPIC))
+        val goal = inputData.getString(KEY_GOAL).orEmpty().ifBlank {
+            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_MISSING_GOAL))
+        }
+        val roleCategory = inputData.getString(KEY_ROLE_CATEGORY).orEmpty().toBackendRoleCategory()
+        if (roleCategory.isBlank()) {
+            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_MISSING_ROLE_CATEGORY))
+        }
+        val deadlineEpochMillis = inputData.getLong(KEY_DEADLINE_EPOCH_MILLIS, 0L)
+        if (deadlineEpochMillis <= 0L) {
+            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_MISSING_DEADLINE))
+        }
+        val dailyStudyHours = inputData.getFloat(KEY_DAILY_STUDY_HOURS, 0f)
+        if (dailyStudyHours <= 0f) {
+            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_MISSING_DAILY_STUDY_HOURS))
+        }
+        val quizQuestions = inputData.getStringArray(KEY_QUIZ_QUESTIONS).orEmpty()
+        val quizAnswers = inputData.getStringArray(KEY_QUIZ_ANSWERS).orEmpty()
+        if (quizQuestions.size != quizAnswers.size || quizAnswers.isEmpty()) {
+            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_MISSING_QUIZ_ANSWERS))
         }
 
         ensureNotificationChannel()
-        updateProgress(topic = topic, progress = 0, stage = STAGE_STARTING)
+        updateProgress(goal = goal, progress = 5, stage = STAGE_STARTING)
 
-        GENERATION_STAGES.forEachIndexed { index, stage ->
-            if (isStopped) {
-                return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_CANCELLED))
-            }
-
-            val progress = ((index + 1).toFloat() / GENERATION_STAGES.size.toFloat() * 100).toInt()
-            delay(STEP_DELAY_MILLIS)
-            updateProgress(topic = topic, progress = progress, stage = stage)
+        if (isStopped) {
+            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_CANCELLED))
         }
 
-        showCompletionNotification(topic)
-
-        return Result.success(
-            workDataOf(
-                KEY_ROADMAP_ID to GENERATED_ROADMAP_ID,
-                KEY_PROGRESS to 100,
-                KEY_STAGE to STAGE_READY,
-                KEY_TOPIC to topic
+        updateProgress(goal = goal, progress = 30, stage = STAGE_GENERATING)
+        val result = generateRoadmap(
+            request = AiRoadmapGenerationRequest(
+                draft = AiRoadmapDraft(
+                    topic = goal,
+                    deadlineEpochMillis = deadlineEpochMillis,
+                    dailyStudyHours = dailyStudyHours,
+                    roleCategory = roleCategory
+                ),
+                answers = quizQuestions.zip(quizAnswers).map { (question, answer) ->
+                    AiRoadmapAnswer(
+                        question = question,
+                        answer = answer
+                    )
+                }
             )
         )
+
+        if (isStopped) {
+            return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_CANCELLED))
+        }
+
+        return when (result) {
+            is NetworkResult.Success -> {
+                updateProgress(goal = goal, progress = 100, stage = STAGE_READY)
+                showCompletionNotification(goal)
+
+                Result.success(
+                    workDataOf(
+                        KEY_ROADMAP_ID to result.data.roadmap.id,
+                        KEY_PROGRESS to 100,
+                        KEY_STAGE to STAGE_READY,
+                        KEY_GOAL to goal
+                    )
+                )
+            }
+
+            is NetworkResult.Error -> {
+                Result.failure(
+                    workDataOf(
+                        KEY_ERROR_MESSAGE to result.message,
+                        KEY_PROGRESS to 30,
+                        KEY_STAGE to STAGE_GENERATING
+                    )
+                )
+            }
+        }
     }
 
-    private suspend fun updateProgress(topic: String, progress: Int, stage: String) {
+    private suspend fun generateRoadmap(
+        request: AiRoadmapGenerationRequest
+    ): NetworkResult<GenerateRoadmapResponseDto> {
+        val cookieJar = SessionCookieJar(
+            SharedPreferencesSessionCookieStorage(context.applicationContext)
+        )
+        val api = ApiClient.fromBuildConfig(cookieJar).createService(AiRoadmapApi::class.java)
+        return SafeApiCall.execute {
+            api.generateRoadmap(request.toDto())
+        }
+    }
+
+    private suspend fun updateProgress(goal: String, progress: Int, stage: String) {
         setProgress(
             workDataOf(
                 KEY_PROGRESS to progress,
                 KEY_STAGE to stage,
-                KEY_TOPIC to topic
+                KEY_GOAL to goal
             )
         )
-        setForeground(createForegroundInfo(topic = topic, progress = progress, stage = stage))
+        setForeground(createForegroundInfo(goal = goal, progress = progress, stage = stage))
     }
 
-    private fun createForegroundInfo(topic: String, progress: Int, stage: String): ForegroundInfo {
+    private fun createForegroundInfo(goal: String, progress: Int, stage: String): ForegroundInfo {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_rmap)
             .setContentTitle(context.getString(R.string.ai_roadmap_notification_title))
-            .setContentText(context.getString(R.string.ai_roadmap_notification_body, topic, stage))
+            .setContentText(context.getString(R.string.ai_roadmap_notification_body, goal, stage))
             .setStyle(
                 NotificationCompat.BigTextStyle().bigText(
-                    context.getString(R.string.ai_roadmap_notification_body, topic, stage)
+                    context.getString(R.string.ai_roadmap_notification_body, goal, stage)
                 )
             )
             .setColor(NOTIFICATION_COLOR)
@@ -111,16 +182,16 @@ class AiRoadmapGenerationWorker(
     }
 
     @SuppressLint("MissingPermission")
-    private fun showCompletionNotification(topic: String) {
+    private fun showCompletionNotification(goal: String) {
         if (!canPostNotifications()) return
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_rmap)
             .setContentTitle(context.getString(R.string.ai_roadmap_notification_ready_title))
-            .setContentText(context.getString(R.string.ai_roadmap_notification_ready_body, topic))
+            .setContentText(context.getString(R.string.ai_roadmap_notification_ready_body, goal))
             .setStyle(
                 NotificationCompat.BigTextStyle().bigText(
-                    context.getString(R.string.ai_roadmap_notification_ready_body, topic)
+                    context.getString(R.string.ai_roadmap_notification_ready_body, goal)
                 )
             )
             .setColor(NOTIFICATION_COLOR)
@@ -172,9 +243,12 @@ class AiRoadmapGenerationWorker(
 
     companion object {
         const val UNIQUE_WORK_NAME = "ai_roadmap_generation"
-        const val KEY_TOPIC = "topic"
+        const val KEY_GOAL = "goal"
+        const val KEY_ROLE_CATEGORY = "role_category"
         const val KEY_DEADLINE_EPOCH_MILLIS = "deadline_epoch_millis"
         const val KEY_DAILY_STUDY_HOURS = "daily_study_hours"
+        const val KEY_QUIZ_QUESTIONS = "quiz_questions"
+        const val KEY_QUIZ_ANSWERS = "quiz_answers"
         const val KEY_PROGRESS = "progress"
         const val KEY_STAGE = "stage"
         const val KEY_ROADMAP_ID = "roadmap_id"
@@ -184,20 +258,15 @@ class AiRoadmapGenerationWorker(
         private const val REQUEST_CODE_OPEN_APP = 4401
         private const val ONGOING_NOTIFICATION_ID = 4501
         private const val COMPLETION_NOTIFICATION_ID = 4502
-        private const val GENERATED_ROADMAP_ID = "frontend-pro"
-        private const val ERROR_MISSING_TOPIC = "Missing roadmap topic"
+        private const val ERROR_MISSING_GOAL = "Missing roadmap goal"
+        private const val ERROR_MISSING_ROLE_CATEGORY = "Missing roadmap role category"
+        private const val ERROR_MISSING_DEADLINE = "Missing roadmap deadline"
+        private const val ERROR_MISSING_DAILY_STUDY_HOURS = "Missing daily study hours"
+        private const val ERROR_MISSING_QUIZ_ANSWERS = "Missing quiz answers"
         private const val ERROR_CANCELLED = "Roadmap generation was cancelled"
         private const val STAGE_STARTING = "Starting"
+        private const val STAGE_GENERATING = "Generating roadmap"
         private const val STAGE_READY = "Ready"
-        private const val STEP_DELAY_MILLIS = 15_000L
         private val NOTIFICATION_COLOR = Color.rgb(43, 127, 255)
-        private val GENERATION_STAGES = listOf(
-            "Analyzing your target",
-            "Estimating timeline",
-            "Reading your answers",
-            "Selecting skill nodes",
-            "Sequencing milestones",
-            "Finalizing roadmap"
-        )
     }
 }

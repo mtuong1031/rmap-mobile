@@ -129,7 +129,7 @@
     <string name="ai_roadmap_permission_body">Allow notifications so you can track roadmap generation from the notification shade while using other apps.</string>
     <string name="ai_roadmap_permission_allow">Allow</string>
     <string name="ai_roadmap_permission_skip">Skip</string>
-    <string name="ai_roadmap_error_topic_required">Enter a roadmap topic with at least two characters.</string>
+    <string name="ai_roadmap_error_topic_required">Enter a roadmap goal with at least 10 characters.</string>
     <string name="ai_roadmap_error_deadline_required">Choose a target deadline.</string>
     <string name="ai_roadmap_error_deadline_past">Choose a future deadline.</string>
     <string name="ai_roadmap_error_questions">Unable to prepare personalized questions. Please try again.</string>
