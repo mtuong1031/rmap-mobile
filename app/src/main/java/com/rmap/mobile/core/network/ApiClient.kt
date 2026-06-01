@@ -7,6 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 class ApiClient(
     baseUrl: String,
@@ -15,6 +16,10 @@ class ApiClient(
 ) {
     val okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .cookieJar(cookieJar)
+        .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .callTimeout(CALL_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .apply {
             if (enableHttpLogging) {
                 addInterceptor(
@@ -61,5 +66,10 @@ class ApiClient(
 
             return normalizedBaseUrl
         }
+
+        private const val CONNECT_TIMEOUT_SECONDS = 30L
+        private const val READ_TIMEOUT_SECONDS = 180L
+        private const val WRITE_TIMEOUT_SECONDS = 60L
+        private const val CALL_TIMEOUT_SECONDS = 180L
     }
 }

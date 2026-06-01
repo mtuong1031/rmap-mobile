@@ -3,7 +3,13 @@ package com.rmap.mobile.features.airoadmap.domain.model
 data class AiRoadmapDraft(
     val topic: String,
     val deadlineEpochMillis: Long,
-    val dailyStudyHours: Float
+    val dailyStudyHours: Float,
+    val roleCategory: String? = null
+)
+
+data class AiRoadmapQuizResult(
+    val roleCategory: String,
+    val questions: List<AiRoadmapQuestion>
 )
 
 data class AiRoadmapQuestion(
@@ -19,17 +25,24 @@ data class AiRoadmapQuestionOption(
 )
 
 data class AiRoadmapAnswer(
-    val questionId: String,
-    val selectedOptionId: String?,
-    val customAnswer: String
+    val question: String,
+    val answer: String
 ) {
     val hasAnswer: Boolean
-        get() = selectedOptionId != null || customAnswer.isNotBlank()
+        get() = question.isNotBlank() && answer.isNotBlank()
 }
 
 data class AiRoadmapGenerationRequest(
     val draft: AiRoadmapDraft,
     val answers: List<AiRoadmapAnswer>
+)
+
+data class AiGeneratedRoadmap(
+    val id: String,
+    val title: String,
+    val lessonsCount: Int,
+    val durationWeeks: Int,
+    val generatedAtEpochMillis: Long?
 )
 
 enum class AiRoadmapGenerationPhase {

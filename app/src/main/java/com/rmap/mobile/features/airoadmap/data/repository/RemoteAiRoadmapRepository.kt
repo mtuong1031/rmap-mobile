@@ -1,4 +1,4 @@
-package com.rmap.mobile.features.airoadmap.data
+package com.rmap.mobile.features.airoadmap.data.repository
 
 import android.content.Context
 import androidx.work.ExistingWorkPolicy
@@ -6,26 +6,38 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.rmap.mobile.core.network.NetworkResult
+import com.rmap.mobile.core.network.SafeApiCall
+import com.rmap.mobile.core.network.toAppException
+import com.rmap.mobile.core.network.toDomainResult
+import com.rmap.mobile.core.session.SessionManager
+import com.rmap.mobile.features.airoadmap.data.AiRoadmapGenerationWorker
+import com.rmap.mobile.features.airoadmap.data.mapper.toDomain
+import com.rmap.mobile.features.airoadmap.data.model.OnboardingQuizRequestDto
+import com.rmap.mobile.features.airoadmap.data.model.RoadmapNodesResponseDto
+import com.rmap.mobile.features.airoadmap.data.remote.AiRoadmapApi
+import com.rmap.mobile.features.airoadmap.domain.model.AiGeneratedRoadmap
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapDraft
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationPhase
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationRequest
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationStatus
-import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestion
-import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestionOption
+import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuizResult
 import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class FakeAiRoadmapRepository(
-    context: Context
+class RemoteAiRoadmapRepository(
+    context: Context,
+    private val api: AiRoadmapApi,
+    private val sessionManager: SessionManager
 ) : AiRoadmapRepository {
     private val workManager = WorkManager.getInstance(context.applicationContext)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -46,67 +58,67 @@ class FakeAiRoadmapRepository(
         }
     }
 
-    override suspend fun getPersonalizedQuestions(draft: AiRoadmapDraft): Result<List<AiRoadmapQuestion>> {
-        val topic = draft.topic.trim().ifBlank { return Result.failure(IllegalArgumentException("Topic is required")) }
+    override suspend fun getGeneratedRoadmaps(): Result<List<AiGeneratedRoadmap>> {
+        val networkResult = SafeApiCall.execute(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            api.listRoadmaps(
+                page = ROADMAP_LIST_PAGE,
+                perPage = ROADMAP_LIST_PER_PAGE
+            )
+        }
 
-        return Result.success(
-            listOf(
-                question(
-                    id = "current-level",
-                    skillName = topic,
-                    prompt = "How would you describe your current level with $topic?",
-                    options = listOf(
-                        "I am completely new",
-                        "I know the basics",
-                        "I can build small projects",
-                        "I have production experience"
-                    )
-                ),
-                question(
-                    id = "learning-style",
-                    skillName = "Learning style",
-                    prompt = "What learning format helps you move fastest?",
-                    options = listOf(
-                        "Short videos and examples",
-                        "Official docs and notes",
-                        "Hands-on mini projects",
-                        "Quizzes and review tasks"
-                    )
-                ),
-                question(
-                    id = "project-goal",
-                    skillName = "Practice goal",
-                    prompt = "What do you want to be able to build by the deadline?",
-                    options = listOf(
-                        "A portfolio project",
-                        "An interview-ready demo",
-                        "A production-style app",
-                        "A complete capstone project"
-                    )
-                ),
-                question(
-                    id = "weakest-area",
-                    skillName = "Confidence check",
-                    prompt = "Which area should RMap spend extra time on?",
-                    options = listOf(
-                        "Fundamentals",
-                        "Architecture",
-                        "Testing and debugging",
-                        "Deployment and maintenance"
-                    )
+        return when (networkResult) {
+            is NetworkResult.Success -> Result.success(
+                networkResult.data.data.map { roadmap ->
+                    roadmap.toDomain(lessonsCount = getNodeCountOrZero(roadmap.id))
+                }
+            )
+
+            is NetworkResult.Error -> Result.failure(networkResult.toAppException())
+        }
+    }
+
+    override suspend fun getPersonalizedQuestions(draft: AiRoadmapDraft): Result<AiRoadmapQuizResult> {
+        val networkResult = SafeApiCall.execute(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            api.createQuiz(
+                OnboardingQuizRequestDto(
+                    topic = draft.topic
                 )
             )
-        )
+        }
+
+        return networkResult.toDomainResult { response ->
+            response.toDomain(goal = draft.topic)
+        }
     }
 
     override suspend fun prepareGeneration(
         draft: AiRoadmapDraft,
         answers: List<AiRoadmapAnswer>
     ): Result<AiRoadmapGenerationRequest> {
-        return if (answers.all { it.hasAnswer }) {
-            Result.success(AiRoadmapGenerationRequest(draft = draft, answers = answers))
-        } else {
-            Result.failure(IllegalArgumentException("Please answer every question before generating your roadmap."))
+        val roleCategory = draft.roleCategory
+        return when {
+            roleCategory.isNullOrBlank() -> Result.failure(
+                IllegalArgumentException("Unable to determine roadmap role category.")
+            )
+
+            answers.size !in MIN_QUIZ_ANSWERS..MAX_QUIZ_ANSWERS -> Result.failure(
+                IllegalArgumentException("Please answer every question before generating your roadmap.")
+            )
+
+            answers.any { !it.hasAnswer } -> Result.failure(
+                IllegalArgumentException("Please answer every question before generating your roadmap.")
+            )
+
+            else -> Result.success(
+                AiRoadmapGenerationRequest(
+                    draft = draft.copy(roleCategory = roleCategory),
+                    answers = answers
+                )
+            )
         }
     }
 
@@ -116,9 +128,12 @@ class FakeAiRoadmapRepository(
         val workRequest = OneTimeWorkRequestBuilder<AiRoadmapGenerationWorker>()
             .setInputData(
                 workDataOf(
-                    AiRoadmapGenerationWorker.KEY_TOPIC to request.draft.topic,
+                    AiRoadmapGenerationWorker.KEY_GOAL to request.draft.topic,
+                    AiRoadmapGenerationWorker.KEY_ROLE_CATEGORY to request.draft.roleCategory.orEmpty(),
                     AiRoadmapGenerationWorker.KEY_DEADLINE_EPOCH_MILLIS to request.draft.deadlineEpochMillis,
-                    AiRoadmapGenerationWorker.KEY_DAILY_STUDY_HOURS to request.draft.dailyStudyHours
+                    AiRoadmapGenerationWorker.KEY_DAILY_STUDY_HOURS to request.draft.dailyStudyHours,
+                    AiRoadmapGenerationWorker.KEY_QUIZ_QUESTIONS to request.answers.map { it.question }.toTypedArray(),
+                    AiRoadmapGenerationWorker.KEY_QUIZ_ANSWERS to request.answers.map { it.answer }.toTypedArray()
                 )
             )
             .build()
@@ -134,23 +149,23 @@ class FakeAiRoadmapRepository(
         workManager.cancelUniqueWork(AiRoadmapGenerationWorker.UNIQUE_WORK_NAME)
     }
 
-    private fun question(
-        id: String,
-        skillName: String,
-        prompt: String,
-        options: List<String>
-    ): AiRoadmapQuestion {
-        return AiRoadmapQuestion(
-            id = id,
-            skillName = skillName,
-            prompt = prompt,
-            options = options.mapIndexed { index, label ->
-                AiRoadmapQuestionOption(
-                    id = "$id-option-${index + 1}",
-                    label = label
-                )
+    private suspend fun getNodeCountOrZero(roadmapId: String): Int {
+        val nodesResult = SafeApiCall.execute(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            api.listRoadmapNodes(roadmapId)
+        }
+        return nodesResult.nodeCountOrZero()
+    }
+
+    private fun NetworkResult<RoadmapNodesResponseDto>.nodeCountOrZero(): Int {
+        return when (this) {
+            is NetworkResult.Success -> data.nodes.count { node ->
+                node.nodeType == NODE_TYPE_REQUIRED || node.nodeType == NODE_TYPE_OPTIONAL
             }
-        )
+
+            is NetworkResult.Error -> 0
+        }
     }
 
     private fun WorkInfo.toGenerationStatus(): AiRoadmapGenerationStatus {
@@ -195,5 +210,11 @@ class FakeAiRoadmapRepository(
 
     private companion object {
         const val STATUS_POLL_INTERVAL_MILLIS = 1_000L
+        const val ROADMAP_LIST_PAGE = 1
+        const val ROADMAP_LIST_PER_PAGE = 50
+        const val MIN_QUIZ_ANSWERS = 7
+        const val MAX_QUIZ_ANSWERS = 10
+        const val NODE_TYPE_REQUIRED = "REQUIRED"
+        const val NODE_TYPE_OPTIONAL = "OPTIONAL"
     }
 }

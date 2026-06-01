@@ -32,8 +32,22 @@ data class AiRoadmapQuestionUiModel(
     val selectedOptionId: String? = null,
     val customAnswer: String = ""
 ) {
+    val requiresCustomAnswer: Boolean
+        get() = options.isEmpty()
+
     val hasAnswer: Boolean
-        get() = selectedOptionId != null || customAnswer.isNotBlank()
+        get() = if (requiresCustomAnswer) {
+            customAnswer.isNotBlank()
+        } else {
+            selectedOptionId != null
+        }
+
+    val answerText: String
+        get() = if (requiresCustomAnswer) {
+            customAnswer.trim()
+        } else {
+            options.firstOrNull { it.id == selectedOptionId }?.label.orEmpty()
+        }
 }
 
 data class AiGeneratedRoadmapUiModel(
@@ -47,13 +61,15 @@ data class AiGeneratedRoadmapUiModel(
 data class AiRoadmapUiState(
     val step: AiRoadmapStep = AiRoadmapStep.Library,
     val searchQuery: String = "",
-    val generatedRoadmaps: List<AiGeneratedRoadmapUiModel> = mockGeneratedRoadmaps,
+    val generatedRoadmaps: List<AiGeneratedRoadmapUiModel> = emptyList(),
     val visibleGeneratedRoadmapCount: Int = GENERATED_ROADMAP_PAGE_SIZE,
     val topic: String = "",
+    val roleCategory: String? = null,
     val deadlineEpochMillis: Long? = null,
     val dailyStudyHours: Float = DEFAULT_DAILY_STUDY_HOURS,
     val questions: List<AiRoadmapQuestionUiModel> = emptyList(),
     val currentQuestionIndex: Int = 0,
+    val isLoadingGeneratedRoadmaps: Boolean = false,
     val isLoadingQuestions: Boolean = false,
     val formError: AiRoadmapFormError? = null,
     val generationStatus: AiRoadmapGenerationStatus = AiRoadmapGenerationStatus()
@@ -115,95 +131,8 @@ data class AiRoadmapUiState(
         get() = questions.isNotEmpty() && answeredQuestionCount == questions.size
 
     companion object {
-        const val MIN_TOPIC_LENGTH = 2
+        const val MIN_TOPIC_LENGTH = 10
         const val DEFAULT_DAILY_STUDY_HOURS = 2f
         const val GENERATED_ROADMAP_PAGE_SIZE = 5
     }
 }
-
-private val mockGeneratedRoadmaps = listOf(
-    AiGeneratedRoadmapUiModel(
-        id = "ai-android-compose",
-        title = "Android Compose Specialist",
-        lessonsCount = 28,
-        durationWeeks = 8,
-        createdDaysAgo = 0
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-react-production",
-        title = "React Production Roadmap",
-        lessonsCount = 24,
-        durationWeeks = 6,
-        createdDaysAgo = 1
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-backend-api",
-        title = "Backend API Engineer",
-        lessonsCount = 32,
-        durationWeeks = 10,
-        createdDaysAgo = 2
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-devops-foundations",
-        title = "DevOps Foundations",
-        lessonsCount = 22,
-        durationWeeks = 7,
-        createdDaysAgo = 3
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-uiux-mobile",
-        title = "Mobile UI/UX Mastery",
-        lessonsCount = 18,
-        durationWeeks = 5,
-        createdDaysAgo = 5
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-data-analytics",
-        title = "Data Analytics Starter",
-        lessonsCount = 26,
-        durationWeeks = 9,
-        createdDaysAgo = 6
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-flutter-cross-platform",
-        title = "Flutter Cross-platform",
-        lessonsCount = 21,
-        durationWeeks = 6,
-        createdDaysAgo = 8
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-system-design",
-        title = "System Design Interview",
-        lessonsCount = 30,
-        durationWeeks = 8,
-        createdDaysAgo = 10
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-ios-swift",
-        title = "iOS Swift Starter",
-        lessonsCount = 20,
-        durationWeeks = 6,
-        createdDaysAgo = 12
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-fullstack-product",
-        title = "Full Stack Product Builder",
-        lessonsCount = 36,
-        durationWeeks = 12,
-        createdDaysAgo = 14
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-ai-engineering",
-        title = "AI Engineering Path",
-        lessonsCount = 34,
-        durationWeeks = 11,
-        createdDaysAgo = 16
-    ),
-    AiGeneratedRoadmapUiModel(
-        id = "ai-security-basics",
-        title = "Security Basics",
-        lessonsCount = 19,
-        durationWeeks = 5,
-        createdDaysAgo = 20
-    )
-)

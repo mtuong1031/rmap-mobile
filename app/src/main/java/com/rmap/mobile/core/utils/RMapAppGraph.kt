@@ -7,7 +7,8 @@ import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.core.storage.SharedPreferencesSessionCookieStorage
 import com.rmap.mobile.core.storage.SessionCookieStorage
 import com.rmap.mobile.core.database.RMapDatabase
-import com.rmap.mobile.features.airoadmap.data.FakeAiRoadmapRepository
+import com.rmap.mobile.features.airoadmap.data.remote.AiRoadmapApi
+import com.rmap.mobile.features.airoadmap.data.repository.RemoteAiRoadmapRepository
 import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
 import com.rmap.mobile.features.auth.data.remote.AuthApi
 import com.rmap.mobile.features.auth.data.repository.AuthRepositoryImpl
@@ -85,7 +86,11 @@ object RMapAppGraph {
             roadmapRepository = roadmapRepository
         )
         val scheduler = LearningReminderScheduler(applicationContext)
-        aiRoadmapRepository = FakeAiRoadmapRepository(applicationContext)
+        aiRoadmapRepository = RemoteAiRoadmapRepository(
+            context = applicationContext,
+            api = apiClient.createService(AiRoadmapApi::class.java),
+            sessionManager = sessionManager
+        )
         learningNotificationNotifier = LearningNotificationNotifier(applicationContext)
         learningNotificationNotifier.ensureNotificationChannel()
         notificationSettingsRepository = SharedPreferencesNotificationSettingsRepository(
