@@ -293,6 +293,8 @@ fun AiRoadmapScreen(
                         if (question != null) {
                             AiRoadmapQuestionContent(
                                 question = question,
+                                questions = uiState.questions,
+                                currentQuestionIndex = uiState.currentQuestionIndex,
                                 questionProgressText = stringResource(
                                     R.string.ai_roadmap_question_progress,
                                     uiState.currentQuestionIndex + 1,

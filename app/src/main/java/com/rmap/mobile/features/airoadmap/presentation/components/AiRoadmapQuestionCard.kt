@@ -66,33 +66,37 @@ fun AiRoadmapQuestionCard(
                 )
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)) {
-                question.options.forEach { option ->
-                    AiRoadmapOptionRow(
-                        option = option,
-                        selected = option.id == question.selectedOptionId,
-                        onClick = { onOptionSelected(question.id, option.id) }
-                    )
+            if (question.options.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)) {
+                    question.options.forEach { option ->
+                        AiRoadmapOptionRow(
+                            option = option,
+                            selected = option.id == question.selectedOptionId,
+                            onClick = { onOptionSelected(question.id, option.id) }
+                        )
+                    }
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)) {
-                Text(
-                    text = customAnswerLabel,
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
+            if (question.requiresCustomAnswer) {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)) {
+                    Text(
+                        text = customAnswerLabel,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
-                RMapTextInput(
-                    value = question.customAnswer,
-                    onValueChange = { onCustomAnswerChange(question.id, it) },
-                    placeholder = customAnswerPlaceholder,
-                    singleLine = false,
-                    height = 112.dp,
-                    textStyle = MaterialTheme.typography.bodyLarge,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                )
+                    RMapTextInput(
+                        value = question.customAnswer,
+                        onValueChange = { onCustomAnswerChange(question.id, it) },
+                        placeholder = customAnswerPlaceholder,
+                        singleLine = false,
+                        height = 112.dp,
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                    )
+                }
             }
         }
     }

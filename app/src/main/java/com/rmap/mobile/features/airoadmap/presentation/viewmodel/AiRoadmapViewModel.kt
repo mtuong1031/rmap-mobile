@@ -3,11 +3,14 @@ package com.rmap.mobile.features.airoadmap.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.features.airoadmap.domain.model.AiGeneratedRoadmap
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapDraft
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationPhase
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestion
 import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -28,7 +31,12 @@ class AiRoadmapViewModel(
     private val _events = MutableSharedFlow<AiRoadmapEvent>()
     val events: SharedFlow<AiRoadmapEvent> = _events.asSharedFlow()
 
+    private var lastLoadedGeneratedRoadmapId: String? = null
+    private var optionAutoAdvanceJob: Job? = null
+
     init {
+        loadGeneratedRoadmaps()
+
         viewModelScope.launch {
             repository.generationStatus.collect { status ->
                 _uiState.update { state ->
@@ -46,21 +54,22 @@ class AiRoadmapViewModel(
                     state.copy(
                         step = nextStep,
                         generationStatus = status,
-                        generatedRoadmaps = if (
-                            status.phase == AiRoadmapGenerationPhase.Succeeded &&
-                            status.generatedRoadmapId != null &&
-                            state.generatedRoadmaps.none { it.id == status.generatedRoadmapId }
-                        ) {
-                            listOf(state.toGeneratedRoadmap(status.generatedRoadmapId)) + state.generatedRoadmaps
-                        } else {
-                            state.generatedRoadmaps
-                        },
                         formError = if (status.phase == AiRoadmapGenerationPhase.Failed) {
                             AiRoadmapFormError.GenerationFailed
                         } else {
                             state.formError
                         }
                     )
+                }
+
+                val generatedRoadmapId = status.generatedRoadmapId
+                if (
+                    status.phase == AiRoadmapGenerationPhase.Succeeded &&
+                    generatedRoadmapId != null &&
+                    generatedRoadmapId != lastLoadedGeneratedRoadmapId
+                ) {
+                    lastLoadedGeneratedRoadmapId = generatedRoadmapId
+                    loadGeneratedRoadmaps()
                 }
             }
         }
@@ -98,10 +107,12 @@ class AiRoadmapViewModel(
     }
 
     fun onCreateRoadmapClick() {
+        optionAutoAdvanceJob?.cancel()
         _uiState.update {
             it.copy(
                 step = AiRoadmapStep.Setup,
                 topic = "",
+                roleCategory = null,
                 deadlineEpochMillis = null,
                 dailyStudyHours = AiRoadmapUiState.DEFAULT_DAILY_STUDY_HOURS,
                 questions = emptyList(),
@@ -112,6 +123,7 @@ class AiRoadmapViewModel(
     }
 
     fun onBackToLibrary() {
+        optionAutoAdvanceJob?.cancel()
         _uiState.update {
             it.copy(
                 step = AiRoadmapStep.Library,
@@ -149,6 +161,7 @@ class AiRoadmapViewModel(
     }
 
     fun onSubmitSetup() {
+        optionAutoAdvanceJob?.cancel()
         val draft = buildDraftOrSetError() ?: return
 
         viewModelScope.launch {
@@ -160,11 +173,12 @@ class AiRoadmapViewModel(
             }
 
             repository.getPersonalizedQuestions(draft)
-                .onSuccess { questions ->
+                .onSuccess { quizResult ->
                     _uiState.update {
                         it.copy(
                             step = AiRoadmapStep.Questions,
-                            questions = questions.map { question -> question.toUiModel() },
+                            roleCategory = quizResult.roleCategory,
+                            questions = quizResult.questions.map { question -> question.toUiModel() },
                             currentQuestionIndex = 0,
                             isLoadingQuestions = false,
                             formError = null
@@ -183,24 +197,71 @@ class AiRoadmapViewModel(
     }
 
     fun onOptionSelected(questionId: String, optionId: String) {
-        updateQuestion(questionId) { question ->
-            question.copy(selectedOptionId = optionId)
+        optionAutoAdvanceJob?.cancel()
+        var selectedQuestionIndex: Int? = null
+
+        _uiState.update { state ->
+            val questionIndex = state.questions.indexOfFirst { it.id == questionId }
+            val question = state.questions.getOrNull(questionIndex)
+
+            if (questionIndex == -1 || question == null || question.options.none { it.id == optionId }) {
+                state
+            } else {
+                val questions = state.questions.map {
+                    if (it.id == questionId) it.copy(selectedOptionId = optionId) else it
+                }
+
+                if (questionIndex == state.currentQuestionIndex && questionIndex < state.questions.lastIndex) {
+                    selectedQuestionIndex = questionIndex
+                }
+
+                state.copy(
+                    questions = questions,
+                    formError = null
+                )
+            }
+        }
+
+        val questionIndex = selectedQuestionIndex ?: return
+        optionAutoAdvanceJob = viewModelScope.launch {
+            delay(OPTION_AUTO_ADVANCE_DELAY_MILLIS)
+            _uiState.update { state ->
+                val question = state.questions.getOrNull(questionIndex)
+                if (
+                    state.step == AiRoadmapStep.Questions &&
+                    state.currentQuestionIndex == questionIndex &&
+                    question?.selectedOptionId == optionId
+                ) {
+                    state.copy(
+                        currentQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex),
+                        formError = null
+                    )
+                } else {
+                    state
+                }
+            }
         }
     }
 
     fun onCustomAnswerChange(questionId: String, answer: String) {
         updateQuestion(questionId) { question ->
-            question.copy(customAnswer = answer)
+            if (question.requiresCustomAnswer) {
+                question.copy(customAnswer = answer)
+            } else {
+                question
+            }
         }
     }
 
     fun onPreviousQuestion() {
+        optionAutoAdvanceJob?.cancel()
         _uiState.update { state ->
             state.copy(currentQuestionIndex = (state.currentQuestionIndex - 1).coerceAtLeast(0))
         }
     }
 
     fun onNextQuestion() {
+        optionAutoAdvanceJob?.cancel()
         _uiState.update { state ->
             if (!state.isCurrentQuestionAnswered) {
                 state.copy(formError = AiRoadmapFormError.AnswerAllQuestions)
@@ -214,8 +275,9 @@ class AiRoadmapViewModel(
     }
 
     fun onSubmitAnswers() {
+        optionAutoAdvanceJob?.cancel()
         val state = _uiState.value
-        val draft = buildDraftOrSetError() ?: return
+        val draft = buildDraftOrSetError(requireRoleCategory = true) ?: return
 
         if (!state.isReadyToGenerate) {
             _uiState.update { it.copy(formError = AiRoadmapFormError.AnswerAllQuestions) }
@@ -227,9 +289,8 @@ class AiRoadmapViewModel(
                 draft = draft,
                 answers = state.questions.map { question ->
                     AiRoadmapAnswer(
-                        questionId = question.id,
-                        selectedOptionId = question.selectedOptionId,
-                        customAnswer = question.customAnswer.trim()
+                        question = question.prompt,
+                        answer = question.answerText
                     )
                 }
             ).onSuccess { request ->
@@ -247,6 +308,7 @@ class AiRoadmapViewModel(
     }
 
     fun onCancelGeneration() {
+        optionAutoAdvanceJob?.cancel()
         repository.cancelGeneration()
         _uiState.update {
             it.copy(
@@ -261,7 +323,27 @@ class AiRoadmapViewModel(
         }
     }
 
-    private fun buildDraftOrSetError(): AiRoadmapDraft? {
+    private fun loadGeneratedRoadmaps() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingGeneratedRoadmaps = true) }
+            repository.getGeneratedRoadmaps()
+                .onSuccess { roadmaps ->
+                    _uiState.update {
+                        it.copy(
+                            generatedRoadmaps = roadmaps.map { roadmap -> roadmap.toUiModel() },
+                            visibleGeneratedRoadmapCount = AiRoadmapUiState.GENERATED_ROADMAP_PAGE_SIZE
+                                .coerceAtLeast(it.visibleGeneratedRoadmapCount),
+                            isLoadingGeneratedRoadmaps = false
+                        )
+                    }
+                }
+                .onFailure {
+                    _uiState.update { it.copy(isLoadingGeneratedRoadmaps = false) }
+                }
+        }
+    }
+
+    private fun buildDraftOrSetError(requireRoleCategory: Boolean = false): AiRoadmapDraft? {
         val state = _uiState.value
         val trimmedTopic = state.topic.trim()
         val deadline = state.deadlineEpochMillis
@@ -270,6 +352,7 @@ class AiRoadmapViewModel(
             trimmedTopic.length < AiRoadmapUiState.MIN_TOPIC_LENGTH -> AiRoadmapFormError.TopicRequired
             deadline == null -> AiRoadmapFormError.DeadlineRequired
             deadline <= currentTimeMillis() -> AiRoadmapFormError.DeadlineInPast
+            requireRoleCategory && state.roleCategory.isNullOrBlank() -> AiRoadmapFormError.QuestionsLoadFailed
             else -> null
         }
 
@@ -283,7 +366,8 @@ class AiRoadmapViewModel(
         return AiRoadmapDraft(
             topic = trimmedTopic,
             deadlineEpochMillis = validDeadline,
-            dailyStudyHours = state.dailyStudyHours
+            dailyStudyHours = state.dailyStudyHours,
+            roleCategory = state.roleCategory
         )
     }
 
@@ -316,29 +400,25 @@ class AiRoadmapViewModel(
         )
     }
 
-    private fun AiRoadmapUiState.toGeneratedRoadmap(roadmapId: String): AiGeneratedRoadmapUiModel {
+    private fun AiGeneratedRoadmap.toUiModel(): AiGeneratedRoadmapUiModel {
         return AiGeneratedRoadmapUiModel(
-            id = roadmapId,
-            title = topic.trim(),
-            lessonsCount = GENERATED_ROADMAP_LESSON_COUNT,
-            durationWeeks = dailyStudyHours.toDurationWeeks(),
-            createdDaysAgo = 0
+            id = id,
+            title = title,
+            lessonsCount = lessonsCount,
+            durationWeeks = durationWeeks,
+            createdDaysAgo = generatedAtEpochMillis?.toCreatedDaysAgo() ?: 0
         )
     }
 
-    private fun Float.toDurationWeeks(): Int {
-        return when {
-            this < 1f -> 16
-            this < 2f -> 12
-            this < 4f -> 8
-            else -> 4
-        }
+    private fun Long.toCreatedDaysAgo(): Int {
+        return ((currentTimeMillis() - this) / MILLIS_PER_DAY).coerceAtLeast(0L).toInt()
     }
 
     companion object {
         const val MIN_DAILY_STUDY_HOURS = 0.5f
         const val MAX_DAILY_STUDY_HOURS = 12f
+        private const val OPTION_AUTO_ADVANCE_DELAY_MILLIS = 500L
         private const val HOURS_STEP_MULTIPLIER = 2f
-        private const val GENERATED_ROADMAP_LESSON_COUNT = 24
+        private const val MILLIS_PER_DAY = 24L * 60L * 60L * 1000L
     }
 }
