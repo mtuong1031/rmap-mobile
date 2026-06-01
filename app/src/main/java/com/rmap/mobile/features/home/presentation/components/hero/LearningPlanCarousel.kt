@@ -18,6 +18,7 @@ import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +47,7 @@ internal fun LearningPlanCarousel(
     nextUnlockPrefix: String,
     sectionHorizontalPadding: Dp,
     onContinueClick: (HomeLearningPlanUiModel) -> Unit,
+    onFocusedPlanChange: (HomeLearningPlanUiModel) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { roadmaps.size })
     val flingBehavior = PagerDefaults.flingBehavior(
@@ -71,6 +73,9 @@ internal fun LearningPlanCarousel(
     }
     val maxTitleLineCount = titleLineCounts.values.maxOrNull() ?: 1
     val titleLineHeight = with(density) { titleTextStyle.lineHeight.toDp() }
+    LaunchedEffect(pagerState.currentPage, roadmaps) {
+        roadmaps.getOrNull(pagerState.currentPage)?.let(onFocusedPlanChange)
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),

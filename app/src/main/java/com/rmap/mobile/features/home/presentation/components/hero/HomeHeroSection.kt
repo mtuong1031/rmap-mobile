@@ -24,6 +24,7 @@ fun HomeHeroSection(
     onContinueClick: (HomeLearningPlanUiModel) -> Unit,
     onCreateRoadmapWithAiClick: () -> Unit = {},
     onExploreReadyMadeClick: () -> Unit = {},
+    onFocusedPlanChange: (HomeLearningPlanUiModel) -> Unit = {},
 ) {
     LearningPlanSection(
         modifier = modifier.fillMaxWidth(),
@@ -34,7 +35,8 @@ fun HomeHeroSection(
         sectionHorizontalPadding = sectionHorizontalPadding,
         onContinueClick = onContinueClick,
         onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
-        onExploreReadyMadeClick = onExploreReadyMadeClick
+        onExploreReadyMadeClick = onExploreReadyMadeClick,
+        onFocusedPlanChange = onFocusedPlanChange
     )
 }
 
@@ -48,6 +50,7 @@ private fun LearningPlanSection(
     onContinueClick: (HomeLearningPlanUiModel) -> Unit,
     onCreateRoadmapWithAiClick: () -> Unit,
     onExploreReadyMadeClick: () -> Unit,
+    onFocusedPlanChange: (HomeLearningPlanUiModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val inProgressRoadmaps = getInProgressRoadmaps(learningPlans)
@@ -71,6 +74,9 @@ private fun LearningPlanSection(
             }
 
             inProgressRoadmaps.size == 1 -> {
+                androidx.compose.runtime.LaunchedEffect(inProgressRoadmaps.first().id) {
+                    onFocusedPlanChange(inProgressRoadmaps.first())
+                }
                 LearningPlanCard(
                     modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
                     roadmap = inProgressRoadmaps.first(),
@@ -87,7 +93,8 @@ private fun LearningPlanSection(
                     continueText = continueText,
                     nextUnlockPrefix = nextUnlockPrefix,
                     sectionHorizontalPadding = sectionHorizontalPadding,
-                    onContinueClick = onContinueClick
+                    onContinueClick = onContinueClick,
+                    onFocusedPlanChange = onFocusedPlanChange
                 )
             }
         }

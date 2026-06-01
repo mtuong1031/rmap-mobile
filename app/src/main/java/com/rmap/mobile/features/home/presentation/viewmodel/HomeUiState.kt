@@ -1,10 +1,12 @@
 package com.rmap.mobile.features.home.presentation.viewmodel
 
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
+import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 
 data class HomeUiState(
     val userName: String = "",
     val progressFraction: Float = 0f,
+    val readinessFraction: Float = 0f,
     val completedLessons: Int = 0,
     val totalLessons: Int = 0,
     val streakDays: Int = 0,
@@ -12,8 +14,60 @@ data class HomeUiState(
     val todayGoalTotal: Int = 0,
     val completedRoadmaps: Int = 0,
     val hasInProgressRoadmap: Boolean = true,
+    val learningPlans: List<HomeLearningPlanState> = emptyList(),
+    val recommendedRoadmaps: List<HomeRecommendedRoadmapState> = emptyList(),
+    val categories: List<HomeCategoryState> = emptyList(),
     val trendingRoadmaps: List<TrendingRoadmapCardUiModel> = emptyList(),
     val savedRoadmapIds: Set<String> = emptySet(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
+)
+
+data class HomeLearningPlanState(
+    val id: String,
+    val roadmapTitle: String,
+    val skillTitle: String,
+    val chapterText: String?,
+    val timeLeftText: String?,
+    val completedRequiredNodes: Int,
+    val totalRequiredNodes: Int,
+    val progressPercentage: Int?,
+    val nextUnlockText: String?,
+    val currentNodeId: String?,
+    val startedAtMillis: Long?,
+    val paceWarning: HomePaceWarningState?
+)
+
+data class HomePaceWarningState(
+    val message: String,
+    val actionText: String
+)
+
+data class HomeRecommendedRoadmapState(
+    val id: String,
+    val categoryId: String,
+    val categoryLabel: String,
+    val title: String,
+    val nodesText: String,
+    val durationText: String,
+    val icon: LearningTopicIcon,
+    val isBeginner: Boolean,
+    val snapshot: HomeRoadmapBookmarkSnapshotState
+)
+
+data class HomeRoadmapBookmarkSnapshotState(
+    val roadmapId: String,
+    val title: String,
+    val categoryId: String,
+    val categoryLabel: String,
+    val nodesTotal: Int,
+    val durationLabel: String,
+    val iconKey: String
+)
+
+data class HomeCategoryState(
+    val id: String,
+    val label: String,
+    val countText: String,
+    val icon: LearningTopicIcon
 )

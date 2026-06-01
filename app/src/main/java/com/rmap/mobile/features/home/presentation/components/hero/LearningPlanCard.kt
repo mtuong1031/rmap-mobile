@@ -27,13 +27,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,6 +45,7 @@ import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val HomeHeroContentPadding = 20.dp
 private val HomeHeroProgressHeight = 10.dp
@@ -159,11 +160,12 @@ private fun HomeHeroTitleRow(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = roadmapTitle.uppercase(),
+                modifier = Modifier.weight(1f),
                 style = AppTextStyles.tag.copy(
                     color = MaterialTheme.colorScheme.primary,
                     letterSpacing = 0.275.sp
@@ -176,7 +178,6 @@ private fun HomeHeroTitleRow(
                 Text(
                     text = label,
                     modifier = Modifier
-                        .padding(start = Dimens.spacingMd)
                         .background(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = AppShapes.pill
@@ -329,6 +330,56 @@ private fun HomeHeroProgress(
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             strokeCap = StrokeCap.Round
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LearningPlanCardLargePreview() {
+    RMapTheme {
+        LearningPlanCard(
+            modifier = Modifier.padding(16.dp),
+            roadmap = HomeLearningPlanUiModel(
+                id = "1",
+                roadmapTitle = "Android Development Android Development Android Development",
+                skillTitle = "Jetpack Compose Basics",
+                chapterText = "Chapter 3",
+                requiredSkillText = "Kotlin Intermediate",
+                timeLeftText = "2h 30m left",
+                completedRequiredNodes = 5,
+                totalRequiredNodes = 10,
+                nextUnlockText = "Advanced State Management"
+            ),
+            variant = LearningPlanCardVariant.Large,
+            continueText = "Continue Learning",
+            nextUnlockPrefix = "Next unlock: ",
+            onContinueClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LearningPlanCardCarouselPreview() {
+    RMapTheme {
+        LearningPlanCard(
+            modifier = Modifier.padding(16.dp),
+            roadmap = HomeLearningPlanUiModel(
+                id = "2",
+                roadmapTitle = "Frontend Web",
+                skillTitle = "React Hooks in Depth",
+                chapterText = "Part 2",
+                requiredSkillText = "JavaScript ES6+",
+                timeLeftText = "45m left",
+                completedRequiredNodes = 8,
+                totalRequiredNodes = 12,
+                nextUnlockText = "Custom Hooks"
+            ),
+            variant = LearningPlanCardVariant.Carousel,
+            continueText = "Resume",
+            nextUnlockPrefix = "Unlocks: ",
+            onContinueClick = {}
         )
     }
 }

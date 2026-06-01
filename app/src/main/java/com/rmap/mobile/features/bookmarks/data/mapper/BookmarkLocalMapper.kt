@@ -3,7 +3,9 @@ package com.rmap.mobile.features.bookmarks.data.mapper
 import com.rmap.mobile.features.bookmarks.data.local.RoadmapBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.local.SkillBookmarkEntity
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
+import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
+import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
@@ -20,6 +22,28 @@ fun RoadmapSummary.toBookmark(
         status = toBookmarkStatus(),
         savedAtMillis = entity.savedAtMillis,
         updatedAtMillis = entity.updatedAtMillis
+    )
+}
+
+fun RoadmapBookmarkEntity.toBookmarkFromSnapshot(): RoadmapBookmark? {
+    val snapshotTitle = title?.takeIf { it.isNotBlank() } ?: return null
+    val snapshotCategoryId = categoryId?.takeIf { it.isNotBlank() } ?: return null
+    val summary = RoadmapSummary(
+        id = roadmapId,
+        title = snapshotTitle,
+        totalLessonsCount = nodesTotal ?: 0,
+        completedLessonsCount = 0,
+        difficulty = LearningDifficulty.Beginner,
+        durationLabel = durationLabel?.takeIf { it.isNotBlank() } ?: "Self-paced",
+        icon = iconKey.toLearningTopicIcon(),
+        categoryId = snapshotCategoryId,
+        skillNodesCount = nodesTotal ?: 0
+    )
+    return RoadmapBookmark(
+        summary = summary,
+        status = LearningStatus.NotStarted,
+        savedAtMillis = savedAtMillis,
+        updatedAtMillis = updatedAtMillis
     )
 }
 
@@ -65,7 +89,30 @@ fun newRoadmapBookmarkEntity(
     return RoadmapBookmarkEntity(
         roadmapId = roadmapId,
         savedAtMillis = existingEntity?.savedAtMillis ?: nowMillis,
-        updatedAtMillis = nowMillis
+        updatedAtMillis = nowMillis,
+        title = existingEntity?.title,
+        categoryId = existingEntity?.categoryId,
+        categoryLabel = existingEntity?.categoryLabel,
+        nodesTotal = existingEntity?.nodesTotal,
+        durationLabel = existingEntity?.durationLabel,
+        iconKey = existingEntity?.iconKey
+    )
+}
+
+fun RoadmapBookmarkSnapshot.toEntity(
+    existingEntity: RoadmapBookmarkEntity?,
+    nowMillis: Long
+): RoadmapBookmarkEntity {
+    return RoadmapBookmarkEntity(
+        roadmapId = roadmapId,
+        savedAtMillis = existingEntity?.savedAtMillis ?: nowMillis,
+        updatedAtMillis = nowMillis,
+        title = title,
+        categoryId = categoryId,
+        categoryLabel = categoryLabel,
+        nodesTotal = nodesTotal,
+        durationLabel = durationLabel,
+        iconKey = iconKey
     )
 }
 
@@ -112,6 +159,22 @@ private fun RoadmapDetail.findSkill(skillId: String): SkillBookmarkSource? {
 private fun LearningModule.toStableId(): String = toStableLearningId()
 
 private fun SubLesson.toStableId(): String = toStableLearningId()
+
+private fun String?.toLearningTopicIcon(): LearningTopicIcon {
+    return when (this) {
+        LearningTopicIcon.Code.name -> LearningTopicIcon.Code
+        LearningTopicIcon.DataObject.name -> LearningTopicIcon.DataObject
+        LearningTopicIcon.Devices.name -> LearningTopicIcon.Devices
+        LearningTopicIcon.Game.name -> LearningTopicIcon.Game
+        LearningTopicIcon.Palette.name -> LearningTopicIcon.Palette
+        LearningTopicIcon.Science.name -> LearningTopicIcon.Science
+        LearningTopicIcon.Security.name -> LearningTopicIcon.Security
+        LearningTopicIcon.SmartToy.name -> LearningTopicIcon.SmartToy
+        LearningTopicIcon.Storage.name -> LearningTopicIcon.Storage
+        LearningTopicIcon.Terminal.name -> LearningTopicIcon.Terminal
+        else -> LearningTopicIcon.Code
+    }
+}
 
 private data class SkillBookmarkSource(
     val title: String,

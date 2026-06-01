@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,7 @@ private val HomeRoadmapMetaIconSize = 14.dp
 private val HomeRoadmapCtaIconSize = 14.dp
 private val HomeRoadmapBeginnerCtaIconSize = 20.dp
 private val HomeRoadmapBadgeShape = RoundedCornerShape(6.dp)
+internal const val HomeRoadmapTitleMaxLines = 2
 
 @Immutable
 data class HomeRoadmapCardStyle(
@@ -118,7 +120,7 @@ fun HomeRoadmapCard(
     item: HomeRoadmapCardUiModel,
     metadataSeparatorText: String,
     starterBadgeText: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(HomeRoadmapCardDefaults.CardWidth),
     metadataBottomSpacing: Dp = Dimens.spacingLg,
     bookmarkContentDescription: String? = null,
     onClick: (() -> Unit)? = null,
@@ -138,7 +140,6 @@ fun HomeRoadmapCard(
 
     Column(
         modifier = modifier
-            .width(HomeRoadmapCardDefaults.CardWidth)
             .cardShadow(shape = HomeRoadmapCardDefaults.CardShape)
             .clip(HomeRoadmapCardDefaults.CardShape)
             .background(MaterialTheme.colorScheme.surface)
@@ -193,7 +194,12 @@ fun HomeRoadmapCard(
 
             Spacer(modifier = Modifier.height(Dimens.spacingSmPlus))
 
-            Text(text = item.title, style = homeRoadmapTitleTextStyle())
+            Text(
+                text = item.title,
+                style = homeRoadmapTitleTextStyle(),
+                maxLines = HomeRoadmapTitleMaxLines,
+                overflow = TextOverflow.Ellipsis
+            )
 
             Spacer(modifier = Modifier.height(Dimens.spacingMd))
 

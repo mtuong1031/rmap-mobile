@@ -204,6 +204,11 @@ fun RMapNavHost(navController: NavHostController) {
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     },
                     onRecommendedRoadmapBookmarkClick = viewModel::onRecommendedRoadmapBookmarkClick,
+                    onCategoryItemClick = { _, item ->
+                        navController.navigate(AppRoutes.explore(item.id)) {
+                            launchSingleTop = true
+                        }
+                    },
                     onCreateRoadmapWithAiClick = {
                         navController.navigate(AppRoutes.AI_ROADMAP) {
                             launchSingleTop = true
@@ -339,9 +344,23 @@ fun RMapNavHost(navController: NavHostController) {
                 )
             }
 
-            composable(AppRoutes.EXPLORE) {
+            composable(
+                route = AppRoutes.EXPLORE_WITH_CATEGORY,
+                arguments = listOf(
+                    navArgument(AppRoutes.EXPLORE_CATEGORY_ARG) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
                 val viewModel: ExploreViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val categoryId = backStackEntry.arguments?.getString(AppRoutes.EXPLORE_CATEGORY_ARG)
+
+                LaunchedEffect(categoryId) {
+                    categoryId?.let(viewModel::selectCategoryById)
+                }
 
                 ExploreScreen(
                     uiState = uiState,

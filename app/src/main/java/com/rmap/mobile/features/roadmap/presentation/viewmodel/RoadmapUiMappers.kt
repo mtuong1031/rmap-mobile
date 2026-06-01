@@ -6,7 +6,9 @@ import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Science
+import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.SmartToy
+import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.ui.graphics.Color
@@ -90,8 +92,10 @@ fun LearningTopicIcon.toImageVector(): ImageVector {
         LearningTopicIcon.Code -> Icons.Outlined.Code
         LearningTopicIcon.DataObject -> Icons.Outlined.DataObject
         LearningTopicIcon.Devices -> Icons.Outlined.Devices
+        LearningTopicIcon.Game -> Icons.Outlined.SportsEsports
         LearningTopicIcon.Palette -> Icons.Outlined.Palette
         LearningTopicIcon.Science -> Icons.Outlined.Science
+        LearningTopicIcon.Security -> Icons.Outlined.Security
         LearningTopicIcon.SmartToy -> Icons.Outlined.SmartToy
         LearningTopicIcon.Storage -> Icons.Outlined.Storage
         LearningTopicIcon.Terminal -> Icons.Outlined.Terminal

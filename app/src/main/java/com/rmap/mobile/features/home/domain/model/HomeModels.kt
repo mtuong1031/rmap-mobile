@@ -1,0 +1,99 @@
+package com.rmap.mobile.features.home.domain.model
+
+data class HomeContent(
+    val activeRoadmaps: List<HomeActiveRoadmap>,
+    val metrics: HomeMetrics,
+    val recommendations: List<HomeTemplateRoadmap>,
+    val categories: List<HomeTemplateCategory>,
+    val trendings: List<HomeTrendingRoadmap>
+)
+
+data class HomeActiveRoadmap(
+    val roadmapId: String,
+    val title: String,
+    val goalName: String,
+    val roleCategory: String,
+    val startedAt: String,
+    val currentGroup: HomeRoadmapGroup?,
+    val planNode: HomePlanNode?,
+    val chapter: HomeRoadmapChapter?,
+    val progress: HomeRoadmapProgress,
+    val nextUnlock: HomeNextUnlock?,
+    val paceWarning: HomePaceWarning?
+)
+
+data class HomeRoadmapGroup(
+    val id: String,
+    val name: String
+)
+
+data class HomePlanNode(
+    val id: String,
+    val name: String,
+    val description: String?,
+    val nodeType: String,
+    val estimatedHours: Int?
+)
+
+data class HomeRoadmapChapter(
+    val current: Int,
+    val total: Int,
+    val label: String
+)
+
+data class HomeRoadmapProgress(
+    val requiredNodesCompleted: Int,
+    val requiredNodesTotal: Int,
+    val requiredCompletionPct: Double
+)
+
+data class HomeNextUnlock(
+    val id: String,
+    val name: String
+)
+
+data class HomePaceWarning(
+    val isBehind: Boolean,
+    val paceDeficitPct: Double,
+    val estimatedDelayDays: Int,
+    val message: String,
+    val title: String,
+    val actionLabel: String
+)
+
+data class HomeMetrics(
+    val roadmapCompletionPct: Double,
+    val streakDays: Int,
+    val readinessPct: Double
+)
+
+data class HomeTemplateRoadmap(
+    val roadmapId: String,
+    val title: String,
+    val description: String?,
+    val goalName: String,
+    val roleCategory: String,
+    val categoryLabel: String,
+    val estimatedWeeks: Int?,
+    val durationLabel: String?,
+    val nodesTotal: Int,
+    val requiredNodesTotal: Int
+)
+
+data class HomeTemplateCategory(
+    val category: String,
+    val label: String,
+    val templatesCount: Int
+)
+
+data class HomeTrendingRoadmap(
+    val rank: Int,
+    val roadmapId: String,
+    val title: String,
+    val roleCategory: String,
+    val categoryLabel: String,
+    val estimatedWeeks: Int?,
+    val durationLabel: String?,
+    val nodesTotal: Int,
+    val trendText: String
+)

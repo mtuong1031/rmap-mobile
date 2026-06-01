@@ -7,7 +7,10 @@ import com.rmap.mobile.features.bookmarks.data.mapper.newRoadmapBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.mapper.newSkillBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.mapper.toBookmark
 import com.rmap.mobile.features.bookmarks.data.mapper.toDomain
+import com.rmap.mobile.features.bookmarks.data.mapper.toBookmarkFromSnapshot
+import com.rmap.mobile.features.bookmarks.data.mapper.toEntity
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
+import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.roadmap.domain.model.containsLearningItem
@@ -53,6 +56,19 @@ class RoomBookmarkRepository(
             bookmarkDao.upsertRoadmapBookmark(
                 newRoadmapBookmarkEntity(
                     roadmapId = roadmapId,
+                    existingEntity = existingEntity,
+                    nowMillis = nowMillis
+                )
+            )
+        }
+    }
+
+    override suspend fun saveRoadmap(snapshot: RoadmapBookmarkSnapshot): Result<Unit> {
+        return runCatching {
+            val nowMillis = currentTimeMillis()
+            val existingEntity = bookmarkDao.getRoadmapBookmark(snapshot.roadmapId)
+            bookmarkDao.upsertRoadmapBookmark(
+                snapshot.toEntity(
                     existingEntity = existingEntity,
                     nowMillis = nowMillis
                 )
@@ -114,7 +130,7 @@ class RoomBookmarkRepository(
             .associateBy { it.id }
 
         return entities.mapNotNull { entity ->
-            roadmaps[entity.roadmapId]?.toBookmark(entity)
+            roadmaps[entity.roadmapId]?.toBookmark(entity) ?: entity.toBookmarkFromSnapshot()
         }
     }
 

@@ -33,3 +33,13 @@ data class RoadmapBookmark(
     val savedAtMillis: Long,
     val updatedAtMillis: Long
 )
+
+data class RoadmapBookmarkSnapshot(
+    val roadmapId: String,
+    val title: String,
+    val categoryId: String,
+    val categoryLabel: String,
+    val nodesTotal: Int,
+    val durationLabel: String,
+    val iconKey: String
+)
