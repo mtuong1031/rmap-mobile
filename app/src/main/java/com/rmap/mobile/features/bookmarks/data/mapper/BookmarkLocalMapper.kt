@@ -5,6 +5,7 @@ import com.rmap.mobile.features.bookmarks.data.local.SkillBookmarkEntity
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
+import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
@@ -72,6 +73,22 @@ fun SkillBookmarkEntity.toDomain(
     )
 }
 
+fun SkillBookmarkEntity.toBookmarkFromSnapshot(): SkillBookmark? {
+    val snapshotTitle = title?.takeIf { it.isNotBlank() } ?: return null
+    val snapshotParentPathName = parentPathName?.takeIf { it.isNotBlank() } ?: return null
+
+    return SkillBookmark(
+        title = snapshotTitle,
+        parentPathName = snapshotParentPathName,
+        status = statusKey.toLearningStatus(),
+        icon = iconKey.toLearningTopicIcon(),
+        skillId = skillId,
+        roadmapId = roadmapId,
+        savedAtMillis = savedAtMillis,
+        updatedAtMillis = updatedAtMillis
+    )
+}
+
 private fun LearningStatus.toBookmarkStatus(): LearningStatus {
     return when (this) {
         LearningStatus.Completed -> LearningStatus.Completed
@@ -120,13 +137,41 @@ fun newSkillBookmarkEntity(
     skillId: String,
     roadmapId: String,
     existingEntity: SkillBookmarkEntity?,
-    nowMillis: Long
+    nowMillis: Long,
+    title: String? = existingEntity?.title,
+    parentPathName: String? = existingEntity?.parentPathName,
+    statusKey: String? = existingEntity?.statusKey,
+    iconKey: String? = existingEntity?.iconKey
 ): SkillBookmarkEntity {
     return SkillBookmarkEntity(
         skillId = skillId,
         roadmapId = roadmapId,
         savedAtMillis = existingEntity?.savedAtMillis ?: nowMillis,
-        updatedAtMillis = nowMillis
+        updatedAtMillis = nowMillis,
+        title = title,
+        parentPathName = parentPathName,
+        statusKey = statusKey,
+        iconKey = iconKey
+    )
+}
+
+fun RoadmapDetail.findSkillBookmarkSource(skillId: String): SkillBookmarkSource? {
+    return findSkill(skillId)
+}
+
+fun SkillBookmarkSnapshot.toEntity(
+    existingEntity: SkillBookmarkEntity?,
+    nowMillis: Long
+): SkillBookmarkEntity {
+    return SkillBookmarkEntity(
+        skillId = skillId,
+        roadmapId = categoryId,
+        savedAtMillis = existingEntity?.savedAtMillis ?: nowMillis,
+        updatedAtMillis = nowMillis,
+        title = title,
+        parentPathName = categoryLabel,
+        statusKey = LearningStatus.NotStarted.name,
+        iconKey = iconKey
     )
 }
 
@@ -176,7 +221,16 @@ private fun String?.toLearningTopicIcon(): LearningTopicIcon {
     }
 }
 
-private data class SkillBookmarkSource(
+private fun String?.toLearningStatus(): LearningStatus {
+    return when (this) {
+        LearningStatus.Completed.name -> LearningStatus.Completed
+        LearningStatus.InProgress.name -> LearningStatus.InProgress
+        LearningStatus.Locked.name -> LearningStatus.Locked
+        else -> LearningStatus.NotStarted
+    }
+}
+
+data class SkillBookmarkSource(
     val title: String,
     val status: LearningStatus,
     val icon: LearningTopicIcon

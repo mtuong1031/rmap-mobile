@@ -4,6 +4,7 @@ import com.rmap.mobile.features.bookmarks.data.local.BookmarkDao
 import com.rmap.mobile.features.bookmarks.data.local.RoadmapBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.local.SkillBookmarkEntity
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
+import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
@@ -88,6 +89,7 @@ class RoomBookmarkRepositoryTest {
         assertEquals(1, bookmarks.size)
         assertEquals(skillId, bookmarks.single().skillId)
         assertEquals("Async JS", bookmarks.single().title)
+        assertEquals("Frontend", bookmarks.single().parentPathName)
     }
 
     @Test
@@ -100,6 +102,27 @@ class RoomBookmarkRepositoryTest {
         assertTrue(result.isFailure)
         assertFalse(bookmarkDao.isSkillSaved("missing-skill"))
         assertTrue(repository.getSavedSkills().getOrThrow().isEmpty())
+    }
+
+    @Test
+    fun `save skill snapshot hydrates saved skill without roadmap detail match`() = runTest {
+        val result = repository.saveSkill(
+            SkillBookmarkSnapshot(
+                skillId = "api-skill",
+                title = "FULL OUTER JOIN",
+                categoryId = "LANGUAGES_AND_PLATFORMS",
+                categoryLabel = "Languages And Platforms",
+                iconKey = LearningTopicIcon.Terminal.name
+            )
+        )
+
+        assertTrue(result.isSuccess)
+        val bookmark = repository.getSavedSkills().getOrThrow().single()
+        assertEquals("api-skill", bookmark.skillId)
+        assertEquals("FULL OUTER JOIN", bookmark.title)
+        assertEquals("Languages And Platforms", bookmark.parentPathName)
+        assertEquals(LearningStatus.NotStarted, bookmark.status)
+        assertEquals(LearningTopicIcon.Terminal, bookmark.icon)
     }
 }
 

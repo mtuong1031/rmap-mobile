@@ -3,6 +3,7 @@ package com.rmap.mobile.features.bookmarks.domain.repository
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
+import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {
@@ -19,6 +20,7 @@ interface BookmarkRepository {
         skillId: String,
         roadmapId: String
     ): Result<Unit>
+    suspend fun saveSkill(snapshot: SkillBookmarkSnapshot): Result<Unit>
     suspend fun deleteSkill(skillId: String): Result<Unit>
     suspend fun isSkillSaved(skillId: String): Result<Boolean>
 }

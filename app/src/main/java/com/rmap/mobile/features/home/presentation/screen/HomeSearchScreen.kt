@@ -29,8 +29,8 @@ import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRo
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemDefaults
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemUiModel
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillItemUiModel
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillStatusDefaults
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillsSection
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillsSkeletonSection
 import kotlinx.coroutines.delay
@@ -63,6 +63,7 @@ fun HomeSearchScreen(
     onRoadmapBookmarkClick: (HomeSearchRoadmapItemUiModel) -> Unit,
     onSeeMoreRoadmapsClick: () -> Unit,
     onSkillClick: (HomeSearchSkillItemUiModel) -> Unit,
+    onSkillBookmarkClick: (HomeSearchSkillItemUiModel) -> Unit,
     onSeeMoreSkillsClick: () -> Unit,
     onCreateWithAiClick: (HomeSearchAiSuggestionUiModel) -> Unit,
     modifier: Modifier = Modifier
@@ -144,6 +145,7 @@ fun HomeSearchScreen(
                             canSeeMore = hasMoreSkills,
                             isLoadingMore = isLoadingMoreSkills,
                             onSkillClick = onSkillClick,
+                            onBookmarkClick = onSkillBookmarkClick,
                             onSeeMoreClick = onSeeMoreSkillsClick,
                             modifier = Modifier.padding(horizontal = Dimens.spacingLg)
                         )
@@ -251,15 +253,26 @@ private fun HomeSearchScreenPreview() {
                     id = "frontend-react",
                     title = "Frontend",
                     parentText = "Part of: React Fundamentals",
-                    statusText = "Not started",
-                    statusStyle = HomeSearchSkillStatusDefaults.notStartedStyle()
+                    snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
+                        skillId = "frontend-react",
+                        title = "Frontend",
+                        categoryId = "WEB_DEVELOPMENT",
+                        categoryLabel = "Web Development",
+                        iconKey = "Code"
+                    )
                 ),
                 HomeSearchSkillItemUiModel(
                     id = "frontend-pro",
                     title = "Frontend",
                     parentText = "Part of: Frontend Pro",
-                    statusText = "In progress",
-                    statusStyle = HomeSearchSkillStatusDefaults.inProgressStyle()
+                    snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
+                        skillId = "frontend-pro",
+                        title = "Frontend",
+                        categoryId = "WEB_DEVELOPMENT",
+                        categoryLabel = "Web Development",
+                        iconKey = "Code"
+                    ),
+                    isSaved = true
                 )
             ),
             roadmapTotal = 2,
@@ -285,6 +298,7 @@ private fun HomeSearchScreenPreview() {
             onRoadmapBookmarkClick = {},
             onSeeMoreRoadmapsClick = {},
             onSkillClick = {},
+            onSkillBookmarkClick = {},
             onSeeMoreSkillsClick = {},
             onCreateWithAiClick = {}
         )

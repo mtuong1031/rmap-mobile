@@ -27,6 +27,14 @@ data class SkillBookmark(
     val updatedAtMillis: Long = 0L
 )
 
+data class SkillBookmarkSnapshot(
+    val skillId: String,
+    val title: String,
+    val categoryId: String,
+    val categoryLabel: String,
+    val iconKey: String
+)
+
 data class RoadmapBookmark(
     val summary: RoadmapSummary,
     val status: LearningStatus,

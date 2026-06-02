@@ -236,6 +236,8 @@ fun RMapNavHost(navController: NavHostController) {
                         when (event) {
                             HomeSearchEvent.RoadmapBookmarkSaved -> snackbarHostState.showSnackbar(roadmapSavedMessage)
                             HomeSearchEvent.RoadmapBookmarkRemoved -> snackbarHostState.showSnackbar(roadmapRemovedMessage)
+                            HomeSearchEvent.SkillBookmarkSaved -> snackbarHostState.showSnackbar(skillSavedMessage)
+                            HomeSearchEvent.SkillBookmarkRemoved -> snackbarHostState.showSnackbar(skillRemovedMessage)
                             HomeSearchEvent.BookmarkActionFailed -> snackbarHostState.showSnackbar(bookmarkFailedMessage)
                         }
                     }
@@ -281,6 +283,7 @@ fun RMapNavHost(navController: NavHostController) {
                     onSkillClick = {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
+                    onSkillBookmarkClick = viewModel::onSkillBookmarkClick,
                     onSeeMoreSkillsClick = viewModel::onSeeMoreSkillsClick,
                     onCreateWithAiClick = {
                         navController.navigate(AppRoutes.AI_ROADMAP) {

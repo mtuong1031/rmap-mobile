@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.ui.theme.OnPrimaryContainerLight
 import com.rmap.mobile.core.ui.theme.OnSecondaryContainerLight
-import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.PrimaryContainerLight
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.SecondaryContainerLight
+import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
@@ -19,8 +19,8 @@ import com.rmap.mobile.features.home.domain.repository.RecentSearchRepository
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemStyle
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemUiModel
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillItemUiModel
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillStatusStyle
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryDisplayLabel
 import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryIcon
@@ -145,7 +145,7 @@ class HomeSearchViewModel(
                 .onSuccess { result ->
                     _uiState.update {
                         it.copy(
-                            skills = it.skills + result.skills.data.map { skill -> skill.toSkillUiModel() },
+                            skills = it.skills + result.skills.data.toSkillUiModels(),
                             skillPage = result.skills.meta.page,
                             skillTotal = result.skills.meta.total,
                             hasMoreSkills = result.skills.meta.hasNextPage,
@@ -181,6 +181,31 @@ class HomeSearchViewModel(
                             HomeSearchEvent.RoadmapBookmarkRemoved
                         } else {
                             HomeSearchEvent.RoadmapBookmarkSaved
+                        }
+                    )
+                }
+                .onFailure {
+                    _events.emit(HomeSearchEvent.BookmarkActionFailed)
+                }
+        }
+    }
+
+    fun onSkillBookmarkClick(item: HomeSearchSkillItemUiModel) {
+        viewModelScope.launch {
+            val result = if (item.isSaved) {
+                bookmarkRepository.deleteSkill(item.id)
+            } else {
+                bookmarkRepository.saveSkill(item.snapshot.toDomain())
+            }
+
+            result
+                .onSuccess {
+                    updateSkillSavedState(item.id, isSaved = !item.isSaved)
+                    _events.emit(
+                        if (item.isSaved) {
+                            HomeSearchEvent.SkillBookmarkRemoved
+                        } else {
+                            HomeSearchEvent.SkillBookmarkSaved
                         }
                     )
                 }
@@ -230,7 +255,7 @@ class HomeSearchViewModel(
             it.copy(
                 query = result.query,
                 roadmaps = roadmaps,
-                skills = result.skills.data.map { skill -> skill.toSkillUiModel() },
+                skills = result.skills.data.toSkillUiModels(),
                 roadmapPage = result.roadmaps.meta.page,
                 skillPage = result.skills.meta.page,
                 roadmapTotal = result.roadmaps.meta.total,
@@ -241,6 +266,17 @@ class HomeSearchViewModel(
                 isLoadingMoreRoadmaps = false,
                 isLoadingMoreSkills = false,
                 errorMessage = null
+            )
+        }
+    }
+
+    private suspend fun List<HomeSearchSkill>.toSkillUiModels(): List<HomeSearchSkillItemUiModel> {
+        val savedIds = map { skill -> skill.skillId }
+            .associateWith { skillId -> bookmarkRepository.isSkillSaved(skillId).getOrDefault(false) }
+
+        return map { skill ->
+            skill.toSkillUiModel(
+                isSaved = savedIds[skill.skillId] == true
             )
         }
     }
@@ -286,6 +322,23 @@ class HomeSearchViewModel(
             )
         }
     }
+
+    private fun updateSkillSavedState(
+        skillId: String,
+        isSaved: Boolean
+    ) {
+        _uiState.update {
+            it.copy(
+                skills = it.skills.map { skill ->
+                    if (skill.id == skillId) {
+                        skill.copy(isSaved = isSaved)
+                    } else {
+                        skill
+                    }
+                }
+            )
+        }
+    }
 }
 
 data class HomeSearchUiState(
@@ -308,6 +361,8 @@ data class HomeSearchUiState(
 sealed class HomeSearchEvent {
     data object RoadmapBookmarkSaved : HomeSearchEvent()
     data object RoadmapBookmarkRemoved : HomeSearchEvent()
+    data object SkillBookmarkSaved : HomeSearchEvent()
+    data object SkillBookmarkRemoved : HomeSearchEvent()
     data object BookmarkActionFailed : HomeSearchEvent()
 }
 
@@ -337,21 +392,23 @@ private fun HomeSearchRoadmap.toHomeSearchRoadmapItemUiModel(
     )
 }
 
-private fun HomeSearchSkill.toSkillUiModel(): HomeSearchSkillItemUiModel {
+private fun HomeSearchSkill.toSkillUiModel(
+    isSaved: Boolean
+): HomeSearchSkillItemUiModel {
+    val icon = roleCategory.toRoadmapCategoryIcon()
+    val displayLabel = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel)
     return HomeSearchSkillItemUiModel(
         id = skillId,
         title = name,
-        parentText = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel),
-        statusText = defaultEstimatedHours?.let { "$it h" } ?: HOME_SEARCH_SELF_PACED_TEXT,
-        statusStyle = defaultEstimatedHours?.let {
-            HomeSearchSkillStatusStyle(
-                containerColor = PrimaryContainerLight,
-                contentColor = PrimaryLight
-            )
-        } ?: HomeSearchSkillStatusStyle(
-            containerColor = PrimaryContainerLight,
-            contentColor = OnSurfacePlaceholderLight
-        )
+        parentText = displayLabel,
+        snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
+            skillId = skillId,
+            title = name,
+            categoryId = roleCategory,
+            categoryLabel = displayLabel,
+            iconKey = icon.name
+        ),
+        isSaved = isSaved
     )
 }
 
@@ -394,6 +451,16 @@ private fun HomeSearchRoadmapBookmarkSnapshotUiModel.toDomain(): RoadmapBookmark
         categoryLabel = categoryLabel,
         nodesTotal = nodesTotal,
         durationLabel = durationLabel,
+        iconKey = iconKey
+    )
+}
+
+private fun HomeSearchSkillBookmarkSnapshotUiModel.toDomain(): SkillBookmarkSnapshot {
+    return SkillBookmarkSnapshot(
+        skillId = skillId,
+        title = title,
+        categoryId = categoryId,
+        categoryLabel = categoryLabel,
         iconKey = iconKey
     )
 }

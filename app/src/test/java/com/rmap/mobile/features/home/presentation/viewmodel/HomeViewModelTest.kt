@@ -4,6 +4,7 @@ import com.rmap.mobile.MainDispatcherRule
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
+import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.model.User
@@ -154,6 +155,8 @@ private class FakeBookmarkRepository : BookmarkRepository {
     override suspend fun isRoadmapSaved(roadmapId: String): Result<Boolean> = Result.success(false)
 
     override suspend fun saveSkill(skillId: String, roadmapId: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun saveSkill(snapshot: SkillBookmarkSnapshot): Result<Unit> = Result.success(Unit)
 
     override suspend fun deleteSkill(skillId: String): Result<Unit> = Result.success(Unit)
 
