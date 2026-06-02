@@ -63,8 +63,17 @@ data class HomeSearchSkillItemUiModel(
     val id: String,
     val title: String,
     val parentText: String,
-    val statusText: String,
-    val statusStyle: HomeSearchSkillStatusStyle
+    val snapshot: HomeSearchSkillBookmarkSnapshotUiModel,
+    val isSaved: Boolean = false
+)
+
+@Immutable
+data class HomeSearchSkillBookmarkSnapshotUiModel(
+    val skillId: String,
+    val title: String,
+    val categoryId: String,
+    val categoryLabel: String,
+    val iconKey: String
 )
 
 @Immutable

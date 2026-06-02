@@ -8,5 +8,9 @@ data class SkillBookmarkEntity(
     @PrimaryKey val skillId: String,
     val roadmapId: String,
     val savedAtMillis: Long,
-    val updatedAtMillis: Long
+    val updatedAtMillis: Long,
+    val title: String? = null,
+    val parentPathName: String? = null,
+    val statusKey: String? = null,
+    val iconKey: String? = null
 )

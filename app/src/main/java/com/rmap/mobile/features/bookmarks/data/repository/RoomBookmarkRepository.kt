@@ -3,16 +3,20 @@ package com.rmap.mobile.features.bookmarks.data.repository
 import com.rmap.mobile.features.bookmarks.data.local.BookmarkDao
 import com.rmap.mobile.features.bookmarks.data.local.RoadmapBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.local.SkillBookmarkEntity
+import com.rmap.mobile.features.bookmarks.data.mapper.findSkillBookmarkSource
 import com.rmap.mobile.features.bookmarks.data.mapper.newRoadmapBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.mapper.newSkillBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.mapper.toBookmark
-import com.rmap.mobile.features.bookmarks.data.mapper.toDomain
 import com.rmap.mobile.features.bookmarks.data.mapper.toBookmarkFromSnapshot
+import com.rmap.mobile.features.bookmarks.data.mapper.toDomain
 import com.rmap.mobile.features.bookmarks.data.mapper.toEntity
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
+import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
+import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryDisplayLabel
+import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryIcon
 import com.rmap.mobile.features.roadmap.domain.model.containsLearningItem
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.flow.Flow
@@ -95,13 +99,38 @@ class RoomBookmarkRepository(
         return runCatching {
             val roadmapDetail = roadmapRepository.getRoadmapDetail(roadmapId).getOrThrow()
             require(roadmapDetail.containsLearningItem(skillId)) { "Skill not found" }
+            val skillSource = requireNotNull(roadmapDetail.findSkillBookmarkSource(skillId)) {
+                "Skill not found"
+            }
+            val roadmapSummary = roadmapRepository.searchRoadmaps("").getOrThrow()
+                .firstOrNull { roadmap -> roadmap.id == roadmapId }
+            val categoryId = roadmapSummary?.categoryId ?: roadmapId
+            val categoryLabel = categoryId.toRoadmapCategoryDisplayLabel()
+            val categoryIcon = categoryId.toRoadmapCategoryIcon()
 
             val nowMillis = currentTimeMillis()
             val existingEntity = bookmarkDao.getSkillBookmark(skillId)
             bookmarkDao.upsertSkillBookmark(
                 newSkillBookmarkEntity(
                     skillId = skillId,
-                    roadmapId = roadmapId,
+                    roadmapId = categoryId,
+                    existingEntity = existingEntity,
+                    nowMillis = nowMillis,
+                    title = skillSource.title,
+                    parentPathName = categoryLabel,
+                    statusKey = skillSource.status.name,
+                    iconKey = categoryIcon.name
+                )
+            )
+        }
+    }
+
+    override suspend fun saveSkill(snapshot: SkillBookmarkSnapshot): Result<Unit> {
+        return runCatching {
+            val nowMillis = currentTimeMillis()
+            val existingEntity = bookmarkDao.getSkillBookmark(snapshot.skillId)
+            bookmarkDao.upsertSkillBookmark(
+                snapshot.toEntity(
                     existingEntity = existingEntity,
                     nowMillis = nowMillis
                 )
@@ -149,6 +178,7 @@ class RoomBookmarkRepository(
 
         return entities.mapNotNull { entity ->
             details[entity.roadmapId]?.let { detail -> entity.toDomain(detail) }
+                ?: entity.toBookmarkFromSnapshot()
         }
     }
 }

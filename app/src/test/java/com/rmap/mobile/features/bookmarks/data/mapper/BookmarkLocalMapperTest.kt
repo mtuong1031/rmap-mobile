@@ -100,6 +100,27 @@ class BookmarkLocalMapperTest {
     }
 
     @Test
+    fun `skill bookmark hydrates display data from snapshot when present`() {
+        val entity = SkillBookmarkEntity(
+            skillId = "api-skill",
+            roadmapId = "LANGUAGES_AND_PLATFORMS",
+            savedAtMillis = 1L,
+            updatedAtMillis = 2L,
+            title = "FULL OUTER JOIN",
+            parentPathName = "Languages And Platforms",
+            statusKey = LearningStatus.NotStarted.name,
+            iconKey = LearningTopicIcon.Terminal.name
+        )
+
+        val bookmark = entity.toBookmarkFromSnapshot()
+
+        assertEquals("FULL OUTER JOIN", bookmark?.title)
+        assertEquals("Languages And Platforms", bookmark?.parentPathName)
+        assertEquals(LearningStatus.NotStarted, bookmark?.status)
+        assertEquals(LearningTopicIcon.Terminal, bookmark?.icon)
+    }
+
+    @Test
     fun `stable learning id matches skill bookmark lookup`() {
         val entity = SkillBookmarkEntity(
             skillId = "Async JS".toStableLearningId(),

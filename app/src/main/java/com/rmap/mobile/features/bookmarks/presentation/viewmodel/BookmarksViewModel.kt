@@ -2,6 +2,8 @@ package com.rmap.mobile.features.bookmarks.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rmap.mobile.core.domain.model.toRMapCategoryCompactLabel
+import com.rmap.mobile.core.domain.model.toRMapCategoryIconKey
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkStatusFilter
 import com.rmap.mobile.features.bookmarks.domain.model.BookmarkTab
@@ -15,6 +17,7 @@ import com.rmap.mobile.features.bookmarks.presentation.components.skill.Bookmark
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.toLearningTopicIcon
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
@@ -26,9 +29,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 private const val BOOKMARKS_LOAD_ERROR_MESSAGE = "Unable to load bookmarks"
-private const val BOOKMARK_CATEGORY_DESIGN = "Design"
-private const val BOOKMARK_CATEGORY_DEVOPS = "DevOps"
-private const val BOOKMARK_CATEGORY_WEB_DEVELOPMENT = "Web Development"
 private const val BOOKMARK_ACTION_CONTINUE = "Continue"
 private const val BOOKMARK_ACTION_START = "Start"
 private const val BOOKMARK_STATUS_COMPLETED = "Completed"
@@ -158,13 +158,14 @@ class BookmarksViewModel(
 
 private fun RoadmapBookmark.toBookmarkRoadmapCardUiModel(): BookmarkRoadmapCardUiModel {
     val roadmap = summary
+    val categoryIcon = roadmap.categoryId.toRMapCategoryIconKey().toLearningTopicIcon()
 
     return BookmarkRoadmapCardUiModel(
         id = roadmap.id,
         title = roadmap.title,
-        categoryLabel = roadmap.icon.toBookmarkCategoryLabel(),
-        categoryIcon = roadmap.icon.toImageVector(),
-        categoryStyle = roadmap.icon.toBookmarkCategoryStyle(),
+        categoryLabel = roadmap.categoryId.toRMapCategoryCompactLabel(),
+        categoryIcon = categoryIcon.toImageVector(),
+        categoryStyle = categoryIcon.toBookmarkCategoryStyle(),
         nodesLabel = "${roadmap.skillNodesCount} Nodes",
         durationLabel = roadmap.durationLabel,
         actionLabel = if (status == LearningStatus.InProgress) BOOKMARK_ACTION_CONTINUE else BOOKMARK_ACTION_START,
@@ -182,6 +183,7 @@ private fun RoadmapBookmark.toBookmarkRoadmapCardUiModel(): BookmarkRoadmapCardU
 }
 
 private fun SkillBookmark.toSkillCardUiModel(): BookmarkSkillCardUiModel {
+    val categoryIcon = parentPathName.toRMapCategoryIconKey().toLearningTopicIcon()
     val skillStatus = when (status) {
         LearningStatus.Completed -> BookmarkSkillStatus.COMPLETED
         LearningStatus.InProgress -> BookmarkSkillStatus.IN_PROGRESS
@@ -195,10 +197,10 @@ private fun SkillBookmark.toSkillCardUiModel(): BookmarkSkillCardUiModel {
 
     return BookmarkSkillCardUiModel(
         title = title,
-        parentPathName = parentPathName,
+        parentPathName = parentPathName.toRMapCategoryCompactLabel(parentPathName),
         status = skillStatus,
         statusLabel = statusLabel,
-        icon = icon.toImageVector(),
+        icon = categoryIcon.toImageVector(),
         skillId = skillId
     )
 }
@@ -246,14 +248,6 @@ private fun List<BookmarkSkillCardUiModel>.filterSkillsByQuery(
     return filter { item ->
         item.title.contains(normalizedQuery, ignoreCase = true) ||
             item.parentPathName.contains(normalizedQuery, ignoreCase = true)
-    }
-}
-
-private fun LearningTopicIcon.toBookmarkCategoryLabel(): String {
-    return when (this) {
-        LearningTopicIcon.Palette -> BOOKMARK_CATEGORY_DESIGN
-        LearningTopicIcon.Terminal -> BOOKMARK_CATEGORY_DEVOPS
-        else -> BOOKMARK_CATEGORY_WEB_DEVELOPMENT
     }
 }
 

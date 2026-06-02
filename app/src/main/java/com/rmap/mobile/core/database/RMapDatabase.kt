@@ -15,7 +15,7 @@ import com.rmap.mobile.features.bookmarks.data.local.SkillBookmarkEntity
         RoadmapBookmarkEntity::class,
         SkillBookmarkEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class RMapDatabase : RoomDatabase() {
@@ -33,7 +33,7 @@ abstract class RMapDatabase : RoomDatabase() {
                     context.applicationContext,
                     RMapDatabase::class.java,
                     DATABASE_NAME
-                ).addMigrations(MIGRATION_1_2).build().also { database ->
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { database ->
                     instance = database
                 }
             }
@@ -47,6 +47,15 @@ abstract class RMapDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE roadmap_bookmarks ADD COLUMN nodesTotal INTEGER")
                 db.execSQL("ALTER TABLE roadmap_bookmarks ADD COLUMN durationLabel TEXT")
                 db.execSQL("ALTER TABLE roadmap_bookmarks ADD COLUMN iconKey TEXT")
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE skill_bookmarks ADD COLUMN title TEXT")
+                db.execSQL("ALTER TABLE skill_bookmarks ADD COLUMN parentPathName TEXT")
+                db.execSQL("ALTER TABLE skill_bookmarks ADD COLUMN statusKey TEXT")
+                db.execSQL("ALTER TABLE skill_bookmarks ADD COLUMN iconKey TEXT")
             }
         }
     }
