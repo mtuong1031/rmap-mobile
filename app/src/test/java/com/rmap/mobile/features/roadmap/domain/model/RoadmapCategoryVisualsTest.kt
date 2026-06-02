@@ -5,15 +5,29 @@ import org.junit.Test
 
 class RoadmapCategoryVisualsTest {
     @Test
-    fun `maps backend category ids to compact display labels`() {
-        assertEquals("Web", "WEB_DEVELOPMENT".toRoadmapCategoryDisplayLabel("Web Development"))
-        assertEquals("Beginner", "ABSOLUTE_BEGINNERS".toRoadmapCategoryDisplayLabel("Absolute Beginners"))
-        assertEquals("Languages", "LANGUAGES_AND_PLATFORMS".toRoadmapCategoryDisplayLabel("Languages And Platforms"))
-        assertEquals("CS", "COMPUTER_SCIENCE".toRoadmapCategoryDisplayLabel("Computer Science"))
-        assertEquals("AI", "AI_AND_MACHINE_LEARNING".toRoadmapCategoryDisplayLabel("Ai And Machine Learning"))
-        assertEquals("Mobile", "MOBILE_DEVELOPMENT".toRoadmapCategoryDisplayLabel("Mobile Development"))
-        assertEquals("Game", "GAME_DEVELOPMENT".toRoadmapCategoryDisplayLabel("Game Development"))
-        assertEquals("Security", "CYBER_SECURITY".toRoadmapCategoryDisplayLabel("Cyber Security"))
+    fun `maps backend category ids to browse compact labels`() {
+        assertEquals("Web", "WEB_DEVELOPMENT".toHomeBrowseCategoryLabel("Web Development"))
+        assertEquals("Beginner", "ABSOLUTE_BEGINNERS".toHomeBrowseCategoryLabel("Absolute Beginners"))
+        assertEquals("Languages", "LANGUAGES_AND_PLATFORMS".toHomeBrowseCategoryLabel("Languages And Platforms"))
+        assertEquals("CS", "COMPUTER_SCIENCE".toHomeBrowseCategoryLabel("Computer Science"))
+        assertEquals("AI", "AI_AND_MACHINE_LEARNING".toHomeBrowseCategoryLabel("Ai And Machine Learning"))
+        assertEquals("Mobile", "MOBILE_DEVELOPMENT".toHomeBrowseCategoryLabel("Mobile Development"))
+        assertEquals("Game", "GAME_DEVELOPMENT".toHomeBrowseCategoryLabel("Game Development"))
+        assertEquals("Security", "CYBER_SECURITY".toHomeBrowseCategoryLabel("Cyber Security"))
+    }
+
+    @Test
+    fun `display label keeps backend label outside browse categories`() {
+        assertEquals("Web Development", "WEB_DEVELOPMENT".toRoadmapCategoryDisplayLabel("Web Development"))
+        assertEquals(
+            "Languages And Platforms",
+            "LANGUAGES_AND_PLATFORMS".toRoadmapCategoryDisplayLabel("Languages And Platforms")
+        )
+        assertEquals("Computer Science", "COMPUTER_SCIENCE".toRoadmapCategoryDisplayLabel("Computer Science"))
+        assertEquals(
+            "Ai And Machine Learning",
+            "AI_AND_MACHINE_LEARNING".toRoadmapCategoryDisplayLabel("Ai And Machine Learning")
+        )
     }
 
     @Test

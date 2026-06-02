@@ -1,10 +1,8 @@
 package com.rmap.mobile.features.home.presentation.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -26,14 +24,15 @@ import com.rmap.mobile.features.home.presentation.components.search.HomeSearchAi
 import com.rmap.mobile.features.home.presentation.components.search.HomePopularSearchesSection
 import com.rmap.mobile.features.home.presentation.components.search.HomeRecentSearchesSection
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchHeader
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRecommendedRoadmapsSection
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRecommendedRoadmapsSkeletonSection
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapsSection
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapsSkeletonSection
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemDefaults
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillItemUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillStatusDefaults
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillsSection
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSuggestionChipsRow
+import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillsSkeletonSection
 import kotlinx.coroutines.delay
 
 private const val SearchAutoFocusDelayMillis = 100L
@@ -42,24 +41,29 @@ private const val SearchAutoFocusDelayMillis = 100L
 @Composable
 fun HomeSearchScreen(
     query: String,
-    suggestions: List<String>,
     recentSearches: List<String>,
     popularSearches: List<String>,
-    recommendedRoadmaps: List<HomeSearchRoadmapItemUiModel>,
+    roadmaps: List<HomeSearchRoadmapItemUiModel>,
     skills: List<HomeSearchSkillItemUiModel>,
+    roadmapTotal: Int,
+    skillTotal: Int,
     aiSuggestion: HomeSearchAiSuggestionUiModel?,
     isLoading: Boolean,
+    hasMoreRoadmaps: Boolean,
+    hasMoreSkills: Boolean,
+    isLoadingMoreRoadmaps: Boolean,
+    isLoadingMoreSkills: Boolean,
     onQueryChange: (String) -> Unit,
     onBackClick: () -> Unit,
-    onFilterClick: () -> Unit,
-    onSuggestionClick: (String) -> Unit,
     onClearRecentSearchesClick: () -> Unit,
     onRecentSearchClick: (String) -> Unit,
     onRemoveRecentSearchClick: (String) -> Unit,
     onPopularSearchClick: (String) -> Unit,
-    onRecommendedRoadmapClick: (HomeSearchRoadmapItemUiModel) -> Unit,
-    onRecommendedRoadmapBookmarkClick: (HomeSearchRoadmapItemUiModel) -> Unit,
+    onRoadmapClick: (HomeSearchRoadmapItemUiModel) -> Unit,
+    onRoadmapBookmarkClick: (HomeSearchRoadmapItemUiModel) -> Unit,
+    onSeeMoreRoadmapsClick: () -> Unit,
     onSkillClick: (HomeSearchSkillItemUiModel) -> Unit,
+    onSeeMoreSkillsClick: () -> Unit,
     onCreateWithAiClick: (HomeSearchAiSuggestionUiModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -83,46 +87,48 @@ fun HomeSearchScreen(
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingHuge)
     ) {
         item {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-            ) {
-                HomeSearchHeader(
-                    modifier = Modifier.padding(horizontal = Dimens.spacingLg),
-                    query = query,
-                    placeholder = stringResource(R.string.home_search_screen_placeholder),
-                    onQueryChange = onQueryChange,
-                    onBackClick = onBackClick,
-                    onFilterClick = onFilterClick,
-                    focusRequester = searchFocusRequester
-                )
-
-                HomeSearchSuggestionChipsRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = Dimens.spacingLg),
-                    suggestions = suggestions,
-                    onSuggestionClick = onSuggestionClick,
-                )
-            }
+            HomeSearchHeader(
+                modifier = Modifier.padding(horizontal = Dimens.spacingLg),
+                query = query,
+                placeholder = stringResource(R.string.home_search_screen_placeholder),
+                onQueryChange = onQueryChange,
+                onBackClick = onBackClick,
+                focusRequester = searchFocusRequester
+            )
         }
 
         if (showSearchResults) {
             if (isLoading) {
                 item {
-                    HomeSearchRecommendedRoadmapsSkeletonSection(
+                    HomeSearchRoadmapsSkeletonSection(
+                        modifier = Modifier.padding(horizontal = Dimens.spacingLg)
+                    )
+                }
+                item {
+                    HomeSearchSkillsSkeletonSection(
                         modifier = Modifier.padding(horizontal = Dimens.spacingLg)
                     )
                 }
             } else {
-                item {
-                    HomeSearchRecommendedRoadmapsSection(
-                        title = stringResource(R.string.home_search_roadmaps_title),
-                        roadmaps = recommendedRoadmaps,
-                        metadataSeparatorText = stringResource(R.string.separator_bullet),
-                        onRoadmapClick = onRecommendedRoadmapClick,
-                        onBookmarkClick = onRecommendedRoadmapBookmarkClick,
-                        modifier = Modifier.padding(horizontal = Dimens.spacingLg)
-                    )
+                if (roadmaps.isNotEmpty()) {
+                    item {
+                        HomeSearchRoadmapsSection(
+                            title = stringResource(R.string.home_search_roadmaps_title),
+                            roadmaps = roadmaps,
+                            metadataSeparatorText = stringResource(R.string.separator_bullet),
+                            seeMoreText = stringResource(R.string.action_see_more),
+                            resultCountText = stringResource(
+                                R.string.home_search_roadmaps_found_count,
+                                roadmapTotal
+                            ),
+                            canSeeMore = hasMoreRoadmaps,
+                            isLoadingMore = isLoadingMoreRoadmaps,
+                            onRoadmapClick = onRoadmapClick,
+                            onBookmarkClick = onRoadmapBookmarkClick,
+                            onSeeMoreClick = onSeeMoreRoadmapsClick,
+                            modifier = Modifier.padding(horizontal = Dimens.spacingLg)
+                        )
+                    }
                 }
 
                 if (skills.isNotEmpty()) {
@@ -130,7 +136,15 @@ fun HomeSearchScreen(
                         HomeSearchSkillsSection(
                             title = stringResource(R.string.home_search_skills_title),
                             skills = skills,
+                            seeMoreText = stringResource(R.string.action_see_more),
+                            resultCountText = stringResource(
+                                R.string.home_search_skills_found_count,
+                                skillTotal
+                            ),
+                            canSeeMore = hasMoreSkills,
+                            isLoadingMore = isLoadingMoreSkills,
                             onSkillClick = onSkillClick,
+                            onSeeMoreClick = onSeeMoreSkillsClick,
                             modifier = Modifier.padding(horizontal = Dimens.spacingLg)
                         )
                     }
@@ -148,16 +162,18 @@ fun HomeSearchScreen(
                 }
             }
         } else {
-            item {
-                HomeRecentSearchesSection(
-                    title = stringResource(R.string.home_search_recent_title),
-                    clearAllText = stringResource(R.string.home_search_clear_all),
-                    searches = recentSearches,
-                    onClearAllClick = onClearRecentSearchesClick,
-                    onSearchClick = onRecentSearchClick,
-                    onRemoveSearchClick = onRemoveRecentSearchClick,
-                    modifier = Modifier.padding(horizontal = Dimens.spacingLg)
-                )
+            if (recentSearches.isNotEmpty()) {
+                item {
+                    HomeRecentSearchesSection(
+                        title = stringResource(R.string.home_search_recent_title),
+                        clearAllText = stringResource(R.string.home_search_clear_all),
+                        searches = recentSearches,
+                        onClearAllClick = onClearRecentSearchesClick,
+                        onSearchClick = onRecentSearchClick,
+                        onRemoveSearchClick = onRemoveRecentSearchClick,
+                        modifier = Modifier.padding(horizontal = Dimens.spacingLg)
+                    )
+                }
             }
 
             item {
@@ -165,20 +181,10 @@ fun HomeSearchScreen(
                     title = stringResource(R.string.home_search_popular_title),
                     searches = popularSearches,
                     onSearchClick = onPopularSearchClick,
-                    modifier = Modifier.padding(start = Dimens.spacingLg)
-                )
-            }
-
-            item {
-                HomeSearchRecommendedRoadmapsSection(
-                    title = stringResource(R.string.home_search_recommended_title),
-                    roadmaps = recommendedRoadmaps,
-                    metadataSeparatorText = stringResource(R.string.separator_bullet),
-                    onRoadmapClick = onRecommendedRoadmapClick,
-                    onBookmarkClick = onRecommendedRoadmapBookmarkClick,
                     modifier = Modifier.padding(horizontal = Dimens.spacingLg)
                 )
             }
+
         }
     }
 }
@@ -189,7 +195,6 @@ private fun HomeSearchScreenPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         HomeSearchScreen(
             query = "React",
-            suggestions = listOf("Frontend", "Backend", "React", "AI", "DevOps"),
             recentSearches = listOf(
                 "React roadmap",
                 "CSS Grid",
@@ -205,12 +210,21 @@ private fun HomeSearchScreenPreview() {
                 "Data Analyst",
                 "AI Engineer"
             ),
-            recommendedRoadmaps = listOf(
+            roadmaps = listOf(
                 HomeSearchRoadmapItemUiModel(
                     id = "react-fundamentals",
                     title = "React Fundamentals",
                     categoryLabel = "Web Development",
                     metadataText = "4 weeks",
+                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
+                        roadmapId = "react-fundamentals",
+                        title = "React Fundamentals",
+                        categoryId = "WEB_DEVELOPMENT",
+                        categoryLabel = "Web",
+                        nodesTotal = 0,
+                        durationLabel = "4 weeks",
+                        iconKey = "Code"
+                    ),
                     leadingIcon = Icons.Outlined.TrackChanges,
                     style = HomeSearchRoadmapItemDefaults.reactStyle()
                 ),
@@ -219,6 +233,15 @@ private fun HomeSearchScreenPreview() {
                     title = "Frontend Interview Prep",
                     categoryLabel = "Web Development",
                     metadataText = "3 weeks",
+                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
+                        roadmapId = "frontend-starter",
+                        title = "Frontend Interview Prep",
+                        categoryId = "WEB_DEVELOPMENT",
+                        categoryLabel = "Web",
+                        nodesTotal = 0,
+                        durationLabel = "3 weeks",
+                        iconKey = "Code"
+                    ),
                     leadingText = "FI",
                     style = HomeSearchRoadmapItemDefaults.starterStyle()
                 )
@@ -239,6 +262,8 @@ private fun HomeSearchScreenPreview() {
                     statusStyle = HomeSearchSkillStatusDefaults.inProgressStyle()
                 )
             ),
+            roadmapTotal = 2,
+            skillTotal = 2,
             aiSuggestion = HomeSearchAiSuggestionUiModel(
                 id = "react-roadmap",
                 title = "Create a personalized React roadmap",
@@ -246,17 +271,21 @@ private fun HomeSearchScreenPreview() {
                 actionText = "Create with AI"
             ),
             isLoading = false,
+            hasMoreRoadmaps = true,
+            hasMoreSkills = true,
+            isLoadingMoreRoadmaps = false,
+            isLoadingMoreSkills = false,
             onQueryChange = {},
             onBackClick = {},
-            onFilterClick = {},
-            onSuggestionClick = {},
             onClearRecentSearchesClick = {},
             onRecentSearchClick = {},
             onRemoveRecentSearchClick = {},
             onPopularSearchClick = {},
-            onRecommendedRoadmapClick = {},
-            onRecommendedRoadmapBookmarkClick = {},
+            onRoadmapClick = {},
+            onRoadmapBookmarkClick = {},
+            onSeeMoreRoadmapsClick = {},
             onSkillClick = {},
+            onSeeMoreSkillsClick = {},
             onCreateWithAiClick = {}
         )
     }

@@ -45,8 +45,6 @@ import com.rmap.mobile.features.bookmarks.presentation.viewmodel.BookmarksViewMo
 import com.rmap.mobile.features.explore.presentation.screen.ExploreScreen
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreViewModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchAiSuggestionUiModel
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillItemUiModel
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillStatusDefaults
 import com.rmap.mobile.features.home.presentation.screen.HomeScreen
 import com.rmap.mobile.features.home.presentation.screen.HomeSearchScreen
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeEvent
@@ -97,12 +95,24 @@ fun RMapNavHost(navController: NavHostController) {
     }
 
     fun navigateFromBottomBar(destination: NavBarDestination) {
+        if (destination == NavBarDestination.Home) {
+            navController.navigate(AppRoutes.HOME) {
+                popUpTo(AppRoutes.HOME) {
+                    inclusive = false
+                    saveState = false
+                }
+                launchSingleTop = true
+                restoreState = false
+            }
+            return
+        }
+
         val route = when (destination) {
-            NavBarDestination.Home -> AppRoutes.HOME
             NavBarDestination.Bookmarks -> AppRoutes.BOOKMARKS
             NavBarDestination.Explore -> AppRoutes.EXPLORE
             NavBarDestination.More -> AppRoutes.PROFILE
             NavBarDestination.AiAssistant -> AppRoutes.AI_ROADMAP
+            NavBarDestination.Home -> AppRoutes.HOME
         }
 
         navController.navigate(route) {
@@ -233,14 +243,7 @@ fun RMapNavHost(navController: NavHostController) {
 
                 HomeSearchScreen(
                     query = uiState.query,
-                    suggestions = listOf("Frontend", "Backend", "React", "AI", "DevOps"),
-                    recentSearches = listOf(
-                        "React roadmap",
-                        "CSS Grid",
-                        "Backend developer",
-                        "DevOps",
-                        "AI Engineer"
-                    ),
+                    recentSearches = uiState.recentSearches,
                     popularSearches = listOf(
                         "Frontend",
                         "React",
@@ -249,23 +252,10 @@ fun RMapNavHost(navController: NavHostController) {
                         "Data Analyst",
                         "AI Engineer"
                     ),
-                    recommendedRoadmaps = uiState.recommendedRoadmaps,
-                    skills = listOf(
-                        HomeSearchSkillItemUiModel(
-                            id = "frontend-react",
-                            title = "Frontend",
-                            parentText = "Part of: React Fundamentals",
-                            statusText = "Not started",
-                            statusStyle = HomeSearchSkillStatusDefaults.notStartedStyle()
-                        ),
-                        HomeSearchSkillItemUiModel(
-                            id = "frontend-pro",
-                            title = "Frontend",
-                            parentText = "Part of: Frontend Pro",
-                            statusText = "In progress",
-                            statusStyle = HomeSearchSkillStatusDefaults.inProgressStyle()
-                        )
-                    ),
+                    roadmaps = uiState.roadmaps,
+                    skills = uiState.skills,
+                    roadmapTotal = uiState.roadmapTotal,
+                    skillTotal = uiState.skillTotal,
                     aiSuggestion = HomeSearchAiSuggestionUiModel(
                         id = "react-roadmap",
                         title = "Create a personalized React roadmap",
@@ -273,23 +263,25 @@ fun RMapNavHost(navController: NavHostController) {
                         actionText = "Create with AI"
                     ),
                     isLoading = uiState.isLoading,
+                    hasMoreRoadmaps = uiState.hasMoreRoadmaps,
+                    hasMoreSkills = uiState.hasMoreSkills,
+                    isLoadingMoreRoadmaps = uiState.isLoadingMoreRoadmaps,
+                    isLoadingMoreSkills = uiState.isLoadingMoreSkills,
                     onQueryChange = viewModel::onQueryChange,
                     onBackClick = { navController.popBackStack() },
-                    onFilterClick = {
-                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
-                    },
-                    onSuggestionClick = viewModel::onQueryChange,
-                    onClearRecentSearchesClick = {},
+                    onClearRecentSearchesClick = viewModel::onClearRecentSearchesClick,
                     onRecentSearchClick = viewModel::onQueryChange,
-                    onRemoveRecentSearchClick = {},
+                    onRemoveRecentSearchClick = viewModel::onRemoveRecentSearchClick,
                     onPopularSearchClick = viewModel::onQueryChange,
-                    onRecommendedRoadmapClick = { item ->
+                    onRoadmapClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     },
-                    onRecommendedRoadmapBookmarkClick = viewModel::onRecommendedRoadmapBookmarkClick,
+                    onRoadmapBookmarkClick = viewModel::onRoadmapBookmarkClick,
+                    onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmapsClick,
                     onSkillClick = {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
+                    onSeeMoreSkillsClick = viewModel::onSeeMoreSkillsClick,
                     onCreateWithAiClick = {
                         navController.navigate(AppRoutes.AI_ROADMAP) {
                             launchSingleTop = true

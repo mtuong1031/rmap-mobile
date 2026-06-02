@@ -29,36 +29,58 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rmap.mobile.core.ui.components.RMapButton
+import com.rmap.mobile.core.ui.components.RMapButtonSize
+import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.cardShadow
 
 @Composable
-fun HomeSearchRecommendedRoadmapsSection(
+fun HomeSearchRoadmapsSection(
     title: String,
     roadmaps: List<HomeSearchRoadmapItemUiModel>,
     metadataSeparatorText: String,
+    seeMoreText: String,
+    resultCountText: String,
+    canSeeMore: Boolean,
+    isLoadingMore: Boolean,
     onRoadmapClick: (HomeSearchRoadmapItemUiModel) -> Unit,
     onBookmarkClick: (HomeSearchRoadmapItemUiModel) -> Unit,
+    onSeeMoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
     ) {
-        HomeSearchSectionHeader(title = title)
+        HomeSearchSectionHeader(
+            title = title,
+            resultCountText = resultCountText
+        )
 
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
         ) {
             roadmaps.forEach { item ->
-                HomeSearchRecommendRoadmap(
+                HomeSearchRoadmapCard(
                     item = item,
                     metadataSeparatorText = metadataSeparatorText,
                     onClick = { onRoadmapClick(item) },
                     onBookmarkClick = { onBookmarkClick(item) }
+                )
+            }
+
+            if (canSeeMore) {
+                RMapButton(
+                    text = seeMoreText,
+                    onClick = onSeeMoreClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = RMapButtonVariant.Neutral,
+                    size = RMapButtonSize.Medium,
+                    enabled = !isLoadingMore
                 )
             }
         }
@@ -66,7 +88,7 @@ fun HomeSearchRecommendedRoadmapsSection(
 }
 
 @Composable
-fun HomeSearchRecommendRoadmap(
+fun HomeSearchRoadmapCard(
     item: HomeSearchRoadmapItemUiModel,
     metadataSeparatorText: String,
     onClick: () -> Unit,
@@ -228,16 +250,25 @@ private fun HomeSearchRoadmapLeadingIcon(
 
 @Preview(showBackground = true, backgroundColor = 0xFFF5F5F5)
 @Composable
-private fun HomeSearchRecommendedRoadmapsSectionPreview() {
+private fun HomeSearchRoadmapsSectionPreview() {
     RMapTheme {
-        HomeSearchRecommendedRoadmapsSection(
-            title = "Recommended Roadmaps",
+        HomeSearchRoadmapsSection(
+            title = "Roadmaps",
             roadmaps = listOf(
                 HomeSearchRoadmapItemUiModel(
                     id = "1",
                     title = "React Fundamentals",
                     categoryLabel = "Web Development",
                     metadataText = "4 weeks",
+                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
+                        roadmapId = "1",
+                        title = "React Fundamentals",
+                        categoryId = "WEB_DEVELOPMENT",
+                        categoryLabel = "Web",
+                        nodesTotal = 0,
+                        durationLabel = "4 weeks",
+                        iconKey = "Code"
+                    ),
                     isSaved = true,
                     style = HomeSearchRoadmapItemDefaults.reactStyle()
                 ),
@@ -246,13 +277,27 @@ private fun HomeSearchRecommendedRoadmapsSectionPreview() {
                     title = "Frontend Starter",
                     categoryLabel = "Web Development",
                     metadataText = "3 weeks",
+                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
+                        roadmapId = "2",
+                        title = "Frontend Starter",
+                        categoryId = "WEB_DEVELOPMENT",
+                        categoryLabel = "Web",
+                        nodesTotal = 0,
+                        durationLabel = "3 weeks",
+                        iconKey = "Code"
+                    ),
                     leadingText = "FE",
                     style = HomeSearchRoadmapItemDefaults.starterStyle()
                 )
             ),
             metadataSeparatorText = "•",
+            seeMoreText = "SEE MORE",
+            resultCountText = "2 roadmaps founds",
+            canSeeMore = true,
+            isLoadingMore = false,
             onRoadmapClick = {},
             onBookmarkClick = {},
+            onSeeMoreClick = {},
             modifier = Modifier.padding(Dimens.spacingMd)
         )
     }
@@ -263,12 +308,21 @@ private fun HomeSearchRecommendedRoadmapsSectionPreview() {
 private fun HomeSearchRoadmapResultCardPreview() {
     RMapTheme {
         Box(modifier = Modifier.padding(Dimens.spacingMd)) {
-            HomeSearchRecommendRoadmap(
+            HomeSearchRoadmapCard(
                 item = HomeSearchRoadmapItemUiModel(
                     id = "1",
                     title = "React Fundamentals",
                     categoryLabel = "Web Development",
                     metadataText = "4 weeks",
+                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
+                        roadmapId = "1",
+                        title = "React Fundamentals",
+                        categoryId = "WEB_DEVELOPMENT",
+                        categoryLabel = "Web",
+                        nodesTotal = 0,
+                        durationLabel = "4 weeks",
+                        iconKey = "Code"
+                    ),
                     isSaved = true,
                     style = HomeSearchRoadmapItemDefaults.reactStyle()
                 ),

@@ -8,8 +8,6 @@ import com.rmap.mobile.core.ui.theme.Dimens
 internal val HomeSearchHeaderActionSize = 40.dp
 internal val HomeSearchInputHeight = 48.dp
 internal val HomeSearchInputShape = RoundedCornerShape(Dimens.cardRadiusLg)
-internal val HomeSearchSuggestionChipShape = RoundedCornerShape(Dimens.cardRadiusSm)
-internal val HomeSearchPopularChipShape = AppShapes.pill
 internal val HomeSearchRoadmapCardShape = AppShapes.card
 internal val HomeSearchRoadmapIconSize = 48.dp
 internal val HomeSearchRoadmapTrailingSize = 32.dp

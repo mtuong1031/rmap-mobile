@@ -19,10 +19,12 @@ import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.NightsStay
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.TrackChanges
+import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +53,7 @@ import com.rmap.mobile.features.home.presentation.components.category.HomeCatego
 import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryItemUiModel
 import com.rmap.mobile.features.home.presentation.components.hero.HomeHeroSection
 import com.rmap.mobile.features.home.presentation.components.hero.HomeLearningPlanUiModel
+import com.rmap.mobile.features.home.presentation.components.insight.HomeGoalQuizCard
 import com.rmap.mobile.features.home.presentation.components.insight.HomePaceAlertCard
 import com.rmap.mobile.features.home.presentation.components.loading.HomeCategoriesSectionSkeleton
 import com.rmap.mobile.features.home.presentation.components.loading.HomeHeroSectionSkeleton
@@ -66,9 +71,11 @@ import com.rmap.mobile.features.home.presentation.components.trending.TrendingRo
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardDefaults
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapsHeader
+import com.rmap.mobile.features.home.presentation.viewmodel.HomeGreetingPeriod
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeRecommendedRoadmapState
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeUiState
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.toHomeBrowseCategoryLabel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
 import com.rmap.mobile.navigation.NavBarDestination
 
@@ -97,7 +104,16 @@ fun HomeScreen(
     val listState = rememberLazyListState()
     val sectionHorizontalPadding = Dimens.spacingScreenHorizontal
 
-    val greetingText = "Good morning, ${uiState.userName}"
+    val greetingText = if (uiState.isAuthenticated && uiState.userName.isNotBlank()) {
+        stringResource(
+            R.string.home_greeting_authenticated,
+            stringResource(uiState.greetingPeriod.labelResId()),
+            uiState.userName
+        )
+    } else {
+        stringResource(R.string.home_greeting_guest)
+    }
+    val greetingVisual = uiState.toGreetingVisual()
     val headingText = stringResource(R.string.home_heading_next_skill)
     val isLoading = uiState.isLoading
     val progressPercent = (uiState.progressFraction.coerceIn(0f, 1f) * 100).toInt()
@@ -150,20 +166,14 @@ fun HomeScreen(
         )
     )
 
-    val recommendedRoadmaps = uiState.recommendedRoadmaps.map { roadmap ->
-        roadmap to HomeRoadmapCardUiModel(
-            id = roadmap.id,
-            categoryLabel = roadmap.categoryLabel,
-            title = roadmap.title,
-            nodesText = roadmap.nodesText,
-            durationText = roadmap.durationText,
-            actionText = stringResource(R.string.home_roadmap_view_action),
-            icon = roadmap.icon.toImageVector(),
-            style = roadmap.icon.toHomeRoadmapCardStyle(),
-            isBeginner = roadmap.isBeginner,
-            isSaved = uiState.savedRoadmapIds.contains(roadmap.id)
-        )
-    }
+    val recommendedRoadmaps = uiState.recommendedRoadmaps.toRoadmapCardPairs(
+        savedRoadmapIds = uiState.savedRoadmapIds,
+        actionText = stringResource(R.string.home_roadmap_view_action)
+    )
+    val beginnerRoadmaps = uiState.beginnerRoadmaps.toRoadmapCardPairs(
+        savedRoadmapIds = uiState.savedRoadmapIds,
+        actionText = stringResource(R.string.home_roadmap_view_action)
+    )
 
     val categoryItems = uiState.categories.mapIndexed { index, category ->
         HomeCategoryItemUiModel(
@@ -206,6 +216,8 @@ fun HomeScreen(
                     RMapHeader(
                         greetingText = greetingText,
                         headingText = headingText,
+                        greetingIcon = greetingVisual.icon,
+                        greetingIconTint = greetingVisual.tint,
                         onActionClick = onHeaderActionClick,
                         modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                     )
@@ -278,7 +290,7 @@ fun HomeScreen(
 
                     item {
                         HomeTrendingRoadmapsSectionSkeleton(
-                            title = stringResource(R.string.roadmap_trending_title),
+                            title = stringResource(R.string.home_popular_roadmaps_explore_title),
                             modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                         )
                     }
@@ -300,77 +312,107 @@ fun HomeScreen(
                         )
                     }
 
-                    item {
-                        HomeStatCardRow(
-                            items = homeStatItems,
-                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
-                            horizontalSpacing = Dimens.spacingMd,
-                            onItemClick = onHomeStatItemClick
-                        )
-                    }
-
-                    focusedPaceWarning?.let { warning ->
+                    if (uiState.hasInProgressRoadmap) {
                         item {
-                            HomePaceAlertCard(
-                                message = warning.message,
-                                actionText = warning.actionText,
-                                onActionClick = onAdjustPlanClick,
+                            HomeStatCardRow(
+                                items = homeStatItems,
+                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
+                                horizontalSpacing = Dimens.spacingMd,
+                                onItemClick = onHomeStatItemClick
+                            )
+                        }
+
+                        focusedPaceWarning?.let { warning ->
+                            item {
+                                HomePaceAlertCard(
+                                    message = warning.message,
+                                    actionText = warning.actionText,
+                                    onActionClick = onAdjustPlanClick,
+                                    modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                                )
+                            }
+                        }
+
+                        if (recommendedRoadmaps.isNotEmpty()) {
+                            item {
+                                HomeRecommendedRoadmapsSection(
+                                    title = stringResource(R.string.home_recommended_title),
+                                    subtitle = "Recommended because you're learning Frontend Pro",
+                                    roadmaps = recommendedRoadmaps.map { it.second },
+                                    metadataSeparatorText = stringResource(R.string.separator_bullet),
+                                    starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
+                                    bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
+                                    onRoadmapClick = { item ->
+                                        recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
+                                            onRecommendedRoadmapClick?.invoke(roadmap)
+                                        }
+                                    },
+                                    onBookmarkClick = { item ->
+                                        recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
+                                            onRecommendedRoadmapBookmarkClick?.invoke(roadmap)
+                                        }
+                                    },
+                                )
+                            }
+                        }
+
+                        item {
+                            HomeCategorySection(
+                                title = stringResource(R.string.home_categories_title),
+                                subtitle = stringResource(R.string.home_categories_subtitle),
+                                items = visibleCategoryItems,
+                                shouldShowToggleAction = shouldShowCategoryToggleAction,
+                                showAllCategories = showAllCategories,
+                                onToggleClick = { showAllCategories = !showAllCategories },
+                                onCategoryItemClick = onCategoryItemClick,
                                 modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                             )
                         }
-                    }
-
-                    item {
-                        HomeRecommendedRoadmapsSection(
-                            title = stringResource(R.string.home_recommended_title),
-                            subtitle = "Recommended because you're learning Frontend Pro",
-                            roadmaps = recommendedRoadmaps.map { it.second },
-                            metadataSeparatorText = stringResource(R.string.separator_bullet),
-                            starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
-                            bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
-                            onRoadmapClick = { item ->
-                                recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
-                                    onRecommendedRoadmapClick?.invoke(roadmap)
-                                }
-                            },
-                            onBookmarkClick = { item ->
-                                recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
-                                    onRecommendedRoadmapBookmarkClick?.invoke(roadmap)
-                                }
-                            },
-                        )
-                    }
-
-                    item {
-                        Column(
-                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
-                            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-                        ) {
-                            RMapSectionTitle(
-                                text = stringResource(R.string.home_categories_title),
-                                subtitle = stringResource(R.string.home_categories_subtitle),
-                                actionText = if (shouldShowCategoryToggleAction) {
-                                    stringResource(
-                                        if (showAllCategories) {
-                                            R.string.action_see_less
-                                        } else {
-                                            R.string.action_see_all
-                                        }
-                                    )
-                                } else {
-                                    null
-                                },
-                                onActionClick = if (shouldShowCategoryToggleAction) {
-                                    { showAllCategories = !showAllCategories }
-                                } else {
-                                    null
-                                }
+                    } else {
+                        item {
+                            HomeGoalQuizCard(
+                                title = stringResource(R.string.home_goal_quiz_title),
+                                description = stringResource(R.string.home_goal_quiz_description),
+                                actionText = stringResource(R.string.home_goal_quiz_action),
+                                onActionClick = onCreateRoadmapWithAiClick,
+                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                             )
+                        }
 
-                            HomeCategoryCardGrid(
+                        item {
+                            HomeCategorySection(
+                                title = stringResource(R.string.home_popular_subjects_title),
+                                subtitle = null,
                                 items = visibleCategoryItems,
-                                onItemClick = onCategoryItemClick
+                                shouldShowToggleAction = shouldShowCategoryToggleAction,
+                                showAllCategories = showAllCategories,
+                                onToggleClick = { showAllCategories = !showAllCategories },
+                                onCategoryItemClick = onCategoryItemClick,
+                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                             )
+                        }
+
+                        if (beginnerRoadmaps.isNotEmpty()) {
+                            item {
+                                HomeRecommendedRoadmapsSection(
+                                    title = stringResource(R.string.home_beginner_roadmaps_title),
+                                    subtitle = stringResource(R.string.home_beginner_roadmaps_subtitle),
+                                    roadmaps = beginnerRoadmaps.map { it.second },
+                                    metadataSeparatorText = stringResource(R.string.separator_bullet),
+                                    starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
+                                    bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
+                                    onRoadmapClick = { item ->
+                                        beginnerRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
+                                            onRecommendedRoadmapClick?.invoke(roadmap)
+                                        }
+                                    },
+                                    onBookmarkClick = { item ->
+                                        beginnerRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
+                                            onRecommendedRoadmapBookmarkClick?.invoke(roadmap)
+                                        }
+                                    },
+                                )
+                            }
                         }
                     }
 
@@ -379,7 +421,9 @@ fun HomeScreen(
                             modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
                             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
                         ) {
-                            TrendingRoadmapsHeader()
+                            TrendingRoadmapsHeader(
+                                title = stringResource(R.string.home_popular_roadmaps_explore_title)
+                            )
                             uiState.trendingRoadmaps.forEach { item ->
                                 TrendingRoadmapCard(
                                     item = item,
@@ -396,7 +440,114 @@ fun HomeScreen(
     }
 }
 
+private fun HomeGreetingPeriod.labelResId(): Int {
+    return when (this) {
+        HomeGreetingPeriod.Morning -> R.string.home_greeting_period_morning
+        HomeGreetingPeriod.Afternoon -> R.string.home_greeting_period_afternoon
+        HomeGreetingPeriod.Evening -> R.string.home_greeting_period_evening
+        HomeGreetingPeriod.Night -> R.string.home_greeting_period_night
+    }
+}
+
+private data class HomeGreetingVisual(
+    val icon: ImageVector,
+    val tint: Color
+)
+
+@Composable
+private fun HomeCategorySection(
+    title: String,
+    subtitle: String?,
+    items: List<HomeCategoryItemUiModel>,
+    shouldShowToggleAction: Boolean,
+    showAllCategories: Boolean,
+    onToggleClick: () -> Unit,
+    onCategoryItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)?,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+    ) {
+        RMapSectionTitle(
+            text = title,
+            subtitle = subtitle,
+            actionText = if (shouldShowToggleAction) {
+                stringResource(
+                    if (showAllCategories) {
+                        R.string.action_see_less
+                    } else {
+                        R.string.action_see_all
+                    }
+                )
+            } else {
+                null
+            },
+            onActionClick = if (shouldShowToggleAction) {
+                onToggleClick
+            } else {
+                null
+            }
+        )
+
+        HomeCategoryCardGrid(
+            items = items,
+            onItemClick = onCategoryItemClick
+        )
+    }
+}
+
+@Composable
+private fun HomeUiState.toGreetingVisual(): HomeGreetingVisual {
+    if (!isAuthenticated) {
+        return HomeGreetingVisual(
+            icon = Icons.Outlined.Map,
+            tint = MaterialTheme.colorScheme.primary
+        )
+    }
+
+    return when (greetingPeriod) {
+        HomeGreetingPeriod.Morning -> HomeGreetingVisual(
+            icon = Icons.Outlined.WbSunny,
+            tint = Color(0xFFFE9A00)
+        )
+        HomeGreetingPeriod.Afternoon -> HomeGreetingVisual(
+            icon = Icons.Outlined.WbSunny,
+            tint = MaterialTheme.colorScheme.primary
+        )
+        HomeGreetingPeriod.Evening -> HomeGreetingVisual(
+            icon = Icons.Outlined.NightsStay,
+            tint = Color(0xFF7C3AED)
+        )
+        HomeGreetingPeriod.Night -> HomeGreetingVisual(
+            icon = Icons.Outlined.NightsStay,
+            tint = Color(0xFF4F46E5)
+        )
+    }
+}
+
 private const val HomeInitialCategoryLimit = 6
+
+@Composable
+private fun List<HomeRecommendedRoadmapState>.toRoadmapCardPairs(
+    savedRoadmapIds: Set<String>,
+    actionText: String
+): List<Pair<HomeRecommendedRoadmapState, HomeRoadmapCardUiModel>> {
+    return map { roadmap ->
+        roadmap to HomeRoadmapCardUiModel(
+            id = roadmap.id,
+            categoryLabel = roadmap.categoryId.toHomeBrowseCategoryLabel(roadmap.categoryLabel),
+            title = roadmap.title,
+            nodesText = roadmap.nodesText,
+            durationText = roadmap.durationText,
+            actionText = actionText,
+            icon = roadmap.icon.toImageVector(),
+            style = roadmap.icon.toHomeRoadmapCardStyle(),
+            isBeginner = roadmap.isBeginner,
+            isSaved = savedRoadmapIds.contains(roadmap.id)
+        )
+    }
+}
 
 @Composable
 private fun LearningTopicIcon.toHomeRoadmapCardStyle() = when (this) {
