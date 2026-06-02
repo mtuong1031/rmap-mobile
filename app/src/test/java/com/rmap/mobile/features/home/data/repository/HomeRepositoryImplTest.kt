@@ -3,6 +3,7 @@ package com.rmap.mobile.features.home.data.repository
 import com.rmap.mobile.core.network.AppException
 import com.rmap.mobile.features.home.data.model.HomeActiveRoadmapDto
 import com.rmap.mobile.features.home.data.model.HomeDashboardResponseDto
+import com.rmap.mobile.features.home.data.model.HomeDashboardSearchResponseDto
 import com.rmap.mobile.features.home.data.model.HomeMetricsDto
 import com.rmap.mobile.features.home.data.model.HomeNextUnlockDto
 import com.rmap.mobile.features.home.data.model.HomePaceWarningDto
@@ -10,6 +11,12 @@ import com.rmap.mobile.features.home.data.model.HomePlanNodeDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapChapterDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapGroupDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapProgressDto
+import com.rmap.mobile.features.home.data.model.HomeSearchMetaDto
+import com.rmap.mobile.features.home.data.model.HomeSearchPageMetaDto
+import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapDto
+import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapsPageDto
+import com.rmap.mobile.features.home.data.model.HomeSearchSkillDto
+import com.rmap.mobile.features.home.data.model.HomeSearchSkillsPageDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateCategoriesResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateCategoryDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateRecommendationsResponseDto
@@ -87,6 +94,38 @@ class HomeRepositoryImplTest {
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull() is AppException)
     }
+
+    @Test
+    fun `search dashboard maps roadmap and skill results`() = runTest {
+        val repository = HomeRepositoryImpl(FakeHomeApi())
+
+        val result = repository.searchDashboard(query = "full", roadmapPage = 1, skillPage = 1)
+
+        assertTrue(result.isSuccess)
+        val search = result.getOrThrow()
+        assertEquals("full", search.query)
+        assertEquals("roadmap-search-1", search.roadmaps.data.single().roadmapId)
+        assertEquals("skill-search-1", search.skills.data.single().skillId)
+        assertEquals(true, search.roadmaps.meta.hasNextPage)
+        assertEquals(false, search.skills.meta.hasNextPage)
+    }
+
+    @Test
+    fun `search dashboard returns failure when API fails`() = runTest {
+        val api = FakeHomeApi().apply {
+            searchResponse = Response.error(
+                500,
+                """{"code":50000,"message":"Internal error"}"""
+                    .toResponseBody("application/json".toMediaType())
+            )
+        }
+        val repository = HomeRepositoryImpl(api)
+
+        val result = repository.searchDashboard(query = "full", roadmapPage = 1, skillPage = 1)
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is AppException)
+    }
 }
 
 private class FakeHomeApi : HomeApi {
@@ -95,8 +134,15 @@ private class FakeHomeApi : HomeApi {
         Response.success(recommendationsDto())
     var categoriesResponse: Response<HomeTemplateCategoriesResponseDto> = Response.success(categoriesDto())
     var trendingsResponse: Response<HomeTemplateTrendingsResponseDto> = Response.success(trendingsDto())
+    var searchResponse: Response<HomeDashboardSearchResponseDto> = Response.success(searchDto())
 
     override suspend fun getDashboardHome(): Response<HomeDashboardResponseDto> = dashboardResponse
+
+    override suspend fun searchDashboard(
+        query: String,
+        roadmapPage: Int,
+        skillPage: Int
+    ): Response<HomeDashboardSearchResponseDto> = searchResponse
 
     override suspend fun getTemplateRecommendations(): Response<HomeTemplateRecommendationsResponseDto> =
         recommendationsResponse
@@ -187,4 +233,53 @@ private fun trendingDto(
     durationLabel = durationLabel,
     nodesTotal = 10,
     trendText = "Trending now"
+)
+
+private fun searchDto(): HomeDashboardSearchResponseDto = HomeDashboardSearchResponseDto(
+    query = "full",
+    roadmaps = HomeSearchRoadmapsPageDto(
+        data = listOf(
+            HomeSearchRoadmapDto(
+                roadmapId = "roadmap-search-1",
+                title = "Full Stack Developer Roadmap",
+                description = "Learn Full Stack",
+                goalName = "Full Stack Developer Roadmap",
+                isTemplate = true,
+                roadmapType = "template",
+                roleCategory = "WEB_DEVELOPMENT",
+                categoryLabel = "Web Development",
+                estimatedWeeks = null,
+                durationLabel = null
+            )
+        ),
+        meta = HomeSearchPageMetaDto(
+            page = 1,
+            perPage = 5,
+            total = 8,
+            totalPages = 2
+        )
+    ),
+    skills = HomeSearchSkillsPageDto(
+        data = listOf(
+            HomeSearchSkillDto(
+                skillId = "skill-search-1",
+                name = "FULL OUTER JOIN",
+                description = "Join data",
+                roleCategory = "LANGUAGES_AND_PLATFORMS",
+                categoryLabel = "Languages And Platforms",
+                defaultEstimatedHours = null
+            )
+        ),
+        meta = HomeSearchPageMetaDto(
+            page = 1,
+            perPage = 10,
+            total = 1,
+            totalPages = 1
+        )
+    ),
+    meta = HomeSearchMetaDto(
+        totalResults = 9,
+        roadmapPageSize = 5,
+        skillPageSize = 10
+    )
 )

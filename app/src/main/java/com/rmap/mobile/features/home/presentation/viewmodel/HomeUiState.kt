@@ -5,6 +5,8 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 
 data class HomeUiState(
     val userName: String = "",
+    val isAuthenticated: Boolean = false,
+    val greetingPeriod: HomeGreetingPeriod = HomeGreetingPeriod.Morning,
     val progressFraction: Float = 0f,
     val readinessFraction: Float = 0f,
     val completedLessons: Int = 0,
@@ -16,12 +18,20 @@ data class HomeUiState(
     val hasInProgressRoadmap: Boolean = true,
     val learningPlans: List<HomeLearningPlanState> = emptyList(),
     val recommendedRoadmaps: List<HomeRecommendedRoadmapState> = emptyList(),
+    val beginnerRoadmaps: List<HomeRecommendedRoadmapState> = emptyList(),
     val categories: List<HomeCategoryState> = emptyList(),
     val trendingRoadmaps: List<TrendingRoadmapCardUiModel> = emptyList(),
     val savedRoadmapIds: Set<String> = emptySet(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
 )
+
+enum class HomeGreetingPeriod {
+    Morning,
+    Afternoon,
+    Evening,
+    Night
+}
 
 data class HomeLearningPlanState(
     val id: String,

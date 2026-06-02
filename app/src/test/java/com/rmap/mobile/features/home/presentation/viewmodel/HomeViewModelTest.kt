@@ -5,6 +5,9 @@ import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.model.User
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.home.domain.model.HomeActiveRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeContent
 import com.rmap.mobile.features.home.domain.model.HomeMetrics
@@ -14,6 +17,7 @@ import com.rmap.mobile.features.home.domain.model.HomePlanNode
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapChapter
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapGroup
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapProgress
+import com.rmap.mobile.features.home.domain.model.HomeSearchResult
 import com.rmap.mobile.features.home.domain.model.HomeTemplateCategory
 import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
@@ -39,7 +43,8 @@ class HomeViewModelTest {
     fun `initial load populates home sections`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            bookmarkRepository = FakeBookmarkRepository()
+            bookmarkRepository = FakeBookmarkRepository(),
+            authRepository = FakeAuthRepository()
         )
 
         advanceUntilIdle()
@@ -58,7 +63,8 @@ class HomeViewModelTest {
     fun `warning is only available on roadmap with pace warning`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            bookmarkRepository = FakeBookmarkRepository()
+            bookmarkRepository = FakeBookmarkRepository(),
+            authRepository = FakeAuthRepository()
         )
 
         advanceUntilIdle()
@@ -73,7 +79,8 @@ class HomeViewModelTest {
         val bookmarkRepository = FakeBookmarkRepository()
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            bookmarkRepository = bookmarkRepository
+            bookmarkRepository = bookmarkRepository,
+            authRepository = FakeAuthRepository()
         )
         advanceUntilIdle()
 
@@ -83,10 +90,44 @@ class HomeViewModelTest {
         assertEquals("template-1", bookmarkRepository.savedSnapshot?.roadmapId)
         assertTrue("template-1" in viewModel.uiState.value.savedRoadmapIds)
     }
+
+    @Test
+    fun `authenticated greeting uses first name from full name`() = runTest {
+        val viewModel = HomeViewModel(
+            homeRepository = FakeHomeRepository(),
+            bookmarkRepository = FakeBookmarkRepository(),
+            authRepository = FakeAuthRepository()
+        )
+
+        advanceUntilIdle()
+
+        assertEquals("Thinh", viewModel.uiState.value.userName)
+        assertEquals(true, viewModel.uiState.value.isAuthenticated)
+    }
+
+    @Test
+    fun `maps vietnam hour to greeting period`() {
+        assertEquals(HomeGreetingPeriod.Morning, currentVietnamGreetingPeriod(hourOfDay = 8))
+        assertEquals(HomeGreetingPeriod.Afternoon, currentVietnamGreetingPeriod(hourOfDay = 13))
+        assertEquals(HomeGreetingPeriod.Evening, currentVietnamGreetingPeriod(hourOfDay = 19))
+        assertEquals(HomeGreetingPeriod.Night, currentVietnamGreetingPeriod(hourOfDay = 23))
+    }
+
+    @Test
+    fun `extracts first name safely`() {
+        assertEquals("Thinh", " Thinh Hoang Duy ".toFirstName())
+        assertEquals("", "   ".toFirstName())
+    }
 }
 
 private class FakeHomeRepository : HomeRepository {
     override suspend fun getHomeContent(): Result<HomeContent> = Result.success(testHomeContent())
+
+    override suspend fun searchDashboard(
+        query: String,
+        roadmapPage: Int,
+        skillPage: Int
+    ): Result<HomeSearchResult> = error("Not used in HomeViewModelTest")
 }
 
 private class FakeBookmarkRepository : BookmarkRepository {
@@ -117,6 +158,29 @@ private class FakeBookmarkRepository : BookmarkRepository {
     override suspend fun deleteSkill(skillId: String): Result<Unit> = Result.success(Unit)
 
     override suspend fun isSkillSaved(skillId: String): Result<Boolean> = Result.success(false)
+}
+
+private class FakeAuthRepository : AuthRepository {
+    override val authState = MutableStateFlow<AuthState>(
+        AuthState.Authenticated(
+            User(
+                id = "user-1",
+                email = "thinh@gmail.com",
+                fullName = "Thinh Hoang Duy",
+                avatarUrl = null,
+                role = "user",
+                createdAt = "2026-05-31T08:11:01.885Z"
+            )
+        )
+    )
+
+    override suspend fun login(email: String, password: String): Result<User> = error("Not used")
+
+    override suspend fun register(email: String, password: String, fullName: String): Result<User> = error("Not used")
+
+    override suspend fun logout(): Result<Unit> = error("Not used")
+
+    override suspend fun getCurrentUser(): Result<User> = error("Not used")
 }
 
 private fun testHomeContent(): HomeContent = HomeContent(

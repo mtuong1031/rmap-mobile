@@ -18,6 +18,10 @@ private const val CATEGORY_BLOCKCHAIN = "BLOCKCHAIN"
 private const val CATEGORY_CYBER_SECURITY = "CYBER_SECURITY"
 
 fun String.toRoadmapCategoryDisplayLabel(fallbackLabel: String? = null): String {
+    return fallbackLabel?.takeIf { it.isNotBlank() } ?: toReadableCategoryLabel()
+}
+
+fun String.toHomeBrowseCategoryLabel(fallbackLabel: String? = null): String {
     return when (toRoadmapCategoryKey()) {
         CATEGORY_WEB_DEVELOPMENT -> "Web"
         CATEGORY_FRAMEWORKS -> "Frameworks"

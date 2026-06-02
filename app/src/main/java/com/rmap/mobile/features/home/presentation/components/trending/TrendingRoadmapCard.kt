@@ -39,14 +39,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.AppTextStyles
@@ -112,7 +110,7 @@ object TrendingRoadmapCardDefaults {
             categoryContentColor = Color(0xFF45556C),
             decorativeIconColor = Color(0xFF45556C),
             decorativeIconAlpha = 0.15f,
-            trendContentColor = Color(0xFF2B7FFF)
+            trendContentColor = TrendingRoadmapOrange
         )
     }
 
@@ -226,6 +224,12 @@ private fun TrendingRoadmapRankRail(
 
 @Composable
 private fun TrendingRoadmapContent(item: TrendingRoadmapCardUiModel) {
+    val trendColor = if (item.trendText.contains("learners", ignoreCase = true)) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        item.style.trendContentColor
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -271,7 +275,7 @@ private fun TrendingRoadmapContent(item: TrendingRoadmapCardUiModel) {
                 Icon(
                     imageVector = item.trendIcon,
                     contentDescription = null,
-                    tint = item.style.trendContentColor,
+                    tint = trendColor,
                     modifier = Modifier.size(TrendingRoadmapTrendIconSize)
                 )
 
@@ -279,7 +283,7 @@ private fun TrendingRoadmapContent(item: TrendingRoadmapCardUiModel) {
                     text = item.trendText,
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = item.style.trendContentColor
+                        color = trendColor
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -328,10 +332,11 @@ private val TrendingRoadmapOrange = Color(0xFFFF6900)
 
 @Composable
 fun TrendingRoadmapsHeader(
+    title: String,
     modifier: Modifier = Modifier
 ) {
     RMapSectionTitle(
-        text = stringResource(R.string.roadmap_trending_title),
+        text = title,
         modifier = modifier.fillMaxWidth()
     )
 }

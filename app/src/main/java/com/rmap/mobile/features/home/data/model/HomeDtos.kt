@@ -67,6 +67,58 @@ data class HomeMetricsDto(
     @SerializedName("readinessPct") val readinessPct: Double
 )
 
+data class HomeDashboardSearchResponseDto(
+    @SerializedName("query") val query: String,
+    @SerializedName("roadmaps") val roadmaps: HomeSearchRoadmapsPageDto,
+    @SerializedName("skills") val skills: HomeSearchSkillsPageDto,
+    @SerializedName("meta") val meta: HomeSearchMetaDto
+)
+
+data class HomeSearchRoadmapsPageDto(
+    @SerializedName("data") val data: List<HomeSearchRoadmapDto>,
+    @SerializedName("meta") val meta: HomeSearchPageMetaDto
+)
+
+data class HomeSearchSkillsPageDto(
+    @SerializedName("data") val data: List<HomeSearchSkillDto>,
+    @SerializedName("meta") val meta: HomeSearchPageMetaDto
+)
+
+data class HomeSearchRoadmapDto(
+    @SerializedName("roadmapId") val roadmapId: String,
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String?,
+    @SerializedName("goalName") val goalName: String,
+    @SerializedName("isTemplate") val isTemplate: Boolean,
+    @SerializedName("roadmapType") val roadmapType: String,
+    @SerializedName("roleCategory") val roleCategory: String,
+    @SerializedName("categoryLabel") val categoryLabel: String,
+    @SerializedName("estimatedWeeks") val estimatedWeeks: Int?,
+    @SerializedName("durationLabel") val durationLabel: String?
+)
+
+data class HomeSearchSkillDto(
+    @SerializedName("skillId") val skillId: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("description") val description: String?,
+    @SerializedName("roleCategory") val roleCategory: String,
+    @SerializedName("categoryLabel") val categoryLabel: String,
+    @SerializedName("defaultEstimatedHours") val defaultEstimatedHours: Int?
+)
+
+data class HomeSearchPageMetaDto(
+    @SerializedName("page") val page: Int,
+    @SerializedName("perPage") val perPage: Int,
+    @SerializedName("total") val total: Int,
+    @SerializedName("totalPages") val totalPages: Int
+)
+
+data class HomeSearchMetaDto(
+    @SerializedName("totalResults") val totalResults: Int,
+    @SerializedName("roadmapPageSize") val roadmapPageSize: Int,
+    @SerializedName("skillPageSize") val skillPageSize: Int
+)
+
 data class HomeTemplateRecommendationsResponseDto(
     @SerializedName("roleCategories") val roleCategories: List<HomeRoleCategoryDto>,
     @SerializedName("total") val total: Int,

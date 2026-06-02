@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -40,7 +39,6 @@ fun HomeSearchHeader(
     placeholder: String,
     onQueryChange: (String) -> Unit,
     onBackClick: () -> Unit,
-    onFilterClick: () -> Unit,
     modifier: Modifier = Modifier,
     focusRequester: FocusRequester? = null
 ) {
@@ -58,11 +56,6 @@ fun HomeSearchHeader(
             onQueryChange = onQueryChange,
             modifier = Modifier.weight(1f),
             focusRequester = focusRequester
-        )
-        HomeSearchIconButton(
-            icon = Icons.Outlined.Tune,
-            onClick = onFilterClick,
-            iconSize = Dimens.iconMdPlus
         )
     }
 }
@@ -139,7 +132,6 @@ private fun HomeSearchHeaderPreview() {
             placeholder = "Search skills, roadmaps...",
             onQueryChange = {},
             onBackClick = {},
-            onFilterClick = {},
             modifier = Modifier.padding(Dimens.spacingMd)
         )
     }
@@ -154,7 +146,6 @@ private fun HomeSearchHeaderWithQueryPreview() {
             placeholder = "Search skills, roadmaps...",
             onQueryChange = {},
             onBackClick = {},
-            onFilterClick = {},
             modifier = Modifier.padding(Dimens.spacingMd)
         )
     }
@@ -185,11 +176,6 @@ private fun HomeSearchIconButtonPreview() {
             HomeSearchIconButton(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
                 onClick = {}
-            )
-            HomeSearchIconButton(
-                icon = Icons.Outlined.Tune,
-                onClick = {},
-                iconSize = Dimens.iconMdPlus
             )
         }
     }

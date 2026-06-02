@@ -8,6 +8,8 @@ import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.home.domain.model.HomeActiveRoadmap
@@ -20,6 +22,7 @@ import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardDefaults
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.toHomeBrowseCategoryLabel
 import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryDisplayLabel
 import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryIcon
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
@@ -32,10 +35,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.TimeZone
 
 class HomeViewModel(
     private val homeRepository: HomeRepository = RMapAppGraph.homeRepository,
-    private val bookmarkRepository: BookmarkRepository = RMapAppGraph.bookmarkRepository
+    private val bookmarkRepository: BookmarkRepository = RMapAppGraph.bookmarkRepository,
+    private val authRepository: AuthRepository = RMapAppGraph.authRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -45,16 +51,22 @@ class HomeViewModel(
     init {
         loadHome()
         observeSavedRoadmaps()
+        observeAuthState()
     }
 
     fun loadHome() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            homeRepository.getHomeContent()
+                    homeRepository.getHomeContent()
                 .onSuccess { content ->
                     _uiState.update {
-                        content.toUiState(savedRoadmapIds = it.savedRoadmapIds)
+                        content.toUiState(
+                            savedRoadmapIds = it.savedRoadmapIds,
+                            userName = it.userName,
+                            isAuthenticated = it.isAuthenticated,
+                            greetingPeriod = it.greetingPeriod
+                        )
                     }
                 }
                 .onFailure { error ->
@@ -116,6 +128,21 @@ class HomeViewModel(
         }
     }
 
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authRepository.authState.collect { authState ->
+                _uiState.update {
+                    val authenticated = authState as? AuthState.Authenticated
+                    it.copy(
+                        userName = authenticated?.user?.fullName?.toFirstName().orEmpty(),
+                        isAuthenticated = authenticated != null,
+                        greetingPeriod = currentVietnamGreetingPeriod()
+                    )
+                }
+            }
+        }
+    }
+
     private fun updateSavedRoadmapState(
         roadmapId: String,
         isSaved: Boolean
@@ -131,11 +158,18 @@ class HomeViewModel(
     }
 }
 
-private fun HomeContent.toUiState(savedRoadmapIds: Set<String>): HomeUiState {
+private fun HomeContent.toUiState(
+    savedRoadmapIds: Set<String>,
+    userName: String,
+    isAuthenticated: Boolean,
+    greetingPeriod: HomeGreetingPeriod
+): HomeUiState {
     val learningPlans = activeRoadmaps.map { it.toLearningPlanState() }
     val firstPlan = learningPlans.firstOrNull()
     return HomeUiState(
-        userName = "User",
+        userName = userName,
+        isAuthenticated = isAuthenticated,
+        greetingPeriod = greetingPeriod,
         progressFraction = (metrics.roadmapCompletionPct.toFloat() / 100f).coerceIn(0f, 1f),
         readinessFraction = (metrics.readinessPct.toFloat() / 100f).coerceIn(0f, 1f),
         completedLessons = firstPlan?.completedRequiredNodes ?: 0,
@@ -147,6 +181,7 @@ private fun HomeContent.toUiState(savedRoadmapIds: Set<String>): HomeUiState {
         hasInProgressRoadmap = learningPlans.isNotEmpty(),
         learningPlans = learningPlans,
         recommendedRoadmaps = recommendations.map { it.toRecommendedRoadmapState() },
+        beginnerRoadmaps = trendings.map { it.toBeginnerRoadmapState() },
         categories = categories.map { it.toCategoryState() },
         trendingRoadmaps = trendings.map { it.toTrendingRoadmapCardUiModel() },
         savedRoadmapIds = savedRoadmapIds,
@@ -212,7 +247,7 @@ private fun HomeTemplateRoadmap.toRecommendedRoadmapState(): HomeRecommendedRoad
 private fun HomeTemplateCategory.toCategoryState(): HomeCategoryState {
     return HomeCategoryState(
         id = category,
-        label = category.toRoadmapCategoryDisplayLabel(label),
+        label = category.toHomeBrowseCategoryLabel(label),
         countText = templatesCount.toString(),
         icon = category.toRoadmapCategoryIcon()
     )
@@ -238,6 +273,31 @@ private fun HomeTrendingRoadmap.toTrendingRoadmapCardUiModel(): TrendingRoadmapC
             LearningTopicIcon.SmartToy -> TrendingRoadmapCardDefaults.indigoStyle()
             else -> TrendingRoadmapCardDefaults.primaryStyle()
         }
+    )
+}
+
+private fun HomeTrendingRoadmap.toBeginnerRoadmapState(): HomeRecommendedRoadmapState {
+    val icon = roleCategory.toRoadmapCategoryIcon()
+    val displayLabel = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel)
+    val duration = toDurationText()
+    return HomeRecommendedRoadmapState(
+        id = roadmapId,
+        categoryId = roleCategory,
+        categoryLabel = displayLabel,
+        title = title,
+        nodesText = "$nodesTotal nodes",
+        durationText = duration,
+        icon = icon,
+        isBeginner = true,
+        snapshot = HomeRoadmapBookmarkSnapshotState(
+            roadmapId = roadmapId,
+            title = title,
+            categoryId = roleCategory,
+            categoryLabel = displayLabel,
+            nodesTotal = nodesTotal,
+            durationLabel = duration,
+            iconKey = icon.name
+        )
     )
 }
 
@@ -275,8 +335,28 @@ private fun HomeRoadmapBookmarkSnapshotState.toDomain(): RoadmapBookmarkSnapshot
     )
 }
 
+internal fun String.toFirstName(): String {
+    return trim()
+        .split(Regex("\\s+"))
+        .firstOrNull()
+        .orEmpty()
+}
+
+internal fun currentVietnamGreetingPeriod(
+    hourOfDay: Int = Calendar.getInstance(VIETNAM_TIME_ZONE).get(Calendar.HOUR_OF_DAY)
+): HomeGreetingPeriod {
+    return when (hourOfDay) {
+        in 5..11 -> HomeGreetingPeriod.Morning
+        in 12..16 -> HomeGreetingPeriod.Afternoon
+        in 17..21 -> HomeGreetingPeriod.Evening
+        else -> HomeGreetingPeriod.Night
+    }
+}
+
 sealed class HomeEvent {
     data object RoadmapBookmarkSaved : HomeEvent()
     data object RoadmapBookmarkRemoved : HomeEvent()
     data object BookmarkActionFailed : HomeEvent()
 }
+
+private val VIETNAM_TIME_ZONE: TimeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")

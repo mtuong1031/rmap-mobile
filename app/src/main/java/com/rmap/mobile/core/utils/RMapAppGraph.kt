@@ -21,7 +21,9 @@ import com.rmap.mobile.features.bookmarks.data.repository.RoomBookmarkRepository
 import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.home.data.remote.HomeApi
 import com.rmap.mobile.features.home.data.repository.HomeRepositoryImpl
+import com.rmap.mobile.features.home.data.repository.SharedPreferencesRecentSearchRepository
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
+import com.rmap.mobile.features.home.domain.repository.RecentSearchRepository
 import com.rmap.mobile.features.profile.data.FakeProfileRepository
 import com.rmap.mobile.features.profile.data.notification.LearningNotificationNotifier
 import com.rmap.mobile.features.profile.data.notification.LearningReminderScheduler
@@ -57,6 +59,8 @@ object RMapAppGraph {
         private set
     lateinit var homeRepository: HomeRepository
         private set
+    lateinit var recentSearchRepository: RecentSearchRepository
+        private set
     lateinit var loginUseCase: LoginUseCase
         private set
     lateinit var registerUseCase: RegisterUseCase
@@ -67,7 +71,13 @@ object RMapAppGraph {
         private set
 
     fun initialize(context: Context) {
-        if (::notificationSettingsRepository.isInitialized && ::authRepository.isInitialized) return
+        if (
+            ::notificationSettingsRepository.isInitialized &&
+            ::authRepository.isInitialized &&
+            ::recentSearchRepository.isInitialized
+        ) {
+            return
+        }
 
         val applicationContext = context.applicationContext
         sessionCookieStorage = SharedPreferencesSessionCookieStorage(applicationContext)
@@ -83,6 +93,7 @@ object RMapAppGraph {
         homeRepository = HomeRepositoryImpl(
             homeApi = apiClient.createService(HomeApi::class.java)
         )
+        recentSearchRepository = SharedPreferencesRecentSearchRepository(applicationContext)
         loginUseCase = LoginUseCase(authRepository)
         registerUseCase = RegisterUseCase(authRepository)
         logoutUseCase = LogoutUseCase(authRepository)

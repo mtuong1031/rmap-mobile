@@ -4,8 +4,10 @@ import com.rmap.mobile.core.network.NetworkResult
 import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.features.home.data.mapper.toHomeContent
+import com.rmap.mobile.features.home.data.mapper.toDomain
 import com.rmap.mobile.features.home.data.remote.HomeApi
 import com.rmap.mobile.features.home.domain.model.HomeContent
+import com.rmap.mobile.features.home.domain.model.HomeSearchResult
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -51,6 +53,25 @@ class HomeRepositoryImpl(
             } else {
                 Result.failure(IllegalStateException("Unable to load home"))
             }
+        }
+    }
+
+    override suspend fun searchDashboard(
+        query: String,
+        roadmapPage: Int,
+        skillPage: Int
+    ): Result<HomeSearchResult> {
+        return when (
+            val result = SafeApiCall.execute {
+                homeApi.searchDashboard(
+                    query = query,
+                    roadmapPage = roadmapPage,
+                    skillPage = skillPage
+                )
+            }
+        ) {
+            is NetworkResult.Success -> Result.success(result.data.toDomain())
+            is NetworkResult.Error -> Result.failure(result.toAppException())
         }
     }
 }

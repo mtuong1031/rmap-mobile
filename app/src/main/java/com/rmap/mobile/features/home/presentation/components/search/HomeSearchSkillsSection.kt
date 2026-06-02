@@ -21,6 +21,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import com.rmap.mobile.core.ui.components.RMapButton
+import com.rmap.mobile.core.ui.components.RMapButtonSize
+import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -30,14 +33,22 @@ import com.rmap.mobile.core.ui.theme.cardShadow
 fun HomeSearchSkillsSection(
     title: String,
     skills: List<HomeSearchSkillItemUiModel>,
+    seeMoreText: String,
+    resultCountText: String,
+    canSeeMore: Boolean,
+    isLoadingMore: Boolean,
     onSkillClick: (HomeSearchSkillItemUiModel) -> Unit,
+    onSeeMoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
     ) {
-        HomeSearchSectionHeader(title = title)
+        HomeSearchSectionHeader(
+            title = title,
+            resultCountText = resultCountText
+        )
 
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -47,6 +58,17 @@ fun HomeSearchSkillsSection(
                 HomeSearchSkillCard(
                     item = item,
                     onClick = { onSkillClick(item) }
+                )
+            }
+
+            if (canSeeMore) {
+                RMapButton(
+                    text = seeMoreText,
+                    onClick = onSeeMoreClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = RMapButtonVariant.Neutral,
+                    size = RMapButtonSize.Medium,
+                    enabled = !isLoadingMore
                 )
             }
         }
@@ -139,7 +161,12 @@ private fun HomeSearchSkillsSectionPreview() {
                     statusStyle = HomeSearchSkillStatusDefaults.inProgressStyle()
                 )
             ),
+            seeMoreText = "SEE MORE",
+            resultCountText = "2 skills founds",
+            canSeeMore = true,
+            isLoadingMore = false,
             onSkillClick = {},
+            onSeeMoreClick = {},
             modifier = Modifier.padding(Dimens.spacingLg)
         )
     }

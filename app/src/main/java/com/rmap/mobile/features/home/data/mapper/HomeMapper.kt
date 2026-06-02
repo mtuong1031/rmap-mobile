@@ -2,6 +2,7 @@ package com.rmap.mobile.features.home.data.mapper
 
 import com.rmap.mobile.features.home.data.model.HomeActiveRoadmapDto
 import com.rmap.mobile.features.home.data.model.HomeDashboardResponseDto
+import com.rmap.mobile.features.home.data.model.HomeDashboardSearchResponseDto
 import com.rmap.mobile.features.home.data.model.HomeMetricsDto
 import com.rmap.mobile.features.home.data.model.HomeNextUnlockDto
 import com.rmap.mobile.features.home.data.model.HomePaceWarningDto
@@ -9,6 +10,11 @@ import com.rmap.mobile.features.home.data.model.HomePlanNodeDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapChapterDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapGroupDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapProgressDto
+import com.rmap.mobile.features.home.data.model.HomeSearchPageMetaDto
+import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapDto
+import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapsPageDto
+import com.rmap.mobile.features.home.data.model.HomeSearchSkillDto
+import com.rmap.mobile.features.home.data.model.HomeSearchSkillsPageDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateCategoriesResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateCategoryDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateRecommendationsResponseDto
@@ -24,6 +30,12 @@ import com.rmap.mobile.features.home.domain.model.HomePlanNode
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapChapter
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapGroup
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapProgress
+import com.rmap.mobile.features.home.domain.model.HomeSearchPageMeta
+import com.rmap.mobile.features.home.domain.model.HomeSearchResult
+import com.rmap.mobile.features.home.domain.model.HomeSearchRoadmap
+import com.rmap.mobile.features.home.domain.model.HomeSearchRoadmapsPage
+import com.rmap.mobile.features.home.domain.model.HomeSearchSkill
+import com.rmap.mobile.features.home.domain.model.HomeSearchSkillsPage
 import com.rmap.mobile.features.home.domain.model.HomeTemplateCategory
 import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
@@ -40,6 +52,17 @@ fun toHomeContent(
         recommendations = recommendations.relevantRoadmaps.map { it.toDomain() },
         categories = categories.categories.map { it.toDomain() },
         trendings = trendings.trendings.map { it.toDomain() }
+    )
+}
+
+fun HomeDashboardSearchResponseDto.toDomain(): HomeSearchResult {
+    return HomeSearchResult(
+        query = query,
+        roadmaps = roadmaps.toDomain(),
+        skills = skills.toDomain(),
+        totalResults = meta.totalResults,
+        roadmapPageSize = meta.roadmapPageSize,
+        skillPageSize = meta.skillPageSize
     )
 }
 
@@ -95,6 +118,55 @@ private fun HomeMetricsDto.toDomain(): HomeMetrics = HomeMetrics(
     streakDays = streakDays,
     readinessPct = readinessPct
 )
+
+private fun HomeSearchRoadmapsPageDto.toDomain(): HomeSearchRoadmapsPage {
+    return HomeSearchRoadmapsPage(
+        data = data.map { it.toDomain() },
+        meta = meta.toDomain()
+    )
+}
+
+private fun HomeSearchSkillsPageDto.toDomain(): HomeSearchSkillsPage {
+    return HomeSearchSkillsPage(
+        data = data.map { it.toDomain() },
+        meta = meta.toDomain()
+    )
+}
+
+private fun HomeSearchRoadmapDto.toDomain(): HomeSearchRoadmap {
+    return HomeSearchRoadmap(
+        roadmapId = roadmapId,
+        title = title,
+        description = description,
+        goalName = goalName,
+        isTemplate = isTemplate,
+        roadmapType = roadmapType,
+        roleCategory = roleCategory,
+        categoryLabel = categoryLabel,
+        estimatedWeeks = estimatedWeeks,
+        durationLabel = durationLabel
+    )
+}
+
+private fun HomeSearchSkillDto.toDomain(): HomeSearchSkill {
+    return HomeSearchSkill(
+        skillId = skillId,
+        name = name,
+        description = description,
+        roleCategory = roleCategory,
+        categoryLabel = categoryLabel,
+        defaultEstimatedHours = defaultEstimatedHours
+    )
+}
+
+private fun HomeSearchPageMetaDto.toDomain(): HomeSearchPageMeta {
+    return HomeSearchPageMeta(
+        page = page,
+        perPage = perPage,
+        total = total,
+        totalPages = totalPages
+    )
+}
 
 private fun HomeTemplateRoadmapDto.toDomain(): HomeTemplateRoadmap = HomeTemplateRoadmap(
     roadmapId = roadmapId,

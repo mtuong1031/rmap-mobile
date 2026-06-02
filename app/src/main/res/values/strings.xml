@@ -35,6 +35,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_see_all">SEE ALL</string>
     <string name="action_see_less">SEE LESS</string>
+    <string name="action_see_more">SEE MORE</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
@@ -49,15 +50,22 @@
     <string name="roadmap_nodes_count">%1$d nodes</string>
 
     <string name="home_greeting">Good morning, %1$s</string>
+    <string name="home_greeting_authenticated">Good %1$s, %2$s</string>
+    <string name="home_greeting_guest">Start your learning roadmap</string>
+    <string name="home_greeting_period_morning">morning</string>
+    <string name="home_greeting_period_afternoon">afternoon</string>
+    <string name="home_greeting_period_evening">evening</string>
+    <string name="home_greeting_period_night">night</string>
     <string name="home_heading_next_skill">Ready for your next skill?</string>
     <string name="home_search_placeholder">Search roadmap, skill, or role...</string>
     <string name="home_search_screen_placeholder">Search roadmap, lessons...</string>
     <string name="home_search_recent_title">Recent searches</string>
     <string name="home_search_clear_all">Clear all</string>
     <string name="home_search_popular_title">Popular searches</string>
-    <string name="home_search_recommended_title">Recommended roadmaps</string>
     <string name="home_search_roadmaps_title">Roadmaps</string>
     <string name="home_search_skills_title">Skills</string>
+    <string name="home_search_roadmaps_found_count">%1$d roadmaps founds</string>
+    <string name="home_search_skills_found_count">%1$d skills founds</string>
     <string name="home_search_ai_suggestion_title">AI suggestion</string>
 
     <string name="home_streak_label">Streak</string>
@@ -76,6 +84,13 @@
     <string name="home_stat_readiness_label">Readiness</string>
     <string name="home_pace_alert_action">Adjust plan</string>
 
+    <string name="home_goal_quiz_title">Not sure which path fits you?</string>
+    <string name="home_goal_quiz_description">Answer a few questions and RMap will suggest your first roadmap.</string>
+    <string name="home_goal_quiz_action">Take goal quiz</string>
+    <string name="home_popular_subjects_title">Popular Subjects</string>
+    <string name="home_beginner_roadmaps_title">Beginner-friendly Roadmaps</string>
+    <string name="home_beginner_roadmaps_subtitle">Perfect starting points for your journey</string>
+    <string name="home_popular_roadmaps_explore_title">Popular Roadmaps to Explore</string>
     <string name="home_recommended_title">Recommended for your goal</string>
     <string name="home_roadmap_view_action">View roadmap</string>
     <string name="home_roadmap_starter_badge">Starter</string>
