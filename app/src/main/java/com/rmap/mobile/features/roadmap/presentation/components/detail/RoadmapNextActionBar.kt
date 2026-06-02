@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Icon
@@ -28,10 +29,12 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapInk
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
 
 @Composable
 fun RoadmapNextActionBar(
     nextActionTitle: String,
+    nextAction: RoadmapNodeAction?,
     onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -64,7 +67,7 @@ fun RoadmapNextActionBar(
                     maxLines = 1
                 )
                 Text(
-                    text = stringResource(R.string.roadmap_detail_next_action_continue, nextActionTitle),
+                    text = stringResource(nextAction.summaryResId(), nextActionTitle),
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = roadmapInk,
                         fontWeight = FontWeight.Bold
@@ -77,9 +80,9 @@ fun RoadmapNextActionBar(
             Spacer(modifier = Modifier.width(Dimens.spacingMd))
 
             RMapButton(
-                text = stringResource(R.string.roadmap_detail_action_continue),
+                text = stringResource(nextAction.buttonResId()),
                 onClick = onContinueClick,
-                modifier = Modifier.width(NextActionButtonWidth),
+                modifier = Modifier.widthIn(min = NextActionButtonMinWidth),
                 variant = RMapButtonVariant.Primary,
                 size = RMapButtonSize.XSmall,
                 trailingIcon = {
@@ -95,4 +98,22 @@ fun RoadmapNextActionBar(
     }
 }
 
-private val NextActionButtonWidth = Dimens.recommendedCardGlowOffset + Dimens.categoryIconContainerSize
+private fun RoadmapNodeAction?.summaryResId(): Int {
+    return when (this) {
+        RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_next_action_start_learning
+        RoadmapNodeAction.Review -> R.string.roadmap_detail_next_action_review
+        RoadmapNodeAction.Continue,
+        null -> R.string.roadmap_detail_next_action_continue
+    }
+}
+
+private fun RoadmapNodeAction?.buttonResId(): Int {
+    return when (this) {
+        RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_action_start_learning
+        RoadmapNodeAction.Review -> R.string.roadmap_detail_action_review
+        RoadmapNodeAction.Continue,
+        null -> R.string.roadmap_detail_action_continue
+    }
+}
+
+private val NextActionButtonMinWidth = Dimens.recommendedCardGlowOffset + Dimens.categoryIconContainerSize

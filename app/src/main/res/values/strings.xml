@@ -36,6 +36,7 @@
     <string name="action_see_all">SEE ALL</string>
     <string name="action_see_less">SEE LESS</string>
     <string name="action_see_more">SEE MORE</string>
+    <string name="action_retry">Retry</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
@@ -347,12 +348,18 @@
     <string name="roadmap_detail_status_optional">Optional</string>
     <string name="roadmap_detail_status_completed">Completed</string>
     <string name="roadmap_detail_status_in_progress">In Progress</string>
+    <string name="roadmap_detail_status_not_started">Not Started</string>
     <string name="roadmap_detail_action_review">Review</string>
     <string name="roadmap_detail_action_continue">Continue</string>
+    <string name="roadmap_detail_action_start_learning">Start Learning</string>
     <string name="roadmap_detail_continue_title">Continue: %1$s</string>
+    <string name="roadmap_detail_start_learning_title">Start Learning: %1$s</string>
+    <string name="roadmap_detail_review_title">Review: %1$s</string>
     <string name="roadmap_detail_next_unlock">Next unlock: %1$s</string>
     <string name="roadmap_detail_completed_recently">Completed 2 days ago</string>
     <string name="roadmap_detail_async_description">Dive into Promises and Async/Await</string>
+    <string name="roadmap_detail_ready_to_start_description">Ready when you want to begin this node</string>
+    <string name="roadmap_detail_locked_node_description">Locked until prerequisites are complete</string>
     <string name="roadmap_detail_unlock_by_completing">Unlock by completing %1$s</string>
     <string name="roadmap_detail_css_animation_description">Add life to your interfaces</string>
     <string name="roadmap_detail_milestone_label">Milestone</string>
@@ -365,10 +372,56 @@
         development ecosystem concepts required before starting React Fundamentals.</string>
     <string name="roadmap_detail_next_action_label">Next Action</string>
     <string name="roadmap_detail_next_action_continue">Continue %1$s</string>
+    <string name="roadmap_detail_next_action_start_learning">Start %1$s</string>
+    <string name="roadmap_detail_next_action_review">Review %1$s</string>
     <string name="roadmap_detail_ai_tip_heading">AI Scholar Tip</string>
     <string name="roadmap_detail_ai_tip_prefix">Based on your progress in \"%1$s\", we recommend
         focusing on </string>
     <string name="roadmap_detail_ai_tip_suffix"> before moving to %1$s.</string>
+
+    <!-- Roadmap Learning Node Screen -->
+    <string name="roadmap_learning_title">Learning node</string>
+    <string name="roadmap_learning_description_empty">Review the resources below, then take the quiz when you are ready.</string>
+    <string name="roadmap_learning_estimated_hours">%1$d hours</string>
+    <string name="roadmap_learning_prerequisites_title">Prerequisites</string>
+    <string name="roadmap_learning_resources_title">Resources</string>
+    <string name="roadmap_learning_resources_empty">No resources are attached to this node yet.</string>
+    <string name="roadmap_learning_resource_free">Free</string>
+    <string name="roadmap_learning_resource_paid">Paid</string>
+    <string name="roadmap_learning_resource_primary">Primary</string>
+    <string name="roadmap_learning_take_quiz">Take Quiz</string>
+    <string name="roadmap_learning_completed_hint">This node is completed. Your roadmap progress has been updated.</string>
+    <string name="roadmap_learning_quiz_locked_hint">Quiz is available when this node is in progress.</string>
+    <string name="roadmap_learning_error_fallback">Unable to load this learning node. Please try again.</string>
+
+    <!-- Roadmap Quiz Screen -->
+    <string name="roadmap_quiz_title">Quiz</string>
+    <string name="roadmap_quiz_heading">Check your readiness</string>
+    <string name="roadmap_quiz_answered_count">%1$d/%2$d answered</string>
+    <string name="roadmap_quiz_in_progress">In progress</string>
+    <string name="roadmap_quiz_question_number">Question %1$d</string>
+    <string name="roadmap_quiz_option_format">%1$s. %2$s</string>
+    <string name="roadmap_quiz_submit">Submit Quiz</string>
+    <string name="roadmap_quiz_passed">Passed</string>
+    <string name="roadmap_quiz_try_again">Try Again</string>
+    <string name="roadmap_quiz_score_format">%1$d%% • %2$d/%3$d correct</string>
+    <string name="roadmap_quiz_score_percent_value">%1$d%%</string>
+    <string name="roadmap_quiz_correct_summary">%1$d/%2$d correct</string>
+    <string name="roadmap_quiz_passed_heading">Great work, node completed</string>
+    <string name="roadmap_quiz_failed_heading">Almost there, review first</string>
+    <string name="roadmap_quiz_passed_message">You passed this node. Your roadmap progress will update automatically.</string>
+    <string name="roadmap_quiz_failed_message">This node remains in progress. Review the resources and try the quiz again when you are ready.</string>
+    <string name="roadmap_quiz_node_completed_summary">Your streak and roadmap progress can update from this completion.</string>
+    <string name="roadmap_quiz_node_in_progress_summary">Keep this node active and revisit the lesson resources.</string>
+    <string name="roadmap_quiz_review_heading">Answer review</string>
+    <string name="roadmap_quiz_review_subtitle">Check what was correct before leaving the quiz.</string>
+    <string name="roadmap_quiz_question_correct">Correct</string>
+    <string name="roadmap_quiz_question_needs_review">Review</string>
+    <string name="roadmap_quiz_correct_selected_answer">Your correct answer</string>
+    <string name="roadmap_quiz_your_answer">Your answer</string>
+    <string name="roadmap_quiz_correct_answer">Correct answer</string>
+    <string name="roadmap_quiz_review_resources">Review Resources</string>
+    <string name="roadmap_quiz_error_fallback">Unable to load this quiz. Please try again.</string>
 
     <!-- Notification Settings Screen -->
     <string name="notification_settings_title">Notifications</string>

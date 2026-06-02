@@ -133,6 +133,7 @@ fun RoadmapDetailScreen(
                             completedRequiredNodes = uiState.completedRequiredNodes,
                             totalRequiredNodes = uiState.totalRequiredNodes,
                             nextActionTitle = uiState.nextActionTitle,
+                            nextAction = uiState.nextAction,
                             nextUnlockTitle = uiState.nextUnlockTitle,
                             onContinueClick = onContinueClick
                         )
@@ -219,6 +220,7 @@ fun RoadmapDetailScreen(
 
                 RoadmapNextActionBar(
                     nextActionTitle = uiState.nextActionTitle,
+                    nextAction = uiState.nextAction,
                     onContinueClick = onContinueClick,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -265,6 +267,7 @@ private fun RoadmapDetailScreenPreview() {
                 completedRequiredNodes = 6,
                 totalRequiredNodes = 8,
                 nextActionTitle = "Asynchronous JS",
+                nextAction = RoadmapNodeAction.StartLearning,
                 nextUnlockTitle = "DOM Manipulation",
                 groups = listOf(
                     RoadmapGroupUiModel(
@@ -324,8 +327,8 @@ private fun RoadmapDetailScreenPreview() {
                 milestones = listOf(
                     RoadmapMilestoneUiModel(
                         id = "landing-page",
-                        titleResId = R.string.roadmap_detail_milestone_landing_title,
-                        descriptionResId = R.string.roadmap_detail_milestone_landing_description,
+                        title = "Build your first landing page",
+                        description = "Apply HTML, CSS, and JavaScript basics in a portfolio-ready project.",
                         state = RoadmapMilestoneState.Available
                     )
                 ),

@@ -104,7 +104,7 @@ fun RoadmapMilestoneCard(
 
             Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)) {
                 Text(
-                    text = stringResource(milestone.titleResId),
+                    text = milestone.title,
                     style = MaterialTheme.typography.titleSmall.copy(
                         color = roadmapAmberDark,
                         fontWeight = FontWeight.Bold
@@ -113,7 +113,7 @@ fun RoadmapMilestoneCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = stringResource(milestone.descriptionResId),
+                    text = milestone.description,
                     style = MaterialTheme.typography.labelMedium.copy(color = roadmapAmberText),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -204,7 +204,7 @@ fun RoadmapMilestoneCompactCard(
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
         ) {
             Text(
-                text = stringResource(milestone.titleResId),
+                text = milestone.title,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = roadmapInk,
                     fontWeight = FontWeight.SemiBold
@@ -234,8 +234,8 @@ private fun RoadmapMilestoneCardAvailablePreview() {
             RoadmapMilestoneCard(
                 milestone = RoadmapMilestoneUiModel(
                     id = "landing-page",
-                    titleResId = R.string.roadmap_detail_milestone_landing_title,
-                    descriptionResId = R.string.roadmap_detail_milestone_landing_description,
+                    title = "Build your first landing page",
+                    description = "Apply HTML, CSS, and JavaScript basics in a portfolio-ready project.",
                     state = RoadmapMilestoneState.Available
                 ),
                 onClick = {}
@@ -253,8 +253,8 @@ private fun RoadmapMilestoneCompactCardPreview() {
                 RoadmapMilestoneCompactCard(
                     milestone = RoadmapMilestoneUiModel(
                         id = "landing-page-compact",
-                        titleResId = R.string.roadmap_detail_milestone_landing_title,
-                        descriptionResId = R.string.roadmap_detail_milestone_landing_description,
+                        title = "Build your first landing page",
+                        description = "Apply HTML, CSS, and JavaScript basics in a portfolio-ready project.",
                         state = RoadmapMilestoneState.Available
                     ),
                     onClick = {}
@@ -272,8 +272,8 @@ private fun RoadmapMilestoneCardLockedPreview() {
             RoadmapMilestoneCard(
                 milestone = RoadmapMilestoneUiModel(
                     id = "landing-page-locked",
-                    titleResId = R.string.roadmap_detail_milestone_landing_title,
-                    descriptionResId = R.string.roadmap_detail_milestone_landing_description,
+                    title = "Build your first landing page",
+                    description = "Apply HTML, CSS, and JavaScript basics in a portfolio-ready project.",
                     state = RoadmapMilestoneState.Locked
                 ),
                 onClick = {}

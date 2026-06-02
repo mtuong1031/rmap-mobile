@@ -4,12 +4,23 @@ import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
+import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
+import com.rmap.mobile.features.roadmap.domain.model.LearningPrerequisite
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
+import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
+import com.rmap.mobile.features.roadmap.domain.model.LearningResource
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestionResult
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SubLesson
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
@@ -45,6 +56,7 @@ class FakeRoadmapRepository : RoadmapRepository {
         "frontend-pro" to RoadmapDetail(
             id = "frontend-pro",
             title = "Frontend Pro",
+            categoryLabel = "Web Development",
             completedLessons = 6,
             totalLessons = 8,
             sections = listOf(
@@ -52,6 +64,7 @@ class FakeRoadmapRepository : RoadmapRepository {
                     title = "Core Web Fundamentals",
                     modules = listOf(
                         LearningModule(
+                            id = "node-html-css",
                             title = "HTML & CSS",
                             status = LearningStatus.Completed,
                             progressPercent = 100,
@@ -63,6 +76,7 @@ class FakeRoadmapRepository : RoadmapRepository {
                             )
                         ),
                         LearningModule(
+                            id = "node-javascript-basics",
                             title = "JavaScript Basics",
                             status = LearningStatus.InProgress,
                             progressPercent = 45,
@@ -78,8 +92,23 @@ class FakeRoadmapRepository : RoadmapRepository {
                 LearningModuleSection(
                     title = "Framework Ecosystem",
                     modules = listOf(
-                        LearningModule("React Fundamentals", LearningStatus.Locked, 0, LearningTopicIcon.Storage, emptyList())
+                        LearningModule(
+                            id = "node-react-fundamentals",
+                            title = "React Fundamentals",
+                            status = LearningStatus.Locked,
+                            progressPercent = 0,
+                            icon = LearningTopicIcon.Storage,
+                            subLessons = emptyList()
+                        )
                     )
+                )
+            ),
+            milestones = listOf(
+                RoadmapMilestone(
+                    id = "milestone-static-page",
+                    title = "Static Web Page",
+                    description = "Build a responsive multi-page static website.",
+                    status = LearningStatus.Locked
                 )
             ),
             aiTip = AiScholarTip("Asynchronous JS", "Promises", "DOM Manipulation")
@@ -120,5 +149,112 @@ class FakeRoadmapRepository : RoadmapRepository {
     override suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail> {
         return details[id]?.let { detail -> Result.success(detail) }
             ?: Result.failure(IllegalArgumentException("Roadmap not found"))
+    }
+
+    override suspend fun getLearningNode(
+        roadmapId: String,
+        nodeId: String
+    ): Result<LearningNodeDetail> {
+        val module = details[roadmapId]
+            ?.sections
+            ?.flatMap { section -> section.modules }
+            ?.firstOrNull { candidate -> candidate.id == nodeId || candidate.title == nodeId }
+            ?: return Result.failure(IllegalArgumentException("Node not found"))
+
+        return Result.success(
+            LearningNodeDetail(
+                roadmapId = roadmapId,
+                nodeId = module.id,
+                title = module.title,
+                description = module.description ?: "Learn the core concept, practice it, then validate your readiness with a short quiz.",
+                skillName = module.title,
+                skillDescription = module.description,
+                estimatedHours = 2,
+                status = module.status,
+                requirement = module.requirement,
+                resources = listOf(
+                    LearningResource(
+                        id = "mdn-${module.id}",
+                        title = "MDN Web Docs",
+                        url = "https://developer.mozilla.org/",
+                        type = "ARTICLE",
+                        isFree = true,
+                        isPrimary = true
+                    ),
+                    LearningResource(
+                        id = "practice-${module.id}",
+                        title = "Hands-on practice",
+                        url = "https://roadmap.sh/",
+                        type = "PRACTICE",
+                        isFree = true,
+                        isPrimary = false
+                    )
+                ),
+                prerequisites = listOf(
+                    LearningPrerequisite(
+                        skillId = "node-html-css",
+                        skillName = "HTML & CSS"
+                    )
+                )
+            )
+        )
+    }
+
+    override suspend fun getNodeQuiz(
+        roadmapId: String,
+        nodeId: String
+    ): Result<NodeQuiz> {
+        return Result.success(
+            NodeQuiz(
+                nodeId = nodeId,
+                skillId = nodeId,
+                questions = listOf(
+                    NodeQuizQuestion(
+                        id = "question-1",
+                        text = "Which option best describes a learning checkpoint?",
+                        options = quizOptions()
+                    ),
+                    NodeQuizQuestion(
+                        id = "question-2",
+                        text = "What should you do before moving to the next node?",
+                        options = quizOptions()
+                    )
+                )
+            )
+        )
+    }
+
+    override suspend fun submitNodeQuiz(
+        roadmapId: String,
+        nodeId: String,
+        answers: List<NodeQuizAnswer>
+    ): Result<NodeQuizSubmissionResult> {
+        return Result.success(
+            NodeQuizSubmissionResult(
+                scorePercent = 80,
+                passed = true,
+                correctCount = answers.size,
+                totalQuestions = answers.size,
+                suggestion = null,
+                unlockedNodeIds = emptyList(),
+                questionResults = answers.map { answer ->
+                    NodeQuizQuestionResult(
+                        questionId = answer.questionId,
+                        selectedOption = answer.selectedOption,
+                        correctOption = answer.selectedOption,
+                        isCorrect = true
+                    )
+                }
+            )
+        )
+    }
+
+    private fun quizOptions(): List<NodeQuizOption> {
+        return listOf(
+            NodeQuizOption("A", "Review the concept and apply it in a small task."),
+            NodeQuizOption("B", "Skip practice and continue immediately."),
+            NodeQuizOption("C", "Only bookmark the resource."),
+            NodeQuizOption("D", "Wait until every roadmap is finished.")
+        )
     }
 }

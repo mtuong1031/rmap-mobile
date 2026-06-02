@@ -36,6 +36,7 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapLinearProgress
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
 
 @Composable
 fun RoadmapDetailHeroProgressCard(
@@ -45,6 +46,7 @@ fun RoadmapDetailHeroProgressCard(
     completedRequiredNodes: Int,
     totalRequiredNodes: Int,
     nextActionTitle: String,
+    nextAction: RoadmapNodeAction?,
     nextUnlockTitle: String,
     onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -137,7 +139,7 @@ fun RoadmapDetailHeroProgressCard(
             }
 
             RMapButton(
-                text = stringResource(R.string.roadmap_detail_continue_title, nextActionTitle),
+                text = stringResource(nextAction.titleResId(), nextActionTitle),
                 onClick = onContinueClick,
                 modifier = Modifier.fillMaxWidth(),
                 variant = RMapButtonVariant.Secondary,
@@ -185,6 +187,15 @@ private fun NextUnlockText(nextUnlockTitle: String) {
     )
 }
 
+private fun RoadmapNodeAction?.titleResId(): Int {
+    return when (this) {
+        RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_start_learning_title
+        RoadmapNodeAction.Review -> R.string.roadmap_detail_review_title
+        RoadmapNodeAction.Continue,
+        null -> R.string.roadmap_detail_continue_title
+    }
+}
+
 private val RoadmapHeroProgressCardHeight =
     Dimens.recommendedCardHeight + Dimens.profileExperienceIconContainerSize + Dimens.spacingMdPlus
 
@@ -199,6 +210,7 @@ private fun RoadmapDetailHeroProgressCardPreview() {
             completedRequiredNodes = 6,
             totalRequiredNodes = 8,
             nextActionTitle = "Asynchronous JS",
+            nextAction = RoadmapNodeAction.StartLearning,
             nextUnlockTitle = "DOM Manipulation",
             onContinueClick = {},
             modifier = Modifier.padding(Dimens.spacingXxl)

@@ -28,14 +28,19 @@ import com.rmap.mobile.features.profile.data.FakeProfileRepository
 import com.rmap.mobile.features.profile.data.notification.LearningNotificationNotifier
 import com.rmap.mobile.features.profile.data.notification.LearningReminderScheduler
 import com.rmap.mobile.features.profile.data.notification.SharedPreferencesNotificationSettingsRepository
+import com.rmap.mobile.features.profile.data.remote.ProfileApi
+import com.rmap.mobile.features.profile.data.repository.ProfileRepositoryImpl
 import com.rmap.mobile.features.profile.domain.repository.NotificationSettingsRepository
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
-import com.rmap.mobile.features.roadmap.data.FakeRoadmapRepository
+import com.rmap.mobile.features.roadmap.data.remote.RoadmapApi
+import com.rmap.mobile.features.roadmap.data.repository.RoadmapRepositoryImpl
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 
 object RMapAppGraph {
-    val roadmapRepository: RoadmapRepository = FakeRoadmapRepository()
-    val profileRepository: ProfileRepository = FakeProfileRepository()
+    lateinit var roadmapRepository: RoadmapRepository
+        private set
+    lateinit var profileRepository: ProfileRepository
+        private set
 
     lateinit var database: RMapDatabase
         private set
@@ -74,6 +79,8 @@ object RMapAppGraph {
         if (
             ::notificationSettingsRepository.isInitialized &&
             ::authRepository.isInitialized &&
+            ::roadmapRepository.isInitialized &&
+            ::profileRepository.isInitialized &&
             ::recentSearchRepository.isInitialized
         ) {
             return
@@ -94,6 +101,14 @@ object RMapAppGraph {
             homeApi = apiClient.createService(HomeApi::class.java)
         )
         recentSearchRepository = SharedPreferencesRecentSearchRepository(applicationContext)
+        profileRepository = ProfileRepositoryImpl(
+            profileApi = apiClient.createService(ProfileApi::class.java),
+            sessionManager = sessionManager
+        )
+        roadmapRepository = RoadmapRepositoryImpl(
+            roadmapApi = apiClient.createService(RoadmapApi::class.java),
+            sessionManager = sessionManager
+        )
         loginUseCase = LoginUseCase(authRepository)
         registerUseCase = RegisterUseCase(authRepository)
         logoutUseCase = LogoutUseCase(authRepository)

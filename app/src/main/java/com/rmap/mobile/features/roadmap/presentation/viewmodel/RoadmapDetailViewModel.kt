@@ -26,8 +26,11 @@ class RoadmapDetailViewModel(
     val events: SharedFlow<RoadmapDetailEvent> = _events.asSharedFlow()
     private var currentDetail: RoadmapDetail? = null
 
-    fun loadRoadmap(roadmapId: String) {
-        if (_uiState.value.roadmapId == roadmapId && !_uiState.value.isLoading) return
+    fun loadRoadmap(
+        roadmapId: String,
+        forceRefresh: Boolean = false
+    ) {
+        if (!forceRefresh && _uiState.value.roadmapId == roadmapId && !_uiState.value.isLoading) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessageResId = null) }
@@ -109,6 +112,25 @@ class RoadmapDetailViewModel(
         }
     }
 
+    fun onContinueLearningClick() {
+        val node = _uiState.value.currentSearchNode() ?: return
+        onNodeActionClick(node)
+    }
+
+    fun onNodeActionClick(node: RoadmapNodeUiModel) {
+        if (node.status == RoadmapNodeStatus.Locked) return
+        val roadmapId = _uiState.value.roadmapId.takeIf { it.isNotBlank() } ?: return
+
+        viewModelScope.launch {
+            _events.emit(
+                RoadmapDetailEvent.NavigateToNodeLearning(
+                    roadmapId = roadmapId,
+                    nodeId = node.id
+                )
+            )
+        }
+    }
+
     fun onSearchQueryChange(query: String) {
         _uiState.update {
             it.copy(
@@ -184,6 +206,11 @@ class RoadmapDetailViewModel(
 }
 
 sealed class RoadmapDetailEvent {
+    data class NavigateToNodeLearning(
+        val roadmapId: String,
+        val nodeId: String
+    ) : RoadmapDetailEvent()
+
     data object RoadmapBookmarkSaved : RoadmapDetailEvent()
     data object RoadmapBookmarkRemoved : RoadmapDetailEvent()
     data object SkillBookmarkSaved : RoadmapDetailEvent()
