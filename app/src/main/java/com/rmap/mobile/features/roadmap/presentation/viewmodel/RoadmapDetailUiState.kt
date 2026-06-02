@@ -13,6 +13,7 @@ data class RoadmapDetailUiState(
     val completedRequiredNodes: Int = 0,
     val totalRequiredNodes: Int = 0,
     val nextActionTitle: String = "",
+    val nextAction: RoadmapNodeAction? = null,
     val nextUnlockTitle: String = "",
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
@@ -50,6 +51,7 @@ data class RoadmapNodeUiModel(
     val status: RoadmapNodeStatus,
     val requirement: RoadmapNodeRequirement,
     @StringRes val descriptionResId: Int,
+    val descriptionText: String? = null,
     val descriptionArgs: List<String> = emptyList(),
     val action: RoadmapNodeAction? = null,
     val isBookmarked: Boolean = false
@@ -58,6 +60,7 @@ data class RoadmapNodeUiModel(
 enum class RoadmapNodeStatus {
     Completed,
     InProgress,
+    NotStarted,
     Locked
 }
 
@@ -68,13 +71,14 @@ enum class RoadmapNodeRequirement {
 
 enum class RoadmapNodeAction {
     Review,
-    Continue
+    Continue,
+    StartLearning
 }
 
 data class RoadmapMilestoneUiModel(
     val id: String,
-    @StringRes val titleResId: Int,
-    @StringRes val descriptionResId: Int,
+    val title: String,
+    val description: String,
     val state: RoadmapMilestoneState
 )
 
@@ -87,6 +91,7 @@ internal fun RoadmapDetailUiState.currentSearchNode(): RoadmapNodeUiModel? {
     val nodes = allSearchNodes()
     return nodes.firstOrNull { it.status == RoadmapNodeStatus.InProgress }
         ?: nodes.firstOrNull { it.action == RoadmapNodeAction.Continue }
+        ?: nodes.firstOrNull { it.action == RoadmapNodeAction.StartLearning }
 }
 
 internal fun RoadmapDetailUiState.recentSearchNodes(): List<RoadmapNodeUiModel> {
@@ -108,6 +113,7 @@ internal fun RoadmapDetailUiState.searchResultNodes(): List<RoadmapNodeUiModel> 
     return nodes
         .filter { node ->
             node.title.contains(query, ignoreCase = true) ||
+                node.descriptionText?.contains(query, ignoreCase = true) == true ||
                 node.descriptionArgs.any { it.contains(query, ignoreCase = true) }
         }
         .ifEmpty { nodes.take(SearchPreviewResultNodeFallbackLimit) }
@@ -130,7 +136,11 @@ internal fun RoadmapDetailUiState.searchResultMilestones(): List<RoadmapMileston
     if (query.isEmpty()) return emptyList()
 
     return milestones
-        .filter { it.id.contains(query, ignoreCase = true) }
+        .filter { milestone ->
+            milestone.id.contains(query, ignoreCase = true) ||
+                milestone.title.contains(query, ignoreCase = true) ||
+                milestone.description.contains(query, ignoreCase = true)
+        }
         .ifEmpty { milestones.take(SearchPreviewResultMilestoneFallbackLimit) }
 }
 

@@ -15,6 +15,11 @@ enum class LearningStatus {
     NotStarted
 }
 
+enum class LearningRequirement {
+    Required,
+    Optional
+}
+
 enum class LearningTopicIcon {
     Code,
     DataObject,
@@ -75,9 +80,11 @@ enum class RoadmapCoverPlaceholder {
 data class RoadmapDetail(
     val id: String,
     val title: String,
+    val categoryLabel: String,
     val completedLessons: Int,
     val totalLessons: Int,
     val sections: List<LearningModuleSection>,
+    val milestones: List<RoadmapMilestone>,
     val aiTip: AiScholarTip?
 ) {
     val progressFraction: Float
@@ -87,6 +94,13 @@ data class RoadmapDetail(
             (completedLessons.toFloat() / totalLessons.toFloat()).coerceIn(0f, 1f)
         }
 }
+
+data class RoadmapMilestone(
+    val id: String,
+    val title: String,
+    val description: String?,
+    val status: LearningStatus
+)
 
 fun String.toStableLearningId(): String {
     return trim()
@@ -98,7 +112,8 @@ fun String.toStableLearningId(): String {
 fun RoadmapDetail.containsLearningItem(skillId: String): Boolean {
     return sections.any { section ->
         section.modules.any { module ->
-            module.toStableLearningId() == skillId ||
+            module.id == skillId ||
+                module.toStableLearningId() == skillId ||
                 module.subLessons.any { subLesson -> subLesson.toStableLearningId() == skillId }
         }
     }
@@ -114,7 +129,12 @@ data class LearningModule(
     val status: LearningStatus,
     val progressPercent: Int,
     val icon: LearningTopicIcon,
-    val subLessons: List<SubLesson>
+    val subLessons: List<SubLesson>,
+    val id: String = title.toStableLearningId(),
+    val description: String? = null,
+    val requirement: LearningRequirement = LearningRequirement.Required,
+    val quizScorePercent: Int? = null,
+    val quizPassed: Boolean? = null
 )
 
 data class SubLesson(

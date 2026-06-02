@@ -118,6 +118,7 @@ fun RoadmapNodeItem(
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = when (node.status) {
                                     RoadmapNodeStatus.InProgress -> roadmapDeepBlue
+                                    RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.onSurface
                                     RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
                                     RoadmapNodeStatus.Completed -> roadmapInk
                                 },
@@ -137,7 +138,8 @@ fun RoadmapNodeItem(
                 }
 
                 Text(
-                    text = formattedString(node.descriptionResId, node.descriptionArgs),
+                    text = node.descriptionText
+                        ?: formattedString(node.descriptionResId, node.descriptionArgs),
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = if (node.status == RoadmapNodeStatus.Locked) {
                             OnSurfacePlaceholderLight
@@ -201,21 +203,25 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
     val containerColor = when (node.status) {
         RoadmapNodeStatus.Completed -> roadmapSuccessBg
         RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.surface
+        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
         RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
     }
     val borderColor = when (node.status) {
         RoadmapNodeStatus.Completed -> roadmapSuccessBorder
         RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.inversePrimary
+        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
         RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
     }
     val icon = when (node.status) {
         RoadmapNodeStatus.Completed -> Icons.Default.Check
         RoadmapNodeStatus.Locked -> Icons.Default.Lock
-        RoadmapNodeStatus.InProgress -> node.icon
+        RoadmapNodeStatus.InProgress,
+        RoadmapNodeStatus.NotStarted -> node.icon
     }
     val tint = when (node.status) {
         RoadmapNodeStatus.Completed -> roadmapSuccess
         RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.primary
+        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary
         RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
     }
 
@@ -264,17 +270,20 @@ private fun NodeStatusBadge(node: RoadmapNodeUiModel) {
             when (node.status) {
                 RoadmapNodeStatus.Completed -> R.string.roadmap_detail_status_completed
                 RoadmapNodeStatus.InProgress -> R.string.roadmap_detail_status_in_progress
+                RoadmapNodeStatus.NotStarted -> R.string.roadmap_detail_status_not_started
                 RoadmapNodeStatus.Locked -> R.string.roadmap_detail_locked
             }
         ),
         containerColor = when (node.status) {
             RoadmapNodeStatus.Completed -> roadmapSuccessBg
             RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.inversePrimary
+            RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
             RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
         },
         contentColor = when (node.status) {
             RoadmapNodeStatus.Completed -> roadmapSuccess
             RoadmapNodeStatus.InProgress -> roadmapDeepBlue
+            RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary
             RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.onSurfaceVariant
         },
         dotColor = if (node.status == RoadmapNodeStatus.InProgress) {
@@ -295,6 +304,7 @@ private fun NodeActionButton(
         when (action) {
             RoadmapNodeAction.Review -> R.string.roadmap_detail_action_review
             RoadmapNodeAction.Continue -> R.string.roadmap_detail_action_continue
+            RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_action_start_learning
         }
     )
 

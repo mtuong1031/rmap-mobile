@@ -138,6 +138,7 @@ class BookmarkLocalMapperTest {
         return RoadmapDetail(
             id = "frontend-pro",
             title = "Frontend Pro",
+            categoryLabel = "Frontend",
             completedLessons = 1,
             totalLessons = 3,
             sections = listOf(
@@ -157,6 +158,7 @@ class BookmarkLocalMapperTest {
                     )
                 )
             ),
+            milestones = emptyList(),
             aiTip = AiScholarTip(
                 currentModule = "JavaScript",
                 recommendedTopic = "Promises",

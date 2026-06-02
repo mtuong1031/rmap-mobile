@@ -178,7 +178,7 @@ fun SkillBookmarkSnapshot.toEntity(
 private fun RoadmapDetail.findSkill(skillId: String): SkillBookmarkSource? {
     sections.forEach { section ->
         section.modules.forEach { module ->
-            if (module.toStableId() == skillId) {
+            if (module.id == skillId || module.toStableId() == skillId) {
                 return SkillBookmarkSource(
                     title = module.title,
                     status = module.status,

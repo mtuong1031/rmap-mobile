@@ -208,8 +208,8 @@ private fun RoadmapSearchResultsContentPreview() {
             milestones = listOf(
                 RoadmapMilestoneUiModel(
                     id = "landing-page",
-                    titleResId = R.string.roadmap_detail_milestone_landing_title,
-                    descriptionResId = R.string.roadmap_detail_milestone_landing_description,
+                    title = "Build your first landing page",
+                    description = "Apply HTML, CSS, and JavaScript basics in a portfolio-ready project.",
                     state = RoadmapMilestoneState.Locked
                 )
             ),

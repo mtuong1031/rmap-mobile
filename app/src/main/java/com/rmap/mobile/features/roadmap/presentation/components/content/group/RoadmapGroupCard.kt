@@ -46,7 +46,7 @@ fun RoadmapGroupCard(
         group.nodes.isNotEmpty()
     }
     var isExpanded by rememberSaveable(group.id, group.state.name) {
-        mutableStateOf(false)
+        mutableStateOf(group.state == RoadmapGroupState.Expanded)
     }
     val toggleExpanded = {
         if (hasExpandableContent) {

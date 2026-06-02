@@ -13,7 +13,9 @@ class FakeRoadmapRepositoryTest {
         val result = repository.getRoadmapDetail("frontend-pro")
 
         assertTrue(result.isSuccess)
-        assertEquals("frontend-pro", result.getOrThrow().id)
+        val detail = result.getOrThrow()
+        assertEquals("frontend-pro", detail.id)
+        assertTrue(detail.milestones.isNotEmpty())
     }
 
     @Test

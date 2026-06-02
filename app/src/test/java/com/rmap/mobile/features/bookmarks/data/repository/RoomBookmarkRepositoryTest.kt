@@ -7,11 +7,15 @@ import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
 import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
+import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
+import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
@@ -186,6 +190,7 @@ private class FakeRoadmapRepository : RoadmapRepository {
     private val detail = RoadmapDetail(
         id = "frontend-pro",
         title = "Frontend Pro",
+        categoryLabel = "Frontend",
         completedLessons = 1,
         totalLessons = 3,
         sections = listOf(
@@ -205,6 +210,7 @@ private class FakeRoadmapRepository : RoadmapRepository {
                 )
             )
         ),
+        milestones = emptyList(),
         aiTip = AiScholarTip(
             currentModule = "JavaScript",
             recommendedTopic = "Promises",
@@ -238,5 +244,27 @@ private class FakeRoadmapRepository : RoadmapRepository {
         } else {
             Result.failure(IllegalArgumentException("Roadmap not found"))
         }
+    }
+
+    override suspend fun getLearningNode(
+        roadmapId: String,
+        nodeId: String
+    ): Result<LearningNodeDetail> {
+        return Result.failure(NotImplementedError())
+    }
+
+    override suspend fun getNodeQuiz(
+        roadmapId: String,
+        nodeId: String
+    ): Result<NodeQuiz> {
+        return Result.failure(NotImplementedError())
+    }
+
+    override suspend fun submitNodeQuiz(
+        roadmapId: String,
+        nodeId: String,
+        answers: List<NodeQuizAnswer>
+    ): Result<NodeQuizSubmissionResult> {
+        return Result.failure(NotImplementedError())
     }
 }
