@@ -607,6 +607,8 @@ fun RMapNavHost(navController: NavHostController) {
                     uiState = uiState,
                     onBackClick = { navController.popBackStack() },
                     onOptionSelected = viewModel::onOptionSelected,
+                    onPreviousQuestion = viewModel::onPreviousQuestion,
+                    onNextQuestion = viewModel::onNextQuestion,
                     onSubmitClick = viewModel::onSubmitClick,
                     onDoneClick = {
                         navController.previousBackStackEntry

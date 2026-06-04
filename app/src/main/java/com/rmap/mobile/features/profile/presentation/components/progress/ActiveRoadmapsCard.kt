@@ -43,57 +43,68 @@ import com.rmap.mobile.features.profile.presentation.components.common.ProfileSe
 fun ActiveRoadmapsCard(
     title: String,
     subtitle: String,
-    manageLabel: String,
+    showAllLabel: String,
     collapseLabel: String,
+    emptyMessage: String,
     items: List<ProfileRoadmapProgressUiModel>,
-    managedRoadmaps: List<ProfileManagedRoadmapUiModel>,
-    isManagedRoadmapsVisible: Boolean,
-    onManageRoadmapsClick: () -> Unit,
+    isAllRoadmapsVisible: Boolean,
+    onShowAllRoadmapsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val hasOverflow = items.size > MAX_COLLAPSED_ROADMAPS
+    val visibleItems = if (isAllRoadmapsVisible || !hasOverflow) {
+        items
+    } else {
+        items.take(MAX_COLLAPSED_ROADMAPS)
+    }
+
     ProfileSectionCard(modifier = modifier) {
         ProfileSectionHeader(title = title, subtitle = subtitle)
 
-        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)) {
-            items.forEach { item ->
-                RoadmapProgressRow(item = item)
-            }
-
-            AnimatedVisibility(
-                visible = isManagedRoadmapsVisible && managedRoadmaps.isNotEmpty(),
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)) {
-                    managedRoadmaps.forEach { roadmap ->
-                        ManagedRoadmapRow(item = roadmap)
-                    }
+        if (visibleItems.isEmpty()) {
+            Text(
+                text = emptyMessage,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium,
+                )
+            )
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)) {
+                visibleItems.forEach { item ->
+                    RoadmapProgressRow(item = item)
                 }
             }
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(AppShapes.chip)
-                .clickable(onClick = onManageRoadmapsClick)
-                .padding(vertical = Dimens.spacingSm),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        AnimatedVisibility(
+            visible = hasOverflow,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
         ) {
-            Text(
-                text = if (isManagedRoadmapsVisible) collapseLabel else manageLabel,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Bold,
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(AppShapes.chip)
+                    .clickable(onClick = onShowAllRoadmapsClick)
+                    .padding(vertical = Dimens.spacingSm),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (isAllRoadmapsVisible) collapseLabel else showAllLabel,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Bold,
+                    )
                 )
-            )
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(Dimens.iconXs)
-            )
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(Dimens.iconXs)
+                )
+            }
         }
     }
 }
@@ -124,22 +135,15 @@ private fun RoadmapProgressRow(item: ProfileRoadmapProgressUiModel) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = item.title,
+                        modifier = Modifier.fillMaxWidth(),
                         style = MaterialTheme.typography.titleSmall.copy(
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Bold,
                         ),
-                    )
-                    Text(
-                        text = stringResource(id = R.string.profile_progress_percent_short, item.progressPercent),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = item.accentColor,
-                            fontWeight = FontWeight.Bold,
-                        )
                     )
                 }
                 Text(
@@ -152,7 +156,25 @@ private fun RoadmapProgressRow(item: ProfileRoadmapProgressUiModel) {
             }
         }
 
-        LinearProfileProgress(progress = item.progressPercent / 100f, color = item.accentColor)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            LinearProfileProgress(
+                progress = item.progressPercent / 100f,
+                color = item.accentColor,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = stringResource(id = R.string.profile_progress_percent_short, item.progressPercent),
+                maxLines = 1,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = item.accentColor,
+                    fontWeight = FontWeight.Bold,
+                )
+            )
+        }
     }
 }
 
@@ -183,20 +205,6 @@ private fun LinearProfileProgress(
     }
 }
 
-@Composable
-private fun ManagedRoadmapRow(item: ProfileManagedRoadmapUiModel) {
-    RoadmapProgressRow(
-        item = ProfileRoadmapProgressUiModel(
-            title = item.title,
-            remainingTime = item.description,
-            progressPercent = item.progressPercent,
-            icon = item.icon,
-            accentColor = item.accentColor,
-            accentContainerColor = item.accentContainerColor
-        )
-    )
-}
-
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable
 private fun ActiveRoadmapsCardPreview() {
@@ -204,10 +212,12 @@ private fun ActiveRoadmapsCardPreview() {
         ActiveRoadmapsCard(
             title = "Active Roadmaps",
             subtitle = "2 active paths",
-            manageLabel = "Manage roadmaps",
+            showAllLabel = "Show all 4 roadmaps",
             collapseLabel = "Show less",
+            emptyMessage = "No active roadmaps yet",
             items = listOf(
                 ProfileRoadmapProgressUiModel(
+                    id = "frontend",
                     title = "Frontend Fresher",
                     remainingTime = "4 months left",
                     progressPercent = 75,
@@ -216,6 +226,7 @@ private fun ActiveRoadmapsCardPreview() {
                     accentContainerColor = Color(0xFFF0F5FE)
                 ),
                 ProfileRoadmapProgressUiModel(
+                    id = "uiux",
                     title = "UI/UX Master",
                     remainingTime = "2 months left",
                     progressPercent = 32,
@@ -224,28 +235,11 @@ private fun ActiveRoadmapsCardPreview() {
                     accentContainerColor = Color(0xFFF3F0FF)
                 )
             ),
-            managedRoadmaps = listOf(
-                ProfileManagedRoadmapUiModel(
-                    title = "Full Stack Development",
-                    description = "Career path - 5 months left",
-                    progressPercent = 48,
-                    icon = Icons.Outlined.TrackChanges,
-                    accentColor = Color(0xFF10B981),
-                    accentContainerColor = Color(0xFFECFDF5)
-                ),
-                ProfileManagedRoadmapUiModel(
-                    title = "Mobile App Development",
-                    description = "Career path - 6 months left",
-                    progressPercent = 18,
-                    icon = Icons.Outlined.TrackChanges,
-                    accentColor = Color(0xFFFB923C),
-                    accentContainerColor = Color(0xFFFFF7ED)
-                )
-            ),
-            isManagedRoadmapsVisible = true,
-            onManageRoadmapsClick = {},
+            isAllRoadmapsVisible = true,
+            onShowAllRoadmapsClick = {},
             modifier = Modifier.padding(Dimens.spacingXl)
         )
     }
 }
 
+private const val MAX_COLLAPSED_ROADMAPS = 3
