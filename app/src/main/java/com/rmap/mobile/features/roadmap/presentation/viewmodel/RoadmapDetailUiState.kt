@@ -13,7 +13,7 @@ data class RoadmapDetailUiState(
     val completedRequiredNodes: Int = 0,
     val totalRequiredNodes: Int = 0,
     val nextActionTitle: String = "",
-    val nextAction: RoadmapNodeAction? = null,
+    val primaryAction: RoadmapPrimaryAction = RoadmapPrimaryAction.StartLearning,
     val nextUnlockTitle: String = "",
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
@@ -21,6 +21,8 @@ data class RoadmapDetailUiState(
     val isBookmarked: Boolean = false,
     val groups: List<RoadmapGroupUiModel> = emptyList(),
     val milestones: List<RoadmapMilestoneUiModel> = emptyList(),
+    val updatingNodeId: String? = null,
+    val isEmpty: Boolean = false,
     val isLoading: Boolean = true,
     @StringRes val errorMessageResId: Int? = null,
 )
@@ -46,12 +48,12 @@ enum class RoadmapGroupState {
 
 data class RoadmapNodeUiModel(
     val id: String,
+    val skillId: String = id,
     val title: String,
     val icon: ImageVector,
     val status: RoadmapNodeStatus,
     val requirement: RoadmapNodeRequirement,
     @StringRes val descriptionResId: Int,
-    val descriptionText: String? = null,
     val descriptionArgs: List<String> = emptyList(),
     val action: RoadmapNodeAction? = null,
     val isBookmarked: Boolean = false
@@ -70,9 +72,14 @@ enum class RoadmapNodeRequirement {
 }
 
 enum class RoadmapNodeAction {
+    Start,
     Review,
-    Continue,
-    StartLearning
+    Continue
+}
+
+enum class RoadmapPrimaryAction {
+    StartLearning,
+    ContinueLearning
 }
 
 data class RoadmapMilestoneUiModel(
@@ -90,8 +97,9 @@ enum class RoadmapMilestoneState {
 internal fun RoadmapDetailUiState.currentSearchNode(): RoadmapNodeUiModel? {
     val nodes = allSearchNodes()
     return nodes.firstOrNull { it.status == RoadmapNodeStatus.InProgress }
+        ?: nodes.firstOrNull { it.status == RoadmapNodeStatus.NotStarted }
         ?: nodes.firstOrNull { it.action == RoadmapNodeAction.Continue }
-        ?: nodes.firstOrNull { it.action == RoadmapNodeAction.StartLearning }
+        ?: nodes.firstOrNull { it.action == RoadmapNodeAction.Review }
 }
 
 internal fun RoadmapDetailUiState.recentSearchNodes(): List<RoadmapNodeUiModel> {
@@ -113,7 +121,6 @@ internal fun RoadmapDetailUiState.searchResultNodes(): List<RoadmapNodeUiModel> 
     return nodes
         .filter { node ->
             node.title.contains(query, ignoreCase = true) ||
-                node.descriptionText?.contains(query, ignoreCase = true) == true ||
                 node.descriptionArgs.any { it.contains(query, ignoreCase = true) }
         }
         .ifEmpty { nodes.take(SearchPreviewResultNodeFallbackLimit) }
@@ -136,11 +143,7 @@ internal fun RoadmapDetailUiState.searchResultMilestones(): List<RoadmapMileston
     if (query.isEmpty()) return emptyList()
 
     return milestones
-        .filter { milestone ->
-            milestone.id.contains(query, ignoreCase = true) ||
-                milestone.title.contains(query, ignoreCase = true) ||
-                milestone.description.contains(query, ignoreCase = true)
-        }
+        .filter { it.id.contains(query, ignoreCase = true) }
         .ifEmpty { milestones.take(SearchPreviewResultMilestoneFallbackLimit) }
 }
 

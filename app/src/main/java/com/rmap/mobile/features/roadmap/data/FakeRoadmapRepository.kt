@@ -17,11 +17,13 @@ import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestionResult
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
+import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
+import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.model.SubLesson
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 
@@ -255,6 +257,32 @@ class FakeRoadmapRepository : RoadmapRepository {
             NodeQuizOption("B", "Skip practice and continue immediately."),
             NodeQuizOption("C", "Only bookmark the resource."),
             NodeQuizOption("D", "Wait until every roadmap is finished.")
+        )
+    }
+
+    override suspend fun getRoadmapNodeLearningContent(
+        roadmapId: String,
+        nodeId: String,
+        skillId: String
+    ): Result<SkillLearningContent> {
+        return Result.failure(IllegalArgumentException("Roadmap node not found"))
+    }
+
+    override suspend fun startRoadmap(roadmapId: String): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun updateNodeProgress(
+        roadmapId: String,
+        nodeId: String,
+        status: LearningStatus
+    ): Result<NodeProgressUpdateResult> {
+        return Result.success(
+            NodeProgressUpdateResult(
+                nodeId = nodeId,
+                status = status,
+                unlockedNodeIds = emptyList()
+            )
         )
     }
 }

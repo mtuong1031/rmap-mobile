@@ -1,326 +1,398 @@
 package com.rmap.mobile.features.roadmap.data.mapper
 
 import com.google.gson.Gson
-import com.rmap.mobile.features.roadmap.data.model.NodeDetailResponseDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapNodesListResponseDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapNodeQuizResponseDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapProgressSummaryDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapResponseDto
-import com.rmap.mobile.features.roadmap.data.model.SubmitQuizResponseDto
-import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
+import com.rmap.mobile.features.roadmap.data.remote.model.NodeProgressDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodesResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapProgressDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapWithNodesDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapsResponseDto
 import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
-import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
-import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RoadmapMapperTest {
-    private val gson = Gson()
-
     @Test
-    fun `roadmap response maps backend fields to summary`() {
-        val roadmap = gson.fromJson(
-            """
-            {
-              "deadlineDate": "2026-07-01",
-              "description": "Personalized path",
-              "estimatedWeeks": 8,
-              "generatedAt": "2026-05-29T00:00:00.000Z",
-              "goalName": "Frontend Developer",
-              "hoursPerDay": 2,
-              "id": "roadmap-1",
-              "isTemplate": false,
-              "roleCategory": "WEB_DEVELOPMENT",
-              "title": "Frontend Developer Roadmap",
-              "updatedAt": "2026-05-29T00:00:00.000Z",
-              "userId": "user-1"
-            }
-            """.trimIndent(),
-            RoadmapResponseDto::class.java
-        )
-        val progress = RoadmapProgressSummaryDto(
-            roadmapId = "roadmap-1",
-            completionPct = 50.0,
-            streakDays = 3,
-            skillReadinessPct = 40.0,
-            nodesTotal = 10,
-            nodesCompleted = 5,
-            timelineWarning = null
-        )
+    fun `toDomain maps roadmap tree and progress statuses`() {
+        val detail = roadmapWithNodes().toDomain(roadmapProgress())
 
-        val summary = roadmap.toSummary(progress)
+        assertEquals("roadmap-1", detail.id)
+        assertEquals("Frontend Developer Roadmap", detail.title)
+        assertEquals("Frontend Developer", detail.roleName)
+        assertEquals(2, detail.completedLessons)
+        assertEquals(5, detail.totalLessons)
+        assertEquals(2, detail.sections.size)
 
-        assertEquals("roadmap-1", summary.id)
-        assertEquals("Frontend Developer Roadmap", summary.title)
-        assertEquals(10, summary.totalLessonsCount)
-        assertEquals(5, summary.completedLessonsCount)
-        assertEquals(LearningDifficulty.Intermediate, summary.difficulty)
-        assertEquals("8 weeks", summary.durationLabel)
-        assertEquals(LearningTopicIcon.Code, summary.icon)
-        assertEquals("web-development", summary.categoryId)
+        val firstSection = detail.sections.first()
+        assertEquals("Frontend Foundations", firstSection.title)
+        assertEquals(3, firstSection.modules.size)
+
+        val foundations = firstSection.modules.first()
+        assertEquals("node-root", foundations.id)
+        assertEquals("Frontend Foundations", foundations.title)
+        assertEquals(LearningStatus.Completed, foundations.status)
+
+        val css = firstSection.modules[1]
+        assertEquals("node-css", css.id)
+        assertEquals("CSS Flexbox", css.title)
+        assertEquals(LearningRequirement.Required, css.requirement)
+        assertEquals(LearningStatus.Completed, css.status)
+
+        val react = firstSection.modules[2]
+        assertEquals("node-react", react.id)
+        assertEquals(LearningRequirement.Optional, react.requirement)
+        assertEquals(LearningStatus.InProgress, react.status)
+        assertEquals(1, react.subLessons.size)
+        assertEquals("node-state", react.subLessons.first().id)
+        assertEquals(LearningStatus.Locked, react.subLessons.first().status)
     }
 
     @Test
-    fun `roadmap nodes map to detail sections`() {
-        val roadmap = gson.fromJson(
-            """
-            {
-              "deadlineDate": null,
-              "description": null,
-              "estimatedWeeks": 4,
-              "generatedAt": "2026-05-29T00:00:00.000Z",
-              "goalName": null,
-              "hoursPerDay": null,
-              "id": "roadmap-1",
-              "isTemplate": false,
-              "roleCategory": "WEB_DEVELOPMENT",
-              "title": "Frontend Developer Roadmap",
-              "updatedAt": "2026-05-29T00:00:00.000Z",
-              "userId": "user-1"
-            }
-            """.trimIndent(),
-            RoadmapResponseDto::class.java
-        )
-        val nodes = gson.fromJson(
+    fun `toDomain handles root nodes without children`() {
+        val detail = roadmapWithNodes().toDomain(roadmapProgress())
+
+        val secondSection = detail.sections[1]
+
+        assertEquals("API Basics", secondSection.title)
+        assertEquals(1, secondSection.modules.size)
+        assertEquals("node-api", secondSection.modules.first().id)
+        assertTrue(secondSection.modules.first().subLessons.isEmpty())
+    }
+
+    @Test
+    fun `dto supports backend camelCase roadmap list response`() {
+        val response = Gson().fromJson(
             """
             {
               "data": [
                 {
-                  "id": "group-1",
-                  "roadmapId": "roadmap-1",
-                  "parentId": null,
-                  "skillId": null,
-                  "name": "Core Web",
-                  "description": null,
-                  "nodeType": "GROUP",
-                  "estimatedHours": null,
-                  "posX": 0,
-                  "posY": 0,
-                  "progress": null
-                },
+                  "id": "roadmap-1",
+                  "userId": null,
+                  "roleId": "role-frontend",
+                  "roleName": "Frontend Developer",
+                  "title": "Frontend Developer Roadmap",
+                  "description": "Personalized roadmap",
+                  "isTemplate": true,
+                  "createdAt": "2026-05-30T00:00:00Z"
+                }
+              ],
+              "meta": {
+                "page": 1,
+                "perPage": 5,
+                "total": 1,
+                "totalPages": 1
+              }
+            }
+            """.trimIndent(),
+            RoadmapsResponseDto::class.java
+        )
+
+        val roadmap = response.data.orEmpty().single()
+        assertEquals("role-frontend", roadmap.roleId)
+        assertEquals("Frontend Developer", roadmap.roleName)
+        assertEquals(null, roadmap.roleCategory)
+        assertEquals(true, roadmap.isTemplate)
+        assertEquals(5, response.meta?.perPage)
+        assertEquals(1, response.meta?.totalPages)
+    }
+
+    @Test
+    fun `toDomain maps backend camelCase detail and progress response`() {
+        val gson = Gson()
+        val roadmap = gson.fromJson(
+            """
+            {
+              "id": "roadmap-1",
+              "roleId": "role-frontend",
+              "roleName": "Frontend Developer",
+              "title": "Frontend Developer Roadmap",
+              "nodes": [
                 {
-                  "id": "node-1",
+                  "id": "node-root",
                   "roadmapId": "roadmap-1",
-                  "parentId": "group-1",
-                  "skillId": "skill-1",
-                  "name": "HTML",
-                  "description": null,
-                  "nodeType": "REQUIRED",
-                  "estimatedHours": 5,
-                  "posX": 0,
-                  "posY": 1,
-                  "progress": {
-                    "id": "progress-1",
-                    "roadmapNodeId": "node-1",
-                    "status": "COMPLETED",
-                    "startedAt": null,
-                    "completedAt": "2026-05-29T00:00:00.000Z",
-                    "quizScorePct": null,
-                    "quizPassed": null
-                  }
-                },
-                {
-                  "id": "node-2",
-                  "roadmapId": "roadmap-1",
-                  "parentId": "group-1",
-                  "skillId": "skill-2",
-                  "name": "CSS",
-                  "description": null,
-                  "nodeType": "REQUIRED",
-                  "estimatedHours": 5,
-                  "posX": 0,
-                  "posY": 2,
-                  "progress": {
-                    "id": "progress-2",
-                    "roadmapNodeId": "node-2",
-                    "status": "IN_PROGRESS",
-                    "startedAt": "2026-05-29T00:00:00.000Z",
-                    "completedAt": null,
-                    "quizScorePct": null,
-                    "quizPassed": null
-                  }
-                },
-                {
-                  "id": "milestone-1",
-                  "roadmapId": "roadmap-1",
-                  "parentId": null,
-                  "skillId": null,
-                  "name": "Static Web Page",
-                  "description": "Build a responsive static website.",
-                  "nodeType": "MILESTONE",
-                  "estimatedHours": null,
-                  "posX": 0,
-                  "posY": 3,
-                  "progress": {
-                    "id": "progress-3",
-                    "roadmapNodeId": "milestone-1",
-                    "status": "LOCKED",
-                    "startedAt": null,
-                    "completedAt": null,
-                    "quizScorePct": null,
-                    "quizPassed": null
-                  }
+                  "skillId": "skill-root",
+                  "skillName": "Frontend Foundations",
+                  "relationType": "REQUIRED",
+                  "sortOrder": 1,
+                  "children": [
+                    {
+                      "id": "node-css",
+                      "roadmapId": "roadmap-1",
+                      "skillId": "skill-css",
+                      "skillName": "CSS Flexbox",
+                      "skillEstimatedHours": 6,
+                      "parentNodeId": "node-root",
+                      "relationType": "OPTIONAL",
+                      "sortOrder": 1,
+                      "children": []
+                    }
+                  ]
                 }
               ]
             }
             """.trimIndent(),
-            RoadmapNodesListResponseDto::class.java
+            RoadmapWithNodesDto::class.java
+        )
+        val progress = gson.fromJson(
+            """
+            {
+              "roadmapId": "roadmap-1",
+              "totalNodes": 2,
+              "completedNodes": 1,
+              "inProgressNodes": 1,
+              "completionPercentage": 50.0,
+              "nodes": [
+                {
+                  "roadmapNodeId": "node-root",
+                  "skillId": "skill-root",
+                  "skillName": "Frontend Foundations",
+                  "status": "COMPLETED"
+                },
+                {
+                  "roadmapNodeId": "node-css",
+                  "skillId": "skill-css",
+                  "skillName": "CSS Flexbox",
+                  "status": "IN_PROGRESS"
+                }
+              ]
+            }
+            """.trimIndent(),
+            RoadmapProgressDto::class.java
         )
 
-        val detail = roadmap.toDetail(nodes.nodes)
+        val detail = roadmap.toDomain(progress)
 
         assertEquals("roadmap-1", detail.id)
-        assertEquals("Web Development", detail.categoryLabel)
-        assertEquals(1, detail.completedLessons)
         assertEquals(2, detail.totalLessons)
-        assertEquals("Core Web", detail.sections.first().title)
-        assertEquals("node-1", detail.sections.first().modules.first().id)
-        assertEquals("HTML", detail.sections.first().modules.first().title)
+        assertEquals(1, detail.completedLessons)
         assertEquals(LearningStatus.Completed, detail.sections.first().modules.first().status)
-        assertEquals("milestone-1", detail.milestones.single().id)
-        assertEquals("Static Web Page", detail.milestones.single().title)
-        assertEquals("Build a responsive static website.", detail.milestones.single().description)
-        assertEquals(LearningStatus.Locked, detail.milestones.single().status)
-        assertEquals("CSS", detail.aiTip?.currentModule)
+        assertEquals(LearningRequirement.Optional, detail.sections.first().modules[1].requirement)
+        assertEquals(LearningStatus.InProgress, detail.sections.first().modules[1].status)
     }
 
     @Test
-    fun `node detail response maps backend fields to learning node detail`() {
-        val response = gson.fromJson(
+    fun `toDomain maps actual backend template detail and flat nodes response`() {
+        val gson = Gson()
+        val template = gson.fromJson(
             """
             {
-              "node": {
-                "id": "node-1",
-                "roadmapId": "roadmap-1",
-                "parentId": "group-1",
-                "skillId": "skill-1",
-                "name": "Domain Name",
-                "description": "Learn how a domain points to a server.",
-                "nodeType": "REQUIRED",
-                "estimatedHours": 2,
-                "posX": 0,
-                "posY": 1,
-                "progress": {
-                  "id": "progress-1",
-                  "roadmapNodeId": "node-1",
-                  "status": "IN_PROGRESS",
-                  "startedAt": "2026-05-29T00:00:00.000Z",
-                  "completedAt": null,
-                  "quizScorePct": null,
-                  "quizPassed": null
-                }
-              },
-              "skill": {
-                "id": "skill-1",
-                "name": "Domain Name",
-                "description": "DNS and domain basics.",
-                "defaultEstimatedHours": 3,
-                "roleCategory": "WEB_DEVELOPMENT"
-              },
-              "resources": [
-                {
-                  "id": 1,
-                  "title": "MDN domain guide",
-                  "url": "https://developer.mozilla.org/",
-                  "resourceType": "ARTICLE",
-                  "isFree": true,
-                  "isPrimary": true
-                }
-              ],
-              "prerequisites": [
-                {
-                  "skillId": "skill-html",
-                  "skillName": "HTML"
-                }
-              ],
-              "latestSubmission": null
+              "deadlineDate": null,
+              "description": "Learn what backend development is and how to become a backend developer.",
+              "estimatedWeeks": null,
+              "generatedAt": "2026-05-31T07:06:44.227Z",
+              "goalName": "Backend Developer Roadmap: What is Backend Development?",
+              "hoursPerDay": null,
+              "id": "7f3e209e-3781-4ed3-a263-7d0c9e546c1a",
+              "isTemplate": true,
+              "roleCategory": "WEB_DEVELOPMENT",
+              "title": "Backend Developer Roadmap: What is Backend Development?",
+              "updatedAt": "2026-05-31T07:06:44.227Z",
+              "userId": null
             }
             """.trimIndent(),
-            NodeDetailResponseDto::class.java
+            RoadmapDto::class.java
         )
-
-        val detail = response.toDomain()
-
-        assertEquals("roadmap-1", detail.roadmapId)
-        assertEquals("node-1", detail.nodeId)
-        assertEquals("Domain Name", detail.title)
-        assertEquals("Learn how a domain points to a server.", detail.description)
-        assertEquals(2, detail.estimatedHours)
-        assertEquals(LearningStatus.InProgress, detail.status)
-        assertEquals(LearningRequirement.Required, detail.requirement)
-        assertEquals("MDN domain guide", detail.resources.single().title)
-        assertEquals("HTML", detail.prerequisites.single().skillName)
-    }
-
-    @Test
-    fun `quiz response and submit response map to quiz domain models`() {
-        val quizResponse = gson.fromJson(
+        val nodes = gson.fromJson(
             """
             {
-              "nodeId": "node-1",
-              "skillId": "skill-1",
-              "questions": [
+              "nodes": [
                 {
-                  "id": "question-1",
-                  "questionText": "What does DNS resolve?",
-                  "optionA": "Domain names",
-                  "optionB": "CSS rules",
-                  "optionC": "Gradle tasks",
-                  "optionD": "Image assets"
+                  "description": null,
+                  "estimatedHours": null,
+                  "roadmap_node_id": "group-1",
+                  "name": "Backend Foundations",
+                  "nodeType": "GROUP",
+                  "parent_node_id": null,
+                  "posX": 0,
+                  "posY": 0,
+                  "roadmap_id": "7f3e209e-3781-4ed3-a263-7d0c9e546c1a",
+                  "skill_id": null
+                },
+                {
+                  "description": "Learn backend API basics.",
+                  "estimatedHours": 4,
+                  "roadmap_node_id": "node-api",
+                  "skill_name": "API Design",
+                  "nodeType": "REQUIRED",
+                  "parent_node_id": "group-1",
+                  "posX": 0,
+                  "posY": 100,
+                  "roadmap_id": "7f3e209e-3781-4ed3-a263-7d0c9e546c1a",
+                  "skill_id": "skill-api"
                 }
               ]
             }
             """.trimIndent(),
-            RoadmapNodeQuizResponseDto::class.java
-        )
-        val submitResponse = gson.fromJson(
-            """
-            {
-              "scorePct": 80,
-              "passed": true,
-              "correctCount": 4,
-              "totalQuestions": 5,
-              "results": [
-                {
-                  "questionId": "question-1",
-                  "selectedOption": "a",
-                  "correctOption": "a",
-                  "isCorrect": true
-                }
-              ],
-              "nodeProgress": {
-                "id": "progress-1",
-                "roadmapNodeId": "node-1",
-                "status": "COMPLETED",
-                "startedAt": "2026-05-29T00:00:00.000Z",
-                "completedAt": "2026-05-29T00:05:00.000Z",
-                "quizScorePct": 80,
-                "quizPassed": true
-              },
-              "unlockedNodes": ["node-2"],
-              "suggestion": null
-            }
-            """.trimIndent(),
-            SubmitQuizResponseDto::class.java
+            RoadmapNodesResponseDto::class.java
         )
 
-        val quiz = quizResponse.toDomain()
-        val request = listOf(
-            NodeQuizAnswer(
-                questionId = "question-1",
-                selectedOption = "a"
+        val detail = template
+            .toRoadmapWithNodes(nodes.nodes.orEmpty())
+            .toDomain(RoadmapProgressDto(roadmapId = "7f3e209e-3781-4ed3-a263-7d0c9e546c1a"))
+
+        assertEquals("7f3e209e-3781-4ed3-a263-7d0c9e546c1a", detail.id)
+        assertEquals("Backend Developer Roadmap: What is Backend Development?", detail.title)
+        assertEquals("Web Development", detail.roleName)
+        assertEquals(2, detail.totalLessons)
+        assertEquals("Backend Foundations", detail.sections.single().title)
+        assertEquals("API Design", detail.sections.single().modules.single().title)
+        assertEquals("skill-api", detail.sections.single().modules.single().skillId)
+        assertEquals(LearningStatus.NotStarted, detail.sections.single().modules.single().status)
+        assertEquals(4, detail.sections.single().modules.single().estimatedHours)
+    }
+
+    @Test
+    fun `toDomain locks later groups until previous required nodes are completed`() {
+        val roadmap = RoadmapWithNodesDto(
+            id = "roadmap-1",
+            roleName = "Backend Developer",
+            title = "Backend Roadmap",
+            nodes = listOf(
+                RoadmapNodeDto(
+                    id = "group-1",
+                    skillName = "Backend Foundations",
+                    nodeType = "GROUP",
+                    sortOrder = 1
+                ),
+                RoadmapNodeDto(
+                    id = "node-http",
+                    skillId = "skill-http",
+                    skillName = "HTTP Basics",
+                    nodeType = "REQUIRED",
+                    parentNodeId = "group-1",
+                    sortOrder = 1
+                ),
+                RoadmapNodeDto(
+                    id = "group-2",
+                    skillName = "API Development",
+                    nodeType = "GROUP",
+                    sortOrder = 2
+                ),
+                RoadmapNodeDto(
+                    id = "node-api",
+                    skillId = "skill-api",
+                    skillName = "REST API",
+                    nodeType = "REQUIRED",
+                    parentNodeId = "group-2",
+                    sortOrder = 1
+                )
             )
-        ).toSubmitQuizRequestDto()
-        val result = submitResponse.toDomain()
+        )
 
-        assertEquals("node-1", quiz.nodeId)
-        assertEquals("What does DNS resolve?", quiz.questions.single().text)
-        assertEquals("A", quiz.questions.single().options.first().key)
-        assertEquals("A", request.answers.single().selectedOption)
-        assertEquals(80, result.scorePercent)
-        assertEquals(true, result.passed)
-        assertEquals("A", result.questionResults.single().selectedOption)
-        assertEquals("node-2", result.unlockedNodeIds.single())
+        val detail = roadmap.toDomain(RoadmapProgressDto(roadmapId = "roadmap-1"))
+
+        assertEquals(LearningStatus.NotStarted, detail.sections[0].modules.single().status)
+        assertEquals(LearningStatus.Locked, detail.sections[1].modules.single().status)
+    }
+
+    private fun roadmapWithNodes(): RoadmapWithNodesDto {
+        return RoadmapWithNodesDto(
+            id = "roadmap-1",
+            roleId = "role-frontend",
+            roleName = "Frontend Developer",
+            title = "Frontend Developer Roadmap",
+            description = "Personalized roadmap",
+            isTemplate = false,
+            createdAt = "2026-05-30T00:00:00Z",
+            nodes = listOf(
+                RoadmapNodeDto(
+                    id = "node-root",
+                    roadmapId = "roadmap-1",
+                    skillId = "skill-root",
+                    skillName = "Frontend Foundations",
+                    relationType = "required",
+                    sortOrder = 1,
+                    children = listOf(
+                        RoadmapNodeDto(
+                            id = "node-css",
+                            roadmapId = "roadmap-1",
+                            skillId = "skill-css",
+                            skillName = "CSS Flexbox",
+                            skillEstimatedHours = 6,
+                            parentNodeId = "node-root",
+                            relationType = "required",
+                            sortOrder = 1,
+                            children = emptyList()
+                        ),
+                        RoadmapNodeDto(
+                            id = "node-react",
+                            roadmapId = "roadmap-1",
+                            skillId = "skill-react",
+                            skillName = "React",
+                            skillEstimatedHours = 12,
+                            parentNodeId = "node-root",
+                            relationType = "optional",
+                            sortOrder = 2,
+                            children = listOf(
+                                RoadmapNodeDto(
+                                    id = "node-state",
+                                    roadmapId = "roadmap-1",
+                                    skillId = "skill-state",
+                                    skillName = "State management",
+                                    parentNodeId = "node-react",
+                                    relationType = "required",
+                                    sortOrder = 1,
+                                    children = emptyList()
+                                )
+                            )
+                        )
+                    )
+                ),
+                RoadmapNodeDto(
+                    id = "node-api",
+                    roadmapId = "roadmap-1",
+                    skillId = "skill-api",
+                    skillName = "API Basics",
+                    relationType = "required",
+                    sortOrder = 2,
+                    children = emptyList()
+                )
+            )
+        )
+    }
+
+    private fun roadmapProgress(): RoadmapProgressDto {
+        return RoadmapProgressDto(
+            roadmapId = "roadmap-1",
+            totalNodes = 5,
+            completedNodes = 2,
+            inProgressNodes = 1,
+            completionPercentage = 40f,
+            nodes = listOf(
+                NodeProgressDto(
+                    roadmapNodeId = "node-root",
+                    skillId = "skill-root",
+                    skillName = "Frontend Foundations",
+                    status = "completed"
+                ),
+                NodeProgressDto(
+                    roadmapNodeId = "node-css",
+                    skillId = "skill-css",
+                    skillName = "CSS Flexbox",
+                    status = "completed"
+                ),
+                NodeProgressDto(
+                    roadmapNodeId = "node-react",
+                    skillId = "skill-react",
+                    skillName = "React",
+                    status = "in_progress"
+                ),
+                NodeProgressDto(
+                    roadmapNodeId = "node-state",
+                    skillId = "skill-state",
+                    skillName = "State management",
+                    status = "locked"
+                ),
+                NodeProgressDto(
+                    roadmapNodeId = "node-api",
+                    skillId = "skill-api",
+                    skillName = "API Basics",
+                    status = "locked"
+                )
+            )
+        )
     }
 }

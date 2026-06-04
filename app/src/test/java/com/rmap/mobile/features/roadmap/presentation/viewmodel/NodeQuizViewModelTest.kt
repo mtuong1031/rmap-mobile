@@ -3,15 +3,18 @@ package com.rmap.mobile.features.roadmap.presentation.viewmodel
 import com.rmap.mobile.MainDispatcherRule
 import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
+import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestionResult
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
+import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
+import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -165,6 +168,26 @@ class NodeQuizViewModelTest {
                     }
                 )
             )
+        }
+
+        override suspend fun getRoadmapNodeLearningContent(
+            roadmapId: String,
+            nodeId: String,
+            skillId: String
+        ): Result<SkillLearningContent> {
+            return Result.failure(NotImplementedError())
+        }
+
+        override suspend fun startRoadmap(roadmapId: String): Result<Unit> {
+            return Result.failure(NotImplementedError())
+        }
+
+        override suspend fun updateNodeProgress(
+            roadmapId: String,
+            nodeId: String,
+            status: LearningStatus
+        ): Result<NodeProgressUpdateResult> {
+            return Result.failure(NotImplementedError())
         }
     }
 

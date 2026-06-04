@@ -178,7 +178,7 @@ fun SkillBookmarkSnapshot.toEntity(
 private fun RoadmapDetail.findSkill(skillId: String): SkillBookmarkSource? {
     sections.forEach { section ->
         section.modules.forEach { module ->
-            if (module.id == skillId || module.toStableId() == skillId) {
+            if (module.id == skillId || module.matchesSkillId(skillId)) {
                 return SkillBookmarkSource(
                     title = module.title,
                     status = module.status,
@@ -187,7 +187,7 @@ private fun RoadmapDetail.findSkill(skillId: String): SkillBookmarkSource? {
             }
 
             module.subLessons.forEach { subLesson ->
-                if (subLesson.toStableId() == skillId) {
+                if (subLesson.matchesSkillId(skillId)) {
                     return SkillBookmarkSource(
                         title = subLesson.title,
                         status = subLesson.status,
@@ -201,9 +201,13 @@ private fun RoadmapDetail.findSkill(skillId: String): SkillBookmarkSource? {
     return null
 }
 
-private fun LearningModule.toStableId(): String = toStableLearningId()
+private fun LearningModule.matchesSkillId(skillId: String): Boolean {
+    return this.skillId == skillId || id == skillId || title.toStableLearningId() == skillId || toStableLearningId() == skillId
+}
 
-private fun SubLesson.toStableId(): String = toStableLearningId()
+private fun SubLesson.matchesSkillId(skillId: String): Boolean {
+    return this.skillId == skillId || id == skillId || title.toStableLearningId() == skillId || toStableLearningId() == skillId
+}
 
 private fun String?.toLearningTopicIcon(): LearningTopicIcon {
     return when (this) {
