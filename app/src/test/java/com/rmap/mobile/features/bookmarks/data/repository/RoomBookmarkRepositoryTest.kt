@@ -3,22 +3,22 @@ package com.rmap.mobile.features.bookmarks.data.repository
 import com.rmap.mobile.features.bookmarks.data.local.BookmarkDao
 import com.rmap.mobile.features.bookmarks.data.local.RoadmapBookmarkEntity
 import com.rmap.mobile.features.bookmarks.data.local.SkillBookmarkEntity
-import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
-import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
-import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
+import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
+import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
+import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.model.SubLesson
 import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
@@ -59,27 +59,6 @@ class RoomBookmarkRepositoryTest {
     }
 
     @Test
-    fun `save roadmap snapshot hydrates saved roadmap when id is missing from source repository`() = runTest {
-        val result = repository.saveRoadmap(
-            RoadmapBookmarkSnapshot(
-                roadmapId = "api-roadmap",
-                title = "API Roadmap",
-                categoryId = "WEB_DEVELOPMENT",
-                categoryLabel = "Web Development",
-                nodesTotal = 42,
-                durationLabel = "Self-paced",
-                iconKey = LearningTopicIcon.Code.name
-            )
-        )
-
-        assertTrue(result.isSuccess)
-        val bookmark = repository.getSavedRoadmaps().getOrThrow().single()
-        assertEquals("api-roadmap", bookmark.summary.id)
-        assertEquals("API Roadmap", bookmark.summary.title)
-        assertEquals(42, bookmark.summary.totalLessonsCount)
-    }
-
-    @Test
     fun `save skill with known stable id hydrates saved skill`() = runTest {
         val skillId = "Async JS".toStableLearningId()
 
@@ -93,7 +72,6 @@ class RoomBookmarkRepositoryTest {
         assertEquals(1, bookmarks.size)
         assertEquals(skillId, bookmarks.single().skillId)
         assertEquals("Async JS", bookmarks.single().title)
-        assertEquals("Frontend", bookmarks.single().parentPathName)
     }
 
     @Test
@@ -106,27 +84,6 @@ class RoomBookmarkRepositoryTest {
         assertTrue(result.isFailure)
         assertFalse(bookmarkDao.isSkillSaved("missing-skill"))
         assertTrue(repository.getSavedSkills().getOrThrow().isEmpty())
-    }
-
-    @Test
-    fun `save skill snapshot hydrates saved skill without roadmap detail match`() = runTest {
-        val result = repository.saveSkill(
-            SkillBookmarkSnapshot(
-                skillId = "api-skill",
-                title = "FULL OUTER JOIN",
-                categoryId = "LANGUAGES_AND_PLATFORMS",
-                categoryLabel = "Languages And Platforms",
-                iconKey = LearningTopicIcon.Terminal.name
-            )
-        )
-
-        assertTrue(result.isSuccess)
-        val bookmark = repository.getSavedSkills().getOrThrow().single()
-        assertEquals("api-skill", bookmark.skillId)
-        assertEquals("FULL OUTER JOIN", bookmark.title)
-        assertEquals("Languages And Platforms", bookmark.parentPathName)
-        assertEquals(LearningStatus.NotStarted, bookmark.status)
-        assertEquals(LearningTopicIcon.Terminal, bookmark.icon)
     }
 }
 
@@ -190,7 +147,6 @@ private class FakeRoadmapRepository : RoadmapRepository {
     private val detail = RoadmapDetail(
         id = "frontend-pro",
         title = "Frontend Pro",
-        categoryLabel = "Frontend",
         completedLessons = 1,
         totalLessons = 3,
         sections = listOf(
@@ -210,7 +166,6 @@ private class FakeRoadmapRepository : RoadmapRepository {
                 )
             )
         ),
-        milestones = emptyList(),
         aiTip = AiScholarTip(
             currentModule = "JavaScript",
             recommendedTopic = "Promises",
@@ -265,6 +220,26 @@ private class FakeRoadmapRepository : RoadmapRepository {
         nodeId: String,
         answers: List<NodeQuizAnswer>
     ): Result<NodeQuizSubmissionResult> {
+        return Result.failure(NotImplementedError())
+    }
+
+    override suspend fun getRoadmapNodeLearningContent(
+        roadmapId: String,
+        nodeId: String,
+        skillId: String
+    ): Result<SkillLearningContent> {
+        return Result.failure(NotImplementedError())
+    }
+
+    override suspend fun startRoadmap(roadmapId: String): Result<Unit> {
+        return Result.failure(NotImplementedError())
+    }
+
+    override suspend fun updateNodeProgress(
+        roadmapId: String,
+        nodeId: String,
+        status: LearningStatus
+    ): Result<NodeProgressUpdateResult> {
         return Result.failure(NotImplementedError())
     }
 }

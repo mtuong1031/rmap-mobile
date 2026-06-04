@@ -118,9 +118,9 @@ fun RoadmapNodeItem(
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = when (node.status) {
                                     RoadmapNodeStatus.InProgress -> roadmapDeepBlue
-                                    RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.onSurface
                                     RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
-                                    RoadmapNodeStatus.Completed -> roadmapInk
+                                    RoadmapNodeStatus.Completed,
+                                    RoadmapNodeStatus.NotStarted -> roadmapInk
                                 },
                                 fontWeight = if (isFocused) FontWeight.Bold else FontWeight.SemiBold
                             ),
@@ -138,8 +138,7 @@ fun RoadmapNodeItem(
                 }
 
                 Text(
-                    text = node.descriptionText
-                        ?: formattedString(node.descriptionResId, node.descriptionArgs),
+                    text = formattedString(node.descriptionResId, node.descriptionArgs),
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = if (node.status == RoadmapNodeStatus.Locked) {
                             OnSurfacePlaceholderLight
@@ -209,7 +208,7 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
     val borderColor = when (node.status) {
         RoadmapNodeStatus.Completed -> roadmapSuccessBorder
         RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.inversePrimary
-        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
+        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
         RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
     }
     val icon = when (node.status) {
@@ -302,9 +301,9 @@ private fun NodeActionButton(
 ) {
     val label = stringResource(
         when (action) {
+            RoadmapNodeAction.Start -> R.string.roadmap_detail_action_start_learning
             RoadmapNodeAction.Review -> R.string.roadmap_detail_action_review
             RoadmapNodeAction.Continue -> R.string.roadmap_detail_action_continue
-            RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_action_start_learning
         }
     )
 

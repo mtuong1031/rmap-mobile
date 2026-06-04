@@ -31,9 +31,12 @@ import com.rmap.mobile.features.profile.data.remote.ProfileApi
 import com.rmap.mobile.features.profile.data.repository.ProfileRepositoryImpl
 import com.rmap.mobile.features.profile.domain.repository.NotificationSettingsRepository
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
-import com.rmap.mobile.features.roadmap.data.remote.RoadmapApi
-import com.rmap.mobile.features.roadmap.data.repository.RoadmapRepositoryImpl
+import com.rmap.mobile.features.roadmap.data.remote.api.RoadmapApi
+import com.rmap.mobile.features.roadmap.data.remote.api.SkillApi
+import com.rmap.mobile.features.roadmap.data.repository.RemoteRoadmapRepository
+import com.rmap.mobile.features.roadmap.data.repository.RemoteSkillLearningRepository
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
+import com.rmap.mobile.features.roadmap.domain.repository.SkillLearningRepository
 
 object RMapAppGraph {
     lateinit var roadmapRepository: RoadmapRepository
@@ -41,6 +44,8 @@ object RMapAppGraph {
     lateinit var profileRepository: ProfileRepository
         private set
 
+    lateinit var skillLearningRepository: SkillLearningRepository
+        private set
     lateinit var database: RMapDatabase
         private set
     lateinit var bookmarkRepository: BookmarkRepository
@@ -104,14 +109,18 @@ object RMapAppGraph {
             profileApi = apiClient.createService(ProfileApi::class.java),
             sessionManager = sessionManager
         )
-        roadmapRepository = RoadmapRepositoryImpl(
-            roadmapApi = apiClient.createService(RoadmapApi::class.java),
-            sessionManager = sessionManager
-        )
         loginUseCase = LoginUseCase(authRepository)
         registerUseCase = RegisterUseCase(authRepository)
         logoutUseCase = LogoutUseCase(authRepository)
         getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
+        roadmapRepository = RemoteRoadmapRepository(
+            roadmapApi = apiClient.createService(RoadmapApi::class.java),
+            sessionManager = sessionManager
+        )
+        skillLearningRepository = RemoteSkillLearningRepository(
+            skillApi = apiClient.createService(SkillApi::class.java),
+            sessionManager = sessionManager
+        )
 
         database = RMapDatabase.getInstance(applicationContext)
         bookmarkRepository = RoomBookmarkRepository(

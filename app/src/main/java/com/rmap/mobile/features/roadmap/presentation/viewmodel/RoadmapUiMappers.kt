@@ -6,9 +6,7 @@ import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Devices
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Science
-import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.SmartToy
-import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.ui.graphics.Color
@@ -28,6 +26,7 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
+import com.rmap.mobile.features.roadmap.domain.model.SubLesson
 import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 
 fun RoadmapCategory.toCategoryUiModel(roadmapCount: Int = 0): CategoryUiModel {
@@ -41,26 +40,44 @@ fun RoadmapCategory.toCategoryUiModel(roadmapCount: Int = 0): CategoryUiModel {
 }
 
 fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
-    val modules = sections.flatMap { section -> section.modules }
-    val nextActionModule = modules.firstOrNull { module -> module.status == LearningStatus.InProgress }
-        ?: modules.firstOrNull { module -> module.status == LearningStatus.NotStarted }
-    val nextUnlockModule = modules.firstOrNull { module -> module.status == LearningStatus.Locked }
-    val requiredModules = modules.filter { module -> module.requirement == LearningRequirement.Required }
+    val groups = sections.mapIndexed { index, section ->
+        section.toRoadmapGroupUiModel(index)
+    }
+    val nodes = groups.flatMap { group -> group.nodes }
+    val hasStartedLearning = completedLessons > 0 ||
+        progressFraction > 0f ||
+        nodes.any { node ->
+            node.status == RoadmapNodeStatus.Completed || node.status == RoadmapNodeStatus.InProgress
+        }
+    val nextNodeTitle = nodes.firstOrNull { node -> node.status == RoadmapNodeStatus.InProgress }?.title
+        ?: nodes.firstOrNull { node -> node.status == RoadmapNodeStatus.NotStarted }?.title
+        ?: nodes.firstOrNull { node -> node.status == RoadmapNodeStatus.Locked }?.title
+        ?: nodes.firstOrNull { node -> node.status == RoadmapNodeStatus.Completed }?.title
+        ?: title
+    val nextUnlockTitle = nodes.firstOrNull { node -> node.status == RoadmapNodeStatus.Locked }?.title.orEmpty()
+    val requiredNodes = nodes.filter { node -> node.requirement == RoadmapNodeRequirement.Required }
+        .ifEmpty { nodes }
+    val completedRequiredNodes = requiredNodes.count { node -> node.status == RoadmapNodeStatus.Completed }
 
     return RoadmapDetailUiState(
         roadmapId = id,
         title = title,
-        categoryLabel = categoryLabel,
+        categoryLabel = roleName.ifBlank { title },
         progressFraction = progressFraction,
         completedLessons = completedLessons,
         totalLessons = totalLessons,
-        completedRequiredNodes = requiredModules.count { module -> module.status == LearningStatus.Completed },
-        totalRequiredNodes = requiredModules.size,
-        nextActionTitle = nextActionModule?.title.orEmpty(),
-        nextAction = nextActionModule?.toRoadmapNodeAction(),
-        nextUnlockTitle = nextUnlockModule?.title.orEmpty(),
-        groups = sections.toRoadmapDetailGroups(),
+        completedRequiredNodes = completedRequiredNodes,
+        totalRequiredNodes = requiredNodes.size,
+        nextActionTitle = nextNodeTitle,
+        primaryAction = if (hasStartedLearning) {
+            RoadmapPrimaryAction.ContinueLearning
+        } else {
+            RoadmapPrimaryAction.StartLearning
+        },
+        nextUnlockTitle = nextUnlockTitle,
+        groups = groups,
         milestones = milestones.map { milestone -> milestone.toRoadmapMilestoneUiModel() },
+        isEmpty = groups.isEmpty(),
         isLoading = false,
         errorMessageResId = null
     )
@@ -79,10 +96,10 @@ fun LearningTopicIcon.toImageVector(): ImageVector {
         LearningTopicIcon.Code -> Icons.Outlined.Code
         LearningTopicIcon.DataObject -> Icons.Outlined.DataObject
         LearningTopicIcon.Devices -> Icons.Outlined.Devices
-        LearningTopicIcon.Game -> Icons.Outlined.SportsEsports
+        LearningTopicIcon.Game -> Icons.Outlined.Code
         LearningTopicIcon.Palette -> Icons.Outlined.Palette
         LearningTopicIcon.Science -> Icons.Outlined.Science
-        LearningTopicIcon.Security -> Icons.Outlined.Security
+        LearningTopicIcon.Security -> Icons.Outlined.Storage
         LearningTopicIcon.SmartToy -> Icons.Outlined.SmartToy
         LearningTopicIcon.Storage -> Icons.Outlined.Storage
         LearningTopicIcon.Terminal -> Icons.Outlined.Terminal
@@ -109,90 +126,87 @@ fun LearningDifficulty.toLabel(): String {
     }
 }
 
-private fun LearningTopicIcon.toCategoryBackgroundColor(): Color {
-    return when (this) {
-        LearningTopicIcon.Code -> PrimaryContainerLight
-        LearningTopicIcon.Devices -> CategoryDevicesBackground
-        LearningTopicIcon.SmartToy -> CategoryAiBackground
-        LearningTopicIcon.Terminal -> CategoryTerminalBackground
-        else -> SecondaryContainerLight
-    }
+private fun RoadmapMilestone.toRoadmapMilestoneUiModel(): RoadmapMilestoneUiModel {
+    return RoadmapMilestoneUiModel(
+        id = id,
+        title = title,
+        description = description.orEmpty(),
+        state = when (status) {
+            LearningStatus.Completed,
+            LearningStatus.InProgress,
+            LearningStatus.NotStarted -> RoadmapMilestoneState.Available
+            LearningStatus.Locked -> RoadmapMilestoneState.Locked
+        }
+    )
 }
 
-private val CategoryDevicesBackground = Color(0xFFFDF2F8)
-private val CategoryAiBackground = Color(0xFFEEF2FF)
-private val CategoryTerminalBackground = Color(0xFFF0FDF4)
+private fun LearningModuleSection.toRoadmapGroupUiModel(index: Int): RoadmapGroupUiModel {
+    val nodes = modules.flatMap { module -> module.toRoadmapNodeUiModels() }
+    val requiredNodes = nodes.filter { node -> node.requirement == RoadmapNodeRequirement.Required }
+        .ifEmpty { nodes }
+    val completedRequiredNodes = requiredNodes.count { node -> node.status == RoadmapNodeStatus.Completed }
+    val totalRequiredNodes = requiredNodes.size
 
-private fun List<LearningModuleSection>.toRoadmapDetailGroups(): List<RoadmapGroupUiModel> {
-    return mapIndexed { index, section ->
-        val requiredModules = section.modules.filter { module ->
-            module.requirement == LearningRequirement.Required
-        }
-        val completedRequiredNodes = requiredModules.count { module ->
-            module.status == LearningStatus.Completed
-        }
-        val totalRequiredNodes = requiredModules.size
-        val state = section.toRoadmapGroupState()
-        val previousSectionTitle = getOrNull(index - 1)?.title ?: section.title
-        val firstModuleTitle = section.modules.firstOrNull()?.title ?: section.title
-
-        RoadmapGroupUiModel(
-            id = "${section.title.toStableLearningId()}-$index",
-            title = section.title,
-            completedRequiredNodes = completedRequiredNodes,
-            totalRequiredNodes = totalRequiredNodes,
-            progressFraction = if (totalRequiredNodes == 0) {
-                0f
-            } else {
-                completedRequiredNodes.toFloat() / totalRequiredNodes.toFloat()
-            },
-            state = state,
-            nodes = if (state == RoadmapGroupState.Locked) {
-                emptyList()
-            } else {
-                section.modules.map { module -> module.toRoadmapNodeUiModel() }
-            },
-            lockedDescriptionResId = if (state == RoadmapGroupState.Locked) {
-                R.string.roadmap_detail_locked_group_description
-            } else {
-                null
-            },
-            lockedDescriptionArgs = if (state == RoadmapGroupState.Locked) {
-                listOf(previousSectionTitle, firstModuleTitle)
-            } else {
-                emptyList()
-            },
-            lockedExpandedDescriptionResId = if (state == RoadmapGroupState.Locked) {
-                R.string.roadmap_detail_framework_ecosystem_description
-            } else {
-                null
-            }
-        )
-    }
+    return RoadmapGroupUiModel(
+        id = "${index}-${title.toStableLearningId()}",
+        title = title,
+        completedRequiredNodes = completedRequiredNodes,
+        totalRequiredNodes = totalRequiredNodes,
+        progressFraction = if (totalRequiredNodes == 0) {
+            0f
+        } else {
+            completedRequiredNodes.toFloat() / totalRequiredNodes.toFloat()
+        },
+        state = nodes.toRoadmapGroupState(index),
+        nodes = nodes
+    )
 }
 
-private fun LearningModuleSection.toRoadmapGroupState(): RoadmapGroupState {
-    return when {
-        modules.isNotEmpty() && modules.all { module -> module.status == LearningStatus.Completed } ->
-            RoadmapGroupState.Completed
-        modules.isNotEmpty() && modules.all { module -> module.status == LearningStatus.Locked } ->
-            RoadmapGroupState.Locked
-        else -> RoadmapGroupState.Expanded
-    }
+private fun LearningModule.toRoadmapNodeUiModels(): List<RoadmapNodeUiModel> {
+    return listOf(toRoadmapNodeUiModel()) +
+        subLessons.map { subLesson -> subLesson.toRoadmapNodeUiModel(parentIcon = icon) }
 }
 
 private fun LearningModule.toRoadmapNodeUiModel(): RoadmapNodeUiModel {
+    val description = nodeDescription(estimatedHours, status)
     return RoadmapNodeUiModel(
         id = id,
+        skillId = skillId,
         title = title,
         icon = icon.toImageVector(),
         status = status.toRoadmapNodeStatus(),
         requirement = requirement.toRoadmapNodeRequirement(),
-        descriptionResId = status.toNodeDescriptionResId(),
-        descriptionText = description,
-        descriptionArgs = emptyList(),
-        action = toRoadmapNodeAction()
+        descriptionResId = description.resId,
+        descriptionArgs = description.args,
+        action = status.toRoadmapNodeAction()
     )
+}
+
+private fun SubLesson.toRoadmapNodeUiModel(parentIcon: LearningTopicIcon): RoadmapNodeUiModel {
+    val description = nodeDescription(estimatedHours, status)
+    return RoadmapNodeUiModel(
+        id = id,
+        skillId = skillId,
+        title = title,
+        icon = parentIcon.toImageVector(),
+        status = status.toRoadmapNodeStatus(),
+        requirement = requirement.toRoadmapNodeRequirement(),
+        descriptionResId = description.resId,
+        descriptionArgs = description.args,
+        action = status.toRoadmapNodeAction()
+    )
+}
+
+private fun List<RoadmapNodeUiModel>.toRoadmapGroupState(index: Int): RoadmapGroupState {
+    val requiredNodes = filter { node -> node.requirement == RoadmapNodeRequirement.Required }
+        .ifEmpty { this }
+
+    return when {
+        requiredNodes.isNotEmpty() && requiredNodes.all { node -> node.status == RoadmapNodeStatus.Completed } ->
+            RoadmapGroupState.Completed
+        index == 0 || any { node -> node.status != RoadmapNodeStatus.Locked } -> RoadmapGroupState.Expanded
+        else -> RoadmapGroupState.Locked
+    }
 }
 
 private fun LearningStatus.toRoadmapNodeStatus(): RoadmapNodeStatus {
@@ -211,37 +225,49 @@ private fun LearningRequirement.toRoadmapNodeRequirement(): RoadmapNodeRequireme
     }
 }
 
-private fun LearningStatus.toNodeDescriptionResId(): Int {
+private fun LearningStatus.toRoadmapNodeAction(): RoadmapNodeAction? {
     return when (this) {
-        LearningStatus.Completed -> R.string.roadmap_detail_completed_recently
-        LearningStatus.InProgress -> R.string.roadmap_detail_async_description
-        LearningStatus.NotStarted -> R.string.roadmap_detail_ready_to_start_description
-        LearningStatus.Locked -> R.string.roadmap_detail_locked_node_description
-    }
-}
-
-private fun LearningModule.toRoadmapNodeAction(): RoadmapNodeAction? {
-    return when (status) {
         LearningStatus.Completed -> RoadmapNodeAction.Review
-        LearningStatus.InProgress -> if (quizScorePercent == null) {
-            RoadmapNodeAction.StartLearning
-        } else {
-            RoadmapNodeAction.Continue
-        }
-        LearningStatus.NotStarted -> RoadmapNodeAction.StartLearning
+        LearningStatus.InProgress -> RoadmapNodeAction.Continue
+        LearningStatus.NotStarted -> RoadmapNodeAction.Start
         LearningStatus.Locked -> null
     }
 }
 
-private fun RoadmapMilestone.toRoadmapMilestoneUiModel(): RoadmapMilestoneUiModel {
-    return RoadmapMilestoneUiModel(
-        id = id,
-        title = title,
-        description = description.orEmpty(),
-        state = if (status == LearningStatus.Locked) {
-            RoadmapMilestoneState.Locked
-        } else {
-            RoadmapMilestoneState.Available
+private fun nodeDescription(
+    estimatedHours: Int?,
+    status: LearningStatus
+): NodeDescription {
+    return if (estimatedHours != null && estimatedHours > 0) {
+        NodeDescription(
+            resId = R.string.roadmap_detail_node_estimated_hours,
+            args = listOf(estimatedHours.toString())
+        )
+    } else {
+        when (status) {
+            LearningStatus.Completed -> NodeDescription(R.string.roadmap_detail_node_completed_description)
+            LearningStatus.InProgress -> NodeDescription(R.string.roadmap_detail_node_in_progress_description)
+            LearningStatus.NotStarted -> NodeDescription(R.string.roadmap_detail_node_not_started_description)
+            LearningStatus.Locked -> NodeDescription(R.string.roadmap_detail_node_locked_description)
         }
-    )
+    }
 }
+
+private data class NodeDescription(
+    val resId: Int,
+    val args: List<String> = emptyList()
+)
+
+private fun LearningTopicIcon.toCategoryBackgroundColor(): Color {
+    return when (this) {
+        LearningTopicIcon.Code -> PrimaryContainerLight
+        LearningTopicIcon.Devices -> CategoryDevicesBackground
+        LearningTopicIcon.SmartToy -> CategoryAiBackground
+        LearningTopicIcon.Terminal -> CategoryTerminalBackground
+        else -> SecondaryContainerLight
+    }
+}
+
+private val CategoryDevicesBackground = Color(0xFFFDF2F8)
+private val CategoryAiBackground = Color(0xFFEEF2FF)
+private val CategoryTerminalBackground = Color(0xFFF0FDF4)

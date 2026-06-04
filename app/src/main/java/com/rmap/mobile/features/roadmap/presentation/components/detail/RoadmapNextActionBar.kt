@@ -29,12 +29,12 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapInk
-import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapPrimaryAction
 
 @Composable
 fun RoadmapNextActionBar(
     nextActionTitle: String,
-    nextAction: RoadmapNodeAction?,
+    primaryAction: RoadmapPrimaryAction,
     onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -67,7 +67,10 @@ fun RoadmapNextActionBar(
                     maxLines = 1
                 )
                 Text(
-                    text = stringResource(nextAction.summaryResId(), nextActionTitle),
+                    text = roadmapNextActionTitle(
+                        primaryAction = primaryAction,
+                        nextActionTitle = nextActionTitle
+                    ),
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = roadmapInk,
                         fontWeight = FontWeight.Bold
@@ -80,7 +83,12 @@ fun RoadmapNextActionBar(
             Spacer(modifier = Modifier.width(Dimens.spacingMd))
 
             RMapButton(
-                text = stringResource(nextAction.buttonResId()),
+                text = stringResource(
+                    when (primaryAction) {
+                        RoadmapPrimaryAction.StartLearning -> R.string.roadmap_detail_action_start_learning
+                        RoadmapPrimaryAction.ContinueLearning -> R.string.roadmap_detail_action_continue
+                    }
+                ),
                 onClick = onContinueClick,
                 modifier = Modifier.widthIn(min = NextActionButtonMinWidth),
                 variant = RMapButtonVariant.Primary,
@@ -98,21 +106,17 @@ fun RoadmapNextActionBar(
     }
 }
 
-private fun RoadmapNodeAction?.summaryResId(): Int {
-    return when (this) {
-        RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_next_action_start_learning
-        RoadmapNodeAction.Review -> R.string.roadmap_detail_next_action_review
-        RoadmapNodeAction.Continue,
-        null -> R.string.roadmap_detail_next_action_continue
-    }
-}
-
-private fun RoadmapNodeAction?.buttonResId(): Int {
-    return when (this) {
-        RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_action_start_learning
-        RoadmapNodeAction.Review -> R.string.roadmap_detail_action_review
-        RoadmapNodeAction.Continue,
-        null -> R.string.roadmap_detail_action_continue
+@Composable
+private fun roadmapNextActionTitle(
+    primaryAction: RoadmapPrimaryAction,
+    nextActionTitle: String
+): String {
+    return when (primaryAction) {
+        RoadmapPrimaryAction.StartLearning -> stringResource(R.string.roadmap_detail_action_start_learning)
+        RoadmapPrimaryAction.ContinueLearning -> stringResource(
+            R.string.roadmap_detail_continue_title,
+            nextActionTitle
+        )
     }
 }
 
