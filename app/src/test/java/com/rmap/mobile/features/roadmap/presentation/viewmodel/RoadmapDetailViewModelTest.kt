@@ -19,7 +19,9 @@ import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
 import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapContentItem
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
@@ -145,9 +147,10 @@ class RoadmapDetailViewModelTest {
 
     @Test
     fun `onContinueClick emits failure when backend start fails`() = runTest {
+        val failureMessage = "Server error"
         val repository = FakeRoadmapRepository(
             detailResult = Result.success(notStartedDetail),
-            startResult = Result.failure(IllegalStateException("Server error"))
+            startResult = Result.failure(IllegalStateException(failureMessage))
         )
         val viewModel = RoadmapDetailViewModel(
             repository = repository,
@@ -159,7 +162,7 @@ class RoadmapDetailViewModelTest {
 
         viewModel.onContinueClick()
 
-        assertEquals(RoadmapDetailEvent.NodeProgressUpdateFailed, event.await())
+        assertEquals(RoadmapDetailEvent.NodeProgressUpdateFailed(failureMessage), event.await())
         assertEquals(listOf("roadmap-1"), repository.startedRoadmapIds)
         assertTrue(repository.progressUpdates.isEmpty())
         assertEquals(RoadmapNodeStatus.NotStarted, viewModel.uiState.value.groups.first().nodes.first().status)
@@ -233,6 +236,43 @@ class RoadmapDetailViewModelTest {
         assertTrue(state.isEmpty)
         assertTrue(state.groups.isEmpty())
         assertEquals(null, state.errorMessageResId)
+    }
+
+    @Test
+    fun `loadRoadmap maps content items in roadmap order while preserving search lists`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(orderedMilestoneDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            bookmarkRepository = FakeBookmarkRepository()
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+
+        val state = viewModel.uiState.value
+        val orderedTitles = state.contentItems.map { item ->
+            when (item) {
+                is RoadmapDetailContentUiItem.Group -> item.group.title
+                is RoadmapDetailContentUiItem.Milestone -> item.milestone.title
+            }
+        }
+
+        assertEquals(
+            listOf(
+                "Internet Fundamentals",
+                "Node.js Environment",
+                "Basic API Server",
+                "Data Management",
+                "Web Security",
+                "Secure API Project"
+            ),
+            orderedTitles
+        )
+        assertEquals(4, state.groups.size)
+        assertEquals(2, state.milestones.size)
+        assertEquals(RoadmapMilestoneState.Available, state.milestones.first().state)
+        assertEquals(RoadmapMilestoneState.Locked, state.milestones.last().state)
     }
 
     @Test
@@ -523,5 +563,68 @@ class RoadmapDetailViewModelTest {
                 )
             )
         )
+
+        val orderedMilestoneDetail = run {
+            val sections = listOf(
+                LearningModuleSection(
+                    title = "Internet Fundamentals",
+                    modules = listOf(learningModule("internet", LearningStatus.Completed))
+                ),
+                LearningModuleSection(
+                    title = "Node.js Environment",
+                    modules = listOf(learningModule("node", LearningStatus.Completed))
+                ),
+                LearningModuleSection(
+                    title = "Data Management",
+                    modules = listOf(learningModule("data", LearningStatus.Locked))
+                ),
+                LearningModuleSection(
+                    title = "Web Security",
+                    modules = listOf(learningModule("security", LearningStatus.Locked))
+                )
+            )
+            val milestones = listOf(
+                RoadmapMilestone(
+                    id = "milestone-api",
+                    title = "Basic API Server",
+                    description = null,
+                    status = LearningStatus.InProgress
+                ),
+                RoadmapMilestone(
+                    id = "milestone-secure",
+                    title = "Secure API Project",
+                    description = null,
+                    status = LearningStatus.Locked
+                )
+            )
+
+            testDetail.copy(
+                sections = sections,
+                milestones = milestones,
+                contentItems = listOf(
+                    RoadmapContentItem.Group(sections[0]),
+                    RoadmapContentItem.Group(sections[1]),
+                    RoadmapContentItem.Milestone(milestones[0]),
+                    RoadmapContentItem.Group(sections[2]),
+                    RoadmapContentItem.Group(sections[3]),
+                    RoadmapContentItem.Milestone(milestones[1])
+                )
+            )
+        }
+
+        private fun learningModule(
+            id: String,
+            status: LearningStatus
+        ): LearningModule {
+            return LearningModule(
+                title = id,
+                status = status,
+                progressPercent = if (status == LearningStatus.Completed) 100 else 0,
+                icon = LearningTopicIcon.Storage,
+                subLessons = emptyList(),
+                id = id,
+                skillId = "skill-$id"
+            )
+        }
     }
 }

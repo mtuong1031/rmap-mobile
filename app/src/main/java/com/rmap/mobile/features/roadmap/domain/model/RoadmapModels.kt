@@ -85,6 +85,7 @@ data class RoadmapDetail(
     val totalLessons: Int,
     val sections: List<LearningModuleSection>,
     val milestones: List<RoadmapMilestone> = emptyList(),
+    val contentItems: List<RoadmapContentItem> = emptyList(),
     val aiTip: AiScholarTip?,
     val roleId: String = "",
     val roleName: String = "",
@@ -97,6 +98,11 @@ data class RoadmapDetail(
         } else {
             (completedLessons.toFloat() / totalLessons.toFloat()).coerceIn(0f, 1f)
         }
+}
+
+sealed class RoadmapContentItem {
+    data class Group(val section: LearningModuleSection) : RoadmapContentItem()
+    data class Milestone(val milestone: RoadmapMilestone) : RoadmapContentItem()
 }
 
 data class NodeProgressUpdateResult(

@@ -260,7 +260,7 @@ class RoadmapDetailViewModel(
                 }
                 .onFailure {
                     _uiState.update { it.copy(updatingNodeId = null) }
-                    _events.emit(RoadmapDetailEvent.NodeProgressUpdateFailed)
+                    _events.emit(RoadmapDetailEvent.NodeProgressUpdateFailed(it.toUserMessage()))
                 }
         }
     }
@@ -321,7 +321,7 @@ class RoadmapDetailViewModel(
                     }
                 }
                 .onFailure {
-                    _events.emit(RoadmapDetailEvent.NodeProgressUpdateFailed)
+                    _events.emit(RoadmapDetailEvent.NodeProgressUpdateFailed(it.toUserMessage()))
                 }
         }
     }
@@ -355,16 +355,16 @@ class RoadmapDetailViewModel(
             .distinct()
             .associateWith { skillId -> bookmarkRepository.isSkillSaved(skillId).getOrDefault(false) }
 
-        return copy(
-            groups = groups.map { group ->
-                group.copy(
-                    nodes = group.nodes.map { node ->
-                        val skillId = node.skillId.ifBlank { node.id }
-                        node.copy(isBookmarked = savedIds[skillId] == true)
-                    }
-                )
-            }
-        )
+        val updatedGroups = groups.map { group ->
+            group.copy(
+                nodes = group.nodes.map { node ->
+                    val skillId = node.skillId.ifBlank { node.id }
+                    node.copy(isBookmarked = savedIds[skillId] == true)
+                }
+            )
+        }
+
+        return withGroups(updatedGroups)
     }
 
     private fun RoadmapDetailUiState.findNodeById(nodeId: String): RoadmapNodeUiModel? {
@@ -377,17 +377,38 @@ class RoadmapDetailViewModel(
         skillId: String,
         isBookmarked: Boolean
     ): RoadmapDetailUiState {
-        return copy(
-            groups = groups.map { group ->
-                group.copy(
-                    nodes = group.nodes.map { node ->
-                        if (node.skillId == skillId || node.id == skillId) {
-                            node.copy(isBookmarked = isBookmarked)
-                        } else {
-                            node
-                        }
+        val updatedGroups = groups.map { group ->
+            group.copy(
+                nodes = group.nodes.map { node ->
+                    if (node.skillId == skillId || node.id == skillId) {
+                        node.copy(isBookmarked = isBookmarked)
+                    } else {
+                        node
                     }
-                )
+                }
+            )
+        }
+
+        return withGroups(updatedGroups)
+    }
+
+    private fun RoadmapDetailUiState.withGroups(
+        updatedGroups: List<RoadmapGroupUiModel>
+    ): RoadmapDetailUiState {
+        val groupsById = updatedGroups.associateBy { group -> group.id }
+
+        return copy(
+            groups = updatedGroups,
+            contentItems = contentItems.map { item ->
+                when (item) {
+                    is RoadmapDetailContentUiItem.Group -> {
+                        groupsById[item.group.id]
+                            ?.let { group -> RoadmapDetailContentUiItem.Group(group) }
+                            ?: item
+                    }
+
+                    is RoadmapDetailContentUiItem.Milestone -> item
+                }
             }
         )
     }
@@ -406,7 +427,7 @@ sealed class RoadmapDetailEvent {
     data object SkillBookmarkRemoved : RoadmapDetailEvent()
     data object BookmarkActionFailed : RoadmapDetailEvent()
     data class NodeProgressUpdated(val unlockedNodeCount: Int) : RoadmapDetailEvent()
-    data object NodeProgressUpdateFailed : RoadmapDetailEvent()
+    data class NodeProgressUpdateFailed(val message: String? = null) : RoadmapDetailEvent()
     data object NodeActionUnavailable : RoadmapDetailEvent()
     data object NodeLocked : RoadmapDetailEvent()
     data class NavigateToLearning(
@@ -415,4 +436,8 @@ sealed class RoadmapDetailEvent {
         val skillId: String,
         val isCompleted: Boolean
     ) : RoadmapDetailEvent()
+}
+
+private fun Throwable.toUserMessage(): String? {
+    return message?.takeIf { it.isNotBlank() }
 }

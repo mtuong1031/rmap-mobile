@@ -36,6 +36,7 @@ import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestionResult
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
 import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapContentItem
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
@@ -68,19 +69,35 @@ fun RoadmapWithNodesDto.toDomain(progress: RoadmapProgressDto): RoadmapDetail {
         .toMap()
     val sortedNodes = treeNodes.sortedByRoadmapOrder()
     val leafNodes = allNodes.filter { node -> node.isLeafNode() }
-    val milestones = allNodes
-        .filter { node -> node.isMilestoneNode() }
-        .sortedByRoadmapOrder()
-        .map { node -> node.toRoadmapMilestone(progressByNodeId) }
     val completedLessons = progress.completedNodes ?: leafNodes.count { node ->
         progressByNodeId[node.id.orEmpty()].toLearningStatus() == LearningStatus.Completed
     }
     val totalLessons = progress.totalNodes ?: allNodes.size
 
-    val sections = sortedNodes
-        .filterNot { node -> node.isMilestoneNode() }
-        .map { node -> node.toLearningModuleSection(progressByNodeId) }
+    val rawContentItems = sortedNodes.map { node ->
+        if (node.isMilestoneNode()) {
+            RoadmapContentItem.Milestone(node.toRoadmapMilestone(progressByNodeId))
+        } else {
+            RoadmapContentItem.Group(node.toLearningModuleSection(progressByNodeId))
+        }
+    }
+    val lockedSections = rawContentItems
+        .filterIsInstance<RoadmapContentItem.Group>()
+        .map { item -> item.section }
         .withSequentialLocks()
+    var sectionIndex = 0
+    val contentItems = rawContentItems.map { item ->
+        when (item) {
+            is RoadmapContentItem.Group -> RoadmapContentItem.Group(lockedSections[sectionIndex++])
+            is RoadmapContentItem.Milestone -> item
+        }
+    }
+    val sections = contentItems
+        .filterIsInstance<RoadmapContentItem.Group>()
+        .map { item -> item.section }
+    val milestones = contentItems
+        .filterIsInstance<RoadmapContentItem.Milestone>()
+        .map { item -> item.milestone }
 
     return RoadmapDetail(
         id = roadmapId,
@@ -90,6 +107,7 @@ fun RoadmapWithNodesDto.toDomain(progress: RoadmapProgressDto): RoadmapDetail {
         totalLessons = totalLessons,
         sections = sections,
         milestones = milestones,
+        contentItems = contentItems,
         aiTip = null,
         roleId = roleId.orEmpty(),
         roleName = displayRoleName(),

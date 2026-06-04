@@ -10,6 +10,7 @@ import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapWithNodesDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapsResponseDto
 import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapContentItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -286,6 +287,86 @@ class RoadmapMapperTest {
 
         assertEquals(LearningStatus.NotStarted, detail.sections[0].modules.single().status)
         assertEquals(LearningStatus.Locked, detail.sections[1].modules.single().status)
+    }
+
+    @Test
+    fun `toDomain preserves backend order for groups and milestones`() {
+        val roadmap = RoadmapWithNodesDto(
+            id = "roadmap-1",
+            roleName = "Backend Developer",
+            title = "Professional Node.js",
+            nodes = listOf(
+                RoadmapNodeDto(
+                    id = "group-internet",
+                    skillName = "Internet Fundamentals",
+                    nodeType = "GROUP",
+                    sortOrder = 1
+                ),
+                RoadmapNodeDto(
+                    id = "group-node",
+                    skillName = "Node.js Environment",
+                    nodeType = "GROUP",
+                    sortOrder = 2
+                ),
+                RoadmapNodeDto(
+                    id = "milestone-api",
+                    skillName = "Basic API Server",
+                    nodeType = "MILESTONE",
+                    sortOrder = 3
+                ),
+                RoadmapNodeDto(
+                    id = "group-data",
+                    skillName = "Data Management",
+                    nodeType = "GROUP",
+                    sortOrder = 4
+                ),
+                RoadmapNodeDto(
+                    id = "group-security",
+                    skillName = "Web Security",
+                    nodeType = "GROUP",
+                    sortOrder = 5
+                ),
+                RoadmapNodeDto(
+                    id = "milestone-secure",
+                    skillName = "Secure API Project",
+                    nodeType = "MILESTONE",
+                    sortOrder = 6
+                )
+            )
+        )
+
+        val detail = roadmap.toDomain(
+            RoadmapProgressDto(
+                roadmapId = "roadmap-1",
+                nodes = listOf(
+                    NodeProgressDto(roadmapNodeId = "milestone-api", status = "in_progress"),
+                    NodeProgressDto(roadmapNodeId = "milestone-secure", status = "locked")
+                )
+            )
+        )
+
+        val orderedTitles = detail.contentItems.map { item ->
+            when (item) {
+                is RoadmapContentItem.Group -> item.section.title
+                is RoadmapContentItem.Milestone -> item.milestone.title
+            }
+        }
+
+        assertEquals(
+            listOf(
+                "Internet Fundamentals",
+                "Node.js Environment",
+                "Basic API Server",
+                "Data Management",
+                "Web Security",
+                "Secure API Project"
+            ),
+            orderedTitles
+        )
+        assertEquals(4, detail.sections.size)
+        assertEquals(2, detail.milestones.size)
+        assertEquals(LearningStatus.InProgress, detail.milestones.first().status)
+        assertEquals(LearningStatus.Locked, detail.milestones.last().status)
     }
 
     private fun roadmapWithNodes(): RoadmapWithNodesDto {

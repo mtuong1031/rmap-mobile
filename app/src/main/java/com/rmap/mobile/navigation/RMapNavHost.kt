@@ -492,8 +492,10 @@ fun RMapNavHost(navController: NavHostController) {
                                 }
                                 snackbarHostState.showSnackbar(message)
                             }
-                            RoadmapDetailEvent.NodeProgressUpdateFailed -> {
-                                snackbarHostState.showSnackbar(nodeProgressUpdateFailedMessage)
+                            is RoadmapDetailEvent.NodeProgressUpdateFailed -> {
+                                snackbarHostState.showSnackbar(
+                                    event.message ?: nodeProgressUpdateFailedMessage
+                                )
                             }
                             RoadmapDetailEvent.NodeActionUnavailable -> {
                                 snackbarHostState.showSnackbar(comingSoonMessage)
@@ -628,8 +630,7 @@ fun RMapNavHost(navController: NavHostController) {
                                 nodeId = uiState.nodeId
                             )
                         )
-                    },
-                    onMarkCompletedClick = viewModel::onMarkCompletedClick
+                    }
                 )
             }
 

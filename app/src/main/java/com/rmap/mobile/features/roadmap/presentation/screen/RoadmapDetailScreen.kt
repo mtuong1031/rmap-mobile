@@ -45,6 +45,7 @@ import com.rmap.mobile.features.roadmap.presentation.components.content.RoadmapM
 import com.rmap.mobile.features.roadmap.presentation.components.content.group.RoadmapGroupCard
 import com.rmap.mobile.features.roadmap.presentation.components.search.RoadmapLocalSearchSection
 import com.rmap.mobile.features.roadmap.presentation.components.search.defaultRoadmapQuickFilters
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailContentUiItem
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailUiState
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupState
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapGroupUiModel
@@ -185,68 +186,27 @@ fun RoadmapDetailScreen(
                         )
                     }
 
-                    uiState.groups
-                        .filter { it.state == RoadmapGroupState.Expanded }
-                        .forEach { group ->
-                            item {
-                                RoadmapDetailSectionSpacer()
-                                RoadmapGroupCard(
-                                    group = group,
-                                    onNodeActionClick = onNodeActionClick,
-                                    onNodeBookmarkClick = onNodeBookmarkClick
-                                )
-                            }
-                        }
+                    uiState.contentItems.forEach { contentItem ->
+                        item {
+                            RoadmapDetailSectionSpacer()
+                            when (contentItem) {
+                                is RoadmapDetailContentUiItem.Group -> {
+                                    RoadmapGroupCard(
+                                        group = contentItem.group,
+                                        onNodeActionClick = onNodeActionClick,
+                                        onNodeBookmarkClick = onNodeBookmarkClick
+                                    )
+                                }
 
-                    uiState.milestones
-                        .filter { it.state == RoadmapMilestoneState.Available }
-                        .forEach { milestone ->
-                            item {
-                                RoadmapDetailSectionSpacer()
-                                RoadmapMilestoneCard(
-                                    milestone = milestone,
-                                    onClick = { onMilestoneClick(milestone) }
-                                )
+                                is RoadmapDetailContentUiItem.Milestone -> {
+                                    RoadmapMilestoneCard(
+                                        milestone = contentItem.milestone,
+                                        onClick = { onMilestoneClick(contentItem.milestone) }
+                                    )
+                                }
                             }
                         }
-
-                    uiState.groups
-                        .filter { it.state == RoadmapGroupState.Completed }
-                        .forEach { group ->
-                            item {
-                                RoadmapDetailSectionSpacer()
-                                RoadmapGroupCard(
-                                    group = group,
-                                    onNodeActionClick = onNodeActionClick,
-                                    onNodeBookmarkClick = onNodeBookmarkClick
-                                )
-                            }
-                        }
-
-                    uiState.groups
-                        .filter { it.state == RoadmapGroupState.Locked }
-                        .forEach { group ->
-                            item {
-                                RoadmapDetailSectionSpacer()
-                                RoadmapGroupCard(
-                                    group = group,
-                                    onNodeActionClick = onNodeActionClick,
-                                    onNodeBookmarkClick = onNodeBookmarkClick
-                                )
-                            }
-                        }
-
-                    uiState.milestones
-                        .filter { it.state == RoadmapMilestoneState.Locked }
-                        .forEach { milestone ->
-                            item {
-                                RoadmapDetailSectionSpacer()
-                                RoadmapMilestoneCard(
-                                    milestone = milestone,
-                                    onClick = { onMilestoneClick(milestone) }
-                                )
-                            }
-                        }
+                    }
                 }
 
                 RoadmapNextActionBar(

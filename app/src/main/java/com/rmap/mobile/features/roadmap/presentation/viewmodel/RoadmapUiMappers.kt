@@ -23,6 +23,7 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapContentItem
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
@@ -43,6 +44,11 @@ fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
     val groups = sections.mapIndexed { index, section ->
         section.toRoadmapGroupUiModel(index)
     }
+    val milestones = milestones.map { milestone -> milestone.toRoadmapMilestoneUiModel() }
+    val contentItems = toRoadmapDetailContentUiItems(
+        groups = groups,
+        milestones = milestones
+    )
     val nodes = groups.flatMap { group -> group.nodes }
     val hasStartedLearning = completedLessons > 0 ||
         progressFraction > 0f ||
@@ -76,11 +82,33 @@ fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
         },
         nextUnlockTitle = nextUnlockTitle,
         groups = groups,
-        milestones = milestones.map { milestone -> milestone.toRoadmapMilestoneUiModel() },
-        isEmpty = groups.isEmpty(),
+        milestones = milestones,
+        contentItems = contentItems,
+        isEmpty = contentItems.isEmpty(),
         isLoading = false,
         errorMessageResId = null
     )
+}
+
+private fun RoadmapDetail.toRoadmapDetailContentUiItems(
+    groups: List<RoadmapGroupUiModel>,
+    milestones: List<RoadmapMilestoneUiModel>
+): List<RoadmapDetailContentUiItem> {
+    val orderedItems = contentItems.ifEmpty {
+        sections.map { section -> RoadmapContentItem.Group(section) } +
+            this.milestones.map { milestone -> RoadmapContentItem.Milestone(milestone) }
+    }
+    var groupIndex = 0
+    var milestoneIndex = 0
+
+    return orderedItems.mapNotNull { item ->
+        when (item) {
+            is RoadmapContentItem.Group -> groups.getOrNull(groupIndex++)
+                ?.let { group -> RoadmapDetailContentUiItem.Group(group) }
+            is RoadmapContentItem.Milestone -> milestones.getOrNull(milestoneIndex++)
+                ?.let { milestone -> RoadmapDetailContentUiItem.Milestone(milestone) }
+        }
+    }
 }
 
 fun RoadmapCoverPlaceholder?.toDrawableRes(): Int? {
