@@ -9,6 +9,8 @@ import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +22,8 @@ class NodeQuizViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NodeQuizUiState())
     val uiState: StateFlow<NodeQuizUiState> = _uiState.asStateFlow()
+
+    private var optionAutoAdvanceJob: Job? = null
 
     fun loadQuiz(
         roadmapId: String,
@@ -34,13 +38,15 @@ class NodeQuizViewModel(
         }
 
         viewModelScope.launch {
+            optionAutoAdvanceJob?.cancel()
             _uiState.update {
                 it.copy(
                     roadmapId = roadmapId,
                     nodeId = nodeId,
                     isLoading = true,
                     errorMessage = null,
-                    result = null
+                    result = null,
+                    currentQuestionIndex = 0
                 )
             }
 
@@ -68,17 +74,89 @@ class NodeQuizViewModel(
         questionId: String,
         optionKey: String
     ) {
+        optionAutoAdvanceJob?.cancel()
+        var selectedQuestionIndex: Int? = null
+
+        _uiState.update { state ->
+            val questionIndex = state.questions.indexOfFirst { it.id == questionId }
+            val question = state.questions.getOrNull(questionIndex)
+
+            if (
+                state.result != null ||
+                state.isSubmitting ||
+                questionIndex == -1 ||
+                question == null ||
+                question.options.none { option -> option.key == optionKey }
+            ) {
+                state
+            } else {
+                if (questionIndex == state.currentQuestionIndex && questionIndex < state.questions.lastIndex) {
+                    selectedQuestionIndex = questionIndex
+                }
+
+                state.copy(
+                    selectedAnswers = state.selectedAnswers + (questionId to optionKey),
+                    errorMessage = null
+                )
+            }
+        }
+
+        val questionIndex = selectedQuestionIndex ?: return
+        optionAutoAdvanceJob = viewModelScope.launch {
+            delay(OPTION_AUTO_ADVANCE_DELAY_MILLIS)
+            _uiState.update { state ->
+                if (
+                    state.result == null &&
+                    !state.isSubmitting &&
+                    state.currentQuestionIndex == questionIndex &&
+                    state.selectedAnswers[questionId] == optionKey
+                ) {
+                    state.copy(
+                        currentQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex),
+                        errorMessage = null
+                    )
+                } else {
+                    state
+                }
+            }
+        }
+    }
+
+    fun onPreviousQuestion() {
+        optionAutoAdvanceJob?.cancel()
         _uiState.update { state ->
             state.copy(
-                selectedAnswers = state.selectedAnswers + (questionId to optionKey),
+                currentQuestionIndex = (state.currentQuestionIndex - 1).coerceAtLeast(0),
                 errorMessage = null
             )
         }
     }
 
+    fun onNextQuestion() {
+        optionAutoAdvanceJob?.cancel()
+        _uiState.update { state ->
+            if (!state.isCurrentQuestionAnswered) {
+                state.copy(errorMessage = QUIZ_ANSWER_CURRENT_QUESTION_ERROR)
+            } else {
+                state.copy(
+                    currentQuestionIndex = (state.currentQuestionIndex + 1).coerceAtMost(state.questions.lastIndex),
+                    errorMessage = null
+                )
+            }
+        }
+    }
+
     fun onSubmitClick() {
+        optionAutoAdvanceJob?.cancel()
         val state = _uiState.value
-        if (!state.canSubmit) return
+        if (!state.isCurrentQuestionAnswered) {
+            _uiState.update { it.copy(errorMessage = QUIZ_ANSWER_CURRENT_QUESTION_ERROR) }
+            return
+        }
+        if (!state.canSubmit) {
+            _uiState.update { it.copy(errorMessage = QUIZ_ANSWER_ALL_QUESTIONS_ERROR) }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
@@ -101,7 +179,8 @@ class NodeQuizViewModel(
                     _uiState.update {
                         it.copy(
                             isSubmitting = false,
-                            result = result.toNodeQuizResultUiModel()
+                            result = result.toNodeQuizResultUiModel(),
+                            currentQuestionIndex = 0
                         )
                     }
                 }
@@ -121,12 +200,35 @@ data class NodeQuizUiState(
     val roadmapId: String = "",
     val nodeId: String = "",
     val questions: List<NodeQuizQuestionUiModel> = emptyList(),
+    val currentQuestionIndex: Int = 0,
     val selectedAnswers: Map<String, String> = emptyMap(),
     val result: NodeQuizResultUiModel? = null,
     val isLoading: Boolean = true,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null
 ) {
+    val currentQuestion: NodeQuizQuestionUiModel?
+        get() = questions.getOrNull(currentQuestionIndex)
+
+    val answeredQuestionCount: Int
+        get() = questions.count { question -> selectedAnswers.containsKey(question.id) }
+
+    val isCurrentQuestionAnswered: Boolean
+        get() = currentQuestion?.let { question -> selectedAnswers.containsKey(question.id) } == true
+
+    val isFirstQuestion: Boolean
+        get() = currentQuestionIndex == 0
+
+    val isLastQuestion: Boolean
+        get() = currentQuestionIndex == questions.lastIndex
+
+    val progressFraction: Float
+        get() = if (questions.isEmpty()) {
+            0f
+        } else {
+            ((currentQuestionIndex + 1).toFloat() / questions.size.toFloat()).coerceIn(0f, 1f)
+        }
+
     val canSubmit: Boolean
         get() = questions.isNotEmpty() &&
             selectedAnswers.size == questions.size &&
@@ -169,6 +271,7 @@ private fun NodeQuiz.toNodeQuizUiState(
         roadmapId = roadmapId,
         nodeId = nodeId,
         questions = questions.map { question -> question.toNodeQuizQuestionUiModel() },
+        currentQuestionIndex = 0,
         selectedAnswers = emptyMap(),
         result = null,
         isLoading = false,
@@ -209,3 +312,7 @@ private fun NodeQuizSubmissionResult.toNodeQuizResultUiModel(): NodeQuizResultUi
         }
     )
 }
+
+private const val OPTION_AUTO_ADVANCE_DELAY_MILLIS = 320L
+private const val QUIZ_ANSWER_CURRENT_QUESTION_ERROR = "Answer this question before continuing."
+private const val QUIZ_ANSWER_ALL_QUESTIONS_ERROR = "Answer every question before submitting."

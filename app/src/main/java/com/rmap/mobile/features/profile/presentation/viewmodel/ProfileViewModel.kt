@@ -40,6 +40,8 @@ class ProfileViewModel(
                         xp = profile.xp,
                         streak = profile.streakDays,
                         certificates = profile.certificates,
+                        activeRoadmaps = profile.activeRoadmaps,
+                        recentActivity = profile.recentActivity,
                         isLoading = false
                     )
                 }

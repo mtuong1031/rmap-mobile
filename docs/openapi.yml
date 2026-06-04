@@ -28,6 +28,8 @@ tags:
     description: Registration, login, and current user profile
   - name: Users
     description: User profile, goals, and assessed skill levels
+  - name: Dashboard
+    description: Authenticated learner dashboard summary
   - name: Quiz
     description: Onboarding skill assessment quiz
   - name: Roles
@@ -135,6 +137,191 @@ components:
           $ref: '#/components/schemas/UserRole'
         created_at:
           $ref: '#/components/schemas/Timestamp'
+
+    DashboardUserProfile:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        email:
+          type: string
+          format: email
+          example: "alice@example.com"
+        fullName:
+          type: string
+          example: "Alice Nguyen"
+        role:
+          type: string
+          example: "user"
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    DashboardActivityEntry:
+      type: object
+      properties:
+        activityDate:
+          type: string
+          format: date
+          example: "2026-05-29"
+        nodesCompleted:
+          type: integer
+          example: 2
+
+    DashboardTimelineWarning:
+      type: object
+      nullable: true
+      properties:
+        isBehind:
+          type: boolean
+          example: true
+        paceDeficitPct:
+          type: number
+          format: float
+          example: 16.5
+        estimatedDelayDays:
+          type: integer
+          example: 3
+        message:
+          type: string
+          example: "You are 16.5% behind pace - projected delay is about 3 day(s)."
+
+    DashboardRoadmap:
+      type: object
+      properties:
+        roadmapId:
+          $ref: '#/components/schemas/UUID'
+        deadlineDate:
+          type: string
+          format: date
+          nullable: true
+          example: "2026-08-31"
+        description:
+          type: string
+          nullable: true
+          example: "Personalized roadmap based on your goals."
+        estimatedWeeks:
+          type: integer
+          nullable: true
+          example: 12
+        goalName:
+          type: string
+          nullable: true
+          example: "Frontend Developer"
+        isTemplate:
+          type: boolean
+          example: false
+        roleCategory:
+          type: string
+          example: "WEB_DEVELOPMENT"
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2026-05-28T00:00:00.000Z"
+        title:
+          type: string
+          example: "Frontend Fresher"
+        completionPct:
+          type: number
+          format: float
+          example: 75.4
+        streakDays:
+          type: integer
+          example: 5
+        skillReadinessPct:
+          type: number
+          format: float
+          example: 32
+        nodesTotal:
+          type: integer
+          example: 24
+        nodesCompleted:
+          type: integer
+          example: 18
+        timelineWarning:
+          $ref: '#/components/schemas/DashboardTimelineWarning'
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalRoadmaps:
+          type: integer
+          example: 2
+        activeRoadmaps:
+          type: integer
+          example: 1
+        completedRoadmaps:
+          type: integer
+          example: 0
+        totalSkills:
+          type: integer
+          example: 36
+        completedSkills:
+          type: integer
+          example: 18
+        inProgressSkills:
+          type: integer
+          example: 2
+        lockedSkills:
+          type: integer
+          example: 16
+        currentStreak:
+          type: integer
+          example: 5
+
+    DashboardSkillCategory:
+      type: object
+      properties:
+        category:
+          type: string
+          example: "WEB_DEVELOPMENT"
+        label:
+          type: string
+          example: "Web Development"
+        totalSkills:
+          type: integer
+          example: 24
+
+    DashboardRoadmapStatus:
+      type: object
+      properties:
+        behindPace:
+          type: integer
+          example: 0
+        onTrack:
+          type: integer
+          example: 1
+        completed:
+          type: integer
+          example: 0
+        notStarted:
+          type: integer
+          example: 1
+
+    DashboardResponse:
+      type: object
+      properties:
+        userProfile:
+          $ref: '#/components/schemas/DashboardUserProfile'
+        roadmaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardRoadmap'
+        streakDays:
+          type: integer
+          example: 5
+        activityRecent:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardActivityEntry'
+        summary:
+          $ref: '#/components/schemas/DashboardSummary'
+        skillCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardSkillCategory'
+        roadmapStatus:
+          $ref: '#/components/schemas/DashboardRoadmapStatus'
 
     RegisterRequest:
       type: object
@@ -742,6 +929,27 @@ components:
 # PATHS
 # =============================================================================
 paths:
+
+  # ============================================================
+  # DASHBOARD
+  # ============================================================
+
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get authenticated learner dashboard
+      operationId: getDashboard
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Dashboard profile, roadmap, progress, and activity summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
   # ============================================================
   # AUTH

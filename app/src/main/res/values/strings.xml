@@ -200,8 +200,18 @@
 
     <string name="profile_active_roadmaps_title">Active Roadmaps</string>
     <string name="profile_active_roadmaps_subtitle">2 active paths</string>
+    <string name="profile_active_roadmaps_subtitle_single">1 active path</string>
+    <string name="profile_active_roadmaps_subtitle_count">%1$d active paths</string>
+    <string name="profile_active_roadmaps_empty">No active roadmaps yet.</string>
     <string name="profile_manage_roadmaps">Manage roadmaps</string>
+    <string name="profile_show_all_roadmaps">Show all %1$d roadmaps</string>
     <string name="profile_show_less_roadmaps">Show less</string>
+    <string name="profile_roadmap_due_today">Due today</string>
+    <string name="profile_roadmap_days_left">%1$d days left</string>
+    <string name="profile_roadmap_weeks_left">%1$d weeks left</string>
+    <string name="profile_roadmap_months_left">%1$d months left</string>
+    <string name="profile_roadmap_estimated_weeks">%1$d weeks estimated</string>
+    <string name="profile_roadmap_generic_label">Learning path</string>
     <string name="profile_roadmap_frontend_fresher">Frontend Fresher</string>
     <string name="profile_roadmap_frontend_time_left">4 months left</string>
     <string name="profile_roadmap_uiux_master">UI/UX Master</string>
@@ -240,7 +250,9 @@
 
     <string name="profile_weekly_activity_title">Weekly Activity</string>
     <string name="profile_weekly_activity_subtitle">4 active days this week</string>
+    <string name="profile_weekly_activity_subtitle_count">%1$d active days this week</string>
     <string name="profile_weekly_activity_best">Best: 5d</string>
+    <string name="profile_weekly_activity_best_count">Best: %1$dd</string>
     <string name="profile_day_monday">M</string>
     <string name="profile_day_tuesday">T</string>
     <string name="profile_day_wednesday">W</string>
@@ -399,8 +411,11 @@
     <string name="roadmap_quiz_heading">Check your readiness</string>
     <string name="roadmap_quiz_answered_count">%1$d/%2$d answered</string>
     <string name="roadmap_quiz_in_progress">In progress</string>
+    <string name="roadmap_quiz_question_progress">Question %1$d of %2$d</string>
     <string name="roadmap_quiz_question_number">Question %1$d</string>
     <string name="roadmap_quiz_option_format">%1$s. %2$s</string>
+    <string name="roadmap_quiz_previous">Previous</string>
+    <string name="roadmap_quiz_next">Next</string>
     <string name="roadmap_quiz_submit">Submit Quiz</string>
     <string name="roadmap_quiz_passed">Passed</string>
     <string name="roadmap_quiz_try_again">Try Again</string>
