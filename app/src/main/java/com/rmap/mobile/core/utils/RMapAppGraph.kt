@@ -24,7 +24,6 @@ import com.rmap.mobile.features.home.data.repository.HomeRepositoryImpl
 import com.rmap.mobile.features.home.data.repository.SharedPreferencesRecentSearchRepository
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.home.domain.repository.RecentSearchRepository
-import com.rmap.mobile.features.profile.data.FakeProfileRepository
 import com.rmap.mobile.features.profile.data.notification.LearningNotificationNotifier
 import com.rmap.mobile.features.profile.data.notification.LearningReminderScheduler
 import com.rmap.mobile.features.profile.data.notification.SharedPreferencesNotificationSettingsRepository
