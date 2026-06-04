@@ -21,6 +21,7 @@ data class RoadmapDetailUiState(
     val isBookmarked: Boolean = false,
     val groups: List<RoadmapGroupUiModel> = emptyList(),
     val milestones: List<RoadmapMilestoneUiModel> = emptyList(),
+    val contentItems: List<RoadmapDetailContentUiItem> = emptyList(),
     val updatingNodeId: String? = null,
     val isEmpty: Boolean = false,
     val isLoading: Boolean = true,
@@ -44,6 +45,11 @@ enum class RoadmapGroupState {
     Expanded,
     Completed,
     Locked
+}
+
+sealed class RoadmapDetailContentUiItem {
+    data class Group(val group: RoadmapGroupUiModel) : RoadmapDetailContentUiItem()
+    data class Milestone(val milestone: RoadmapMilestoneUiModel) : RoadmapDetailContentUiItem()
 }
 
 data class RoadmapNodeUiModel(
