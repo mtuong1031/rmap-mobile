@@ -108,9 +108,8 @@ fun NodeQuizScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
                 ) {
-                    item {
-                        val result = uiState.result
-                        if (result != null) {
+                    uiState.result?.let { result ->
+                        item {
                             QuizResultSummaryCard(result = result)
                         }
                     }

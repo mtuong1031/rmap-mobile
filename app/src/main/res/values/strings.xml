@@ -408,9 +408,7 @@
 
     <!-- Roadmap Quiz Screen -->
     <string name="roadmap_quiz_title">Quiz</string>
-    <string name="roadmap_quiz_heading">Check your readiness</string>
     <string name="roadmap_quiz_answered_count">%1$d/%2$d answered</string>
-    <string name="roadmap_quiz_in_progress">In progress</string>
     <string name="roadmap_quiz_question_progress">Question %1$d of %2$d</string>
     <string name="roadmap_quiz_question_number">Question %1$d</string>
     <string name="roadmap_quiz_option_format">%1$s. %2$s</string>
