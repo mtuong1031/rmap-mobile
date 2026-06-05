@@ -26,7 +26,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +47,7 @@ import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSu
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBg
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBorder
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeRequirement
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeStatus
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeUiModel
 
@@ -158,12 +162,6 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
         RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
         RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
     }
-    val borderColor = when (node.status) {
-        RoadmapNodeStatus.Completed -> roadmapSuccessBorder
-        RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.inversePrimary
-        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
-        RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
-    }
     val icon = when (node.status) {
         RoadmapNodeStatus.Completed -> Icons.Default.Check
         RoadmapNodeStatus.Locked -> Icons.Default.Lock
@@ -171,17 +169,26 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
         RoadmapNodeStatus.NotStarted -> node.icon
     }
     val tint = when (node.status) {
-        RoadmapNodeStatus.Completed -> roadmapSuccess
+        RoadmapNodeStatus.Completed -> CompletedNodeIconTint
         RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.primary
         RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary
         RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
+    }
+    val borderColor = when (node.status) {
+        RoadmapNodeStatus.Completed -> roadmapSuccessBorder
+        RoadmapNodeStatus.InProgress -> tint
+        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.34f)
+        RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
     }
 
     Box(
         modifier = Modifier
             .size(Dimens.iconXxl)
             .background(containerColor, CircleShape)
-            .border(Dimens.borderThin, borderColor, CircleShape),
+            .nodeIconBorder(
+                color = borderColor,
+                dashed = node.requirement == RoadmapNodeRequirement.Optional
+            ),
         contentAlignment = Alignment.Center
     ) {
         Icon(
@@ -222,6 +229,33 @@ private fun NodeStatusBadge(node: RoadmapNodeUiModel) {
             null
         }
     )
+}
+
+private fun Modifier.nodeIconBorder(
+    color: Color,
+    dashed: Boolean
+): Modifier {
+    return drawWithContent {
+        drawContent()
+        val strokeWidth = Dimens.borderMedium.toPx()
+        drawCircle(
+            color = color,
+            radius = size.minDimension / 2f - strokeWidth / 2f,
+            style = Stroke(
+                width = strokeWidth,
+                pathEffect = if (dashed) {
+                    PathEffect.dashPathEffect(
+                        intervals = floatArrayOf(
+                            Dimens.spacingSm.toPx(),
+                            Dimens.spacingXs.toPx()
+                        )
+                    )
+                } else {
+                    null
+                }
+            )
+        )
+    }
 }
 
 @Composable
@@ -266,3 +300,4 @@ private fun NodeActionButton(
 
 private val NodeDividerStartPadding = Dimens.controlXl + Dimens.spacingXs
 private val NodeActionMinWidth = Dimens.categoryIconContainerSize
+private val CompletedNodeIconTint = Color(0xFF059669)
