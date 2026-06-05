@@ -61,11 +61,14 @@ import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileViewModel
 import com.rmap.mobile.features.roadmap.presentation.screen.NodeQuizScreen
 import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapDetailScreen
 import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapLearningScreen
+import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapMilestoneScreen
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.NodeQuizViewModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailEvent
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapDetailViewModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapLearningEvent
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapLearningViewModel
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneEvent
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -84,10 +87,11 @@ fun RMapNavHost(navController: NavHostController) {
     val bookmarkFailedMessage = stringResource(R.string.bookmarks_action_failed)
     val nodeProgressUpdatedMessage = stringResource(R.string.roadmap_detail_progress_updated)
     val nodeProgressUpdateFailedMessage = stringResource(R.string.roadmap_detail_progress_update_failed)
-    val nodeLockedMessage = stringResource(R.string.roadmap_detail_node_locked_snackbar)
     val learningCompletedMessage = stringResource(R.string.roadmap_learning_completed_snackbar)
     val learningCompletionRequiresQuizMessage = stringResource(R.string.roadmap_learning_completion_requires_quiz)
     val resourceOpenFailedMessage = stringResource(R.string.roadmap_learning_resource_open_failed)
+    val milestoneSubmissionQueuedMessage = stringResource(R.string.roadmap_milestone_submission_queued)
+    val milestoneSubmissionFailedMessage = stringResource(R.string.roadmap_milestone_error_submit_failed)
     val startDestination = if (authState is AuthState.Authenticated) AppRoutes.HOME else AppRoutes.AUTH
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
@@ -478,8 +482,6 @@ fun RMapNavHost(navController: NavHostController) {
                         when (event) {
                             RoadmapDetailEvent.RoadmapBookmarkSaved -> snackbarHostState.showSnackbar(roadmapSavedMessage)
                             RoadmapDetailEvent.RoadmapBookmarkRemoved -> snackbarHostState.showSnackbar(roadmapRemovedMessage)
-                            RoadmapDetailEvent.SkillBookmarkSaved -> snackbarHostState.showSnackbar(skillSavedMessage)
-                            RoadmapDetailEvent.SkillBookmarkRemoved -> snackbarHostState.showSnackbar(skillRemovedMessage)
                             RoadmapDetailEvent.BookmarkActionFailed -> snackbarHostState.showSnackbar(bookmarkFailedMessage)
                             is RoadmapDetailEvent.NodeProgressUpdated -> {
                                 val message = if (event.unlockedNodeCount > 0) {
@@ -500,8 +502,13 @@ fun RMapNavHost(navController: NavHostController) {
                             RoadmapDetailEvent.NodeActionUnavailable -> {
                                 snackbarHostState.showSnackbar(comingSoonMessage)
                             }
-                            RoadmapDetailEvent.NodeLocked -> {
-                                snackbarHostState.showSnackbar(nodeLockedMessage)
+                            is RoadmapDetailEvent.MilestoneSelected -> {
+                                navController.navigate(
+                                    AppRoutes.roadmapMilestone(
+                                        roadmapId = roadmapId,
+                                        milestoneId = event.milestoneId
+                                    )
+                                )
                             }
                             is RoadmapDetailEvent.NavigateToLearning -> {
                                 navController.navigate(
@@ -529,13 +536,59 @@ fun RMapNavHost(navController: NavHostController) {
                     onSearchBackClick = viewModel::onSearchBackClick,
                     onRetryClick = viewModel::retryLoadRoadmap,
                     onNodeActionClick = viewModel::onNodeActionClick,
-                    onNodeBookmarkClick = viewModel::onNodeBookmarkClick,
                     onGroupClick = {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
-                    onMilestoneClick = {
-                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    onMilestoneClick = { milestone ->
+                        navController.navigate(
+                            AppRoutes.roadmapMilestone(
+                                roadmapId = roadmapId,
+                                milestoneId = milestone.id
+                            )
+                        )
                     }
+                )
+            }
+
+            composable(
+                route = AppRoutes.ROADMAP_MILESTONE,
+                arguments = listOf(
+                    navArgument(AppRoutes.ROADMAP_ID_ARG) { type = NavType.StringType },
+                    navArgument(AppRoutes.MILESTONE_ID_ARG) { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val viewModel: RoadmapMilestoneViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val roadmapId = backStackEntry.arguments?.getString(AppRoutes.ROADMAP_ID_ARG).orEmpty()
+                val milestoneId = backStackEntry.arguments?.getString(AppRoutes.MILESTONE_ID_ARG).orEmpty()
+
+                LaunchedEffect(roadmapId, milestoneId) {
+                    viewModel.loadMilestone(
+                        roadmapId = roadmapId,
+                        milestoneId = milestoneId
+                    )
+                }
+
+                LaunchedEffect(viewModel) {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            RoadmapMilestoneEvent.SubmissionQueued -> {
+                                snackbarHostState.showSnackbar(milestoneSubmissionQueuedMessage)
+                            }
+                            RoadmapMilestoneEvent.SubmissionFailed -> {
+                                snackbarHostState.showSnackbar(milestoneSubmissionFailedMessage)
+                            }
+                        }
+                    }
+                }
+
+                RoadmapMilestoneScreen(
+                    uiState = uiState,
+                    onBackClick = { navController.popBackStack() },
+                    onRetryClick = viewModel::retryLoadMilestone,
+                    onRepoUrlChanged = viewModel::onRepoUrlChanged,
+                    onTestSuiteToggleClick = viewModel::onTestSuiteToggleClick,
+                    onSubmitClick = viewModel::onSubmitClick
                 )
             }
 

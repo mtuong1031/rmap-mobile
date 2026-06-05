@@ -3,6 +3,11 @@ package com.rmap.mobile.features.roadmap.data.mapper
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.rmap.mobile.features.roadmap.data.remote.model.NodeProgressDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionEnvelopeDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionTestResultDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneTestCaseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneTestSuiteDto
 import com.rmap.mobile.features.roadmap.data.remote.model.QuizAnswerRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.QuizQuestionDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeQuizResponseDto
@@ -28,6 +33,13 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningResource
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmission
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmissionStatus
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmissionTestResult
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestCase
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuite
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuiteStatus
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
@@ -43,6 +55,7 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.model.SubLesson
 import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
+import kotlin.math.roundToInt
 
 fun RoadmapWithNodesDto.toDomain(progress: RoadmapProgressDto): RoadmapDetail {
     val roadmapId = id.requiredApiField("id")
@@ -230,6 +243,22 @@ fun RoadmapNodeDetailResponseDto.toLearningNodeDetail(): LearningNodeDetail {
     )
 }
 
+fun RoadmapNodeDetailResponseDto.toMilestoneDetail(): MilestoneDetail {
+    val detail = toDetailDto()
+    val node = detail.node ?: error("Missing milestone node detail")
+    val progress = detail.progress ?: node.progress
+
+    return MilestoneDetail(
+        roadmapId = node.roadmapId.requiredApiField("milestone.node.roadmapId"),
+        nodeId = node.id.requiredApiField("milestone.node.id"),
+        title = node.displayName().requiredApiField("milestone.node.name"),
+        description = node.description,
+        status = progress.toLearningStatus(),
+        testSuite = detail.milestoneTestSuite?.toDomain(),
+        latestSubmission = detail.latestSubmission?.toDomain()
+    )
+}
+
 fun RoadmapNodeQuizResponseDto.toDomain(): NodeQuiz {
     return NodeQuiz(
         nodeId = nodeId.requiredApiField("quiz.nodeId"),
@@ -261,6 +290,10 @@ fun SubmitQuizResponseDto.toDomain(): NodeQuizSubmissionResult {
     )
 }
 
+fun MilestoneSubmissionEnvelopeDto.toDomain(): MilestoneSubmission {
+    return submission?.toDomain() ?: error("Missing milestone submission response")
+}
+
 fun LearningStatus.toNodeStatusRequestValue(): String {
     return when (this) {
         LearningStatus.Completed -> "COMPLETED"
@@ -283,13 +316,81 @@ fun List<RoadmapSummary>.toCategories(): List<RoadmapCategory> {
 }
 
 private fun RoadmapNodeDetailResponseDto.toDetailDto(): RoadmapNodeDetailDto {
-    return data ?: RoadmapNodeDetailDto(
+    return data?.copy(
+        latestSubmission = data.latestSubmission ?: latestSubmission,
+        milestoneTestSuite = data.milestoneTestSuite ?: milestoneTestSuite
+    ) ?: RoadmapNodeDetailDto(
         node = node,
         progress = progress,
         skill = skill,
         resources = resources,
-        prerequisites = prerequisites
+        prerequisites = prerequisites,
+        latestSubmission = latestSubmission,
+        milestoneTestSuite = milestoneTestSuite
     )
+}
+
+private fun MilestoneTestSuiteDto.toDomain(): MilestoneTestSuite {
+    return MilestoneTestSuite(
+        id = id.requiredApiField("milestoneTestSuite.id"),
+        title = title.requiredApiField("milestoneTestSuite.title"),
+        summary = summary.requiredApiField("milestoneTestSuite.summary"),
+        passThresholdPercent = (passThresholdPct ?: 0).coerceIn(0, 100),
+        status = status.toMilestoneTestSuiteStatus(),
+        testCases = testCases.orEmpty().map { testCase -> testCase.toDomain() }
+    )
+}
+
+private fun MilestoneTestCaseDto.toDomain(): MilestoneTestCase {
+    return MilestoneTestCase(
+        name = name.requiredApiField("milestoneTestSuite.testCases.name"),
+        description = description.requiredApiField("milestoneTestSuite.testCases.description")
+    )
+}
+
+private fun MilestoneSubmissionDto.toDomain(): MilestoneSubmission {
+    return MilestoneSubmission(
+        id = id.requiredApiField("milestoneSubmission.id"),
+        repoUrl = repoUrl.requiredApiField("milestoneSubmission.repoUrl"),
+        testSuiteId = testSuiteId,
+        status = status.toMilestoneSubmissionStatus(),
+        outputLog = outputLog,
+        passRatePercent = passRatePct?.roundToInt()?.coerceIn(0, 100),
+        passedTests = passedTests,
+        totalTests = totalTests,
+        attemptNumber = attemptNumber ?: 0,
+        createdAt = createdAt.requiredApiField("milestoneSubmission.createdAt"),
+        completedAt = completedAt,
+        testResults = testResults.orEmpty().map { result -> result.toDomain() }
+    )
+}
+
+private fun MilestoneSubmissionTestResultDto.toDomain(): MilestoneSubmissionTestResult {
+    return MilestoneSubmissionTestResult(
+        name = name.requiredApiField("milestoneSubmission.testResults.name"),
+        message = message.orEmpty(),
+        passed = passed == true
+    )
+}
+
+private fun String?.toMilestoneSubmissionStatus(): MilestoneSubmissionStatus {
+    return when (this?.lowercase()) {
+        "running" -> MilestoneSubmissionStatus.Running
+        "passed" -> MilestoneSubmissionStatus.Passed
+        "failed" -> MilestoneSubmissionStatus.Failed
+        "error" -> MilestoneSubmissionStatus.Error
+        else -> MilestoneSubmissionStatus.Unknown
+    }
+}
+
+private fun String?.toMilestoneTestSuiteStatus(): MilestoneTestSuiteStatus {
+    return when (this?.lowercase()) {
+        "ready" -> MilestoneTestSuiteStatus.Ready
+        "generating" -> MilestoneTestSuiteStatus.Generating
+        "failed" -> MilestoneTestSuiteStatus.Failed
+        "not_generated" -> MilestoneTestSuiteStatus.NotGenerated
+        else -> MilestoneTestSuiteStatus.Unknown
+    }
 }
 
 private fun JsonElement?.toSkillResourceDtos(): List<SkillResourceDto> {
@@ -461,6 +562,7 @@ private fun RoadmapNodeDto.toLearningModule(
         skillId = skillId.orNodeSkillId(nodeId),
         requirement = learningRequirement(),
         estimatedHours = estimatedHoursAsInt(),
+        resourcesCount = resourcesCountValue(),
         description = description
     )
 }
@@ -476,6 +578,7 @@ private fun RoadmapNodeDto.toSubLessons(
         skillId = skillId.orNodeSkillId(nodeId),
         requirement = learningRequirement(),
         estimatedHours = estimatedHoursAsInt(),
+        resourcesCount = resourcesCountValue(),
         description = description
     )
     val descendants = children.orEmpty()
@@ -625,6 +728,10 @@ private fun RoadmapNodeDto.displayName(): String? {
 
 private fun RoadmapNodeDto.estimatedHoursAsInt(): Int? {
     return skillEstimatedHours ?: estimatedHours?.toInt()
+}
+
+private fun RoadmapNodeDto.resourcesCountValue(): Int {
+    return resourcesCount?.coerceAtLeast(0) ?: 0
 }
 
 private fun RoadmapNodeDto.isGroupNode(): Boolean {

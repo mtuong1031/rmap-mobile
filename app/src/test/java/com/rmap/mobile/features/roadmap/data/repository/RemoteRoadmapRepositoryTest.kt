@@ -2,6 +2,9 @@ package com.rmap.mobile.features.roadmap.data.repository
 
 import com.google.gson.JsonParser
 import com.rmap.mobile.core.session.SessionManager
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionEnvelopeDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneTestSuiteDto
 import com.rmap.mobile.features.roadmap.data.remote.api.RoadmapApi
 import com.rmap.mobile.features.roadmap.data.remote.model.NodeProgressDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapDto
@@ -13,6 +16,7 @@ import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapProgressDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapsResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SkillDetailDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SubmitMilestoneSubmissionRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressRequestDto
@@ -218,6 +222,46 @@ class RemoteRoadmapRepositoryTest {
     }
 
     @Test
+    fun `getMilestoneDetail maps milestone suite and latest submission`() = runTest {
+        val api = FakeRoadmapApi().apply {
+            nodeDetailResponse = Response.success(testMilestoneDetail)
+        }
+        val repository = newRepository(api)
+
+        val result = repository.getMilestoneDetail(
+            roadmapId = "roadmap-1",
+            milestoneId = "milestone-api"
+        )
+
+        assertTrue(result.isSuccess)
+        val detail = result.getOrThrow()
+        assertEquals("Basic API Server", detail.title)
+        assertEquals(80, detail.testSuite?.passThresholdPercent)
+        assertEquals("https://github.com/example/rmap-test", detail.latestSubmission?.repoUrl)
+        assertEquals(1, api.getRoadmapNodeDetailCallCount)
+        assertEquals("milestone-api", api.lastNodeDetailNodeId)
+    }
+
+    @Test
+    fun `submitMilestone calls backend milestone submission endpoint`() = runTest {
+        val api = FakeRoadmapApi()
+        val repository = newRepository(api)
+
+        val result = repository.submitMilestone(
+            roadmapId = "roadmap-1",
+            milestoneId = "milestone-api",
+            repoUrl = " https://github.com/example/rmap-test "
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals("submission-1", result.getOrThrow().id)
+        assertEquals(1, api.submitMilestoneCallCount)
+        assertEquals("roadmap-1", api.lastSubmittedMilestoneRoadmapId)
+        assertEquals("milestone-api", api.lastSubmittedMilestoneId)
+        assertEquals("https://github.com/example/rmap-test", api.lastSubmitMilestoneRequest?.repoUrl)
+    }
+
+    @Test
     fun `getTrendingRoadmaps hydrates summaries from backend template endpoints`() = runTest {
         val api = FakeRoadmapApi().apply {
             templatesResponse = Response.success(
@@ -260,6 +304,7 @@ class RemoteRoadmapRepositoryTest {
         var getRoadmapProgressCallCount = 0
         var startRoadmapCallCount = 0
         var updateNodeProgressCallCount = 0
+        var submitMilestoneCallCount = 0
         var listRoadmapsCallCount = 0
         var listTemplatesCallCount = 0
         var getTemplateCallCount = 0
@@ -269,12 +314,17 @@ class RemoteRoadmapRepositoryTest {
         var lastNodeDetailNodeId: String? = null
         var lastUpdatedRoadmapId: String? = null
         var lastUpdatedNodeId: String? = null
+        var lastSubmittedMilestoneRoadmapId: String? = null
+        var lastSubmittedMilestoneId: String? = null
         var lastUpdateProgressRequest: UpdateNodeProgressRequestDto? = null
+        var lastSubmitMilestoneRequest: SubmitMilestoneSubmissionRequestDto? = null
         var roadmapResponse: Response<RoadmapDto> = Response.success(testRoadmap)
         var roadmapNodesResponse: Response<RoadmapNodesResponseDto> = Response.success(testNodes)
         var nodeDetailResponse: Response<RoadmapNodeDetailResponseDto> = Response.success(testNodeDetail)
         var nodeQuizResponse: Response<RoadmapNodeQuizResponseDto> = Response.success(testNodeQuiz)
         var submitNodeQuizResponse: Response<SubmitQuizResponseDto> = Response.success(testSubmitQuizResponse)
+        var submitMilestoneResponse: Response<MilestoneSubmissionEnvelopeDto> =
+            Response.success(testMilestoneSubmissionEnvelope)
         var progressResponse: Response<RoadmapProgressDto> = Response.success(testProgress)
         var startRoadmapResponse: Response<Unit> = Response.success(Unit)
         var updateNodeProgressResponse: Response<UpdateNodeProgressResponseDto> =
@@ -327,6 +377,18 @@ class RemoteRoadmapRepositoryTest {
             request: SubmitQuizRequestDto
         ): Response<SubmitQuizResponseDto> {
             return submitNodeQuizResponse
+        }
+
+        override suspend fun submitMilestoneSubmission(
+            roadmapId: String,
+            nodeId: String,
+            request: SubmitMilestoneSubmissionRequestDto
+        ): Response<MilestoneSubmissionEnvelopeDto> {
+            submitMilestoneCallCount++
+            lastSubmittedMilestoneRoadmapId = roadmapId
+            lastSubmittedMilestoneId = nodeId
+            lastSubmitMilestoneRequest = request
+            return submitMilestoneResponse
         }
 
         override suspend fun getUserRoadmapProgress(roadmapId: String): Response<RoadmapProgressDto> {
@@ -473,6 +535,49 @@ class RemoteRoadmapRepositoryTest {
                       }
                     ]
                     """.trimIndent()
+                )
+            )
+        )
+
+        val testMilestoneSubmission = MilestoneSubmissionDto(
+            id = "submission-1",
+            repoUrl = "https://github.com/example/rmap-test",
+            testSuiteId = "suite-1",
+            status = "ERROR",
+            outputLog = "[error]\nspawn docker ENOENT",
+            passRatePct = null,
+            passedTests = null,
+            totalTests = null,
+            attemptNumber = 6,
+            createdAt = "2026-06-01T00:00:00Z",
+            completedAt = null
+        )
+
+        val testMilestoneSubmissionEnvelope = MilestoneSubmissionEnvelopeDto(
+            submission = testMilestoneSubmission
+        )
+
+        val testMilestoneDetail = RoadmapNodeDetailResponseDto(
+            data = RoadmapNodeDetailDto(
+                node = RoadmapNodeDto(
+                    id = "milestone-api",
+                    roadmapId = "roadmap-1",
+                    skillName = "Basic API Server",
+                    description = "Build a raw Node.js HTTP API.",
+                    nodeType = "MILESTONE"
+                ),
+                progress = NodeProgressDto(
+                    roadmapNodeId = "milestone-api",
+                    status = "IN_PROGRESS"
+                ),
+                latestSubmission = testMilestoneSubmission,
+                milestoneTestSuite = MilestoneTestSuiteDto(
+                    id = "suite-1",
+                    title = "Raw Node.js API Server Evaluation",
+                    summary = "Verifies the implementation of a manual HTTP server.",
+                    passThresholdPct = 80,
+                    status = "READY",
+                    testCases = emptyList()
                 )
             )
         )

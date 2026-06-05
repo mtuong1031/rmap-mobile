@@ -77,11 +77,11 @@ fun RoadmapDetailScreen(
     onSearchBackClick: () -> Unit = {},
     onRetryClick: () -> Unit = {},
     onNodeActionClick: (RoadmapNodeUiModel) -> Unit = {},
-    onNodeBookmarkClick: (RoadmapNodeUiModel) -> Unit = {},
     onGroupClick: (RoadmapGroupUiModel) -> Unit = {},
     onMilestoneClick: (RoadmapMilestoneUiModel) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
+    val hasStartedLearning = uiState.primaryAction == RoadmapPrimaryAction.ContinueLearning
 
     Box(
         modifier = modifier
@@ -194,7 +194,7 @@ fun RoadmapDetailScreen(
                                     RoadmapGroupCard(
                                         group = contentItem.group,
                                         onNodeActionClick = onNodeActionClick,
-                                        onNodeBookmarkClick = onNodeBookmarkClick
+                                        showNodeInlineActions = hasStartedLearning
                                     )
                                 }
 

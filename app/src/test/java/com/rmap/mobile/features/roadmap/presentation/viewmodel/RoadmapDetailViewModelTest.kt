@@ -14,6 +14,8 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmission
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
@@ -78,6 +80,24 @@ class RoadmapDetailViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(RoadmapPrimaryAction.StartLearning, state.primaryAction)
         assertEquals("REST API", state.nextActionTitle)
+    }
+
+    @Test
+    fun `loadRoadmap template uses resources available node descriptions`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(templateResourceDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            bookmarkRepository = FakeBookmarkRepository()
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+
+        val node = viewModel.uiState.value.groups.first().nodes.first()
+        assertEquals(R.string.roadmap_detail_node_resources_available, node.descriptionResId)
+        assertEquals(listOf("4"), node.descriptionArgs)
+        assertEquals(4, node.resourcesCount)
     }
 
     @Test
@@ -273,6 +293,30 @@ class RoadmapDetailViewModelTest {
         assertEquals(2, state.milestones.size)
         assertEquals(RoadmapMilestoneState.Available, state.milestones.first().state)
         assertEquals(RoadmapMilestoneState.Locked, state.milestones.last().state)
+        assertEquals("Basic API Server", state.nextActionTitle)
+        assertEquals("Basic API Server", state.nextUnlockTitle)
+        assertEquals(RoadmapNextActionTarget.Milestone("milestone-api"), state.nextActionTarget)
+    }
+
+    @Test
+    fun `onContinueClick with milestone next action selects milestone instead of locked node`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(orderedMilestoneDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            bookmarkRepository = FakeBookmarkRepository()
+        )
+        viewModel.loadRoadmap("roadmap-1")
+        val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
+
+        viewModel.onContinueClick()
+
+        assertTrue(repository.progressUpdates.isEmpty())
+        assertEquals(
+            RoadmapDetailEvent.MilestoneSelected("milestone-api"),
+            event.await()
+        )
     }
 
     @Test
@@ -305,7 +349,7 @@ class RoadmapDetailViewModelTest {
     }
 
     @Test
-    fun `onNodeActionClick with locked node emits locked event without progress update`() = runTest {
+    fun `onNodeActionClick with locked node navigates to learning without progress update`() = runTest {
         val repository = FakeRoadmapRepository(
             detailResult = Result.success(lockedDetail)
         )
@@ -319,7 +363,15 @@ class RoadmapDetailViewModelTest {
 
         viewModel.onNodeActionClick(node)
 
-        assertEquals(RoadmapDetailEvent.NodeLocked, event.await())
+        assertEquals(
+            RoadmapDetailEvent.NavigateToLearning(
+                roadmapId = "roadmap-1",
+                nodeId = "node-api",
+                skillId = "skill-api",
+                isCompleted = false
+            ),
+            event.await()
+        )
         assertTrue(repository.progressUpdates.isEmpty())
     }
 
@@ -367,6 +419,21 @@ class RoadmapDetailViewModelTest {
             roadmapId: String,
             nodeId: String
         ): Result<LearningNodeDetail> {
+            return Result.failure(UnsupportedOperationException())
+        }
+
+        override suspend fun getMilestoneDetail(
+            roadmapId: String,
+            milestoneId: String
+        ): Result<MilestoneDetail> {
+            return Result.failure(UnsupportedOperationException())
+        }
+
+        override suspend fun submitMilestone(
+            roadmapId: String,
+            milestoneId: String,
+            repoUrl: String
+        ): Result<MilestoneSubmission> {
             return Result.failure(UnsupportedOperationException())
         }
 
@@ -558,6 +625,28 @@ class RoadmapDetailViewModelTest {
                             subLessons = emptyList(),
                             id = "node-api",
                             skillId = "skill-api"
+                        )
+                    )
+                )
+            )
+        )
+
+        val templateResourceDetail = testDetail.copy(
+            isTemplate = true,
+            sections = listOf(
+                LearningModuleSection(
+                    title = "API Foundations",
+                    modules = listOf(
+                        LearningModule(
+                            title = "REST API",
+                            status = LearningStatus.NotStarted,
+                            progressPercent = 0,
+                            icon = LearningTopicIcon.Storage,
+                            subLessons = emptyList(),
+                            id = "node-api",
+                            skillId = "skill-api",
+                            estimatedHours = 4,
+                            resourcesCount = 4
                         )
                     )
                 )

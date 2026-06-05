@@ -13,6 +13,7 @@ data class RoadmapDetailUiState(
     val completedRequiredNodes: Int = 0,
     val totalRequiredNodes: Int = 0,
     val nextActionTitle: String = "",
+    val nextActionTarget: RoadmapNextActionTarget = RoadmapNextActionTarget.None,
     val primaryAction: RoadmapPrimaryAction = RoadmapPrimaryAction.StartLearning,
     val nextUnlockTitle: String = "",
     val searchQuery: String = "",
@@ -35,10 +36,7 @@ data class RoadmapGroupUiModel(
     val totalRequiredNodes: Int,
     val progressFraction: Float,
     val state: RoadmapGroupState,
-    val nodes: List<RoadmapNodeUiModel> = emptyList(),
-    @StringRes val lockedDescriptionResId: Int? = null,
-    val lockedDescriptionArgs: List<String> = emptyList(),
-    @StringRes val lockedExpandedDescriptionResId: Int? = null
+    val nodes: List<RoadmapNodeUiModel> = emptyList()
 )
 
 enum class RoadmapGroupState {
@@ -61,8 +59,8 @@ data class RoadmapNodeUiModel(
     val requirement: RoadmapNodeRequirement,
     @StringRes val descriptionResId: Int,
     val descriptionArgs: List<String> = emptyList(),
-    val action: RoadmapNodeAction? = null,
-    val isBookmarked: Boolean = false
+    val resourcesCount: Int = 0,
+    val action: RoadmapNodeAction? = null
 )
 
 enum class RoadmapNodeStatus {
@@ -86,6 +84,12 @@ enum class RoadmapNodeAction {
 enum class RoadmapPrimaryAction {
     StartLearning,
     ContinueLearning
+}
+
+sealed class RoadmapNextActionTarget {
+    data object None : RoadmapNextActionTarget()
+    data class Node(val nodeId: String) : RoadmapNextActionTarget()
+    data class Milestone(val milestoneId: String) : RoadmapNextActionTarget()
 }
 
 data class RoadmapMilestoneUiModel(

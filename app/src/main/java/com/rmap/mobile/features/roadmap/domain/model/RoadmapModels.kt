@@ -155,6 +155,7 @@ data class LearningModule(
     val skillId: String = id,
     val requirement: LearningRequirement = LearningRequirement.Required,
     val estimatedHours: Int? = null,
+    val resourcesCount: Int = 0,
     val description: String? = null,
     val quizScorePercent: Int? = null,
     val quizPassed: Boolean? = null
@@ -167,6 +168,7 @@ data class SubLesson(
     val skillId: String = id,
     val requirement: LearningRequirement = LearningRequirement.Required,
     val estimatedHours: Int? = null,
+    val resourcesCount: Int = 0,
     val description: String? = null
 )
 

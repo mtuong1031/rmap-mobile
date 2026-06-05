@@ -92,10 +92,29 @@ class RoadmapDetailViewModel(
     }
 
     fun onContinueClick() {
-        val node = _uiState.value.currentSearchNode()
+        val state = _uiState.value
+        when (val target = state.nextActionTarget) {
+            is RoadmapNextActionTarget.Milestone -> {
+                viewModelScope.launch {
+                    _events.emit(RoadmapDetailEvent.MilestoneSelected(target.milestoneId))
+                }
+                return
+            }
+
+            RoadmapNextActionTarget.None -> Unit
+            is RoadmapNextActionTarget.Node -> {
+                val targetNode = state.findNodeById(target.nodeId)
+                if (targetNode != null) {
+                    onNodeActionClick(targetNode)
+                    return
+                }
+            }
+        }
+
+        val node = state.currentSearchNode()
         if (node == null) {
-            val roadmapId = _uiState.value.roadmapId.takeIf { it.isNotBlank() }
-            if (roadmapId != null && _uiState.value.primaryAction == RoadmapPrimaryAction.StartLearning) {
+            val roadmapId = state.roadmapId.takeIf { it.isNotBlank() }
+            if (roadmapId != null && state.primaryAction == RoadmapPrimaryAction.StartLearning) {
                 startRoadmapAndOpenFirstAvailableNode(roadmapId)
             } else {
                 emitNodeActionUnavailable()
@@ -110,17 +129,12 @@ class RoadmapDetailViewModel(
         val roadmapId = _uiState.value.roadmapId.takeIf { it.isNotBlank() } ?: return
 
         when (node.status) {
-            RoadmapNodeStatus.Locked -> {
-                viewModelScope.launch {
-                    _events.emit(RoadmapDetailEvent.NodeLocked)
-                }
-            }
-
             RoadmapNodeStatus.NotStarted -> startLearningNode(
                 roadmapId = roadmapId,
                 node = node
             )
 
+            RoadmapNodeStatus.Locked,
             RoadmapNodeStatus.InProgress,
             RoadmapNodeStatus.Completed -> navigateToLearning(
                 roadmapId = roadmapId,
@@ -151,36 +165,6 @@ class RoadmapDetailViewModel(
                     .onSuccess {
                         _uiState.update { it.copy(isBookmarked = true) }
                         _events.emit(RoadmapDetailEvent.RoadmapBookmarkSaved)
-                    }
-                    .onFailure {
-                        _events.emit(RoadmapDetailEvent.BookmarkActionFailed)
-                    }
-            }
-        }
-    }
-
-    fun onNodeBookmarkClick(node: RoadmapNodeUiModel) {
-        val roadmapId = _uiState.value.roadmapId.takeIf { it.isNotBlank() } ?: return
-        val skillId = node.skillId.ifBlank { node.id }
-
-        viewModelScope.launch {
-            if (node.isBookmarked) {
-                bookmarkRepository.deleteSkill(skillId)
-                    .onSuccess {
-                        _uiState.update { it.withUpdatedSkillBookmark(skillId, isBookmarked = false) }
-                        _events.emit(RoadmapDetailEvent.SkillBookmarkRemoved)
-                    }
-                    .onFailure {
-                        _events.emit(RoadmapDetailEvent.BookmarkActionFailed)
-                    }
-            } else {
-                bookmarkRepository.saveSkill(
-                    skillId = skillId,
-                    roadmapId = roadmapId
-                )
-                    .onSuccess {
-                        _uiState.update { it.withUpdatedSkillBookmark(skillId, isBookmarked = true) }
-                        _events.emit(RoadmapDetailEvent.SkillBookmarkSaved)
                     }
                     .onFailure {
                         _events.emit(RoadmapDetailEvent.BookmarkActionFailed)
@@ -248,15 +232,11 @@ class RoadmapDetailViewModel(
                         ?.takeIf { refreshedNode -> refreshedNode.status != RoadmapNodeStatus.Locked }
                         ?: refreshedState?.currentSearchNode()
                         ?: node
-                    if (targetNode.status == RoadmapNodeStatus.Locked) {
-                        _events.emit(RoadmapDetailEvent.NodeLocked)
-                    } else {
-                        emitNavigateToLearning(
-                            roadmapId = roadmapId,
-                            node = targetNode,
-                            isCompleted = targetNode.status == RoadmapNodeStatus.Completed
-                        )
-                    }
+                    emitNavigateToLearning(
+                        roadmapId = roadmapId,
+                        node = targetNode,
+                        isCompleted = targetNode.status == RoadmapNodeStatus.Completed
+                    )
                 }
                 .onFailure {
                     _uiState.update { it.copy(updatingNodeId = null) }
@@ -344,73 +324,13 @@ class RoadmapDetailViewModel(
     private suspend fun RoadmapDetail.toLoadedUiState(): RoadmapDetailUiState {
         val isBookmarked = bookmarkRepository.isRoadmapSaved(id).getOrDefault(false)
         return toRoadmapDetailUiState()
-            .withSavedSkillState()
             .copy(isBookmarked = isBookmarked)
-    }
-
-    private suspend fun RoadmapDetailUiState.withSavedSkillState(): RoadmapDetailUiState {
-        val savedIds = groups
-            .flatMap { group -> group.nodes }
-            .map { node -> node.skillId.ifBlank { node.id } }
-            .distinct()
-            .associateWith { skillId -> bookmarkRepository.isSkillSaved(skillId).getOrDefault(false) }
-
-        val updatedGroups = groups.map { group ->
-            group.copy(
-                nodes = group.nodes.map { node ->
-                    val skillId = node.skillId.ifBlank { node.id }
-                    node.copy(isBookmarked = savedIds[skillId] == true)
-                }
-            )
-        }
-
-        return withGroups(updatedGroups)
     }
 
     private fun RoadmapDetailUiState.findNodeById(nodeId: String): RoadmapNodeUiModel? {
         return groups
             .flatMap { group -> group.nodes }
             .firstOrNull { node -> node.id == nodeId }
-    }
-
-    private fun RoadmapDetailUiState.withUpdatedSkillBookmark(
-        skillId: String,
-        isBookmarked: Boolean
-    ): RoadmapDetailUiState {
-        val updatedGroups = groups.map { group ->
-            group.copy(
-                nodes = group.nodes.map { node ->
-                    if (node.skillId == skillId || node.id == skillId) {
-                        node.copy(isBookmarked = isBookmarked)
-                    } else {
-                        node
-                    }
-                }
-            )
-        }
-
-        return withGroups(updatedGroups)
-    }
-
-    private fun RoadmapDetailUiState.withGroups(
-        updatedGroups: List<RoadmapGroupUiModel>
-    ): RoadmapDetailUiState {
-        val groupsById = updatedGroups.associateBy { group -> group.id }
-
-        return copy(
-            groups = updatedGroups,
-            contentItems = contentItems.map { item ->
-                when (item) {
-                    is RoadmapDetailContentUiItem.Group -> {
-                        groupsById[item.group.id]
-                            ?.let { group -> RoadmapDetailContentUiItem.Group(group) }
-                            ?: item
-                    }
-
-                    is RoadmapDetailContentUiItem.Milestone -> item
-                }
-            }
-        )
     }
 
     private fun emitNodeActionUnavailable() {
@@ -423,13 +343,11 @@ class RoadmapDetailViewModel(
 sealed class RoadmapDetailEvent {
     data object RoadmapBookmarkSaved : RoadmapDetailEvent()
     data object RoadmapBookmarkRemoved : RoadmapDetailEvent()
-    data object SkillBookmarkSaved : RoadmapDetailEvent()
-    data object SkillBookmarkRemoved : RoadmapDetailEvent()
     data object BookmarkActionFailed : RoadmapDetailEvent()
     data class NodeProgressUpdated(val unlockedNodeCount: Int) : RoadmapDetailEvent()
     data class NodeProgressUpdateFailed(val message: String? = null) : RoadmapDetailEvent()
     data object NodeActionUnavailable : RoadmapDetailEvent()
-    data object NodeLocked : RoadmapDetailEvent()
+    data class MilestoneSelected(val milestoneId: String) : RoadmapDetailEvent()
     data class NavigateToLearning(
         val roadmapId: String,
         val nodeId: String,

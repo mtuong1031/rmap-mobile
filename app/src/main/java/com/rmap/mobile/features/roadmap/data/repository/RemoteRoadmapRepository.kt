@@ -10,6 +10,7 @@ import com.rmap.mobile.features.roadmap.data.mapper.toCategories
 import com.rmap.mobile.features.roadmap.data.mapper.toDomain
 import com.rmap.mobile.features.roadmap.data.mapper.toLearningNodeDetail
 import com.rmap.mobile.features.roadmap.data.mapper.toLearningProgress
+import com.rmap.mobile.features.roadmap.data.mapper.toMilestoneDetail
 import com.rmap.mobile.features.roadmap.data.mapper.toNodeStatusRequestValue
 import com.rmap.mobile.features.roadmap.data.mapper.toRoadmapWithNodes
 import com.rmap.mobile.features.roadmap.data.mapper.toSkillLearningContent
@@ -21,11 +22,14 @@ import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDetailRespo
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodesResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapProgressDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapsResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SubmitMilestoneSubmissionRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressResponseDto
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmission
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
@@ -179,6 +183,58 @@ class RemoteRoadmapRepository(
             nodeId = normalizedNodeId
         ).toDomainResult { response ->
             response.toLearningNodeDetail()
+        }
+    }
+
+    override suspend fun getMilestoneDetail(
+        roadmapId: String,
+        milestoneId: String
+    ): Result<MilestoneDetail> {
+        val normalizedRoadmapId = roadmapId.trim()
+        val normalizedMilestoneId = milestoneId.trim()
+        if (normalizedRoadmapId.isBlank()) {
+            return Result.failure(invalidRoadmapId())
+        }
+        if (normalizedMilestoneId.isBlank()) {
+            return Result.failure(invalidRoadmapNodeId())
+        }
+
+        return getRoadmapNodeDetailResult(
+            roadmapId = normalizedRoadmapId,
+            nodeId = normalizedMilestoneId
+        ).toDomainResult { response ->
+            response.toMilestoneDetail()
+        }
+    }
+
+    override suspend fun submitMilestone(
+        roadmapId: String,
+        milestoneId: String,
+        repoUrl: String
+    ): Result<MilestoneSubmission> {
+        val normalizedRoadmapId = roadmapId.trim()
+        val normalizedMilestoneId = milestoneId.trim()
+        val normalizedRepoUrl = repoUrl.trim()
+        if (normalizedRoadmapId.isBlank()) {
+            return Result.failure(invalidRoadmapId())
+        }
+        if (normalizedMilestoneId.isBlank()) {
+            return Result.failure(invalidRoadmapNodeId())
+        }
+        if (normalizedRepoUrl.isBlank()) {
+            return Result.failure(invalidMilestoneRepoUrl())
+        }
+
+        return SafeApiCall.execute(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            roadmapApi.submitMilestoneSubmission(
+                roadmapId = normalizedRoadmapId,
+                nodeId = normalizedMilestoneId,
+                request = SubmitMilestoneSubmissionRequestDto(repoUrl = normalizedRepoUrl)
+            )
+        }.toDomainResult { response ->
+            response.toDomain()
         }
     }
 
@@ -527,6 +583,13 @@ class RemoteRoadmapRepository(
     private fun invalidRoadmapSkillId(): AppException {
         return AppException(
             message = "Skill id is required.",
+            type = NetworkErrorType.Unknown
+        )
+    }
+
+    private fun invalidMilestoneRepoUrl(): AppException {
+        return AppException(
+            message = "GitHub repository URL is required.",
             type = NetworkErrorType.Unknown
         )
     }
