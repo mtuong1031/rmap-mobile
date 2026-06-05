@@ -11,6 +11,12 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningResource
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmission
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmissionStatus
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestCase
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuite
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuiteStatus
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
@@ -198,6 +204,63 @@ class FakeRoadmapRepository : RoadmapRepository {
                         skillName = "HTML & CSS"
                     )
                 )
+            )
+        )
+    }
+
+    override suspend fun getMilestoneDetail(
+        roadmapId: String,
+        milestoneId: String
+    ): Result<MilestoneDetail> {
+        val milestone = details[roadmapId]
+            ?.milestones
+            ?.firstOrNull { candidate -> candidate.id == milestoneId }
+            ?: return Result.failure(IllegalArgumentException("Milestone not found"))
+
+        return Result.success(
+            MilestoneDetail(
+                roadmapId = roadmapId,
+                nodeId = milestone.id,
+                title = milestone.title,
+                description = milestone.description,
+                status = milestone.status,
+                testSuite = MilestoneTestSuite(
+                    id = "suite-${milestone.id}",
+                    title = "${milestone.title} Evaluation",
+                    summary = "Submit a GitHub repository and RMap will run the milestone test suite.",
+                    passThresholdPercent = 80,
+                    status = MilestoneTestSuiteStatus.Ready,
+                    testCases = listOf(
+                        MilestoneTestCase(
+                            name = "Project structure",
+                            description = "Validate the repository contains the expected source files."
+                        )
+                    )
+                ),
+                latestSubmission = null
+            )
+        )
+    }
+
+    override suspend fun submitMilestone(
+        roadmapId: String,
+        milestoneId: String,
+        repoUrl: String
+    ): Result<MilestoneSubmission> {
+        return Result.success(
+            MilestoneSubmission(
+                id = "submission-$milestoneId",
+                repoUrl = repoUrl,
+                testSuiteId = "suite-$milestoneId",
+                status = MilestoneSubmissionStatus.Running,
+                outputLog = null,
+                passRatePercent = null,
+                passedTests = null,
+                totalTests = null,
+                attemptNumber = 1,
+                createdAt = "2026-06-01T00:00:00Z",
+                completedAt = null,
+                testResults = emptyList()
             )
         )
     }

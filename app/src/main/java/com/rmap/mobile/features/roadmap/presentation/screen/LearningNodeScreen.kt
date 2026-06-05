@@ -459,6 +459,13 @@ private fun LearningNodeBottomAction(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
+            } else if (status == LearningNodeStatusUiModel.Locked) {
+                Text(
+                    text = stringResource(R.string.roadmap_learning_locked_quiz_hint),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
             } else if (!isQuizAvailable) {
                 Text(
                     text = stringResource(R.string.roadmap_learning_quiz_locked_hint),

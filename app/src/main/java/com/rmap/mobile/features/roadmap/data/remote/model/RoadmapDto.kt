@@ -55,6 +55,8 @@ data class RoadmapNodeDto(
     @SerializedName(value = "sort_order", alternate = ["sortOrder"]) val sortOrder: Int? = null,
     @SerializedName("posX") val posX: Float? = null,
     @SerializedName("posY") val posY: Float? = null,
+    @SerializedName("resourcesCount")
+    val resourcesCount: Int? = null,
     @SerializedName("progress") val progress: NodeProgressDto? = null,
     @SerializedName("children") val children: List<RoadmapNodeDto>? = null
 )
@@ -115,7 +117,9 @@ data class RoadmapNodeDetailResponseDto(
     @SerializedName("progress") val progress: NodeProgressDto? = null,
     @SerializedName("skill") val skill: SkillDetailDto? = null,
     @SerializedName("resources") val resources: JsonElement? = null,
-    @SerializedName("prerequisites") val prerequisites: JsonElement? = null
+    @SerializedName("prerequisites") val prerequisites: JsonElement? = null,
+    @SerializedName("latestSubmission") val latestSubmission: MilestoneSubmissionDto? = null,
+    @SerializedName("milestoneTestSuite") val milestoneTestSuite: MilestoneTestSuiteDto? = null
 )
 
 data class RoadmapNodeDetailDto(
@@ -123,7 +127,53 @@ data class RoadmapNodeDetailDto(
     @SerializedName("progress") val progress: NodeProgressDto? = null,
     @SerializedName("skill") val skill: SkillDetailDto? = null,
     @SerializedName("resources") val resources: JsonElement? = null,
-    @SerializedName("prerequisites") val prerequisites: JsonElement? = null
+    @SerializedName("prerequisites") val prerequisites: JsonElement? = null,
+    @SerializedName("latestSubmission") val latestSubmission: MilestoneSubmissionDto? = null,
+    @SerializedName("milestoneTestSuite") val milestoneTestSuite: MilestoneTestSuiteDto? = null
+)
+
+data class SubmitMilestoneSubmissionRequestDto(
+    @SerializedName("repoUrl") val repoUrl: String
+)
+
+data class MilestoneSubmissionEnvelopeDto(
+    @SerializedName("submission") val submission: MilestoneSubmissionDto? = null
+)
+
+data class MilestoneSubmissionDto(
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("repoUrl") val repoUrl: String? = null,
+    @SerializedName("testSuiteId") val testSuiteId: String? = null,
+    @SerializedName("status") val status: String? = null,
+    @SerializedName("outputLog") val outputLog: String? = null,
+    @SerializedName("passRatePct") val passRatePct: Float? = null,
+    @SerializedName("passedTests") val passedTests: Int? = null,
+    @SerializedName("testResults") val testResults: List<MilestoneSubmissionTestResultDto>? = null,
+    @SerializedName("totalTests") val totalTests: Int? = null,
+    @SerializedName("attemptNumber") val attemptNumber: Int? = null,
+    @SerializedName("createdAt") val createdAt: String? = null,
+    @SerializedName("completedAt") val completedAt: String? = null
+)
+
+data class MilestoneSubmissionTestResultDto(
+    @SerializedName("message") val message: String? = null,
+    @SerializedName("name") val name: String? = null,
+    @SerializedName("passed") val passed: Boolean? = null
+)
+
+data class MilestoneTestSuiteDto(
+    @SerializedName("generatedAt") val generatedAt: String? = null,
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("passThresholdPct") val passThresholdPct: Int? = null,
+    @SerializedName("status") val status: String? = null,
+    @SerializedName("summary") val summary: String? = null,
+    @SerializedName("testCases") val testCases: List<MilestoneTestCaseDto>? = null,
+    @SerializedName("title") val title: String? = null
+)
+
+data class MilestoneTestCaseDto(
+    @SerializedName("description") val description: String? = null,
+    @SerializedName("name") val name: String? = null
 )
 
 data class RoadmapNodeQuizResponseDto(

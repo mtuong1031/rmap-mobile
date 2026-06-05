@@ -15,15 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,35 +36,29 @@ import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
-import com.rmap.mobile.core.ui.theme.cardShadow
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
 import com.rmap.mobile.features.roadmap.presentation.components.common.formattedString
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapDeepBlue
-import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapFocusedRequirementBg
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapInk
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBg
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBorder
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
-import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeRequirement
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeStatus
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeUiModel
-
-private val roadmapNodeFocusedShape = RoundedCornerShape(Dimens.cardRadiusSmPlus)
 
 @Composable
 fun RoadmapNodeItem(
     node: RoadmapNodeUiModel,
     showDivider: Boolean,
     onActionClick: () -> Unit,
-    onBookmarkClick: (() -> Unit)? = null,
+    showInlineAction: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val isFocused = node.status == RoadmapNodeStatus.InProgress
-    val isCompleted = node.status == RoadmapNodeStatus.Completed
-    val shape = roadmapNodeFocusedShape
+    val hasInlineAction = showInlineAction && node.status == RoadmapNodeStatus.NotStarted
+    val isRowClickable = node.skillId.isNotBlank()
     val interactionSource = remember { MutableInteractionSource() }
-    val clickModifier = if (isCompleted) {
+    val clickModifier = if (isRowClickable) {
         Modifier.clickable(
             interactionSource = interactionSource,
             indication = LocalIndication.current,
@@ -77,20 +67,12 @@ fun RoadmapNodeItem(
     } else {
         Modifier
     }
-    val itemModifier = if (isFocused) {
-        modifier
-            .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingSmPlus)
-            .cardShadow(shape = shape)
-            .background(MaterialTheme.colorScheme.background, shape)
-            .border(Dimens.borderThin, MaterialTheme.colorScheme.primary, shape)
-            .padding(Dimens.spacingMd)
-    } else {
+    val itemModifier =
         modifier
             .fillMaxWidth()
             .then(clickModifier)
             .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingMd)
-    }
 
     Column {
         Row(
@@ -110,7 +92,7 @@ fun RoadmapNodeItem(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
-                        verticalAlignment = Alignment.Top
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = node.title,
@@ -122,19 +104,13 @@ fun RoadmapNodeItem(
                                     RoadmapNodeStatus.Completed,
                                     RoadmapNodeStatus.NotStarted -> roadmapInk
                                 },
-                                fontWeight = if (isFocused) FontWeight.Bold else FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold
                             ),
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis
                         )
-                        NodeTypeBadge(node = node)
-                        NodeBookmarkButton(
-                            isBookmarked = node.isBookmarked,
-                            onClick = onBookmarkClick
-                        )
+                        NodeStatusBadge(node = node)
                     }
-
-                    NodeStatusBadge(node = node)
                 }
 
                 Text(
@@ -151,10 +127,10 @@ fun RoadmapNodeItem(
                 )
 
                 node.action?.let { action ->
-                    if (node.status != RoadmapNodeStatus.Completed) {
+                    if (hasInlineAction) {
                         NodeActionButton(
                             action = action,
-                            expanded = isFocused,
+                            expanded = false,
                             onClick = onActionClick
                         )
                     }
@@ -171,29 +147,6 @@ fun RoadmapNodeItem(
                     .background(MaterialTheme.colorScheme.outlineVariant)
             )
         }
-    }
-}
-
-@Composable
-private fun NodeBookmarkButton(
-    isBookmarked: Boolean,
-    onClick: (() -> Unit)?
-) {
-    IconButton(
-        onClick = { onClick?.invoke() },
-        enabled = onClick != null,
-        modifier = Modifier.size(Dimens.controlSm)
-    ) {
-        Icon(
-            imageVector = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-            contentDescription = null,
-            tint = if (isBookmarked) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            },
-            modifier = Modifier.size(Dimens.iconSm)
-        )
     }
 }
 
@@ -238,28 +191,6 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
             modifier = Modifier.size(Dimens.iconXs)
         )
     }
-}
-
-@Composable
-private fun NodeTypeBadge(node: RoadmapNodeUiModel) {
-    RoadmapPill(
-        text = stringResource(
-            when (node.requirement) {
-                RoadmapNodeRequirement.Required -> R.string.roadmap_detail_status_required
-                RoadmapNodeRequirement.Optional -> R.string.roadmap_detail_status_optional
-            }
-        ),
-        containerColor = if (node.status == RoadmapNodeStatus.InProgress) {
-            roadmapFocusedRequirementBg
-        } else {
-            MaterialTheme.colorScheme.primaryContainer
-        },
-        contentColor = if (node.requirement == RoadmapNodeRequirement.Optional) {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        } else {
-            MaterialTheme.colorScheme.primary
-        }
-    )
 }
 
 @Composable

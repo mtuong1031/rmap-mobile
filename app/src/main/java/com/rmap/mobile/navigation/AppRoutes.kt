@@ -13,6 +13,7 @@ object AppRoutes {
     const val NOTIFICATION_SETTINGS = "notification_settings"
     const val ROADMAP_ID_ARG = "roadmapId"
     const val NODE_ID_ARG = "nodeId"
+    const val MILESTONE_ID_ARG = "milestoneId"
     const val SKILL_ID_ARG = "skillId"
     const val NODE_COMPLETED_ARG = "nodeCompleted"
     const val ROADMAP_DETAIL_REFRESH_RESULT = "roadmapDetailRefreshResult"
@@ -21,6 +22,7 @@ object AppRoutes {
     const val ROADMAP_LEARNING =
         "roadmap_learning/{$ROADMAP_ID_ARG}/{$NODE_ID_ARG}/{$SKILL_ID_ARG}/{$NODE_COMPLETED_ARG}"
     const val ROADMAP_NODE_QUIZ = "roadmap_learning/{$ROADMAP_ID_ARG}/{$NODE_ID_ARG}/quiz"
+    const val ROADMAP_MILESTONE = "roadmap_milestone/{$ROADMAP_ID_ARG}/{$MILESTONE_ID_ARG}"
 
     fun roadmapDetail(roadmapId: String): String = "roadmap_detail/$roadmapId"
 
@@ -39,6 +41,13 @@ object AppRoutes {
         nodeId: String
     ): String {
         return "roadmap_learning/${roadmapId.encodeRouteArg()}/${nodeId.encodeRouteArg()}/quiz"
+    }
+
+    fun roadmapMilestone(
+        roadmapId: String,
+        milestoneId: String
+    ): String {
+        return "roadmap_milestone/${roadmapId.encodeRouteArg()}/${milestoneId.encodeRouteArg()}"
     }
 
     private fun String.encodeRouteArg(): String = Uri.encode(this)

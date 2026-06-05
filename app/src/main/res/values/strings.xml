@@ -377,11 +377,11 @@
     <string name="roadmap_detail_next_unlock">Next unlock: %1$s</string>
     <string name="roadmap_detail_completed_recently">Completed 2 days ago</string>
     <string name="roadmap_detail_node_estimated_hours">%1$s estimated hours</string>
+    <string name="roadmap_detail_node_resources_available">%1$s resources available</string>
     <string name="roadmap_detail_node_completed_description">Completed</string>
     <string name="roadmap_detail_node_in_progress_description">Keep going with this skill</string>
     <string name="roadmap_detail_node_not_started_description">Ready to start learning</string>
     <string name="roadmap_detail_node_locked_description">Locked until prerequisites are complete</string>
-    <string name="roadmap_detail_node_locked_snackbar">This skill is locked until prerequisites are complete.</string>
     <string name="roadmap_detail_async_description">Dive into Promises and Async/Await</string>
     <string name="roadmap_detail_ready_to_start_description">Ready when you want to begin this node</string>
     <string name="roadmap_detail_locked_node_description">Locked until prerequisites are complete</string>
@@ -392,9 +392,6 @@
     <string name="roadmap_detail_milestone_landing_description">Apply HTML, CSS, and JavaScript
         basics in a portfolio-ready project.</string>
     <string name="roadmap_detail_action_view_project">View project</string>
-    <string name="roadmap_detail_locked_group_description">Complete %1$s to unlock %2$s</string>
-    <string name="roadmap_detail_framework_ecosystem_description">Master the essential web
-        development ecosystem concepts required before starting React Fundamentals.</string>
     <string name="roadmap_detail_next_action_label">Next Action</string>
     <string name="roadmap_detail_next_action_continue">Continue %1$s</string>
     <string name="roadmap_detail_next_action_start_learning">Start %1$s</string>
@@ -433,10 +430,41 @@
     <string name="roadmap_learning_resource_open_failed">Unable to open this resource.</string>
     <string name="roadmap_learning_completed_snackbar">Skill marked completed.</string>
     <string name="roadmap_learning_completion_requires_quiz">Complete the quiz first to mark this skill completed.</string>
+    <string name="roadmap_learning_locked_quiz_hint">Complete previous required skills to start this node.</string>
     <string name="roadmap_learning_take_quiz">Take Quiz</string>
     <string name="roadmap_learning_completed_hint">This node is completed. Your roadmap progress has been updated.</string>
     <string name="roadmap_learning_quiz_locked_hint">Quiz is available when this node is in progress.</string>
     <string name="roadmap_learning_error_fallback">Unable to load this learning node. Please try again.</string>
+
+    <!-- Roadmap Milestone Screen -->
+    <string name="roadmap_milestone_screen_title">Milestone</string>
+    <string name="roadmap_milestone_error_invalid_args">This milestone link is invalid.</string>
+    <string name="roadmap_milestone_error_load_failed">Unable to load this milestone. Please try again.</string>
+    <string name="roadmap_milestone_error_submit_failed">Unable to submit this milestone. Please try again.</string>
+    <string name="roadmap_milestone_submission_queued">Submission received. Test execution is starting.</string>
+    <string name="roadmap_milestone_project_brief_empty">No project brief is available for this milestone yet.</string>
+    <string name="roadmap_milestone_test_suite_title">Test suite</string>
+    <string name="roadmap_milestone_test_suite_empty">The test suite is being prepared. Try again in a moment.</string>
+    <string name="roadmap_milestone_checks_count">%1$d checks</string>
+    <string name="roadmap_milestone_view_details">View details</string>
+    <string name="roadmap_milestone_hide_details">Hide details</string>
+    <string name="roadmap_milestone_pass_threshold">%1$d%% pass threshold</string>
+    <string name="roadmap_milestone_attempt_format">Attempt %1$d</string>
+    <string name="roadmap_milestone_raw_output_log">Raw output log</string>
+    <string name="roadmap_milestone_copy_output_log">Copy output log</string>
+    <string name="roadmap_milestone_submission_score">%1$d%% pass rate - %2$d/%3$d tests passed</string>
+    <string name="roadmap_milestone_submission_running">Test execution is running.</string>
+    <string name="roadmap_milestone_submission_passed">Milestone passed.</string>
+    <string name="roadmap_milestone_submission_failed">Tests did not pass.</string>
+    <string name="roadmap_milestone_submission_error">Test execution hit a server-side error.</string>
+    <string name="roadmap_milestone_submission_unknown">Submission status is unavailable.</string>
+    <string name="roadmap_milestone_repo_url_label">GitHub repository URL</string>
+    <string name="roadmap_milestone_repo_url_placeholder">https://github.com/user/repository</string>
+    <string name="roadmap_milestone_repo_url_error">Enter a valid GitHub repository URL.</string>
+    <string name="roadmap_milestone_locked_hint">Complete previous required skills to start this milestone.</string>
+    <string name="roadmap_milestone_submit">Submit</string>
+    <string name="roadmap_milestone_submit_again">Submit</string>
+    <string name="roadmap_milestone_submitting">Submitting...</string>
 
     <!-- Roadmap Quiz Screen -->
     <string name="roadmap_quiz_title">Quiz</string>

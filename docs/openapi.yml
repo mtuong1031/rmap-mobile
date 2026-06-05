@@ -528,6 +528,10 @@ components:
           type: integer
           nullable: true
           example: 40
+        resourcesCount:
+          type: integer
+          description: Number of learning resources available for this node, capped to the node detail resource limit.
+          example: 5
         parent_node_id:
           allOf:
             - $ref: '#/components/schemas/UUID'
@@ -651,6 +655,178 @@ components:
           nullable: true
 
     # ── Admin request bodies ──────────────────────────────────────────────────
+    RoadmapNodeResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Node.js HTTP server guide"
+        url:
+          type: string
+          format: uri
+          example: "https://nodejs.org/api/http.html"
+        resourceType:
+          type: string
+          example: "youtube"
+        isFree:
+          type: boolean
+          example: true
+        isPrimary:
+          type: boolean
+          example: true
+
+    RoadmapNodePrerequisite:
+      type: object
+      properties:
+        skillId:
+          $ref: '#/components/schemas/UUID'
+        skillName:
+          type: string
+          example: "HTTP Basics"
+
+    MilestoneSubmissionTestResult:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Server responded with 200 OK"
+        name:
+          type: string
+          example: "Starts server"
+        passed:
+          type: boolean
+          example: true
+
+    MilestoneSubmission:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        repoUrl:
+          type: string
+          format: uri
+          example: "https://github.com/alice/rmap-test"
+        testSuiteId:
+          allOf:
+            - $ref: '#/components/schemas/UUID'
+          nullable: true
+        status:
+          type: string
+          enum: [RUNNING, PASSED, FAILED, ERROR]
+        outputLog:
+          type: string
+          nullable: true
+          example: "[error]\nspawn docker ENOENT"
+        passRatePct:
+          type: number
+          format: float
+          nullable: true
+          example: 83.3
+        passedTests:
+          type: integer
+          nullable: true
+          example: 5
+        testResults:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/MilestoneSubmissionTestResult'
+        totalTests:
+          type: integer
+          nullable: true
+          example: 6
+        attemptNumber:
+          type: integer
+          example: 2
+        createdAt:
+          $ref: '#/components/schemas/Timestamp'
+        completedAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+
+    MilestoneSubmissionEnvelope:
+      type: object
+      properties:
+        submission:
+          $ref: '#/components/schemas/MilestoneSubmission'
+
+    MilestoneTestCase:
+      type: object
+      properties:
+        description:
+          type: string
+          example: "The project starts an HTTP server."
+        name:
+          type: string
+          example: "Starts server"
+
+    MilestoneTestSuite:
+      type: object
+      properties:
+        generatedAt:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+        id:
+          $ref: '#/components/schemas/UUID'
+        passThresholdPct:
+          type: integer
+          example: 80
+        status:
+          type: string
+          enum: [NOT_GENERATED, GENERATING, READY, FAILED]
+        summary:
+          type: string
+          example: "Verifies the implementation of a manual HTTP server."
+        testCases:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilestoneTestCase'
+        title:
+          type: string
+          example: "Raw Node.js API Server Evaluation"
+
+    RoadmapNodeDetail:
+      type: object
+      properties:
+        node:
+          $ref: '#/components/schemas/RoadmapNode'
+        skill:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Skill'
+        resources:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RoadmapNodeResource'
+        prerequisites:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoadmapNodePrerequisite'
+        latestSubmission:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MilestoneSubmission'
+        milestoneTestSuite:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MilestoneTestSuite'
+
+    SubmitMilestoneSubmissionRequest:
+      type: object
+      required: [repoUrl]
+      properties:
+        repoUrl:
+          type: string
+          minLength: 1
+          maxLength: 2048
+          example: "https://github.com/alice/rmap-test"
+
     CreateRoleRequest:
       type: object
       required: [name, slug]
@@ -1585,6 +1761,66 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/RoadmapNode'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /roadmaps/{roadmapId}/nodes/{nodeId}:
+    get:
+      tags: [Roadmap Nodes]
+      summary: Get roadmap node detail
+      description: |
+        Returns detail for a skill node or milestone node. Milestone nodes include
+        latestSubmission and milestoneTestSuite when available.
+      operationId: getRoadmapNodeDetail
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+        - $ref: '#/components/parameters/NodeId'
+      responses:
+        '200':
+          description: Roadmap node detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoadmapNodeDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /roadmaps/{roadmapId}/nodes/{nodeId}/milestone-submissions:
+    post:
+      tags: [Roadmap Nodes]
+      summary: Submit a milestone GitHub repository
+      description: Stores a GitHub repository URL and starts milestone test execution asynchronously.
+      operationId: submitMilestoneSubmission
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+        - $ref: '#/components/parameters/NodeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitMilestoneSubmissionRequest'
+      responses:
+        '201':
+          description: Milestone submission accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MilestoneSubmissionEnvelope'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':

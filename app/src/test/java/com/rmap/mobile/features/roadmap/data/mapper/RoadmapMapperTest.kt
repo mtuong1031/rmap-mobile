@@ -1,8 +1,10 @@
 package com.rmap.mobile.features.roadmap.data.mapper
 
 import com.google.gson.Gson
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionEnvelopeDto
 import com.rmap.mobile.features.roadmap.data.remote.model.NodeProgressDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDetailResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodesResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapProgressDto
@@ -10,6 +12,7 @@ import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapWithNodesDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapsResponseDto
 import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmissionStatus
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapContentItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -41,6 +44,7 @@ class RoadmapMapperTest {
         assertEquals("CSS Flexbox", css.title)
         assertEquals(LearningRequirement.Required, css.requirement)
         assertEquals(LearningStatus.Completed, css.status)
+        assertEquals(3, css.resourcesCount)
 
         val react = firstSection.modules[2]
         assertEquals("node-react", react.id)
@@ -369,6 +373,114 @@ class RoadmapMapperTest {
         assertEquals(LearningStatus.Locked, detail.milestones.last().status)
     }
 
+    @Test
+    fun `toMilestoneDetail maps backend milestone detail response`() {
+        val response = Gson().fromJson(
+            """
+            {
+              "node": {
+                "id": "milestone-api",
+                "roadmapId": "roadmap-1",
+                "parentId": null,
+                "skillId": null,
+                "name": "Basic API Server",
+                "description": "Construct a raw Node.js HTTP server.",
+                "nodeType": "MILESTONE",
+                "estimatedHours": null,
+                "posX": 0,
+                "posY": 400,
+                "resourcesCount": 0,
+                "progress": {
+                  "id": "progress-1",
+                  "roadmapNodeId": "milestone-api",
+                  "status": "IN_PROGRESS",
+                  "startedAt": "2026-06-01T00:00:00.000Z",
+                  "completedAt": null,
+                  "quizScorePct": null,
+                  "quizPassed": null
+                }
+              },
+              "skill": null,
+              "resources": null,
+              "prerequisites": [],
+              "latestSubmission": {
+                "id": "submission-1",
+                "repoUrl": "https://github.com/example/rmap-test",
+                "testSuiteId": "suite-1",
+                "status": "ERROR",
+                "outputLog": "[error]\nspawn docker ENOENT",
+                "passRatePct": null,
+                "passedTests": null,
+                "testResults": null,
+                "totalTests": null,
+                "attemptNumber": 6,
+                "createdAt": "2026-06-01T00:00:00.000Z",
+                "completedAt": null
+              },
+              "milestoneTestSuite": {
+                "generatedAt": "2026-06-01T00:00:00.000Z",
+                "id": "suite-1",
+                "passThresholdPct": 80,
+                "status": "READY",
+                "summary": "Verifies the implementation of a manual HTTP server.",
+                "testCases": [
+                  {
+                    "name": "Starts server",
+                    "description": "The project starts an HTTP server."
+                  }
+                ],
+                "title": "Raw Node.js API Server Evaluation"
+              }
+            }
+            """.trimIndent(),
+            RoadmapNodeDetailResponseDto::class.java
+        )
+
+        val detail = response.toMilestoneDetail()
+
+        assertEquals("roadmap-1", detail.roadmapId)
+        assertEquals("milestone-api", detail.nodeId)
+        assertEquals("Basic API Server", detail.title)
+        assertEquals(LearningStatus.InProgress, detail.status)
+        assertEquals("Raw Node.js API Server Evaluation", detail.testSuite?.title)
+        assertEquals(80, detail.testSuite?.passThresholdPercent)
+        assertEquals(1, detail.testSuite?.testCases?.size)
+        assertEquals("https://github.com/example/rmap-test", detail.latestSubmission?.repoUrl)
+        assertEquals(MilestoneSubmissionStatus.Error, detail.latestSubmission?.status)
+        assertEquals(6, detail.latestSubmission?.attemptNumber)
+    }
+
+    @Test
+    fun `milestone submission envelope maps running submission`() {
+        val response = Gson().fromJson(
+            """
+            {
+              "submission": {
+                "id": "submission-2",
+                "repoUrl": "https://github.com/example/rmap-test",
+                "testSuiteId": "suite-1",
+                "status": "RUNNING",
+                "outputLog": null,
+                "passRatePct": null,
+                "passedTests": null,
+                "testResults": null,
+                "totalTests": null,
+                "attemptNumber": 7,
+                "createdAt": "2026-06-01T00:00:00.000Z",
+                "completedAt": null
+              }
+            }
+            """.trimIndent(),
+            MilestoneSubmissionEnvelopeDto::class.java
+        )
+
+        val submission = response.toDomain()
+
+        assertEquals("submission-2", submission.id)
+        assertEquals(MilestoneSubmissionStatus.Running, submission.status)
+        assertEquals(7, submission.attemptNumber)
+    }
+
     private fun roadmapWithNodes(): RoadmapWithNodesDto {
         return RoadmapWithNodesDto(
             id = "roadmap-1",
@@ -393,6 +505,7 @@ class RoadmapMapperTest {
                             skillId = "skill-css",
                             skillName = "CSS Flexbox",
                             skillEstimatedHours = 6,
+                            resourcesCount = 3,
                             parentNodeId = "node-root",
                             relationType = "required",
                             sortOrder = 1,

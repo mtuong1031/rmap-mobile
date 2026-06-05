@@ -1,11 +1,13 @@
 package com.rmap.mobile.features.roadmap.data.remote.api
 
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapProgressDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionEnvelopeDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDetailResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeQuizResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodesResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapsResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SubmitMilestoneSubmissionRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressRequestDto
@@ -53,6 +55,13 @@ interface RoadmapApi {
         @Path("nodeId") nodeId: String,
         @Body request: SubmitQuizRequestDto
     ): Response<SubmitQuizResponseDto>
+
+    @POST("roadmaps/{roadmapId}/nodes/{nodeId}/milestone-submissions")
+    suspend fun submitMilestoneSubmission(
+        @Path("roadmapId") roadmapId: String,
+        @Path("nodeId") nodeId: String,
+        @Body request: SubmitMilestoneSubmissionRequestDto
+    ): Response<MilestoneSubmissionEnvelopeDto>
 
     @GET("roadmaps/{roadmapId}/progress")
     suspend fun getUserRoadmapProgress(

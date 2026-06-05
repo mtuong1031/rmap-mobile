@@ -386,22 +386,38 @@ private fun RoadmapLearningBottomAction(
         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
         borderColor = MaterialTheme.colorScheme.outlineVariant
     ) {
-        RMapButton(
-            text = stringResource(
-                if (isCompleted) {
-                    R.string.roadmap_learning_completed
-                } else {
-                    R.string.roadmap_learning_take_quiz
-                }
-            ),
-            onClick = onTakeQuizClick,
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(Dimens.spacingMd),
-            variant = RMapButtonVariant.Primary,
-            size = RMapButtonSize.Large,
-            enabled = !isCompleted && canTakeQuiz && !isNodeLocked
-        )
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (isNodeLocked) {
+                Text(
+                    text = stringResource(R.string.roadmap_learning_locked_quiz_hint),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            RMapButton(
+                text = stringResource(
+                    if (isCompleted) {
+                        R.string.roadmap_learning_completed
+                    } else {
+                        R.string.roadmap_learning_take_quiz
+                    }
+                ),
+                onClick = onTakeQuizClick,
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Primary,
+                size = RMapButtonSize.Large,
+                enabled = !isCompleted && canTakeQuiz && !isNodeLocked
+            )
+        }
     }
 }
 
