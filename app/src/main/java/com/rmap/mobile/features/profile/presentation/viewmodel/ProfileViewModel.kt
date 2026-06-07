@@ -3,6 +3,8 @@ package com.rmap.mobile.features.profile.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val profileRepository: ProfileRepository = RMapAppGraph.profileRepository,
+    private val authRepository: AuthRepository = RMapAppGraph.authRepository,
     private val logoutUseCase: LogoutUseCase = RMapAppGraph.logoutUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -26,24 +29,23 @@ class ProfileViewModel(
 
     init {
         loadProfile()
+        observeAuthState()
     }
 
     fun loadProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            profileRepository.getProfile()
-                .onSuccess { profile ->
-                    _uiState.value = ProfileUiState(
-                        name = profile.name,
-                        role = profile.role,
-                        avatarUrl = profile.avatarUrl,
-                        xp = profile.xp,
-                        streak = profile.streakDays,
-                        certificates = profile.certificates,
-                        activeRoadmaps = profile.activeRoadmaps,
-                        recentActivity = profile.recentActivity,
-                        isLoading = false
-                    )
+            profileRepository.getActivity()
+                .onSuccess { activity ->
+                    _uiState.update {
+                        it.copy(
+                            streak = activity.streakDays,
+                            longestStreak = activity.longestStreak,
+                            recentActivity = activity.activity,
+                            isLoading = false,
+                            errorMessage = null
+                        )
+                    }
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -53,6 +55,21 @@ class ProfileViewModel(
                         )
                     }
                 }
+        }
+    }
+
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authRepository.authState.collect { authState ->
+                val user = (authState as? AuthState.Authenticated)?.user
+                _uiState.update {
+                    it.copy(
+                        name = user?.fullName.orEmpty(),
+                        role = user?.role?.toProfileRoleLabel().orEmpty(),
+                        avatarUrl = user?.avatarUrl.orEmpty()
+                    )
+                }
+            }
         }
     }
 
@@ -79,4 +96,18 @@ class ProfileViewModel(
             _events.emit(ProfileEvent.ShowComingSoon)
         }
     }
+}
+
+private fun String.toProfileRoleLabel(): String {
+    return trim()
+        .replace("_", " ")
+        .replace("-", " ")
+        .split(Regex("\\s+"))
+        .filter(String::isNotBlank)
+        .joinToString(" ") { word ->
+            word.lowercase().replaceFirstChar { firstChar ->
+                if (firstChar.isLowerCase()) firstChar.titlecase() else firstChar.toString()
+            }
+        }
+        .ifBlank { "User" }
 }

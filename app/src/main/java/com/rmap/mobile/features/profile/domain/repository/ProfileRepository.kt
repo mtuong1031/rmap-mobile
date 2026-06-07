@@ -1,7 +1,7 @@
 package com.rmap.mobile.features.profile.domain.repository
 
-import com.rmap.mobile.features.profile.domain.model.UserProfile
+import com.rmap.mobile.features.profile.domain.model.UserActivitySummary
 
 interface ProfileRepository {
-    suspend fun getProfile(): Result<UserProfile>
+    suspend fun getActivity(): Result<UserActivitySummary>
 }

@@ -5,9 +5,8 @@ import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.model.User
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
+import com.rmap.mobile.features.profile.domain.model.UserActivitySummary
 import com.rmap.mobile.features.profile.domain.model.UserDailyActivity
-import com.rmap.mobile.features.profile.domain.model.UserProfile
-import com.rmap.mobile.features.profile.domain.model.UserRoadmapProgress
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,70 +24,85 @@ class ProfileViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun `loadProfile exposes all active roadmaps in backend order`() = runTest {
-        val activeRoadmaps = (1..8).map { index ->
-            roadmap(
-                id = "roadmap-$index",
-                startedAt = "2026-05-${20 + index}T00:00:00.000Z"
+    fun `loadProfile uses activity endpoint summary`() = runTest {
+        val activity = UserActivitySummary(
+            streakDays = 5,
+            longestStreak = 7,
+            activity = listOf(
+                UserDailyActivity(activityDate = "2026-06-01", nodesCompleted = 2),
+                UserDailyActivity(activityDate = "2026-06-02", nodesCompleted = 0)
             )
-        }
-        val profile = profile(roadmaps = activeRoadmaps + roadmap(id = "not-started", startedAt = null))
-        val viewModel = newViewModel(profile)
+        )
+        val repository = FakeProfileRepository(activity)
+        val viewModel = newViewModel(repository = repository)
 
         runCurrent()
 
         assertFalse(viewModel.uiState.value.isLoading)
-        assertEquals(8, viewModel.uiState.value.activeRoadmaps.size)
-        assertEquals("roadmap-1", viewModel.uiState.value.activeRoadmaps.first().id)
-        assertEquals("roadmap-8", viewModel.uiState.value.activeRoadmaps.last().id)
+        assertEquals(1, repository.getActivityCalls)
+        assertEquals(5, viewModel.uiState.value.streak)
+        assertEquals(7, viewModel.uiState.value.longestStreak)
+        assertEquals(activity.activity, viewModel.uiState.value.recentActivity)
     }
 
     @Test
-    fun `loadProfile exposes recent activity from backend dashboard`() = runTest {
-        val activity = listOf(
-            UserDailyActivity(activityDate = "2026-06-01", nodesCompleted = 2),
-            UserDailyActivity(activityDate = "2026-06-02", nodesCompleted = 0)
+    fun `identity comes from auth state not dashboard`() = runTest {
+        val authRepository = FakeAuthRepository(
+            initialState = AuthState.Authenticated(
+                testUser.copy(role = "frontend_developer")
+            )
         )
-        val viewModel = newViewModel(profile(roadmaps = emptyList(), recentActivity = activity))
+        val viewModel = newViewModel(authRepository = authRepository)
 
         runCurrent()
 
         assertFalse(viewModel.uiState.value.isLoading)
-        assertEquals(activity, viewModel.uiState.value.recentActivity)
+        assertEquals("RMap Learner", viewModel.uiState.value.name)
+        assertEquals("Frontend Developer", viewModel.uiState.value.role)
     }
 
     @Test
-    fun `loadProfile exposes empty active roadmaps when backend has no started roadmap`() = runTest {
-        val viewModel = newViewModel(
-            profile(
-                roadmaps = listOf(
-                    roadmap(id = "roadmap-1", startedAt = null),
-                    roadmap(id = "roadmap-2", startedAt = null)
-                )
-            )
-        )
+    fun `loadProfile exposes error when activity endpoint fails`() = runTest {
+        val viewModel = newViewModel(repository = FakeProfileRepository(error = IllegalStateException("No activity")))
 
         runCurrent()
 
         assertFalse(viewModel.uiState.value.isLoading)
-        assertEquals(emptyList<UserRoadmapProgress>(), viewModel.uiState.value.activeRoadmaps)
+        assertEquals("No activity", viewModel.uiState.value.errorMessage)
     }
 
-    private fun newViewModel(profile: UserProfile): ProfileViewModel {
+    private fun newViewModel(
+        repository: FakeProfileRepository = FakeProfileRepository(),
+        authRepository: FakeAuthRepository = FakeAuthRepository()
+    ): ProfileViewModel {
         return ProfileViewModel(
-            profileRepository = FakeProfileRepository(profile),
-            logoutUseCase = LogoutUseCase(FakeAuthRepository())
+            profileRepository = repository,
+            authRepository = authRepository,
+            logoutUseCase = LogoutUseCase(authRepository)
         )
     }
 
     private class FakeProfileRepository(
-        private val profile: UserProfile
+        private val activity: UserActivitySummary = UserActivitySummary(
+            streakDays = 5,
+            longestStreak = 5,
+            activity = emptyList()
+        ),
+        private val error: Throwable? = null
     ) : ProfileRepository {
-        override suspend fun getProfile(): Result<UserProfile> = Result.success(profile)
+        var getActivityCalls: Int = 0
+            private set
+
+        override suspend fun getActivity(): Result<UserActivitySummary> {
+            getActivityCalls += 1
+            return error?.let { Result.failure(it) } ?: Result.success(activity)
+        }
     }
 
-    private class FakeAuthRepository : AuthRepository {
-        override val authState: StateFlow<AuthState> = MutableStateFlow(AuthState.Unauthenticated)
+    private class FakeAuthRepository(
+        initialState: AuthState = AuthState.Unauthenticated
+    ) : AuthRepository {
+        override val authState: StateFlow<AuthState> = MutableStateFlow(initialState)
 
         override suspend fun login(email: String, password: String): Result<User> = Result.success(testUser)
 
@@ -102,39 +116,6 @@ class ProfileViewModelTest {
     }
 
     private companion object {
-        fun profile(
-            roadmaps: List<UserRoadmapProgress>,
-            recentActivity: List<UserDailyActivity> = emptyList()
-        ): UserProfile {
-            return UserProfile(
-                userName = "Thinh",
-                name = "Thinh Duy",
-                role = "Learner",
-                avatarUrl = "",
-                xp = 0,
-                streakDays = 5,
-                certificates = 0,
-                roadmaps = roadmaps,
-                recentActivity = recentActivity
-            )
-        }
-
-        fun roadmap(id: String, startedAt: String?): UserRoadmapProgress {
-            return UserRoadmapProgress(
-                id = id,
-                title = "Roadmap $id",
-                description = null,
-                deadlineDate = null,
-                estimatedWeeks = 8,
-                roleCategory = "WEB_DEVELOPMENT",
-                startedAt = startedAt,
-                completionPercent = 25,
-                nodesTotal = 10,
-                nodesCompleted = 3,
-                timelineWarning = null
-            )
-        }
-
         val testUser = User(
             id = "learner",
             email = "learner@example.com",

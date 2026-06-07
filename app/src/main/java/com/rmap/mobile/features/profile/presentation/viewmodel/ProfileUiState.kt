@@ -1,6 +1,5 @@
 package com.rmap.mobile.features.profile.presentation.viewmodel
 
-import com.rmap.mobile.features.profile.domain.model.UserRoadmapProgress
 import com.rmap.mobile.features.profile.domain.model.UserDailyActivity
 
 data class ProfileUiState(
@@ -9,8 +8,8 @@ data class ProfileUiState(
     val avatarUrl: String = "",
     val xp: Int = 0,
     val streak: Int = 0,
+    val longestStreak: Int = 0,
     val certificates: Int = 0,
-    val activeRoadmaps: List<UserRoadmapProgress> = emptyList(),
     val recentActivity: List<UserDailyActivity> = emptyList(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null
