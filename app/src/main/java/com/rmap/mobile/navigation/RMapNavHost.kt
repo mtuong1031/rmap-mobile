@@ -60,6 +60,7 @@ import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSetti
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileViewModel
 import com.rmap.mobile.features.roadmap.presentation.screen.NodeQuizScreen
 import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapDetailScreen
+import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapDetailScrollTarget
 import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapLearningScreen
 import com.rmap.mobile.features.roadmap.presentation.screen.RoadmapMilestoneScreen
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.NodeQuizViewModel
@@ -89,6 +90,8 @@ fun RMapNavHost(navController: NavHostController) {
     val nodeProgressUpdateFailedMessage = stringResource(R.string.roadmap_detail_progress_update_failed)
     val learningCompletedMessage = stringResource(R.string.roadmap_learning_completed_snackbar)
     val learningCompletionRequiresQuizMessage = stringResource(R.string.roadmap_learning_completion_requires_quiz)
+    val learningNotStartedQuizMessage = stringResource(R.string.roadmap_learning_not_started_quiz_snackbar)
+    val learningLockedQuizMessage = stringResource(R.string.roadmap_learning_locked_quiz_snackbar)
     val resourceOpenFailedMessage = stringResource(R.string.roadmap_learning_resource_open_failed)
     val milestoneSubmissionQueuedMessage = stringResource(R.string.roadmap_milestone_submission_queued)
     val milestoneSubmissionFailedMessage = stringResource(R.string.roadmap_milestone_error_submit_failed)
@@ -465,6 +468,17 @@ fun RMapNavHost(navController: NavHostController) {
                         false
                     )
                 }.collectAsStateWithLifecycle()
+                val detailScrollRequest by remember(backStackEntry) {
+                    backStackEntry.savedStateHandle.getStateFlow(
+                        AppRoutes.ROADMAP_DETAIL_SCROLL_REQUEST,
+                        ""
+                    )
+                }.collectAsStateWithLifecycle()
+                val detailScrollTarget = when (detailScrollRequest) {
+                    AppRoutes.ROADMAP_DETAIL_SCROLL_HERO -> RoadmapDetailScrollTarget.Hero
+                    AppRoutes.ROADMAP_DETAIL_SCROLL_IN_PROGRESS_GROUP -> RoadmapDetailScrollTarget.InProgressGroup
+                    else -> null
+                }
 
                 LaunchedEffect(roadmapId) {
                     viewModel.loadRoadmap(roadmapId)
@@ -527,6 +541,10 @@ fun RMapNavHost(navController: NavHostController) {
                 RoadmapDetailScreen(
                     uiState = uiState,
                     onBackClick = ::navigateBackFromRoadmapDetail,
+                    scrollTarget = detailScrollTarget,
+                    onScrollTargetHandled = {
+                        backStackEntry.savedStateHandle[AppRoutes.ROADMAP_DETAIL_SCROLL_REQUEST] = ""
+                    },
                     onContinueClick = viewModel::onContinueClick,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     onSearchFocus = viewModel::onSearchFocus,
@@ -624,6 +642,18 @@ fun RMapNavHost(navController: NavHostController) {
                     }
                 }
 
+                fun navigateBackToRoadmapDetail(scrollRequest: String) {
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(AppRoutes.ROADMAP_DETAIL_SCROLL_REQUEST, scrollRequest)
+
+                    if (!navController.popBackStack() && uiState.roadmapId.isNotBlank()) {
+                        navController.navigate(AppRoutes.roadmapDetail(uiState.roadmapId)) {
+                            launchSingleTop = true
+                        }
+                    }
+                }
+
                 LaunchedEffect(roadmapId, nodeId, skillId, isCompleted) {
                     viewModel.loadLearningContent(
                         roadmapId = roadmapId,
@@ -676,12 +706,30 @@ fun RMapNavHost(navController: NavHostController) {
                             }
                     },
                     onTakeQuizClick = {
-                        navController.navigate(
-                            AppRoutes.roadmapNodeQuiz(
-                                roadmapId = uiState.roadmapId,
-                                nodeId = uiState.nodeId
-                            )
-                        )
+                        when {
+                            uiState.canTakeQuiz && !uiState.isNodeLocked -> {
+                                navController.navigate(
+                                    AppRoutes.roadmapNodeQuiz(
+                                        roadmapId = uiState.roadmapId,
+                                        nodeId = uiState.nodeId
+                                    )
+                                )
+                            }
+
+                            uiState.isNodeLocked -> {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(learningLockedQuizMessage)
+                                }
+                                navigateBackToRoadmapDetail(AppRoutes.ROADMAP_DETAIL_SCROLL_IN_PROGRESS_GROUP)
+                            }
+
+                            else -> {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(learningNotStartedQuizMessage)
+                                }
+                                navigateBackToRoadmapDetail(AppRoutes.ROADMAP_DETAIL_SCROLL_HERO)
+                            }
+                        }
                     }
                 )
             }

@@ -215,6 +215,29 @@ class RoadmapLearningViewModelTest {
     }
 
     @Test
+    fun `loadLearningContent for not-started node disables take quiz without marking locked`() {
+        val roadmapRepository = FakeRoadmapRepository(
+            nodeContentResult = Result.success(testContent.copy(status = LearningStatus.NotStarted, quizPassed = false))
+        )
+        val viewModel = RoadmapLearningViewModel(
+            skillLearningRepository = FakeSkillLearningRepository(),
+            roadmapRepository = roadmapRepository
+        )
+
+        viewModel.loadLearningContent(
+            roadmapId = "roadmap-1",
+            nodeId = "node-api",
+            skillId = "skill-api",
+            isCompleted = false
+        )
+
+        val state = viewModel.uiState.value
+        assertFalse(state.isNodeLocked)
+        assertFalse(state.canTakeQuiz)
+        assertFalse(state.canMarkCompleted)
+    }
+
+    @Test
     fun `onMarkCompletedClick with template roadmap emits failure when backend update fails`() = runTest {
         val roadmapRepository = FakeRoadmapRepository(
             detailResult = Result.success(fallbackDetail.copy(isTemplate = true)),

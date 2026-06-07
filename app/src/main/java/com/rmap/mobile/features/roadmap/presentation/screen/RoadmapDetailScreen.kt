@@ -23,6 +23,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +69,8 @@ fun RoadmapDetailScreen(
     uiState: RoadmapDetailUiState,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    scrollTarget: RoadmapDetailScrollTarget? = null,
+    onScrollTargetHandled: () -> Unit = {},
     onContinueClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onSearchFocus: () -> Unit = {},
@@ -81,6 +84,29 @@ fun RoadmapDetailScreen(
 ) {
     val listState = rememberLazyListState()
     val hasStartedLearning = uiState.primaryAction == RoadmapPrimaryAction.ContinueLearning
+
+    LaunchedEffect(scrollTarget, uiState.isLoading, uiState.isSearchActive, uiState.contentItems) {
+        val target = scrollTarget ?: return@LaunchedEffect
+        if (uiState.isLoading || uiState.isSearchActive) return@LaunchedEffect
+
+        val targetItemIndex = when (target) {
+            RoadmapDetailScrollTarget.Hero -> RoadmapDetailHeroItemIndex
+            RoadmapDetailScrollTarget.InProgressGroup -> {
+                val contentIndex = uiState.contentItems.indexOfFirst { contentItem ->
+                    contentItem is RoadmapDetailContentUiItem.Group &&
+                        contentItem.group.nodes.any { node -> node.status == RoadmapNodeStatus.InProgress }
+                }
+                if (contentIndex >= 0) {
+                    RoadmapDetailFirstContentItemIndex + contentIndex
+                } else {
+                    RoadmapDetailHeroItemIndex
+                }
+            }
+        }
+
+        listState.animateScrollToItem(targetItemIndex)
+        onScrollTargetHandled()
+    }
 
     Box(
         modifier = modifier
@@ -290,6 +316,13 @@ private fun RoadmapDetailMessageState(
 private val RoadmapDetailContentBottomPadding =
     Dimens.controlXl + Dimens.spacingScreenBottomCompact + Dimens.spacingXl
 private val RoadmapDetailMessageMaxWidth = 320.dp
+private const val RoadmapDetailHeroItemIndex = 0
+private const val RoadmapDetailFirstContentItemIndex = 2
+
+enum class RoadmapDetailScrollTarget {
+    Hero,
+    InProgressGroup
+}
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 1250)
 @Composable

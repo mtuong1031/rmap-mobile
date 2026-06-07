@@ -17,6 +17,9 @@ object AppRoutes {
     const val SKILL_ID_ARG = "skillId"
     const val NODE_COMPLETED_ARG = "nodeCompleted"
     const val ROADMAP_DETAIL_REFRESH_RESULT = "roadmapDetailRefreshResult"
+    const val ROADMAP_DETAIL_SCROLL_REQUEST = "roadmapDetailScrollRequest"
+    const val ROADMAP_DETAIL_SCROLL_HERO = "hero"
+    const val ROADMAP_DETAIL_SCROLL_IN_PROGRESS_GROUP = "inProgressGroup"
     const val LEARNING_NODE_REFRESH_RESULT = "learningNodeRefreshResult"
     const val ROADMAP_DETAIL = "roadmap_detail/{$ROADMAP_ID_ARG}"
     const val ROADMAP_LEARNING =
