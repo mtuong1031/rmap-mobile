@@ -1,18 +1,28 @@
 package com.rmap.mobile.features.roadmap.data.mapper
 
-import com.rmap.mobile.features.roadmap.data.model.NodeDetailResponseDto
-import com.rmap.mobile.features.roadmap.data.model.PrerequisiteDto
-import com.rmap.mobile.features.roadmap.data.model.QuizAnswerRequestDto
-import com.rmap.mobile.features.roadmap.data.model.QuizQuestionDto
-import com.rmap.mobile.features.roadmap.data.model.ResourceDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapNodeWithUserProgressDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapNodeQuizResponseDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapProgressSummaryDto
-import com.rmap.mobile.features.roadmap.data.model.RoadmapResponseDto
-import com.rmap.mobile.features.roadmap.data.model.SubmitQuizQuestionResultDto
-import com.rmap.mobile.features.roadmap.data.model.SubmitQuizRequestDto
-import com.rmap.mobile.features.roadmap.data.model.SubmitQuizResponseDto
-import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.rmap.mobile.features.roadmap.data.remote.model.NodeProgressDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionEnvelopeDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionTestResultDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneTestCaseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneTestSuiteDto
+import com.rmap.mobile.features.roadmap.data.remote.model.QuizAnswerRequestDto
+import com.rmap.mobile.features.roadmap.data.remote.model.QuizQuestionDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeQuizResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDetailDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDetailResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapProgressDto
+import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapWithNodesDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SkillDetailDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SkillResourceDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizQuestionResultDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizRequestDto
+import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressResponseDto
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
@@ -23,136 +33,250 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningResource
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmission
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmissionStatus
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmissionTestResult
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestCase
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuite
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuiteStatus
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestionResult
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
+import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
-import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
+import com.rmap.mobile.features.roadmap.domain.model.RoadmapContentItem
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
+import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.model.SubLesson
+import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
+import kotlin.math.roundToInt
 
-fun RoadmapResponseDto.toSummary(
-    progress: RoadmapProgressSummaryDto? = null
-): RoadmapSummary {
-    val icon = roleCategory.toLearningTopicIcon()
-    val nodeCount = progress?.nodesTotal ?: 0
-    return RoadmapSummary(
-        id = id,
-        title = title,
-        totalLessonsCount = nodeCount,
-        completedLessonsCount = progress?.nodesCompleted ?: 0,
-        difficulty = estimatedWeeks.toLearningDifficulty(),
-        durationLabel = estimatedWeeks.toDurationLabel(),
-        icon = icon,
-        categoryId = roleCategory.toCategoryId(),
-        skillNodesCount = nodeCount,
-        coverPlaceholder = title.toCoverPlaceholder()
-    )
-}
-
-fun List<RoadmapSummary>.toCategories(): List<RoadmapCategory> {
-    return distinctBy { it.categoryId }
-        .map { roadmap ->
-            RoadmapCategory(
-                id = roadmap.categoryId,
-                name = roadmap.categoryId.toCategoryName(),
-                icon = roadmap.icon
-            )
-        }
-}
-
-fun RoadmapResponseDto.toDetail(
-    nodes: List<RoadmapNodeWithUserProgressDto>
-): RoadmapDetail {
-    val leafNodes = nodes.filter { node -> node.isLessonNode() }
-    val milestones = nodes
-        .filter { node -> node.nodeType.equals(NODE_TYPE_MILESTONE, ignoreCase = true) }
-        .sortedWith(compareBy<RoadmapNodeWithUserProgressDto> { it.posY }.thenBy { it.posX })
-        .map { node -> node.toRoadmapMilestone() }
-    val completedLessons = leafNodes.count { node -> node.toLearningStatus() == LearningStatus.Completed }
-    val sections = nodes
-        .filter { node -> node.nodeType.equals(NODE_TYPE_GROUP, ignoreCase = true) }
-        .sortedWith(compareBy<RoadmapNodeWithUserProgressDto> { it.posY }.thenBy { it.posX })
-        .mapNotNull { group ->
-            val modules = leafNodes
-                .filter { node -> node.parentId == group.id }
-                .sortedWith(compareBy<RoadmapNodeWithUserProgressDto> { it.posY }.thenBy { it.posX })
-                .map { node -> node.toLearningModule(roleCategory) }
-
-            if (modules.isEmpty()) {
-                null
-            } else {
-                LearningModuleSection(
-                    title = group.name,
-                    modules = modules
-                )
+fun RoadmapWithNodesDto.toDomain(progress: RoadmapProgressDto): RoadmapDetail {
+    val roadmapId = id.requiredApiField("id")
+    val roadmapTitle = title.requiredApiField("title")
+    val treeNodes = nodes.orEmpty().toTreeNodes()
+    val allNodes = treeNodes.flattenNodes()
+    val progressByNodeId = (
+        progress.nodes.orEmpty() +
+            allNodes.mapNotNull { node ->
+                val nodeId = node.id?.takeIf { it.isNotBlank() }
+                val nodeProgress = node.progress
+                if (nodeId != null && nodeProgress != null && nodeProgress.roadmapNodeId.isNullOrBlank()) {
+                    nodeProgress.copy(roadmapNodeId = nodeId)
+                } else {
+                    nodeProgress
+                }
+            }
+        )
+        .mapNotNull { nodeProgress ->
+            nodeProgress.roadmapNodeId?.takeIf { it.isNotBlank() }?.let { nodeId ->
+                nodeId to nodeProgress
             }
         }
-        .ifEmpty {
-            listOf(
-                LearningModuleSection(
-                    title = roleCategory.toCategoryName(),
-                    modules = leafNodes
-                        .sortedWith(compareBy<RoadmapNodeWithUserProgressDto> { it.posY }.thenBy { it.posX })
-                        .map { node -> node.toLearningModule(roleCategory) }
+        .toMap()
+    val sortedNodes = treeNodes.sortedByRoadmapOrder()
+    val leafNodes = allNodes.filter { node -> node.isLeafNode() }
+    val completedLessons = progress.completedNodes ?: leafNodes.count { node ->
+        progressByNodeId[node.id.orEmpty()].toLearningStatus() == LearningStatus.Completed
+    }
+    val totalLessons = progress.totalNodes ?: allNodes.size
+    val hasStartedLearning = progress.hasStartedLearning() ||
+        progressByNodeId.values.any { nodeProgress -> nodeProgress.hasStartedLearning() }
+
+    val rawContentItems = sortedNodes.map { node ->
+        if (node.isMilestoneNode()) {
+            RoadmapContentItem.Milestone(
+                node.toRoadmapMilestone(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = false
+                )
+            )
+        } else {
+            RoadmapContentItem.Group(
+                node.toLearningModuleSection(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = hasStartedLearning
                 )
             )
         }
+    }
+    val lockedSections = rawContentItems
+        .filterIsInstance<RoadmapContentItem.Group>()
+        .map { item -> item.section }
+        .withSequentialLocks()
+    var sectionIndex = 0
+    val contentItems = rawContentItems.map { item ->
+        when (item) {
+            is RoadmapContentItem.Group -> RoadmapContentItem.Group(lockedSections[sectionIndex++])
+            is RoadmapContentItem.Milestone -> item
+        }
+    }
+    val sections = contentItems
+        .filterIsInstance<RoadmapContentItem.Group>()
+        .map { item -> item.section }
+    val milestones = contentItems
+        .filterIsInstance<RoadmapContentItem.Milestone>()
+        .map { item -> item.milestone }
 
     return RoadmapDetail(
-        id = id,
-        title = title,
-        categoryLabel = roleCategory.toCategoryName(),
-        completedLessons = completedLessons,
-        totalLessons = leafNodes.size,
-        sections = sections,
-        milestones = milestones,
-        aiTip = leafNodes.toAiScholarTip()
-    )
-}
-
-fun List<RoadmapProgressSummaryDto>.toLearningProgress(): LearningProgress {
-    val totalLessons = sumOf { it.nodesTotal }
-    val completedLessons = sumOf { it.nodesCompleted }
-    return LearningProgress(
+        id = roadmapId,
+        title = roadmapTitle,
+        categoryLabel = displayRoleName(),
         completedLessons = completedLessons,
         totalLessons = totalLessons,
-        streakDays = maxOfOrNull { it.streakDays } ?: 0,
-        todayGoalCompleted = 0,
-        todayGoalTotal = DEFAULT_DAILY_GOAL,
-        completedRoadmaps = count { progress ->
-            progress.nodesTotal > 0 && progress.nodesCompleted >= progress.nodesTotal
-        }
+        sections = sections,
+        milestones = milestones,
+        contentItems = contentItems,
+        aiTip = null,
+        roleId = roleId.orEmpty(),
+        roleName = displayRoleName(),
+        description = description,
+        isTemplate = isTemplate == true,
+        hasStartedLearning = hasStartedLearning
     )
 }
 
-fun NodeDetailResponseDto.toDomain(): LearningNodeDetail {
+fun RoadmapWithNodesDto.toSummary(progress: RoadmapProgressDto? = null): RoadmapSummary {
+    val nodeCount = progress?.totalNodes ?: nodes.orEmpty().toTreeNodes().flattenNodes().size
+    val completedCount = progress?.completedNodes ?: 0
+    val categoryId = roleId?.takeIf { it.isNotBlank() }
+        ?: roleCategory?.toStableLearningId()
+        ?: roleName.orStableCategoryId()
+    val categoryLabel = displayRoleName()
+
+    return RoadmapSummary(
+        id = id.requiredApiField("id"),
+        title = title.requiredApiField("title"),
+        totalLessonsCount = nodeCount,
+        completedLessonsCount = completedCount,
+        difficulty = nodeCount.toDifficulty(),
+        durationLabel = categoryLabel,
+        icon = inferIcon(categoryLabel, title, description),
+        categoryId = categoryId,
+        skillNodesCount = nodeCount
+    )
+}
+
+fun RoadmapDto.toSummary(nodes: List<RoadmapNodeDto> = emptyList()): RoadmapSummary {
+    return toRoadmapWithNodes(nodes).toSummary()
+}
+
+fun RoadmapDto.toRoadmapWithNodes(nodes: List<RoadmapNodeDto>): RoadmapWithNodesDto {
+    return RoadmapWithNodesDto(
+        id = id,
+        userId = userId,
+        roleId = roleId,
+        roleName = roleName,
+        roleCategory = roleCategory,
+        goalName = goalName,
+        title = title,
+        description = description,
+        isTemplate = isTemplate,
+        createdAt = createdAt,
+        generatedAt = generatedAt,
+        updatedAt = updatedAt,
+        deadlineDate = deadlineDate,
+        estimatedWeeks = estimatedWeeks,
+        hoursPerDay = hoursPerDay,
+        nodes = nodes
+    )
+}
+
+fun RoadmapProgressDto.toLearningProgress(): LearningProgress {
+    return LearningProgress(
+        completedLessons = completedNodes ?: 0,
+        totalLessons = totalNodes ?: nodes.orEmpty().size,
+        streakDays = streakDays ?: 0,
+        todayGoalCompleted = 0,
+        todayGoalTotal = 0,
+        completedRoadmaps = if ((totalNodes ?: 0) > 0 && completedNodes == totalNodes) 1 else 0
+    )
+}
+
+fun UpdateNodeProgressResponseDto.toDomain(): NodeProgressUpdateResult {
+    return (progress ?: toNodeProgressDto()).toNodeProgressUpdateResult(unlockedNodes.orEmpty())
+}
+
+fun RoadmapNodeDetailResponseDto.toSkillLearningContent(
+    fallbackSkillId: String
+): SkillLearningContent {
+    val detail = toDetailDto()
+    val node = detail.node
+    val progress = detail.progress ?: node?.progress
+    val resolvedSkillId = detail.skill?.id
+        ?: node?.skillId
+        ?: fallbackSkillId
+    val skill = (
+        detail.skill ?: SkillDetailDto(
+            id = resolvedSkillId,
+            name = node?.skillName ?: node?.name,
+            description = node?.description,
+            estimatedHours = node?.estimatedHoursAsInt()
+        )
+        ).toDomain()
+    val resources = detail.resources
+        .toSkillResourceDtos()
+        .map { resource -> resource.toDomain(defaultSkillId = skill.id) }
+
+    return SkillLearningContent(
+        skill = skill,
+        resources = resources,
+        status = progress.toLearningStatus(),
+        quizPassed = progress?.quizPassed == true
+    )
+}
+
+fun RoadmapNodeDetailResponseDto.toLearningNodeDetail(): LearningNodeDetail {
+    val detail = toDetailDto()
+    val node = detail.node ?: error("Missing roadmap node detail")
+    val progress = detail.progress ?: node.progress
+    val skill = detail.skill
+    val resources = detail.resources
+        .toSkillResourceDtos()
+        .map { resource -> resource.toLearningResource() }
+
     return LearningNodeDetail(
-        roadmapId = node.roadmapId,
-        nodeId = node.id,
-        title = node.name,
+        roadmapId = node.roadmapId.requiredApiField("node.roadmapId"),
+        nodeId = node.id.requiredApiField("node.id"),
+        title = node.displayName().requiredApiField("node.name"),
         description = node.description ?: skill?.description,
         skillName = skill?.name,
         skillDescription = skill?.description,
-        estimatedHours = node.estimatedHours.toEstimatedHours()
-            ?: skill?.defaultEstimatedHours.toEstimatedHours(),
-        status = node.toLearningStatus(),
-        requirement = node.toLearningRequirement(),
-        resources = resources.orEmpty().map { resource -> resource.toDomain() },
-        prerequisites = prerequisites.map { prerequisite -> prerequisite.toDomain() }
+        estimatedHours = node.estimatedHoursAsInt() ?: skill?.estimatedHours,
+        status = progress.toLearningStatus(),
+        requirement = node.learningRequirement(),
+        resources = resources,
+        prerequisites = detail.prerequisites.toLearningPrerequisites()
+    )
+}
+
+fun RoadmapNodeDetailResponseDto.toMilestoneDetail(): MilestoneDetail {
+    val detail = toDetailDto()
+    val node = detail.node ?: error("Missing milestone node detail")
+    val progress = detail.progress ?: node.progress
+
+    return MilestoneDetail(
+        roadmapId = node.roadmapId.requiredApiField("milestone.node.roadmapId"),
+        nodeId = node.id.requiredApiField("milestone.node.id"),
+        title = node.displayName().requiredApiField("milestone.node.name"),
+        description = node.description,
+        status = progress.toLearningStatus(),
+        testSuite = detail.milestoneTestSuite?.toDomain(),
+        latestSubmission = detail.latestSubmission?.toDomain()
     )
 }
 
 fun RoadmapNodeQuizResponseDto.toDomain(): NodeQuiz {
     return NodeQuiz(
-        nodeId = nodeId,
-        skillId = skillId,
-        questions = questions.map { question -> question.toDomain() }
+        nodeId = nodeId.requiredApiField("quiz.nodeId"),
+        skillId = skillId.requiredApiField("quiz.skillId"),
+        questions = questions.orEmpty().map { question -> question.toDomain() }
     )
 }
 
@@ -169,79 +293,444 @@ fun List<NodeQuizAnswer>.toSubmitQuizRequestDto(): SubmitQuizRequestDto {
 
 fun SubmitQuizResponseDto.toDomain(): NodeQuizSubmissionResult {
     return NodeQuizSubmissionResult(
-        scorePercent = scorePct.toInt(),
-        passed = passed,
-        correctCount = correctCount,
-        totalQuestions = totalQuestions,
+        scorePercent = scorePct?.toInt()?.coerceIn(0, 100) ?: 0,
+        passed = passed == true,
+        correctCount = correctCount ?: 0,
+        totalQuestions = totalQuestions ?: results.orEmpty().size,
         suggestion = suggestion,
-        unlockedNodeIds = unlockedNodes,
-        questionResults = results.map { result -> result.toDomain() }
+        unlockedNodeIds = unlockedNodes.orEmpty(),
+        questionResults = results.orEmpty().map { result -> result.toDomain() }
     )
 }
 
-fun String.toCategoryId(): String {
-    return trim()
-        .lowercase()
-        .replace(Regex("[^a-z0-9]+"), "-")
-        .trim('-')
+fun MilestoneSubmissionEnvelopeDto.toDomain(): MilestoneSubmission {
+    return submission?.toDomain() ?: error("Missing milestone submission response")
 }
 
-fun String.toCategoryName(): String {
-    return trim()
-        .replace("_", " ")
-        .replace("-", " ")
-        .split(Regex("\\s+"))
-        .filter(String::isNotBlank)
-        .joinToString(" ") { word ->
-            word.lowercase().replaceFirstChar { firstChar ->
-                if (firstChar.isLowerCase()) firstChar.titlecase() else firstChar.toString()
-            }
+fun LearningStatus.toNodeStatusRequestValue(): String {
+    return when (this) {
+        LearningStatus.Completed -> "COMPLETED"
+        LearningStatus.InProgress -> "IN_PROGRESS"
+        LearningStatus.Locked -> "LOCKED"
+        LearningStatus.NotStarted -> "LOCKED"
+    }
+}
+
+fun List<RoadmapSummary>.toCategories(): List<RoadmapCategory> {
+    return filter { it.categoryId.isNotBlank() }
+        .distinctBy { it.categoryId }
+        .map { summary ->
+            RoadmapCategory(
+                id = summary.categoryId,
+                name = summary.durationLabel.ifBlank { summary.categoryId },
+                icon = summary.icon
+            )
         }
 }
 
-private fun RoadmapNodeWithUserProgressDto.toLearningModule(
-    roleCategory: String
-): LearningModule {
-    val status = toLearningStatus()
-    return LearningModule(
-        id = id,
-        title = name,
-        status = status,
-        progressPercent = status.toProgressPercent(),
-        icon = roleCategory.toLearningTopicIcon(),
-        subLessons = emptyList(),
-        description = description,
-        requirement = toLearningRequirement(),
-        quizScorePercent = progress?.quizScorePct.toIntPercent(),
-        quizPassed = progress?.quizPassed
+private fun RoadmapNodeDetailResponseDto.toDetailDto(): RoadmapNodeDetailDto {
+    return data?.copy(
+        latestSubmission = data.latestSubmission ?: latestSubmission,
+        milestoneTestSuite = data.milestoneTestSuite ?: milestoneTestSuite
+    ) ?: RoadmapNodeDetailDto(
+        node = node,
+        progress = progress,
+        skill = skill,
+        resources = resources,
+        prerequisites = prerequisites,
+        latestSubmission = latestSubmission,
+        milestoneTestSuite = milestoneTestSuite
     )
 }
 
-private fun RoadmapNodeWithUserProgressDto.toRoadmapMilestone(): RoadmapMilestone {
-    return RoadmapMilestone(
-        id = id,
-        title = name,
-        description = description,
-        status = toLearningStatus()
+private fun MilestoneTestSuiteDto.toDomain(): MilestoneTestSuite {
+    return MilestoneTestSuite(
+        id = id.requiredApiField("milestoneTestSuite.id"),
+        title = title.requiredApiField("milestoneTestSuite.title"),
+        summary = summary.requiredApiField("milestoneTestSuite.summary"),
+        passThresholdPercent = (passThresholdPct ?: 0).coerceIn(0, 100),
+        status = status.toMilestoneTestSuiteStatus(),
+        testCases = testCases.orEmpty().map { testCase -> testCase.toDomain() }
     )
 }
 
-private fun RoadmapNodeWithUserProgressDto.toLearningStatus(): LearningStatus {
-    return when (progress?.status?.uppercase()) {
-        NODE_STATUS_COMPLETED -> LearningStatus.Completed
-        NODE_STATUS_IN_PROGRESS -> LearningStatus.InProgress
-        NODE_STATUS_LOCKED -> LearningStatus.Locked
-        null -> LearningStatus.NotStarted
-        else -> LearningStatus.NotStarted
+private fun MilestoneTestCaseDto.toDomain(): MilestoneTestCase {
+    return MilestoneTestCase(
+        name = name.requiredApiField("milestoneTestSuite.testCases.name"),
+        description = description.requiredApiField("milestoneTestSuite.testCases.description")
+    )
+}
+
+private fun MilestoneSubmissionDto.toDomain(): MilestoneSubmission {
+    return MilestoneSubmission(
+        id = id.requiredApiField("milestoneSubmission.id"),
+        repoUrl = repoUrl.requiredApiField("milestoneSubmission.repoUrl"),
+        testSuiteId = testSuiteId,
+        status = status.toMilestoneSubmissionStatus(),
+        outputLog = outputLog,
+        passRatePercent = passRatePct?.roundToInt()?.coerceIn(0, 100),
+        passedTests = passedTests,
+        totalTests = totalTests,
+        attemptNumber = attemptNumber ?: 0,
+        createdAt = createdAt.requiredApiField("milestoneSubmission.createdAt"),
+        completedAt = completedAt,
+        testResults = testResults.orEmpty().map { result -> result.toDomain() }
+    )
+}
+
+private fun MilestoneSubmissionTestResultDto.toDomain(): MilestoneSubmissionTestResult {
+    return MilestoneSubmissionTestResult(
+        name = name.requiredApiField("milestoneSubmission.testResults.name"),
+        message = message.orEmpty(),
+        passed = passed == true
+    )
+}
+
+private fun String?.toMilestoneSubmissionStatus(): MilestoneSubmissionStatus {
+    return when (this?.lowercase()) {
+        "running" -> MilestoneSubmissionStatus.Running
+        "passed" -> MilestoneSubmissionStatus.Passed
+        "failed" -> MilestoneSubmissionStatus.Failed
+        "error" -> MilestoneSubmissionStatus.Error
+        else -> MilestoneSubmissionStatus.Unknown
     }
 }
 
-private fun RoadmapNodeWithUserProgressDto.toLearningRequirement(): LearningRequirement {
-    return if (nodeType.equals(NODE_TYPE_OPTIONAL, ignoreCase = true)) {
-        LearningRequirement.Optional
+private fun String?.toMilestoneTestSuiteStatus(): MilestoneTestSuiteStatus {
+    return when (this?.lowercase()) {
+        "ready" -> MilestoneTestSuiteStatus.Ready
+        "generating" -> MilestoneTestSuiteStatus.Generating
+        "failed" -> MilestoneTestSuiteStatus.Failed
+        "not_generated" -> MilestoneTestSuiteStatus.NotGenerated
+        else -> MilestoneTestSuiteStatus.Unknown
+    }
+}
+
+private fun JsonElement?.toSkillResourceDtos(): List<SkillResourceDto> {
+    if (this == null || isJsonNull) return emptyList()
+
+    val array = when {
+        isJsonArray -> asJsonArray
+        isJsonObject -> asJsonObject.get("data")?.takeIf { it.isJsonArray }?.asJsonArray
+        else -> null
+    } ?: return emptyList()
+
+    return array.mapNotNull { element ->
+        element.takeIf { it.isJsonObject }
+            ?.asJsonObject
+            ?.toSkillResourceDto()
+    }
+}
+
+private fun JsonObject.toSkillResourceDto(): SkillResourceDto {
+    return SkillResourceDto(
+        id = stringValue("id"),
+        skillId = stringValue("skill_id", "skillId"),
+        title = stringValue("title"),
+        url = stringValue("url"),
+        platform = stringValue("platform"),
+        isFree = booleanValue("is_free", "isFree"),
+        levelTag = stringValue("level_tag", "levelTag")
+    )
+}
+
+private fun JsonObject.stringValue(vararg fieldNames: String): String? {
+    return fieldNames.firstNotNullOfOrNull { fieldName ->
+        get(fieldName)
+            ?.takeIf { !it.isJsonNull }
+            ?.asString
+            ?.takeIf { it.isNotBlank() }
+    }
+}
+
+private fun JsonObject.booleanValue(vararg fieldNames: String): Boolean? {
+    return fieldNames.firstNotNullOfOrNull { fieldName ->
+        get(fieldName)
+            ?.takeIf { !it.isJsonNull }
+            ?.asBoolean
+    }
+}
+
+private fun JsonElement?.toLearningPrerequisites(): List<LearningPrerequisite> {
+    if (this == null || isJsonNull) return emptyList()
+
+    val array = when {
+        isJsonArray -> asJsonArray
+        isJsonObject -> asJsonObject.get("data")?.takeIf { it.isJsonArray }?.asJsonArray
+        else -> null
+    } ?: return emptyList()
+
+    return array.mapNotNull { element ->
+        val value = element.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
+        val skillId = value.stringValue("skillId", "skill_id") ?: return@mapNotNull null
+        val skillName = value.stringValue("skillName", "skill_name") ?: return@mapNotNull null
+        LearningPrerequisite(
+            skillId = skillId,
+            skillName = skillName
+        )
+    }
+}
+
+private fun List<LearningModuleSection>.withSequentialLocks(): List<LearningModuleSection> {
+    var previousRequiredNodesCompleted = true
+
+    return mapIndexed { index, section ->
+        val sectionUnlocked = index == 0 || previousRequiredNodesCompleted
+        val updatedSection = if (sectionUnlocked) {
+            section
+        } else {
+            section.copy(
+                modules = section.modules.map { module -> module.lockIncomplete() }
+            )
+        }
+        previousRequiredNodesCompleted = updatedSection.requiredStatuses()
+            .let { statuses -> statuses.isEmpty() || statuses.all { it == LearningStatus.Completed } }
+        updatedSection
+    }
+}
+
+private fun LearningModuleSection.requiredStatuses(): List<LearningStatus> {
+    return modules.flatMap { module -> module.requiredStatuses() }
+}
+
+private fun LearningModule.requiredStatuses(): List<LearningStatus> {
+    val requiredSubLessons = subLessons
+        .filter { subLesson -> subLesson.requirement == LearningRequirement.Required }
+        .map { subLesson -> subLesson.status }
+
+    return if (requiredSubLessons.isNotEmpty()) {
+        requiredSubLessons
+    } else if (requirement == LearningRequirement.Required) {
+        listOf(status)
     } else {
-        LearningRequirement.Required
+        emptyList()
     }
+}
+
+private fun LearningModule.lockIncomplete(): LearningModule {
+    return if (status == LearningStatus.Completed) {
+        copy(
+            subLessons = subLessons.map { subLesson -> subLesson.lockIncomplete() }
+        )
+    } else {
+        copy(
+            status = LearningStatus.Locked,
+            progressPercent = 0,
+            subLessons = subLessons.map { subLesson -> subLesson.lockIncomplete() }
+        )
+    }
+}
+
+private fun SubLesson.lockIncomplete(): SubLesson {
+    return if (status == LearningStatus.Completed) {
+        this
+    } else {
+        copy(status = LearningStatus.Locked)
+    }
+}
+
+private fun RoadmapNodeDto.toLearningModuleSection(
+    progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean
+): LearningModuleSection {
+    val sortedChildren = children.orEmpty().sortedByRoadmapOrder()
+    val sectionTitle = displayName().requiredApiField("name")
+    val modules = if (isGroupNode() && sortedChildren.isNotEmpty()) {
+        sortedChildren.map { child ->
+            child.toLearningModule(
+                progressByNodeId = progressByNodeId,
+                hasStartedLearning = hasStartedLearning,
+                includeChildSubLessons = true
+            )
+        }
+    } else {
+        listOf(
+            toLearningModule(
+                progressByNodeId = progressByNodeId,
+                hasStartedLearning = hasStartedLearning,
+                includeChildSubLessons = false
+            )
+        ) +
+            sortedChildren.map { child ->
+                child.toLearningModule(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = hasStartedLearning,
+                    includeChildSubLessons = true
+                )
+            }
+    }
+
+    return LearningModuleSection(
+        title = sectionTitle,
+        modules = modules
+    )
+}
+
+private fun RoadmapNodeDto.toLearningModule(
+    progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean,
+    includeChildSubLessons: Boolean
+): LearningModule {
+    val nodeId = id.requiredApiField("id")
+    val status = progressByNodeId[nodeId].toLearningStatus(hasStartedLearning)
+    val subLessons = if (includeChildSubLessons) {
+        children.orEmpty()
+            .sortedByRoadmapOrder()
+            .flatMap { child ->
+                child.toSubLessons(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = hasStartedLearning
+                )
+            }
+    } else {
+        emptyList()
+    }
+
+    return LearningModule(
+        title = displayName().requiredApiField("name"),
+        status = status,
+        progressPercent = subLessons.toProgressPercent(status),
+        icon = inferIcon(displayName(), description),
+        subLessons = subLessons,
+        id = nodeId,
+        skillId = skillId.orNodeSkillId(nodeId),
+        requirement = learningRequirement(),
+        estimatedHours = estimatedHoursAsInt(),
+        resourcesCount = resourcesCountValue(),
+        description = description
+    )
+}
+
+private fun RoadmapNodeDto.toSubLessons(
+    progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean
+): List<SubLesson> {
+    val nodeId = id.requiredApiField("id")
+    val subLesson = SubLesson(
+        title = displayName().requiredApiField("name"),
+        status = progressByNodeId[nodeId].toLearningStatus(hasStartedLearning),
+        id = nodeId,
+        skillId = skillId.orNodeSkillId(nodeId),
+        requirement = learningRequirement(),
+        estimatedHours = estimatedHoursAsInt(),
+        resourcesCount = resourcesCountValue(),
+        description = description
+    )
+    val descendants = children.orEmpty()
+        .sortedByRoadmapOrder()
+        .flatMap { child ->
+            child.toSubLessons(
+                progressByNodeId = progressByNodeId,
+                hasStartedLearning = hasStartedLearning
+            )
+        }
+
+    return listOf(subLesson) + descendants
+}
+
+private fun RoadmapNodeDto.toRoadmapMilestone(
+    progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean
+): RoadmapMilestone {
+    val nodeId = id.requiredApiField("milestone.id")
+    return RoadmapMilestone(
+        id = nodeId,
+        title = displayName().requiredApiField("milestone.name"),
+        description = description,
+        status = progressByNodeId[nodeId].toLearningStatus(hasStartedLearning)
+    )
+}
+
+private fun NodeProgressDto?.toNodeProgressUpdateResult(
+    unlockedNodeIds: List<String>
+): NodeProgressUpdateResult {
+    val progress = this ?: error("Missing node progress response")
+    return NodeProgressUpdateResult(
+        nodeId = progress.roadmapNodeId.requiredApiField("progress.roadmapNodeId"),
+        status = progress.toLearningStatus(),
+        unlockedNodeIds = unlockedNodeIds.filter { it.isNotBlank() }
+    )
+}
+
+private fun NodeProgressDto?.toLearningStatus(hasStartedLearning: Boolean = false): LearningStatus {
+    return when (this?.status?.lowercase()) {
+        "completed" -> LearningStatus.Completed
+        "in_progress" -> LearningStatus.InProgress
+        "locked" -> LearningStatus.Locked
+        else -> if (hasStartedLearning || this.hasStartedLearning()) {
+            LearningStatus.InProgress
+        } else {
+            LearningStatus.NotStarted
+        }
+    }
+}
+
+private fun RoadmapProgressDto.hasStartedLearning(): Boolean {
+    return (inProgressNodes ?: 0) > 0 ||
+        (completedNodes ?: 0) > 0 ||
+        (completionPercentage ?: 0f) > 0f ||
+        nodes.orEmpty().any { nodeProgress -> nodeProgress.hasStartedLearning() }
+}
+
+private fun NodeProgressDto?.hasStartedLearning(): Boolean {
+    return this != null && (
+        !startedAt.isNullOrBlank() ||
+            status.equals("in_progress", ignoreCase = true) ||
+            status.equals("completed", ignoreCase = true)
+        )
+}
+
+private fun UpdateNodeProgressResponseDto.toNodeProgressDto(): NodeProgressDto {
+    return NodeProgressDto(
+        roadmapNodeId = roadmapNodeId,
+        skillId = skillId,
+        skillName = skillName,
+        status = status,
+        startedAt = startedAt,
+        completedAt = completedAt
+    )
+}
+
+private fun Map<String, NodeProgressDto>.countCompleted(): Int {
+    return values.count { it.status?.lowercase() == "completed" }
+}
+
+private fun SkillResourceDto.toLearningResource(): LearningResource {
+    return LearningResource(
+        id = id.requiredApiField("resource.id"),
+        title = title.requiredApiField("resource.title"),
+        url = url.requiredApiField("resource.url"),
+        type = platform ?: "OTHER",
+        isFree = isFree == true,
+        isPrimary = false
+    )
+}
+
+private fun QuizQuestionDto.toDomain(): NodeQuizQuestion {
+    return NodeQuizQuestion(
+        id = id.requiredApiField("question.id"),
+        text = questionText.requiredApiField("question.questionText"),
+        options = listOf(
+            NodeQuizOption(key = "A", text = optionA.requiredApiField("question.optionA")),
+            NodeQuizOption(key = "B", text = optionB.requiredApiField("question.optionB")),
+            NodeQuizOption(key = "C", text = optionC.requiredApiField("question.optionC")),
+            NodeQuizOption(key = "D", text = optionD.requiredApiField("question.optionD"))
+        )
+    )
+}
+
+private fun SubmitQuizQuestionResultDto.toDomain(): NodeQuizQuestionResult {
+    return NodeQuizQuestionResult(
+        questionId = questionId.requiredApiField("result.questionId"),
+        selectedOption = selectedOption.requiredApiField("result.selectedOption").uppercase(),
+        correctOption = correctOption.requiredApiField("result.correctOption").uppercase(),
+        isCorrect = isCorrect == true
+    )
+}
+
+private fun List<SubLesson>.toProgressPercent(parentStatus: LearningStatus): Int {
+    if (isEmpty()) return parentStatus.toProgressPercent()
+    return (count { it.status == LearningStatus.Completed } * 100) / size
 }
 
 private fun LearningStatus.toProgressPercent(): Int {
@@ -253,122 +742,133 @@ private fun LearningStatus.toProgressPercent(): Int {
     }
 }
 
-private fun RoadmapNodeWithUserProgressDto.isLessonNode(): Boolean {
-    return nodeType.equals(NODE_TYPE_REQUIRED, ignoreCase = true) ||
-        nodeType.equals(NODE_TYPE_OPTIONAL, ignoreCase = true)
-}
-
-private fun List<RoadmapNodeWithUserProgressDto>.toAiScholarTip(): AiScholarTip? {
-    val currentModule = firstOrNull { node -> node.toLearningStatus() == LearningStatus.InProgress }
-    val nextModule = firstOrNull { node ->
-        node.toLearningStatus() == LearningStatus.NotStarted ||
-            node.toLearningStatus() == LearningStatus.Locked
-    }
-    return if (currentModule == null && nextModule == null) {
-        null
-    } else {
-        AiScholarTip(
-            currentModule = currentModule?.name.orEmpty(),
-            recommendedTopic = nextModule?.name ?: currentModule?.name.orEmpty(),
-            nextModule = nextModule?.name.orEmpty()
-        )
-    }
-}
-
-private fun Int?.toLearningDifficulty(): LearningDifficulty {
+private fun Int.toDifficulty(): LearningDifficulty {
     return when {
-        this == null -> LearningDifficulty.Intermediate
-        this <= 4 -> LearningDifficulty.Beginner
-        this <= 8 -> LearningDifficulty.Intermediate
-        this <= 12 -> LearningDifficulty.Advanced
-        else -> LearningDifficulty.Expert
+        this >= 40 -> LearningDifficulty.Advanced
+        this >= 20 -> LearningDifficulty.Intermediate
+        else -> LearningDifficulty.Beginner
     }
 }
 
-private fun Int?.toDurationLabel(): String {
-    return this?.let { weeks -> "$weeks weeks" } ?: "Self-paced"
-}
-
-private fun String.toLearningTopicIcon(): LearningTopicIcon {
-    return when (uppercase()) {
-        "WEB_DEVELOPMENT",
-        "FRAMEWORKS",
-        "BEST_PRACTICES",
-        "GAME_DEVELOPMENT" -> LearningTopicIcon.Code
-        "MOBILE_DEVELOPMENT" -> LearningTopicIcon.Devices
-        "DESIGN" -> LearningTopicIcon.Palette
-        "AI_AND_MACHINE_LEARNING" -> LearningTopicIcon.SmartToy
-        "DATA_ANALYSIS" -> LearningTopicIcon.Science
-        "DEVOPS" -> LearningTopicIcon.Terminal
-        "DATABASES",
-        "BLOCKCHAIN",
-        "CYBER_SECURITY" -> LearningTopicIcon.Storage
-        else -> LearningTopicIcon.DataObject
-    }
-}
-
-private fun String.toCoverPlaceholder(): RoadmapCoverPlaceholder? {
-    val normalizedTitle = lowercase()
+private fun inferIcon(vararg values: String?): LearningTopicIcon {
+    val value = values.filterNotNull().joinToString(" ").lowercase()
     return when {
-        "full stack" in normalizedTitle -> RoadmapCoverPlaceholder.FullStack
-        "ui/ux" in normalizedTitle || "ui ux" in normalizedTitle -> RoadmapCoverPlaceholder.UiUx
-        else -> null
+        listOf("android", "ios", "mobile", "kotlin", "swift").any { it in value } -> LearningTopicIcon.Devices
+        listOf("design", "ui", "ux", "figma").any { it in value } -> LearningTopicIcon.Palette
+        listOf("data", "machine learning", "ai", "artificial", "python").any { it in value } -> LearningTopicIcon.Science
+        listOf("devops", "cloud", "ci", "cd", "docker", "kubernetes").any { it in value } -> LearningTopicIcon.Terminal
+        listOf("backend", "database", "sql", "api", "server").any { it in value } -> LearningTopicIcon.Storage
+        else -> LearningTopicIcon.Code
     }
 }
 
-private fun ResourceDto.toDomain(): LearningResource {
-    return LearningResource(
-        id = id.toString(),
-        title = title,
-        url = url,
-        type = resourceType,
-        isFree = isFree,
-        isPrimary = isPrimary
+private fun String?.orStableCategoryId(): String {
+    return this?.toStableLearningId()?.takeIf { it.isNotBlank() } ?: "roadmap"
+}
+
+private fun String?.requiredApiField(fieldName: String): String {
+    return this?.takeIf { it.isNotBlank() }
+        ?: error("Missing roadmap API field: $fieldName")
+}
+
+private fun String?.orNodeSkillId(nodeId: String): String {
+    return takeIf { !it.isNullOrBlank() } ?: nodeId
+}
+
+private fun RoadmapWithNodesDto.displayRoleName(): String {
+    return roleName?.takeIf { it.isNotBlank() }
+        ?: roleCategory?.toDisplayLabel()
+        ?: goalName.orEmpty()
+}
+
+private fun RoadmapNodeDto.displayName(): String? {
+    return skillName?.takeIf { it.isNotBlank() }
+        ?: name?.takeIf { it.isNotBlank() }
+}
+
+private fun RoadmapNodeDto.estimatedHoursAsInt(): Int? {
+    return skillEstimatedHours ?: estimatedHours?.toInt()
+}
+
+private fun RoadmapNodeDto.resourcesCountValue(): Int {
+    return resourcesCount?.coerceAtLeast(0) ?: 0
+}
+
+private fun RoadmapNodeDto.isGroupNode(): Boolean {
+    return nodeType.equals("GROUP", ignoreCase = true)
+}
+
+private fun RoadmapNodeDto.isMilestoneNode(): Boolean {
+    return nodeType.equals("MILESTONE", ignoreCase = true)
+}
+
+private fun RoadmapNodeDto.isLeafNode(): Boolean {
+    return nodeType.equals("REQUIRED", ignoreCase = true) ||
+        nodeType.equals("OPTIONAL", ignoreCase = true)
+}
+
+private fun RoadmapNodeDto.learningRequirement(): LearningRequirement {
+    return relationType.toLearningRequirement(
+        nodeType = nodeType
     )
 }
 
-private fun PrerequisiteDto.toDomain(): LearningPrerequisite {
-    return LearningPrerequisite(
-        skillId = skillId,
-        skillName = skillName
+private fun String?.toLearningRequirement(nodeType: String? = null): LearningRequirement {
+    return when {
+        equals("optional", ignoreCase = true) -> LearningRequirement.Optional
+        nodeType.equals("OPTIONAL", ignoreCase = true) -> LearningRequirement.Optional
+        else -> LearningRequirement.Required
+    }
+}
+
+private fun String.toDisplayLabel(): String {
+    return split('_')
+        .filter { it.isNotBlank() }
+        .joinToString(" ") { part ->
+            part.lowercase().replaceFirstChar { firstChar -> firstChar.uppercase() }
+        }
+}
+
+private fun List<RoadmapNodeDto>.toTreeNodes(): List<RoadmapNodeDto> {
+    val flatNodes = flatMap { it.flattenNodes() }
+        .distinctBy { it.id ?: it.displayName().orEmpty() }
+    if (flatNodes.isEmpty()) return emptyList()
+
+    val childrenByParentId = flatNodes
+        .filter { !it.parentNodeId.isNullOrBlank() }
+        .groupBy { it.parentNodeId.orEmpty() }
+    val rootNodes = flatNodes
+        .filter { it.parentNodeId.isNullOrBlank() }
+        .ifEmpty { flatNodes }
+
+    return rootNodes.sortedByRoadmapOrder().map { node ->
+        node.withNestedChildren(childrenByParentId)
+    }
+}
+
+private fun RoadmapNodeDto.withNestedChildren(
+    childrenByParentId: Map<String, List<RoadmapNodeDto>>
+): RoadmapNodeDto {
+    val nodeId = id.orEmpty()
+    val nestedChildren = childrenByParentId[nodeId].orEmpty()
+        .sortedByRoadmapOrder()
+        .map { child -> child.withNestedChildren(childrenByParentId) }
+    return copy(children = nestedChildren)
+}
+
+private fun RoadmapNodeDto.flattenNodes(): List<RoadmapNodeDto> {
+    return listOf(this) + children.orEmpty().flatMap { child -> child.flattenNodes() }
+}
+
+private fun List<RoadmapNodeDto>.flattenNodes(): List<RoadmapNodeDto> {
+    return flatMap { node -> node.flattenNodes() }
+}
+
+private fun List<RoadmapNodeDto>.sortedByRoadmapOrder(): List<RoadmapNodeDto> {
+    return sortedWith(
+        compareBy<RoadmapNodeDto> { it.sortOrder ?: Int.MAX_VALUE }
+            .thenBy { it.posY ?: Float.MAX_VALUE }
+            .thenBy { it.posX ?: Float.MAX_VALUE }
+            .thenBy { it.displayName().orEmpty() }
     )
 }
-
-private fun QuizQuestionDto.toDomain(): NodeQuizQuestion {
-    return NodeQuizQuestion(
-        id = id,
-        text = questionText,
-        options = listOf(
-            NodeQuizOption(key = "A", text = optionA),
-            NodeQuizOption(key = "B", text = optionB),
-            NodeQuizOption(key = "C", text = optionC),
-            NodeQuizOption(key = "D", text = optionD)
-        )
-    )
-}
-
-private fun SubmitQuizQuestionResultDto.toDomain(): NodeQuizQuestionResult {
-    return NodeQuizQuestionResult(
-        questionId = questionId,
-        selectedOption = selectedOption.uppercase(),
-        correctOption = correctOption.uppercase(),
-        isCorrect = isCorrect
-    )
-}
-
-private fun Double?.toEstimatedHours(): Int? {
-    return this?.toInt()?.takeIf { hours -> hours > 0 }
-}
-
-private fun Double?.toIntPercent(): Int? {
-    return this?.toInt()?.coerceIn(0, 100)
-}
-
-private const val DEFAULT_DAILY_GOAL = 3
-private const val NODE_TYPE_GROUP = "GROUP"
-private const val NODE_TYPE_MILESTONE = "MILESTONE"
-private const val NODE_TYPE_OPTIONAL = "OPTIONAL"
-private const val NODE_TYPE_REQUIRED = "REQUIRED"
-private const val NODE_STATUS_COMPLETED = "COMPLETED"
-private const val NODE_STATUS_IN_PROGRESS = "IN_PROGRESS"
-private const val NODE_STATUS_LOCKED = "LOCKED"

@@ -1,5 +1,7 @@
 package com.rmap.mobile.core.utils
 
+import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import com.rmap.mobile.core.network.ApiClient
 import com.rmap.mobile.core.network.SessionCookieJar
@@ -31,10 +33,19 @@ import com.rmap.mobile.features.profile.data.remote.ProfileApi
 import com.rmap.mobile.features.profile.data.repository.ProfileRepositoryImpl
 import com.rmap.mobile.features.profile.domain.repository.NotificationSettingsRepository
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
-import com.rmap.mobile.features.roadmap.data.remote.RoadmapApi
-import com.rmap.mobile.features.roadmap.data.repository.RoadmapRepositoryImpl
+import com.rmap.mobile.features.roadmap.data.remote.api.RoadmapApi
+import com.rmap.mobile.features.roadmap.data.remote.api.SkillApi
+import com.rmap.mobile.features.roadmap.data.repository.RemoteRoadmapRepository
+import com.rmap.mobile.features.roadmap.data.repository.RemoteSkillLearningRepository
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
+import com.rmap.mobile.features.roadmap.domain.repository.SkillLearningRepository
 
+/**
+ * Manual Service Locator for the application.
+ *
+ * NOTE: Fields holding objects that contain an [android.app.Application] context are safe from 
+ * memory leaks as both live for the entire process duration.
+ */
 object RMapAppGraph {
     lateinit var roadmapRepository: RoadmapRepository
         private set
@@ -42,10 +53,13 @@ object RMapAppGraph {
         private set
     lateinit var dashboardRepository: DashboardRepository
         private set
+    lateinit var skillLearningRepository: SkillLearningRepository
+        private set
     lateinit var aiRoadmapRepository: AiRoadmapRepository
         private set
     lateinit var notificationSettingsRepository: NotificationSettingsRepository
         private set
+    @get:SuppressLint("StaticFieldLeak")
     lateinit var learningNotificationNotifier: LearningNotificationNotifier
         private set
     lateinit var sessionCookieStorage: SessionCookieStorage
@@ -84,6 +98,7 @@ object RMapAppGraph {
         }
 
         val applicationContext = context.applicationContext
+        val application = applicationContext as Application
         sessionCookieStorage = SharedPreferencesSessionCookieStorage(applicationContext)
         sessionCookieJar = SessionCookieJar(sessionCookieStorage)
         sessionManager = SessionManager(
@@ -106,14 +121,22 @@ object RMapAppGraph {
             dashboardApi = apiClient.createService(DashboardApi::class.java),
             sessionManager = sessionManager
         )
-        roadmapRepository = RoadmapRepositoryImpl(
-            roadmapApi = apiClient.createService(RoadmapApi::class.java),
-            sessionManager = sessionManager
-        )
+//        roadmapRepository = RoadmapRepositoryImpl(
+//            roadmapApi = apiClient.createService(RoadmapApi::class.java),
+//            sessionManager = sessionManager
+//        )
         loginUseCase = LoginUseCase(authRepository)
         registerUseCase = RegisterUseCase(authRepository)
         logoutUseCase = LogoutUseCase(authRepository)
         getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
+        roadmapRepository = RemoteRoadmapRepository(
+            roadmapApi = apiClient.createService(RoadmapApi::class.java),
+            sessionManager = sessionManager
+        )
+        skillLearningRepository = RemoteSkillLearningRepository(
+            skillApi = apiClient.createService(SkillApi::class.java),
+            sessionManager = sessionManager
+        )
 
         val scheduler = LearningReminderScheduler(applicationContext)
         aiRoadmapRepository = RemoteAiRoadmapRepository(
@@ -121,7 +144,7 @@ object RMapAppGraph {
             api = apiClient.createService(AiRoadmapApi::class.java),
             sessionManager = sessionManager
         )
-        learningNotificationNotifier = LearningNotificationNotifier(applicationContext)
+        learningNotificationNotifier = LearningNotificationNotifier(application)
         learningNotificationNotifier.ensureNotificationChannel()
         notificationSettingsRepository = SharedPreferencesNotificationSettingsRepository(
             context = applicationContext,

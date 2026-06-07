@@ -36,7 +36,7 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapLinearProgress
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
-import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeAction
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapPrimaryAction
 
 @Composable
 fun RoadmapDetailHeroProgressCard(
@@ -46,7 +46,7 @@ fun RoadmapDetailHeroProgressCard(
     completedRequiredNodes: Int,
     totalRequiredNodes: Int,
     nextActionTitle: String,
-    nextAction: RoadmapNodeAction?,
+    primaryAction: RoadmapPrimaryAction,
     nextUnlockTitle: String,
     onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -75,12 +75,15 @@ fun RoadmapDetailHeroProgressCard(
                 .padding(Dimens.spacingLg),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = stringResource(R.string.roadmap_detail_label_roadmap).uppercase(),
                         style = MaterialTheme.typography.titleSmall.copy(
@@ -88,22 +91,24 @@ fun RoadmapDetailHeroProgressCard(
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            color = onPrimary,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+
+                    RoadmapPill(
+                        text = categoryLabel,
+                        containerColor = onPrimary.copy(alpha = 0.2f),
+                        contentColor = onPrimary,
+                        borderColor = onPrimary.copy(alpha = 0.1f)
                     )
                 }
 
-                RoadmapPill(
-                    text = categoryLabel,
-                    containerColor = onPrimary.copy(alpha = 0.2f),
-                    contentColor = onPrimary,
-                    borderColor = onPrimary.copy(alpha = 0.1f)
+                Text(
+                    text = title,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = onPrimary,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -139,7 +144,10 @@ fun RoadmapDetailHeroProgressCard(
             }
 
             RMapButton(
-                text = stringResource(nextAction.titleResId(), nextActionTitle),
+                text = roadmapPrimaryActionText(
+                    primaryAction = primaryAction,
+                    nextActionTitle = nextActionTitle
+                ),
                 onClick = onContinueClick,
                 modifier = Modifier.fillMaxWidth(),
                 variant = RMapButtonVariant.Secondary,
@@ -169,6 +177,20 @@ fun RoadmapDetailHeroProgressCard(
 }
 
 @Composable
+private fun roadmapPrimaryActionText(
+    primaryAction: RoadmapPrimaryAction,
+    nextActionTitle: String
+): String {
+    return when (primaryAction) {
+        RoadmapPrimaryAction.StartLearning -> stringResource(R.string.roadmap_detail_action_start_learning)
+        RoadmapPrimaryAction.ContinueLearning -> stringResource(
+            R.string.roadmap_detail_continue_title,
+            nextActionTitle
+        )
+    }
+}
+
+@Composable
 private fun NextUnlockText(nextUnlockTitle: String) {
     val prefix = stringResource(R.string.roadmap_detail_next_unlock, "")
     Text(
@@ -187,15 +209,6 @@ private fun NextUnlockText(nextUnlockTitle: String) {
     )
 }
 
-private fun RoadmapNodeAction?.titleResId(): Int {
-    return when (this) {
-        RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_start_learning_title
-        RoadmapNodeAction.Review -> R.string.roadmap_detail_review_title
-        RoadmapNodeAction.Continue,
-        null -> R.string.roadmap_detail_continue_title
-    }
-}
-
 private val RoadmapHeroProgressCardHeight =
     Dimens.recommendedCardHeight + Dimens.profileExperienceIconContainerSize + Dimens.spacingMdPlus
 
@@ -210,7 +223,7 @@ private fun RoadmapDetailHeroProgressCardPreview() {
             completedRequiredNodes = 6,
             totalRequiredNodes = 8,
             nextActionTitle = "Asynchronous JS",
-            nextAction = RoadmapNodeAction.StartLearning,
+            primaryAction = RoadmapPrimaryAction.ContinueLearning,
             nextUnlockTitle = "DOM Manipulation",
             onContinueClick = {},
             modifier = Modifier.padding(Dimens.spacingXxl)

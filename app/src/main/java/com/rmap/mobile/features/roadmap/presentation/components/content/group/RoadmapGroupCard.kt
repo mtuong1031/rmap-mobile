@@ -2,8 +2,6 @@ package com.rmap.mobile.features.roadmap.presentation.components.content.group
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +11,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -33,17 +30,14 @@ import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeUiMode
 
 @Composable
 fun RoadmapGroupCard(
+    modifier: Modifier = Modifier,
     group: RoadmapGroupUiModel,
     onNodeActionClick: (RoadmapNodeUiModel) -> Unit,
-    modifier: Modifier = Modifier
+    showNodeInlineActions: Boolean = true,
 ) {
     val isLocked = group.state == RoadmapGroupState.Locked
     val isCompleted = group.state == RoadmapGroupState.Completed
-    val hasExpandableContent = if (isLocked) {
-        group.lockedExpandedDescriptionResId != null
-    } else {
-        group.nodes.isNotEmpty()
-    }
+    val hasExpandableContent = group.nodes.isNotEmpty()
     var isExpanded by rememberSaveable(group.id, group.state.name) {
         mutableStateOf(group.state == RoadmapGroupState.Expanded)
     }
@@ -54,18 +48,7 @@ fun RoadmapGroupCard(
     }
 
     RoadmapDecoratedCard(
-        modifier = modifier
-            .then(
-                if (isLocked) {
-                    Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = toggleExpanded
-                    )
-                } else {
-                    Modifier
-                }
-            ),
+        modifier = modifier,
         shape = AppShapes.searchBar,
         containerColor = if (isLocked) {
             MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.8f)
@@ -79,36 +62,29 @@ fun RoadmapGroupCard(
         },
         shadow = !isLocked
     ) {
-        if (isLocked) {
-            RoadmapLockedGroupContent(
+        Column {
+            RoadmapGroupHeader(
                 group = group,
-                isDescriptionExpanded = isExpanded
+                isExpanded = isExpanded,
+                canAccordion = hasExpandableContent && !isCompleted,
+                canToggleExpanded = hasExpandableContent,
+                onToggleExpanded = toggleExpanded
             )
-        } else {
-            Column {
-                RoadmapGroupHeader(
-                    group = group,
-                    isExpanded = isExpanded,
-                    canAccordion = hasExpandableContent && !isCompleted,
-                    canToggleExpanded = hasExpandableContent,
-                    onToggleExpanded = toggleExpanded
-                )
 
-                RoadmapAccordionVisibility(visible = group.nodes.isNotEmpty() && isExpanded) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.surfaceContainerLow))
-                            .padding(vertical = Dimens.spacingXs)
-                    ) {
-                        group.nodes.forEachIndexed { index, node ->
-                            RoadmapNodeItem(
-                                node = node,
-                                showDivider = index < group.nodes.lastIndex &&
-                                    node.status != RoadmapNodeStatus.InProgress,
-                                onActionClick = { onNodeActionClick(node) }
-                            )
-                        }
+            RoadmapAccordionVisibility(visible = group.nodes.isNotEmpty() && isExpanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.surfaceContainerLow))
+                        .padding(vertical = Dimens.spacingXs)
+                ) {
+                    group.nodes.forEachIndexed { index, node ->
+                        RoadmapNodeItem(
+                            node = node,
+                            showDivider = index < group.nodes.lastIndex,
+                            onActionClick = { onNodeActionClick(node) },
+                            showInlineAction = showNodeInlineActions
+                        )
                     }
                 }
             }
@@ -166,12 +142,16 @@ private fun RoadmapGroupCardLockedPreview() {
                 totalRequiredNodes = 3,
                 progressFraction = 0f,
                 state = RoadmapGroupState.Locked,
-                lockedDescriptionResId = R.string.roadmap_detail_locked_group_description,
-                lockedDescriptionArgs = listOf(
-                    "Core Web Fundamentals",
-                    "React Fundamentals"
-                ),
-                lockedExpandedDescriptionResId = R.string.roadmap_detail_framework_ecosystem_description
+                nodes = listOf(
+                    RoadmapNodeUiModel(
+                        id = "react-state",
+                        title = "React State",
+                        icon = Icons.Outlined.Code,
+                        status = RoadmapNodeStatus.Locked,
+                        requirement = RoadmapNodeRequirement.Required,
+                        descriptionResId = R.string.roadmap_detail_node_locked_description
+                    )
+                )
             ),
             onNodeActionClick = {},
             modifier = Modifier.padding(Dimens.spacingXxl)

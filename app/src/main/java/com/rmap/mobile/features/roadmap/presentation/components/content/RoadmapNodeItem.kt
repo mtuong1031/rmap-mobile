@@ -2,7 +2,6 @@ package com.rmap.mobile.features.roadmap.presentation.components.content
 
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -15,10 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +27,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -37,11 +40,9 @@ import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
-import com.rmap.mobile.core.ui.theme.cardShadow
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
 import com.rmap.mobile.features.roadmap.presentation.components.common.formattedString
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapDeepBlue
-import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapFocusedRequirementBg
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapInk
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBg
@@ -51,20 +52,18 @@ import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeRequir
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeStatus
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeUiModel
 
-private val roadmapNodeFocusedShape = RoundedCornerShape(Dimens.cardRadiusSmPlus)
-
 @Composable
 fun RoadmapNodeItem(
+    modifier: Modifier = Modifier,
     node: RoadmapNodeUiModel,
     showDivider: Boolean,
     onActionClick: () -> Unit,
-    modifier: Modifier = Modifier
+    showInlineAction: Boolean = true,
 ) {
-    val isFocused = node.status == RoadmapNodeStatus.InProgress
-    val isCompleted = node.status == RoadmapNodeStatus.Completed
-    val shape = roadmapNodeFocusedShape
+    val hasInlineAction = showInlineAction && node.status == RoadmapNodeStatus.NotStarted
+    val isRowClickable = node.skillId.isNotBlank()
     val interactionSource = remember { MutableInteractionSource() }
-    val clickModifier = if (isCompleted) {
+    val clickModifier = if (isRowClickable) {
         Modifier.clickable(
             interactionSource = interactionSource,
             indication = LocalIndication.current,
@@ -73,20 +72,12 @@ fun RoadmapNodeItem(
     } else {
         Modifier
     }
-    val itemModifier = if (isFocused) {
-        modifier
-            .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingSmPlus)
-            .cardShadow(shape = shape)
-            .background(MaterialTheme.colorScheme.background, shape)
-            .border(Dimens.borderThin, MaterialTheme.colorScheme.primary, shape)
-            .padding(Dimens.spacingMd)
-    } else {
+    val itemModifier =
         modifier
             .fillMaxWidth()
             .then(clickModifier)
             .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingMd)
-    }
 
     Column {
         Row(
@@ -106,7 +97,7 @@ fun RoadmapNodeItem(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
-                        verticalAlignment = Alignment.Top
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = node.title,
@@ -114,24 +105,21 @@ fun RoadmapNodeItem(
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = when (node.status) {
                                     RoadmapNodeStatus.InProgress -> roadmapDeepBlue
-                                    RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.onSurface
                                     RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
-                                    RoadmapNodeStatus.Completed -> roadmapInk
+                                    RoadmapNodeStatus.Completed,
+                                    RoadmapNodeStatus.NotStarted -> roadmapInk
                                 },
-                                fontWeight = if (isFocused) FontWeight.Bold else FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold
                             ),
                             maxLines = 3,
                             overflow = TextOverflow.Ellipsis
                         )
-                        NodeTypeBadge(node = node)
+                        NodeStatusBadge(node = node)
                     }
-
-                    NodeStatusBadge(node = node)
                 }
 
                 Text(
-                    text = node.descriptionText
-                        ?: formattedString(node.descriptionResId, node.descriptionArgs),
+                    text = formattedString(node.descriptionResId, node.descriptionArgs),
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = if (node.status == RoadmapNodeStatus.Locked) {
                             OnSurfacePlaceholderLight
@@ -144,10 +132,10 @@ fun RoadmapNodeItem(
                 )
 
                 node.action?.let { action ->
-                    if (node.status != RoadmapNodeStatus.Completed) {
+                    if (hasInlineAction) {
                         NodeActionButton(
                             action = action,
-                            expanded = isFocused,
+                            expanded = false,
                             onClick = onActionClick
                         )
                     }
@@ -175,61 +163,68 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
         RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
         RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
     }
-    val borderColor = when (node.status) {
-        RoadmapNodeStatus.Completed -> roadmapSuccessBorder
-        RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.inversePrimary
-        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
-        RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
-    }
     val icon = when (node.status) {
         RoadmapNodeStatus.Completed -> Icons.Default.Check
         RoadmapNodeStatus.Locked -> Icons.Default.Lock
         RoadmapNodeStatus.InProgress,
-        RoadmapNodeStatus.NotStarted -> node.icon
+        RoadmapNodeStatus.NotStarted -> node.requirement.toNodeRequirementIcon()
     }
     val tint = when (node.status) {
-        RoadmapNodeStatus.Completed -> roadmapSuccess
-        RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.primary
-        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary
+        RoadmapNodeStatus.Completed -> CompletedNodeIconTint
+        RoadmapNodeStatus.InProgress,
+        RoadmapNodeStatus.NotStarted -> node.requirement.toNodeRequirementIconTint()
         RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
+    }
+    val borderColor = when (node.status) {
+        RoadmapNodeStatus.Completed -> roadmapSuccessBorder
+        RoadmapNodeStatus.InProgress -> tint
+        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.34f)
+        RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
     }
 
     Box(
         modifier = Modifier
             .size(Dimens.iconXxl)
             .background(containerColor, CircleShape)
-            .border(Dimens.borderThin, borderColor, CircleShape),
+            .nodeIconBorder(
+                color = borderColor,
+                dashed = node.requirement == RoadmapNodeRequirement.Optional
+            ),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = node.requirementIconContentDescription(),
             tint = tint,
             modifier = Modifier.size(Dimens.iconXs)
         )
     }
 }
 
+private fun RoadmapNodeRequirement.toNodeRequirementIcon() = when (this) {
+    RoadmapNodeRequirement.Required -> Icons.Outlined.PushPin
+    RoadmapNodeRequirement.Optional -> Icons.Outlined.Extension
+}
+
 @Composable
-private fun NodeTypeBadge(node: RoadmapNodeUiModel) {
-    RoadmapPill(
-        text = stringResource(
-            when (node.requirement) {
-                RoadmapNodeRequirement.Required -> R.string.roadmap_detail_status_required
-                RoadmapNodeRequirement.Optional -> R.string.roadmap_detail_status_optional
-            }
-        ),
-        containerColor = if (node.status == RoadmapNodeStatus.InProgress) {
-            roadmapFocusedRequirementBg
-        } else {
-            MaterialTheme.colorScheme.primaryContainer
-        },
-        contentColor = if (node.requirement == RoadmapNodeRequirement.Optional) {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        } else {
-            MaterialTheme.colorScheme.primary
-        }
-    )
+private fun RoadmapNodeUiModel.requirementIconContentDescription(): String? {
+    return when (status) {
+        RoadmapNodeStatus.InProgress,
+        RoadmapNodeStatus.NotStarted -> stringResource(requirement.toNodeRequirementIconContentDescriptionResId())
+        RoadmapNodeStatus.Completed,
+        RoadmapNodeStatus.Locked -> null
+    }
+}
+
+private fun RoadmapNodeRequirement.toNodeRequirementIconContentDescriptionResId() = when (this) {
+    RoadmapNodeRequirement.Required -> R.string.roadmap_detail_required_skill_icon
+    RoadmapNodeRequirement.Optional -> R.string.roadmap_detail_optional_skill_icon
+}
+
+@Composable
+private fun RoadmapNodeRequirement.toNodeRequirementIconTint() = when (this) {
+    RoadmapNodeRequirement.Required -> MaterialTheme.colorScheme.primary
+    RoadmapNodeRequirement.Optional -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
 @Composable
@@ -263,6 +258,33 @@ private fun NodeStatusBadge(node: RoadmapNodeUiModel) {
     )
 }
 
+private fun Modifier.nodeIconBorder(
+    color: Color,
+    dashed: Boolean
+): Modifier {
+    return drawWithContent {
+        drawContent()
+        val strokeWidth = Dimens.borderMedium.toPx()
+        drawCircle(
+            color = color,
+            radius = size.minDimension / 2f - strokeWidth / 2f,
+            style = Stroke(
+                width = strokeWidth,
+                pathEffect = if (dashed) {
+                    PathEffect.dashPathEffect(
+                        intervals = floatArrayOf(
+                            Dimens.spacingSm.toPx(),
+                            Dimens.spacingXs.toPx()
+                        )
+                    )
+                } else {
+                    null
+                }
+            )
+        )
+    }
+}
+
 @Composable
 private fun NodeActionButton(
     action: RoadmapNodeAction,
@@ -271,9 +293,9 @@ private fun NodeActionButton(
 ) {
     val label = stringResource(
         when (action) {
+            RoadmapNodeAction.Start -> R.string.roadmap_detail_action_start_learning
             RoadmapNodeAction.Review -> R.string.roadmap_detail_action_review
             RoadmapNodeAction.Continue -> R.string.roadmap_detail_action_continue
-            RoadmapNodeAction.StartLearning -> R.string.roadmap_detail_action_start_learning
         }
     )
 
@@ -305,3 +327,4 @@ private fun NodeActionButton(
 
 private val NodeDividerStartPadding = Dimens.controlXl + Dimens.spacingXs
 private val NodeActionMinWidth = Dimens.categoryIconContainerSize
+private val CompletedNodeIconTint = Color(0xFF059669)

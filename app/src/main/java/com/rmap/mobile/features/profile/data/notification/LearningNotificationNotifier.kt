@@ -2,6 +2,7 @@ package com.rmap.mobile.features.profile.data.notification
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -17,7 +18,7 @@ import com.rmap.mobile.MainActivity
 import com.rmap.mobile.R
 
 class LearningNotificationNotifier(
-    private val context: Context,
+    private val context: Application,
     private val streakStore: LearningStreakStore = LearningStreakStore(context),
     private val contentFactory: LearningNotificationContentFactory = LearningNotificationContentFactory(context)
 ) {

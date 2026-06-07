@@ -153,8 +153,10 @@ private fun HomeSearchSkillDto.toDomain(): HomeSearchSkill {
         skillId = skillId,
         name = name,
         description = description,
-        roleCategory = roleCategory,
-        categoryLabel = categoryLabel,
+        roleCategory = roleCategory.normalizedCategoryId(fallback = categoryLabel ?: name),
+        categoryLabel = categoryLabel?.takeIf { it.isNotBlank() }
+            ?: roleCategory.toCategoryLabel()
+            ?: name,
         defaultEstimatedHours = defaultEstimatedHours
     )
 }
@@ -199,3 +201,26 @@ private fun HomeTrendingRoadmapDto.toDomain(): HomeTrendingRoadmap = HomeTrendin
     nodesTotal = nodesTotal,
     trendText = trendText
 )
+
+private fun String?.normalizedCategoryId(fallback: String): String {
+    return takeIf { !it.isNullOrBlank() }
+        ?: fallback.toStableCategoryId()
+}
+
+private fun String?.toCategoryLabel(): String? {
+    return takeIf { !it.isNullOrBlank() }
+        ?.split('_')
+        ?.filter { it.isNotBlank() }
+        ?.joinToString(" ") { part ->
+            part.lowercase().replaceFirstChar { firstChar -> firstChar.uppercase() }
+        }
+}
+
+private fun String.toStableCategoryId(): String {
+    return trim()
+        .lowercase()
+        .replace(Regex("[^a-z0-9]+"), "_")
+        .trim('_')
+        .uppercase()
+        .ifBlank { "UNCATEGORIZED" }
+}

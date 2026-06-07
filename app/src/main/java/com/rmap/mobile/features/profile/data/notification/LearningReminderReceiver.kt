@@ -1,12 +1,13 @@
 package com.rmap.mobile.features.profile.data.notification
 
+import android.app.Application
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
 class LearningReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val notifier = LearningNotificationNotifier(context)
+        val notifier = LearningNotificationNotifier(context as Application)
 
         when (intent.action) {
             ACTION_MARK_STREAK -> {

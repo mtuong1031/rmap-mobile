@@ -11,17 +11,25 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningRequirement
 import com.rmap.mobile.features.roadmap.domain.model.LearningResource
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmission
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmissionStatus
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestCase
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuite
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneTestSuiteStatus
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestionResult
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
+import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCoverPlaceholder
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
+import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.model.SubLesson
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 
@@ -199,6 +207,63 @@ class FakeRoadmapRepository : RoadmapRepository {
         )
     }
 
+    override suspend fun getMilestoneDetail(
+        roadmapId: String,
+        milestoneId: String
+    ): Result<MilestoneDetail> {
+        val milestone = details[roadmapId]
+            ?.milestones
+            ?.firstOrNull { candidate -> candidate.id == milestoneId }
+            ?: return Result.failure(IllegalArgumentException("Milestone not found"))
+
+        return Result.success(
+            MilestoneDetail(
+                roadmapId = roadmapId,
+                nodeId = milestone.id,
+                title = milestone.title,
+                description = milestone.description,
+                status = milestone.status,
+                testSuite = MilestoneTestSuite(
+                    id = "suite-${milestone.id}",
+                    title = "${milestone.title} Evaluation",
+                    summary = "Submit a GitHub repository and RMap will run the milestone test suite.",
+                    passThresholdPercent = 80,
+                    status = MilestoneTestSuiteStatus.Ready,
+                    testCases = listOf(
+                        MilestoneTestCase(
+                            name = "Project structure",
+                            description = "Validate the repository contains the expected source files."
+                        )
+                    )
+                ),
+                latestSubmission = null
+            )
+        )
+    }
+
+    override suspend fun submitMilestone(
+        roadmapId: String,
+        milestoneId: String,
+        repoUrl: String
+    ): Result<MilestoneSubmission> {
+        return Result.success(
+            MilestoneSubmission(
+                id = "submission-$milestoneId",
+                repoUrl = repoUrl,
+                testSuiteId = "suite-$milestoneId",
+                status = MilestoneSubmissionStatus.Running,
+                outputLog = null,
+                passRatePercent = null,
+                passedTests = null,
+                totalTests = null,
+                attemptNumber = 1,
+                createdAt = "2026-06-01T00:00:00Z",
+                completedAt = null,
+                testResults = emptyList()
+            )
+        )
+    }
+
     override suspend fun getNodeQuiz(
         roadmapId: String,
         nodeId: String
@@ -254,6 +319,32 @@ class FakeRoadmapRepository : RoadmapRepository {
             NodeQuizOption("B", "Skip practice and continue immediately."),
             NodeQuizOption("C", "Only save the resource for later."),
             NodeQuizOption("D", "Wait until every roadmap is finished.")
+        )
+    }
+
+    override suspend fun getRoadmapNodeLearningContent(
+        roadmapId: String,
+        nodeId: String,
+        skillId: String
+    ): Result<SkillLearningContent> {
+        return Result.failure(IllegalArgumentException("Roadmap node not found"))
+    }
+
+    override suspend fun startRoadmap(roadmapId: String): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun updateNodeProgress(
+        roadmapId: String,
+        nodeId: String,
+        status: LearningStatus
+    ): Result<NodeProgressUpdateResult> {
+        return Result.success(
+            NodeProgressUpdateResult(
+                nodeId = nodeId,
+                status = status,
+                unlockedNodeIds = emptyList()
+            )
         )
     }
 }
