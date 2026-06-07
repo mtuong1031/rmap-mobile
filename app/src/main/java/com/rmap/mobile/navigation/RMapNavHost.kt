@@ -527,7 +527,6 @@ fun RMapNavHost(navController: NavHostController) {
                 RoadmapDetailScreen(
                     uiState = uiState,
                     onBackClick = ::navigateBackFromRoadmapDetail,
-                    onBookmarkClick = viewModel::onBookmarkClick,
                     onContinueClick = viewModel::onContinueClick,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     onSearchFocus = viewModel::onSearchFocus,

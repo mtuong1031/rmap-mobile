@@ -68,7 +68,6 @@ fun RoadmapDetailScreen(
     uiState: RoadmapDetailUiState,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onBookmarkClick: () -> Unit = {},
     onContinueClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onSearchFocus: () -> Unit = {},
@@ -227,8 +226,6 @@ fun RoadmapDetailScreen(
         if (!uiState.isSearchActive) {
             RoadmapDetailTopBar(
                 onBackClick = onBackClick,
-                onBookmarkClick = onBookmarkClick,
-                isBookmarked = uiState.isBookmarked,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
             )
