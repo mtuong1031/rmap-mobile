@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
@@ -146,14 +147,15 @@ fun RMapQuestionCardScaffold(
                         text = eyebrow,
                         style = MaterialTheme.typography.labelLarge.copy(
                             color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                     Text(
                         text = prompt,
                         style = MaterialTheme.typography.titleLarge.copy(
+                            fontSize = 20.sp,
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                 }
@@ -209,7 +211,7 @@ fun RMapQuestionOptionRow(
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyLarge.copy(
+                style = MaterialTheme.typography.bodyMedium.copy(
                     color = contentColor,
                     fontWeight = if (state.isReviewEmphasis()) {
                         FontWeight.SemiBold

@@ -2,6 +2,7 @@ package com.rmap.mobile.features.auth.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -24,7 +26,6 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -179,11 +181,7 @@ private fun AuthFormSection(
                     placeholder = stringResource(R.string.auth_full_name_placeholder),
                     enabled = !uiState.isLoading,
                     leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = null,
-                            tint = RMapTextInputDefaults.colors().placeholderColor
-                        )
+                        AuthInputIcon(imageVector = Icons.Outlined.Person)
                     }
                 )
             }
@@ -198,11 +196,7 @@ private fun AuthFormSection(
                     imeAction = ImeAction.Next
                 ),
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Email,
-                        contentDescription = null,
-                        tint = RMapTextInputDefaults.colors().placeholderColor
-                    )
+                    AuthInputIcon(imageVector = Icons.Outlined.Email)
                 }
             )
 
@@ -221,25 +215,32 @@ private fun AuthFormSection(
                     PasswordVisualTransformation()
                 },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Lock,
-                        contentDescription = null,
-                        tint = RMapTextInputDefaults.colors().placeholderColor
-                    )
+                    AuthInputIcon(imageVector = Icons.Outlined.Lock)
                 },
-                trailingIcon = {
-                    IconButton(onClick = onTogglePasswordVisibility, enabled = !uiState.isLoading) {
-                        Icon(
-                            imageVector = if (uiState.isPasswordVisible) {
-                                Icons.Outlined.VisibilityOff
-                            } else {
-                                Icons.Outlined.Visibility
-                            },
-                            contentDescription = stringResource(R.string.auth_toggle_password_visibility),
-                            tint = RMapTextInputDefaults.colors().placeholderColor
-                        )
+                trailingIcon = if (uiState.password.isNotEmpty()) {
+                    {
+                        Box(
+                            modifier = Modifier
+                                .size(RMapTextInputDefaults.ClearButtonSize)
+                                .clickable(
+                                    enabled = !uiState.isLoading,
+                                    onClick = onTogglePasswordVisibility
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (uiState.isPasswordVisible) {
+                                    Icons.Outlined.VisibilityOff
+                                } else {
+                                    Icons.Outlined.Visibility
+                                },
+                                contentDescription = stringResource(R.string.auth_toggle_password_visibility),
+                                tint = RMapTextInputDefaults.colors().placeholderColor,
+                                modifier = Modifier.size(Dimens.iconLg)
+                            )
+                        }
                     }
-                }
+                } else null
             )
         }
 
@@ -283,6 +284,16 @@ private fun AuthFormSection(
             onToggleMode = onToggleMode
         )
     }
+}
+
+@Composable
+private fun AuthInputIcon(imageVector: ImageVector) {
+    Icon(
+        imageVector = imageVector,
+        contentDescription = null,
+        tint = RMapTextInputDefaults.colors().placeholderColor,
+        modifier = Modifier.size(Dimens.iconLg)
+    )
 }
 
 @Composable

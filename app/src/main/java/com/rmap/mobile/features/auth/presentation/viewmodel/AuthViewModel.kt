@@ -78,7 +78,7 @@ class AuthViewModel(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = error.message ?: "Unable to sign in. Please try again."
+                            errorMessage = error.message ?: "Unable to complete authentication. Please try again."
                         )
                     }
                 }
