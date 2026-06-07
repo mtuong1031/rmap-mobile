@@ -83,9 +83,45 @@ class RoadmapDetailViewModelTest {
     }
 
     @Test
-    fun `loadRoadmap template uses resources available node descriptions`() {
+    fun `loadRoadmap success with started roadmap displays not-started nodes as in-progress`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(notStartedDetail.copy(hasStartedLearning = true))
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            bookmarkRepository = FakeBookmarkRepository()
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+
+        val state = viewModel.uiState.value
+        assertEquals(RoadmapPrimaryAction.ContinueLearning, state.primaryAction)
+        assertEquals(RoadmapNodeStatus.InProgress, state.groups.first().nodes.first().status)
+        assertEquals(RoadmapNodeAction.Continue, state.groups.first().nodes.first().action)
+    }
+
+    @Test
+    fun `loadRoadmap node description prioritizes estimated hours over resources`() {
         val repository = FakeRoadmapRepository(
             detailResult = Result.success(templateResourceDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            bookmarkRepository = FakeBookmarkRepository()
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+
+        val node = viewModel.uiState.value.groups.first().nodes.first()
+        assertEquals(R.string.roadmap_detail_node_estimated_hours, node.descriptionResId)
+        assertEquals(listOf("4"), node.descriptionArgs)
+        assertEquals(4, node.resourcesCount)
+    }
+
+    @Test
+    fun `loadRoadmap node description falls back to resources when estimated hours are missing`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(resourcesOnlyDetail)
         )
         val viewModel = RoadmapDetailViewModel(
             repository = repository,
@@ -680,6 +716,27 @@ class RoadmapDetailViewModelTest {
                             id = "node-api",
                             skillId = "skill-api",
                             estimatedHours = 4,
+                            resourcesCount = 4
+                        )
+                    )
+                )
+            )
+        )
+
+        val resourcesOnlyDetail = templateResourceDetail.copy(
+            sections = listOf(
+                LearningModuleSection(
+                    title = "API Foundations",
+                    modules = listOf(
+                        LearningModule(
+                            title = "REST API",
+                            status = LearningStatus.NotStarted,
+                            progressPercent = 0,
+                            icon = LearningTopicIcon.Storage,
+                            subLessons = emptyList(),
+                            id = "node-api",
+                            skillId = "skill-api",
+                            estimatedHours = null,
                             resourcesCount = 4
                         )
                     )

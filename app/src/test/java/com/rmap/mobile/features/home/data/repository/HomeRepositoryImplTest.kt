@@ -111,6 +111,32 @@ class HomeRepositoryImplTest {
     }
 
     @Test
+    fun `search dashboard tolerates skill result without category fields`() = runTest {
+        val api = FakeHomeApi().apply {
+            searchResponse = Response.success(
+                searchDto(
+                    skill = HomeSearchSkillDto(
+                        skillId = "skill-search-1",
+                        name = "FULL OUTER JOIN",
+                        description = "Join data",
+                        roleCategory = null,
+                        categoryLabel = null,
+                        defaultEstimatedHours = null
+                    )
+                )
+            )
+        }
+        val repository = HomeRepositoryImpl(api)
+
+        val result = repository.searchDashboard(query = "full", roadmapPage = 1, skillPage = 1)
+
+        assertTrue(result.isSuccess)
+        val skill = result.getOrThrow().skills.data.single()
+        assertEquals("FULL_OUTER_JOIN", skill.roleCategory)
+        assertEquals("FULL OUTER JOIN", skill.categoryLabel)
+    }
+
+    @Test
     fun `search dashboard returns failure when API fails`() = runTest {
         val api = FakeHomeApi().apply {
             searchResponse = Response.error(
@@ -235,7 +261,16 @@ private fun trendingDto(
     trendText = "Trending now"
 )
 
-private fun searchDto(): HomeDashboardSearchResponseDto = HomeDashboardSearchResponseDto(
+private fun searchDto(
+    skill: HomeSearchSkillDto = HomeSearchSkillDto(
+        skillId = "skill-search-1",
+        name = "FULL OUTER JOIN",
+        description = "Join data",
+        roleCategory = "LANGUAGES_AND_PLATFORMS",
+        categoryLabel = "Languages And Platforms",
+        defaultEstimatedHours = null
+    )
+): HomeDashboardSearchResponseDto = HomeDashboardSearchResponseDto(
     query = "full",
     roadmaps = HomeSearchRoadmapsPageDto(
         data = listOf(
@@ -260,16 +295,7 @@ private fun searchDto(): HomeDashboardSearchResponseDto = HomeDashboardSearchRes
         )
     ),
     skills = HomeSearchSkillsPageDto(
-        data = listOf(
-            HomeSearchSkillDto(
-                skillId = "skill-search-1",
-                name = "FULL OUTER JOIN",
-                description = "Join data",
-                roleCategory = "LANGUAGES_AND_PLATFORMS",
-                categoryLabel = "Languages And Platforms",
-                defaultEstimatedHours = null
-            )
-        ),
+        data = listOf(skill),
         meta = HomeSearchPageMetaDto(
             page = 1,
             perPage = 10,

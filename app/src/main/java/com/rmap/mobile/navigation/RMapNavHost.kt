@@ -90,7 +90,6 @@ fun RMapNavHost(navController: NavHostController) {
     val nodeProgressUpdateFailedMessage = stringResource(R.string.roadmap_detail_progress_update_failed)
     val learningCompletedMessage = stringResource(R.string.roadmap_learning_completed_snackbar)
     val learningCompletionRequiresQuizMessage = stringResource(R.string.roadmap_learning_completion_requires_quiz)
-    val learningNotStartedQuizMessage = stringResource(R.string.roadmap_learning_not_started_quiz_snackbar)
     val learningLockedQuizMessage = stringResource(R.string.roadmap_learning_locked_quiz_snackbar)
     val resourceOpenFailedMessage = stringResource(R.string.roadmap_learning_resource_open_failed)
     val milestoneSubmissionQueuedMessage = stringResource(R.string.roadmap_milestone_submission_queued)
@@ -684,6 +683,15 @@ fun RMapNavHost(navController: NavHostController) {
                             RoadmapLearningEvent.NodeCompletionRequiresQuiz -> {
                                 snackbarHostState.showSnackbar(learningCompletionRequiresQuizMessage)
                             }
+                            is RoadmapLearningEvent.NavigateToQuiz -> {
+                                markRoadmapDetailForRefresh()
+                                navController.navigate(
+                                    AppRoutes.roadmapNodeQuiz(
+                                        roadmapId = event.roadmapId,
+                                        nodeId = event.nodeId
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -724,13 +732,11 @@ fun RMapNavHost(navController: NavHostController) {
                             }
 
                             else -> {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(learningNotStartedQuizMessage)
-                                }
-                                navigateBackToRoadmapDetail(AppRoutes.ROADMAP_DETAIL_SCROLL_HERO)
+                                Unit
                             }
                         }
-                    }
+                    },
+                    onStartRoadmapForQuizClick = viewModel::onStartRoadmapForQuizClick
                 )
             }
 

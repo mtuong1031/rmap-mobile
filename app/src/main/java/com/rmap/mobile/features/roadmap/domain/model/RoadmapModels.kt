@@ -90,7 +90,8 @@ data class RoadmapDetail(
     val roleId: String = "",
     val roleName: String = "",
     val description: String? = null,
-    val isTemplate: Boolean = false
+    val isTemplate: Boolean = false,
+    val hasStartedLearning: Boolean = false
 ) {
     val progressFraction: Float
         get() = if (totalLessons <= 0) {

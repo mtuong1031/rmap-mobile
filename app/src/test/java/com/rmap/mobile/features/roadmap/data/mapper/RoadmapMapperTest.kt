@@ -294,6 +294,68 @@ class RoadmapMapperTest {
     }
 
     @Test
+    fun `toDomain maps not-started nodes to in-progress when roadmap was already started`() {
+        val roadmap = RoadmapWithNodesDto(
+            id = "roadmap-1",
+            roleName = "Backend Developer",
+            title = "Backend Roadmap",
+            nodes = listOf(
+                RoadmapNodeDto(
+                    id = "group-1",
+                    skillName = "Backend Foundations",
+                    nodeType = "GROUP",
+                    sortOrder = 1
+                ),
+                RoadmapNodeDto(
+                    id = "node-http",
+                    skillId = "skill-http",
+                    skillName = "HTTP Basics",
+                    nodeType = "REQUIRED",
+                    parentNodeId = "group-1",
+                    sortOrder = 1
+                ),
+                RoadmapNodeDto(
+                    id = "node-cli",
+                    skillId = "skill-cli",
+                    skillName = "CLI Tools",
+                    nodeType = "OPTIONAL",
+                    parentNodeId = "group-1",
+                    sortOrder = 2
+                ),
+                RoadmapNodeDto(
+                    id = "group-2",
+                    skillName = "API Development",
+                    nodeType = "GROUP",
+                    sortOrder = 2
+                ),
+                RoadmapNodeDto(
+                    id = "node-api",
+                    skillId = "skill-api",
+                    skillName = "REST API",
+                    nodeType = "REQUIRED",
+                    parentNodeId = "group-2",
+                    sortOrder = 1
+                )
+            )
+        )
+
+        val detail = roadmap.toDomain(
+            RoadmapProgressDto(
+                roadmapId = "roadmap-1",
+                totalNodes = 3,
+                completedNodes = 0,
+                inProgressNodes = 1,
+                completionPercentage = 0f
+            )
+        )
+
+        assertTrue(detail.hasStartedLearning)
+        assertEquals(LearningStatus.InProgress, detail.sections[0].modules[0].status)
+        assertEquals(LearningStatus.InProgress, detail.sections[0].modules[1].status)
+        assertEquals(LearningStatus.Locked, detail.sections[1].modules.single().status)
+    }
+
+    @Test
     fun `toDomain preserves backend order for groups and milestones`() {
         val roadmap = RoadmapWithNodesDto(
             id = "roadmap-1",

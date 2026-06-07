@@ -368,6 +368,8 @@
     <string name="roadmap_detail_status_completed">Completed</string>
     <string name="roadmap_detail_status_in_progress">In Progress</string>
     <string name="roadmap_detail_status_not_started">Not Started</string>
+    <string name="roadmap_detail_required_skill_icon">Required skill</string>
+    <string name="roadmap_detail_optional_skill_icon">Optional skill</string>
     <string name="roadmap_detail_action_review">Review</string>
     <string name="roadmap_detail_action_continue">Continue</string>
     <string name="roadmap_detail_action_start_learning">Start Learning</string>
@@ -431,8 +433,11 @@
     <string name="roadmap_learning_completed_snackbar">Skill marked completed.</string>
     <string name="roadmap_learning_completion_requires_quiz">Complete the quiz first to mark this skill completed.</string>
     <string name="roadmap_learning_locked_quiz_hint">Complete previous required skills to start this node.</string>
-    <string name="roadmap_learning_not_started_quiz_snackbar">Start this roadmap first to unlock quizzes.</string>
     <string name="roadmap_learning_locked_quiz_snackbar">Continue the current node to unlock this quiz.</string>
+    <string name="roadmap_learning_start_for_quiz_title">Start this roadmap?</string>
+    <string name="roadmap_learning_start_for_quiz_message">This quiz is available after the roadmap starts. Start learning now and continue to the quiz?</string>
+    <string name="roadmap_learning_start_for_quiz_confirm">Start and take quiz</string>
+    <string name="roadmap_learning_start_for_quiz_cancel">Not now</string>
     <string name="roadmap_learning_take_quiz">Take Quiz</string>
     <string name="roadmap_learning_completed_hint">This node is completed. Your roadmap progress has been updated.</string>
     <string name="roadmap_learning_quiz_locked_hint">Quiz is available when this node is in progress.</string>
