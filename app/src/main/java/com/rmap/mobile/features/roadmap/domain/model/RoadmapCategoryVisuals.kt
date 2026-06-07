@@ -1,17 +1,7 @@
 package com.rmap.mobile.features.roadmap.domain.model
 
 import com.rmap.mobile.core.domain.model.RMapCategoryIconKey
-import com.rmap.mobile.core.domain.model.toRMapCategoryCompactLabel
-import com.rmap.mobile.core.domain.model.toRMapCategoryDisplayLabel
 import com.rmap.mobile.core.domain.model.toRMapCategoryIconKey
-
-fun String.toRoadmapCategoryDisplayLabel(fallbackLabel: String? = null): String {
-    return toRMapCategoryDisplayLabel(fallbackLabel)
-}
-
-fun String.toHomeBrowseCategoryLabel(fallbackLabel: String? = null): String {
-    return toRMapCategoryCompactLabel(fallbackLabel)
-}
 
 fun String.toRoadmapCategoryIcon(): LearningTopicIcon {
     return toRMapCategoryIconKey().toLearningTopicIcon()

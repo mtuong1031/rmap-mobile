@@ -167,6 +167,20 @@ components:
           type: integer
           example: 2
 
+    UserActivityResponse:
+      type: object
+      properties:
+        streakDays:
+          type: integer
+          example: 5
+        longestStreak:
+          type: integer
+          example: 5
+        activity:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardActivityEntry'
+
     DashboardTimelineWarning:
       type: object
       nullable: true
@@ -511,6 +525,83 @@ components:
           example: false
         created_at:
           $ref: '#/components/schemas/Timestamp'
+
+    TemplateRoadmap:
+      type: object
+      properties:
+        deadlineDate:
+          type: string
+          format: date
+          nullable: true
+          example: null
+        description:
+          type: string
+          nullable: true
+          example: "Learn to become a Vue Developer with this interactive step by step guide in 2025."
+        estimatedWeeks:
+          type: integer
+          nullable: true
+          example: null
+        generatedAt:
+          $ref: '#/components/schemas/Timestamp'
+        goalName:
+          type: string
+          nullable: true
+          example: "Vue Developer Roadmap"
+        hoursPerDay:
+          type: integer
+          nullable: true
+          example: null
+        id:
+          $ref: '#/components/schemas/UUID'
+        isTemplate:
+          type: boolean
+          example: true
+        roleCategory:
+          type: string
+          example: "FRAMEWORKS"
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        title:
+          type: string
+          example: "Vue Developer Roadmap"
+        updatedAt:
+          $ref: '#/components/schemas/Timestamp'
+        userId:
+          allOf:
+            - $ref: '#/components/schemas/UUID'
+          nullable: true
+          example: null
+
+    TemplateCategory:
+      type: object
+      properties:
+        category:
+          type: string
+          example: "WEB_DEVELOPMENT"
+        label:
+          type: string
+          example: "Web Development"
+        shortLabel:
+          type: string
+          example: "Web"
+        templatesCount:
+          type: integer
+          example: 9
+
+    TemplateCategoriesResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 16
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateCategory'
 
     RoadmapNode:
       type: object
@@ -1144,6 +1235,23 @@ paths:
         '422':
           $ref: '#/components/responses/UnprocessableEntity'
 
+  /users/me/activity:
+    get:
+      tags: [Users]
+      summary: Get current user's learning activity
+      operationId: getCurrentUserActivity
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Current streak, longest streak, and recent activity entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserActivityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   # ============================================================
   # USERS – Skills
   # ============================================================
@@ -1515,6 +1623,56 @@ paths:
                       $ref: '#/components/schemas/Roadmap'
                   meta:
                     $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /templates:
+    get:
+      tags: [Roadmaps]
+      summary: List all public roadmap templates
+      description: Returns public roadmap templates for Explore.
+      operationId: listPublicRoadmapTemplates
+      security:
+        - CookieAuth: []
+      parameters:
+        - name: roleCategory
+          in: query
+          schema:
+            type: string
+          description: Filter by role category.
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated list of public template roadmaps
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TemplateRoadmap'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /templates/category:
+    get:
+      tags: [Roadmaps]
+      summary: List template roadmap categories
+      operationId: listTemplateRoadmapCategories
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Category names and template counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TemplateCategoriesResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
 

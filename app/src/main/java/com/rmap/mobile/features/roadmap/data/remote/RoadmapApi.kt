@@ -1,6 +1,7 @@
 package com.rmap.mobile.features.roadmap.data.remote
 
 import com.rmap.mobile.features.roadmap.data.model.PaginatedRoadmapsResponseDto
+import com.rmap.mobile.features.roadmap.data.model.PaginatedTemplatesResponseDto
 import com.rmap.mobile.features.roadmap.data.model.NodeDetailResponseDto
 import com.rmap.mobile.features.roadmap.data.model.RoadmapNodeQuizResponseDto
 import com.rmap.mobile.features.roadmap.data.model.RoadmapNodesListResponseDto
@@ -8,6 +9,7 @@ import com.rmap.mobile.features.roadmap.data.model.RoadmapProgressSummaryDto
 import com.rmap.mobile.features.roadmap.data.model.RoadmapResponseDto
 import com.rmap.mobile.features.roadmap.data.model.SubmitQuizRequestDto
 import com.rmap.mobile.features.roadmap.data.model.SubmitQuizResponseDto
+import com.rmap.mobile.features.roadmap.data.model.TemplateCategoriesResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -21,6 +23,16 @@ interface RoadmapApi {
         @Query("page") page: Int = 1,
         @Query("perPage") perPage: Int = DEFAULT_PAGE_SIZE
     ): Response<PaginatedRoadmapsResponseDto>
+
+    @GET("templates")
+    suspend fun listTemplates(
+        @Query("roleCategory") roleCategory: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("perPage") perPage: Int = DEFAULT_PAGE_SIZE
+    ): Response<PaginatedTemplatesResponseDto>
+
+    @GET("templates/categories")
+    suspend fun listTemplateCategories(): Response<TemplateCategoriesResponseDto>
 
     @GET("roadmaps/{roadmapId}")
     suspend fun getRoadmap(

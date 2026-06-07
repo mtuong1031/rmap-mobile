@@ -139,8 +139,7 @@ class FakeRoadmapRepository : RoadmapRepository {
             roadmaps
         } else {
             roadmaps.filter { roadmap ->
-                roadmap.title.contains(normalizedQuery, ignoreCase = true) ||
-                    roadmap.categoryId.contains(normalizedQuery, ignoreCase = true)
+                roadmap.title.contains(normalizedQuery, ignoreCase = true)
             }
         }
         return Result.success(result)
@@ -253,7 +252,7 @@ class FakeRoadmapRepository : RoadmapRepository {
         return listOf(
             NodeQuizOption("A", "Review the concept and apply it in a small task."),
             NodeQuizOption("B", "Skip practice and continue immediately."),
-            NodeQuizOption("C", "Only bookmark the resource."),
+            NodeQuizOption("C", "Only save the resource for later."),
             NodeQuizOption("D", "Wait until every roadmap is finished.")
         )
     }

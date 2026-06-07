@@ -55,7 +55,9 @@ data class LearningProgress(
 data class RoadmapCategory(
     val id: String,
     val name: String,
-    val icon: LearningTopicIcon
+    val icon: LearningTopicIcon,
+    val shortName: String = name,
+    val roadmapCount: Int = 0
 )
 
 data class RoadmapSummary(

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -20,13 +22,13 @@ import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.components.ExploreCategorySection
+import com.rmap.mobile.features.explore.presentation.components.ExploreContentSkeleton
 import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBar
-import com.rmap.mobile.features.explore.presentation.components.PopularRoadmapsSection
+import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBarSkeleton
 import com.rmap.mobile.features.explore.presentation.components.RoadmapLibrarySection
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreRoadmapCardUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreUiState
-import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 import com.rmap.mobile.navigation.NavBarDestination
 
 @Composable
@@ -35,11 +37,9 @@ fun ExploreScreen(
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.Explore,
     onHeaderActionClick: () -> Unit = {},
-    onViewAllCategoriesClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onCategoryClick: (CategoryUiModel) -> Unit = {},
-    onPopularRoadmapClick: (TrendingRoadmapCardUiModel) -> Unit = {},
     onRoadmapClick: (ExploreRoadmapCardUiModel) -> Unit = {},
     onSeeMoreRoadmapsClick: () -> Unit = {},
     onSeeAllRoadmapsClick: () -> Unit = {},
@@ -75,8 +75,9 @@ fun ExploreScreen(
             ) {
                 item {
                     RMapHeader(
-                        greetingText = "Good morning, ${uiState.userName}",
+                        greetingText = stringResource(R.string.explore_greeting),
                         headingText = stringResource(R.string.explore_title),
+                        actionIcon = Icons.Outlined.Explore,
                         onActionClick = onHeaderActionClick,
                         modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
                     )
@@ -86,39 +87,41 @@ fun ExploreScreen(
                     Box(
                         modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
                     ) {
-                        ExploreSearchBar(
-                            query = uiState.searchQuery,
-                            onQueryChange = onSearchQueryChange
-                        )
+                        if (uiState.isLoading) {
+                            ExploreSearchBarSkeleton()
+                        } else {
+                            ExploreSearchBar(
+                                query = uiState.searchQuery,
+                                onQueryChange = onSearchQueryChange
+                            )
+                        }
                     }
                 }
 
-                item {
-                    ExploreCategorySection(
-                        categories = uiState.categories,
-                        selectedCategoryId = uiState.selectedCategoryId,
-                        onCategoryClick = onCategoryClick,
-                        onViewAllClick = onViewAllCategoriesClick
-                    )
-                }
+                if (uiState.isLoading) {
+                    item {
+                        ExploreContentSkeleton()
+                    }
+                } else {
+                    item {
+                        ExploreCategorySection(
+                            categories = uiState.categories,
+                            selectedCategoryId = uiState.selectedCategoryId,
+                            onCategoryClick = onCategoryClick
+                        )
+                    }
 
-                item {
-                    PopularRoadmapsSection(
-                        roadmaps = uiState.popularRoadmaps,
-                        onRoadmapClick = onPopularRoadmapClick
-                    )
-                }
-
-                item {
-                    RoadmapLibrarySection(
-                        roadmaps = uiState.libraryRoadmaps,
-                        selectedCategoryName = selectedCategoryName,
-                        totalCount = uiState.totalLibraryCount,
-                        onRoadmapClick = onRoadmapClick,
-                        onSeeMoreClick = onSeeMoreRoadmapsClick,
-                        onSeeAllClick = onSeeAllRoadmapsClick,
-                        onSeeLessClick = onSeeLessRoadmapsClick
-                    )
+                    item {
+                        RoadmapLibrarySection(
+                            roadmaps = uiState.libraryRoadmaps,
+                            selectedCategoryName = selectedCategoryName,
+                            totalCount = uiState.totalLibraryCount,
+                            onRoadmapClick = onRoadmapClick,
+                            onSeeMoreClick = onSeeMoreRoadmapsClick,
+                            onSeeAllClick = onSeeAllRoadmapsClick,
+                            onSeeLessClick = onSeeLessRoadmapsClick
+                        )
+                    }
                 }
             }
         }
@@ -140,6 +143,19 @@ private fun ExploreScreenLightPreview() {
 private fun ExploreScreenDarkPreview() {
     RMapTheme(darkTheme = true, dynamicColor = false) {
         ExploreScreen(uiState = ExploreUiState(userName = "Minh"))
+    }
+}
+
+@Preview(showBackground = true, name = "Explore Screen - Loading", widthDp = 390, heightDp = 900, backgroundColor = 0xFFF4F8FF)
+@Composable
+private fun ExploreScreenLoadingPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        ExploreScreen(
+            uiState = ExploreUiState(
+                userName = "Minh",
+                isLoading = true
+            )
+        )
     }
 }
 

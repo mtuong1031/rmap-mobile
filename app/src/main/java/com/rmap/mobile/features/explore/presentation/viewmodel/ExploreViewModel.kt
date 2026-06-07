@@ -3,8 +3,8 @@ package com.rmap.mobile.features.explore.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
-import com.rmap.mobile.features.home.presentation.viewmodel.toTrendingRoadmapCardUiModel
-import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toCategoryUiModel
@@ -18,10 +18,13 @@ private const val LibraryPageSize = 10
 
 class ExploreViewModel(
     private val roadmapRepository: RoadmapRepository = RMapAppGraph.roadmapRepository,
-    private val profileRepository: ProfileRepository = RMapAppGraph.profileRepository
+    private val authRepository: AuthRepository = RMapAppGraph.authRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ExploreUiState())
     val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
+
+    private var allLibraryRoadmaps: List<RoadmapSummary> = emptyList()
+    private var categoryLabels: Map<String, String> = emptyMap()
 
     init {
         loadExplore()
@@ -31,12 +34,10 @@ class ExploreViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            val profileResult = profileRepository.getProfile()
             val categoryResult = roadmapRepository.getExploreCategories()
-            val popularResult = roadmapRepository.getTrendingRoadmaps()
-            val libraryResult = roadmapRepository.searchRoadmaps(_uiState.value.searchQuery)
+            val libraryResult = roadmapRepository.searchRoadmaps("")
 
-            val failure = listOf(profileResult, categoryResult, popularResult, libraryResult)
+            val failure = listOf(categoryResult, libraryResult)
                 .firstOrNull { it.isFailure }
             if (failure != null) {
                 _uiState.update {
@@ -48,31 +49,27 @@ class ExploreViewModel(
                 return@launch
             }
 
-            val categories = categoryResult.getOrThrow()
             val selectedCategoryId = _uiState.value.selectedCategoryId
+            val categories = categoryResult.getOrThrow()
+            val validSelectedCategoryId = selectedCategoryId
                 ?.takeIf { id -> categories.any { category -> category.id == id } }
-            val libraryRoadmaps = libraryResult.getOrThrow()
+            allLibraryRoadmaps = libraryResult.getOrThrow()
+            categoryLabels = categories.associate { it.id to it.name }
+            val visibleRoadmaps = allLibraryRoadmaps
+                .filterByTitle(_uiState.value.searchQuery)
+                .filterByCategory(validSelectedCategoryId)
             _uiState.value = ExploreUiState(
-                userName = profileResult.getOrThrow().userName,
+                userName = (authRepository.authState.value as? AuthState.Authenticated)
+                    ?.user
+                    ?.fullName
+                    .orEmpty(),
                 searchQuery = _uiState.value.searchQuery,
-                selectedCategoryId = selectedCategoryId,
-                categories = categories.let {
-                    val categoryCounts = libraryRoadmaps.categoryCounts()
-                    categories.map { category ->
-                        category.toCategoryUiModel(roadmapCount = categoryCounts[category.id] ?: 0)
-                    }
-                },
-                popularRoadmaps = popularResult.getOrThrow().mapIndexed { index, roadmap ->
-                    roadmap.toTrendingRoadmapCardUiModel(rank = index + 1)
-                },
-                libraryRoadmaps = libraryRoadmaps.toVisibleLibraryRoadmaps(
-                    selectedCategoryId = selectedCategoryId,
-                    categoryLabels = categories.associate { it.id to it.name },
+                selectedCategoryId = validSelectedCategoryId,
+                categories = categories.map { category -> category.toCategoryUiModel() },
+                libraryRoadmaps = visibleRoadmaps.toVisibleLibraryRoadmaps(
                     visibleCount = LibraryPageSize
                 ),
-                totalLibraryCount = libraryRoadmaps
-                    .filterByCategory(selectedCategoryId)
-                    .size,
+                totalLibraryCount = visibleRoadmaps.size,
                 libraryVisibleCount = LibraryPageSize,
                 isLoading = false
             )
@@ -124,20 +121,6 @@ class ExploreViewModel(
         )
     }
 
-    fun onViewAllCategories() {
-        _uiState.update {
-            it.copy(
-                selectedCategoryId = null,
-                libraryVisibleCount = LibraryPageSize
-            )
-        }
-        refreshLibrary(
-            query = _uiState.value.searchQuery,
-            selectedCategoryId = null,
-            visibleCount = LibraryPageSize
-        )
-    }
-
     fun onSeeMoreRoadmaps() {
         val nextVisibleCount = _uiState.value.libraryVisibleCount + LibraryPageSize
         _uiState.update { it.copy(libraryVisibleCount = nextVisibleCount) }
@@ -170,34 +153,18 @@ class ExploreViewModel(
         selectedCategoryId: String?,
         visibleCount: Int
     ) {
-        viewModelScope.launch {
-            roadmapRepository.searchRoadmaps(query)
-                .onSuccess { roadmaps ->
-                    val categoryCounts = roadmaps.categoryCounts()
-                    val categoryLabels = _uiState.value.categories.associate { it.id to it.name }
-                    val filteredRoadmaps = roadmaps.filterByCategory(selectedCategoryId)
-                    _uiState.update {
-                        it.copy(
-                            categories = it.categories.map { category ->
-                                category.copy(roadmapCount = categoryCounts[category.id] ?: 0)
-                            },
-                            libraryRoadmaps = filteredRoadmaps
-                                .take(visibleCount)
-                                .map { roadmap -> roadmap.toExploreRoadmapCardUiModel(categoryLabels) },
-                            totalLibraryCount = filteredRoadmaps.size,
-                            libraryVisibleCount = visibleCount.coerceAtMost(filteredRoadmaps.size),
-                            errorMessage = null
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    _uiState.update { it.copy(errorMessage = error.message ?: "Unable to search roadmaps") }
-                }
-        }
-    }
+        val filteredRoadmaps = allLibraryRoadmaps
+            .filterByTitle(query)
+            .filterByCategory(selectedCategoryId)
 
-    private fun List<RoadmapSummary>.categoryCounts(): Map<String, Int> {
-        return groupingBy { it.categoryId }.eachCount()
+        _uiState.update {
+            it.copy(
+                libraryRoadmaps = filteredRoadmaps.toVisibleLibraryRoadmaps(visibleCount),
+                totalLibraryCount = filteredRoadmaps.size,
+                libraryVisibleCount = visibleCount.coerceAtMost(filteredRoadmaps.size),
+                errorMessage = null
+            )
+        }
     }
 
     private fun List<RoadmapSummary>.filterByCategory(categoryId: String?): List<RoadmapSummary> {
@@ -208,19 +175,23 @@ class ExploreViewModel(
         }
     }
 
-    private fun List<RoadmapSummary>.toVisibleLibraryRoadmaps(
-        selectedCategoryId: String?,
-        categoryLabels: Map<String, String>,
-        visibleCount: Int
-    ): List<ExploreRoadmapCardUiModel> {
-        return filterByCategory(selectedCategoryId)
-            .take(visibleCount)
-            .map { it.toExploreRoadmapCardUiModel(categoryLabels) }
+    private fun List<RoadmapSummary>.filterByTitle(query: String): List<RoadmapSummary> {
+        val normalizedQuery = query.trim()
+        return if (normalizedQuery.isBlank()) {
+            this
+        } else {
+            filter { roadmap -> roadmap.title.contains(normalizedQuery, ignoreCase = true) }
+        }
     }
 
-    private fun RoadmapSummary.toExploreRoadmapCardUiModel(
-        categoryLabels: Map<String, String>
-    ): ExploreRoadmapCardUiModel {
+    private fun List<RoadmapSummary>.toVisibleLibraryRoadmaps(
+        visibleCount: Int
+    ): List<ExploreRoadmapCardUiModel> {
+        return take(visibleCount)
+            .map { it.toExploreRoadmapCardUiModel() }
+    }
+
+    private fun RoadmapSummary.toExploreRoadmapCardUiModel(): ExploreRoadmapCardUiModel {
         return ExploreRoadmapCardUiModel(
             id = id,
             title = title,

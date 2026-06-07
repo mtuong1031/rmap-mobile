@@ -30,32 +30,6 @@ private const val CATEGORY_GAME_DEVELOPMENT = "GAME_DEVELOPMENT"
 private const val CATEGORY_BLOCKCHAIN = "BLOCKCHAIN"
 private const val CATEGORY_CYBER_SECURITY = "CYBER_SECURITY"
 
-fun String.toRMapCategoryDisplayLabel(fallbackLabel: String? = null): String {
-    return fallbackLabel?.takeIf { it.isNotBlank() } ?: toReadableCategoryLabel()
-}
-
-fun String.toRMapCategoryCompactLabel(fallbackLabel: String? = null): String {
-    return when (toRMapCategoryKey()) {
-        CATEGORY_WEB_DEVELOPMENT -> "Web"
-        CATEGORY_FRAMEWORKS -> "Frameworks"
-        CATEGORY_ABSOLUTE_BEGINNERS -> "Beginner"
-        CATEGORY_LANGUAGES_AND_PLATFORMS -> "Languages"
-        CATEGORY_DEVOPS -> "DevOps"
-        CATEGORY_DATABASES -> "Databases"
-        CATEGORY_COMPUTER_SCIENCE -> "CS"
-        CATEGORY_DESIGN -> "Design"
-        CATEGORY_BEST_PRACTICES -> "Best Practices"
-        CATEGORY_AI_AND_MACHINE_LEARNING -> "AI"
-        CATEGORY_DATA_ANALYSIS -> "Data"
-        CATEGORY_MOBILE_DEVELOPMENT -> "Mobile"
-        CATEGORY_MANAGEMENT -> "Management"
-        CATEGORY_GAME_DEVELOPMENT -> "Game"
-        CATEGORY_BLOCKCHAIN -> "Blockchain"
-        CATEGORY_CYBER_SECURITY -> "Security"
-        else -> fallbackLabel?.takeIf { it.isNotBlank() } ?: toReadableCategoryLabel()
-    }
-}
-
 fun String.toRMapCategoryIconKey(): RMapCategoryIconKey {
     return when (toRMapCategoryKey()) {
         CATEGORY_WEB_DEVELOPMENT,
@@ -93,12 +67,4 @@ fun String.toRMapCategoryKey(): String {
                 else -> key
             }
         }
-}
-
-private fun String.toReadableCategoryLabel(): String {
-    return trim()
-        .lowercase()
-        .split(Regex("[_\\s-]+"))
-        .filter { it.isNotBlank() }
-        .joinToString(" ") { word -> word.replaceFirstChar { it.uppercase() } }
 }

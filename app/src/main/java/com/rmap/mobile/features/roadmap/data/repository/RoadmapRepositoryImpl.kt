@@ -9,7 +9,9 @@ import com.rmap.mobile.features.roadmap.data.mapper.toCategories
 import com.rmap.mobile.features.roadmap.data.mapper.toDetail
 import com.rmap.mobile.features.roadmap.data.mapper.toDomain
 import com.rmap.mobile.features.roadmap.data.mapper.toLearningProgress
+import com.rmap.mobile.features.roadmap.data.mapper.toRoadmapSummary
 import com.rmap.mobile.features.roadmap.data.mapper.toSummary
+import com.rmap.mobile.features.roadmap.data.mapper.toDomain as toTemplateCategoryDomain
 import com.rmap.mobile.features.roadmap.data.mapper.toSubmitQuizRequestDto
 import com.rmap.mobile.features.roadmap.data.model.RoadmapProgressSummaryDto
 import com.rmap.mobile.features.roadmap.data.remote.RoadmapApi
@@ -28,6 +30,8 @@ class RoadmapRepositoryImpl(
     private val sessionManager: SessionManager
 ) : RoadmapRepository {
     private var cachedSummaries: List<RoadmapSummary>? = null
+    private var cachedTemplateSummaries: List<RoadmapSummary>? = null
+    private var cachedTemplateCategories: List<RoadmapCategory>? = null
     private var cachedProgress: List<RoadmapProgressSummaryDto>? = null
 
     override suspend fun getLearningProgress(): Result<LearningProgress> {
@@ -43,8 +47,18 @@ class RoadmapRepositoryImpl(
     }
 
     override suspend fun getExploreCategories(): Result<List<RoadmapCategory>> {
-        return loadRoadmapSummaries().map { roadmaps ->
-            roadmaps.toCategories()
+        cachedTemplateCategories?.let { categories -> return Result.success(categories) }
+
+        val networkResult = SafeApiCall.execute(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            roadmapApi.listTemplateCategories()
+        }
+
+        return networkResult.toDomainResult { response ->
+            response.categories.map { category -> category.toTemplateCategoryDomain() }
+        }.onSuccess { categories ->
+            cachedTemplateCategories = categories
         }
     }
 
@@ -56,13 +70,12 @@ class RoadmapRepositoryImpl(
 
     override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
         val normalizedQuery = query.trim()
-        return loadRoadmapSummaries().map { roadmaps ->
+        return loadTemplateSummaries().map { roadmaps ->
             if (normalizedQuery.isBlank()) {
                 roadmaps
             } else {
                 roadmaps.filter { roadmap ->
-                    roadmap.title.contains(normalizedQuery, ignoreCase = true) ||
-                        roadmap.categoryId.contains(normalizedQuery, ignoreCase = true)
+                    roadmap.title.contains(normalizedQuery, ignoreCase = true)
                 }
             }
         }
@@ -165,6 +178,22 @@ class RoadmapRepositoryImpl(
         }
     }
 
+    private suspend fun loadTemplateSummaries(): Result<List<RoadmapSummary>> {
+        cachedTemplateSummaries?.let { summaries -> return Result.success(summaries) }
+
+        val networkResult = SafeApiCall.execute(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            roadmapApi.listTemplates(perPage = TEMPLATE_PAGE_SIZE)
+        }
+
+        return networkResult.toDomainResult { response ->
+            response.data.map { template -> template.toRoadmapSummary() }
+        }.onSuccess { summaries ->
+            cachedTemplateSummaries = summaries
+        }
+    }
+
     private suspend fun loadProgressSummaries(): Result<List<RoadmapProgressSummaryDto>> {
         cachedProgress?.let { progress -> return Result.success(progress) }
 
@@ -201,5 +230,6 @@ class RoadmapRepositoryImpl(
     private companion object {
         const val TRENDING_LIMIT = 4
         const val RECOMMENDED_LIMIT = 4
+        const val TEMPLATE_PAGE_SIZE = 100
     }
 }
