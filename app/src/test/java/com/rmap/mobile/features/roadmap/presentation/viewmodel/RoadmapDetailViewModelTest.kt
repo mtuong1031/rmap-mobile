@@ -349,6 +349,40 @@ class RoadmapDetailViewModelTest {
     }
 
     @Test
+    fun `onNodeActionClick with not-started node navigates without starting roadmap`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(notStartedDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            bookmarkRepository = FakeBookmarkRepository()
+        )
+        viewModel.loadRoadmap("roadmap-1")
+        val node = viewModel.uiState.value.groups.first().nodes.first()
+        val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
+
+        viewModel.onNodeActionClick(node)
+
+        assertTrue(repository.startedRoadmapIds.isEmpty())
+        assertTrue(repository.progressUpdates.isEmpty())
+        assertEquals(
+            listOf("roadmap-1"),
+            repository.requestedIds
+        )
+        assertEquals(
+            RoadmapDetailEvent.NavigateToLearning(
+                roadmapId = "roadmap-1",
+                nodeId = "node-api",
+                skillId = "skill-api",
+                isCompleted = false
+            ),
+            event.await()
+        )
+        assertEquals(RoadmapNodeStatus.NotStarted, viewModel.uiState.value.groups.first().nodes.first().status)
+        assertEquals(null, viewModel.uiState.value.updatingNodeId)
+    }
+
+    @Test
     fun `onNodeActionClick with locked node navigates to learning without progress update`() = runTest {
         val repository = FakeRoadmapRepository(
             detailResult = Result.success(lockedDetail)

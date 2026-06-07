@@ -93,6 +93,12 @@ class RoadmapDetailViewModel(
 
     fun onContinueClick() {
         val state = _uiState.value
+        val roadmapId = state.roadmapId.takeIf { it.isNotBlank() }
+        if (roadmapId != null && state.primaryAction == RoadmapPrimaryAction.StartLearning) {
+            startRoadmapAndOpenFirstAvailableNode(roadmapId)
+            return
+        }
+
         when (val target = state.nextActionTarget) {
             is RoadmapNextActionTarget.Milestone -> {
                 viewModelScope.launch {
@@ -113,12 +119,7 @@ class RoadmapDetailViewModel(
 
         val node = state.currentSearchNode()
         if (node == null) {
-            val roadmapId = state.roadmapId.takeIf { it.isNotBlank() }
-            if (roadmapId != null && state.primaryAction == RoadmapPrimaryAction.StartLearning) {
-                startRoadmapAndOpenFirstAvailableNode(roadmapId)
-            } else {
-                emitNodeActionUnavailable()
-            }
+            emitNodeActionUnavailable()
             return
         }
 
@@ -129,12 +130,8 @@ class RoadmapDetailViewModel(
         val roadmapId = _uiState.value.roadmapId.takeIf { it.isNotBlank() } ?: return
 
         when (node.status) {
-            RoadmapNodeStatus.NotStarted -> startLearningNode(
-                roadmapId = roadmapId,
-                node = node
-            )
-
             RoadmapNodeStatus.Locked,
+            RoadmapNodeStatus.NotStarted,
             RoadmapNodeStatus.InProgress,
             RoadmapNodeStatus.Completed -> navigateToLearning(
                 roadmapId = roadmapId,
@@ -206,42 +203,6 @@ class RoadmapDetailViewModel(
                 isSearchActive = false,
                 isSearchInputFocused = false
             )
-        }
-    }
-
-    private fun startLearningNode(
-        roadmapId: String,
-        node: RoadmapNodeUiModel
-    ) {
-        if (node.skillId.isBlank()) {
-            emitNodeActionUnavailable()
-            return
-        }
-
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    updatingNodeId = node.id,
-                    errorMessageResId = null
-                )
-            }
-            repository.startRoadmap(roadmapId)
-                .onSuccess {
-                    val refreshedState = refreshRoadmapAfterStart(roadmapId)
-                    val targetNode = refreshedState?.findNodeById(node.id)
-                        ?.takeIf { refreshedNode -> refreshedNode.status != RoadmapNodeStatus.Locked }
-                        ?: refreshedState?.currentSearchNode()
-                        ?: node
-                    emitNavigateToLearning(
-                        roadmapId = roadmapId,
-                        node = targetNode,
-                        isCompleted = targetNode.status == RoadmapNodeStatus.Completed
-                    )
-                }
-                .onFailure {
-                    _uiState.update { it.copy(updatingNodeId = null) }
-                    _events.emit(RoadmapDetailEvent.NodeProgressUpdateFailed(it.toUserMessage()))
-                }
         }
     }
 

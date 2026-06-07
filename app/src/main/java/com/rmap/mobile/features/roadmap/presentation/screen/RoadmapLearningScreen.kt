@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +44,7 @@ import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
@@ -380,6 +382,9 @@ private fun RoadmapLearningBottomAction(
     onTakeQuizClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isQuizAvailable = canTakeQuiz && !isNodeLocked
+    val isUnavailableQuizAction = !isCompleted && !isQuizAvailable
+
     RoadmapDecoratedCard(
         modifier = modifier,
         shape = AppShapes.button,
@@ -415,7 +420,15 @@ private fun RoadmapLearningBottomAction(
                 modifier = Modifier.fillMaxWidth(),
                 variant = RMapButtonVariant.Primary,
                 size = RMapButtonSize.Large,
-                enabled = !isCompleted && canTakeQuiz && !isNodeLocked
+                enabled = !isCompleted,
+                colors = if (isUnavailableQuizAction) {
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.outline,
+                        contentColor = OnSurfacePlaceholderLight
+                    )
+                } else {
+                    null
+                }
             )
         }
     }
