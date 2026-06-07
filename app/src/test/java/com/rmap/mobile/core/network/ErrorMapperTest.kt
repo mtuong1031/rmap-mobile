@@ -29,7 +29,7 @@ class ErrorMapperTest {
 
         assertEquals(NetworkErrorType.Server, error.type)
         assertEquals(500, error.code)
-        assertEquals("Máy chủ đang gặp sự cố. Vui lòng thử lại sau.", error.message)
+        assertEquals("The server is having trouble. Please try again later.", error.message)
     }
 
     @Test
@@ -41,7 +41,7 @@ class ErrorMapperTest {
 
         assertEquals(NetworkErrorType.Unauthorized, error.type)
         assertEquals(401, error.code)
-        assertEquals("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", error.message)
+        assertEquals("Your session has expired. Please sign in again.", error.message)
     }
 
     @Test
@@ -52,7 +52,7 @@ class ErrorMapperTest {
         )
 
         assertEquals(NetworkErrorType.Forbidden, error.type)
-        assertEquals("Bạn không có quyền truy cập.", error.message)
+        assertEquals("You do not have permission to access this.", error.message)
     }
 
     @Test
@@ -63,7 +63,7 @@ class ErrorMapperTest {
         )
 
         assertEquals(NetworkErrorType.NotFound, error.type)
-        assertEquals("Không tìm thấy dữ liệu.", error.message)
+        assertEquals("No data was found.", error.message)
     }
 
     @Test
@@ -71,7 +71,7 @@ class ErrorMapperTest {
         val error = ErrorMapper.fromException(SocketTimeoutException("timeout"))
 
         assertEquals(NetworkErrorType.Timeout, error.type)
-        assertEquals("Máy chủ phản hồi quá lâu. Vui lòng thử lại.", error.message)
+        assertEquals("The server took too long to respond. Please try again.", error.message)
     }
 
     @Test
@@ -79,7 +79,7 @@ class ErrorMapperTest {
         val error = ErrorMapper.fromException(UnknownHostException("offline"))
 
         assertEquals(NetworkErrorType.NoInternet, error.type)
-        assertEquals("Không có kết nối mạng. Vui lòng kiểm tra Internet rồi thử lại.", error.message)
+        assertEquals("No internet connection. Please check your connection and try again.", error.message)
     }
 
     @Test
@@ -87,6 +87,6 @@ class ErrorMapperTest {
         val error = ErrorMapper.fromException(JsonSyntaxException("bad json"))
 
         assertEquals(NetworkErrorType.Serialization, error.type)
-        assertEquals("Dữ liệu phản hồi không hợp lệ. Vui lòng thử lại sau.", error.message)
+        assertEquals("The response data was invalid. Please try again later.", error.message)
     }
 }

@@ -21,7 +21,7 @@ object ErrorMapper {
     fun emptyBody(statusCode: Int): NetworkResult.Error {
         return NetworkResult.Error(
             type = NetworkErrorType.EmptyBody,
-            message = "Máy chủ không trả về dữ liệu. Vui lòng thử lại sau.",
+            message = "The server returned no data. Please try again later.",
             code = statusCode
         )
     }
@@ -30,27 +30,27 @@ object ErrorMapper {
         return when (throwable) {
             is SocketTimeoutException -> NetworkResult.Error(
                 type = NetworkErrorType.Timeout,
-                message = "Máy chủ phản hồi quá lâu. Vui lòng thử lại.",
+                message = "The server took too long to respond. Please try again.",
                 cause = throwable
             )
 
             is JsonSyntaxException,
             is MalformedJsonException -> NetworkResult.Error(
                 type = NetworkErrorType.Serialization,
-                message = "Dữ liệu phản hồi không hợp lệ. Vui lòng thử lại sau.",
+                message = "The response data was invalid. Please try again later.",
                 cause = throwable
             )
 
             is UnknownHostException,
             is IOException -> NetworkResult.Error(
                 type = NetworkErrorType.NoInternet,
-                message = "Không có kết nối mạng. Vui lòng kiểm tra Internet rồi thử lại.",
+                message = "No internet connection. Please check your connection and try again.",
                 cause = throwable
             )
 
             else -> NetworkResult.Error(
                 type = NetworkErrorType.Unknown,
-                message = "Đã xảy ra lỗi. Vui lòng thử lại.",
+                message = "Something went wrong. Please try again.",
                 cause = throwable
             )
         }
@@ -68,11 +68,11 @@ object ErrorMapper {
 
     private fun Int.toUserMessage(apiMessage: String?): String {
         return when (this) {
-            401 -> "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
-            403 -> "Bạn không có quyền truy cập."
-            404 -> "Không tìm thấy dữ liệu."
-            in 500..599 -> "Máy chủ đang gặp sự cố. Vui lòng thử lại sau."
-            else -> apiMessage ?: "Đã xảy ra lỗi. Vui lòng thử lại."
+            401 -> "Your session has expired. Please sign in again."
+            403 -> "You do not have permission to access this."
+            404 -> "No data was found."
+            in 500..599 -> "The server is having trouble. Please try again later."
+            else -> apiMessage ?: "Something went wrong. Please try again."
         }
     }
 

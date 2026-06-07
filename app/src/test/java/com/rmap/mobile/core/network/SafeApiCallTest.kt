@@ -63,7 +63,7 @@ class SafeApiCallTest {
         assertEquals(NetworkErrorType.Unauthorized, error.type)
         assertEquals(401, error.code)
         assertEquals(40101, error.apiCode)
-        assertEquals("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", error.message)
+        assertEquals("Your session has expired. Please sign in again.", error.message)
         assertTrue(resultWithCallback is NetworkResult.Error)
         assertEquals(1, unauthorizedCallCount)
     }
@@ -81,7 +81,7 @@ class SafeApiCallTest {
         assertTrue(result is NetworkResult.Error)
         val error = result as NetworkResult.Error
         assertEquals(NetworkErrorType.Forbidden, error.type)
-        assertEquals("Bạn không có quyền truy cập.", error.message)
+        assertEquals("You do not have permission to access this.", error.message)
     }
 
     @Test
@@ -97,7 +97,7 @@ class SafeApiCallTest {
         assertTrue(result is NetworkResult.Error)
         val error = result as NetworkResult.Error
         assertEquals(NetworkErrorType.NotFound, error.type)
-        assertEquals("Không tìm thấy dữ liệu.", error.message)
+        assertEquals("No data was found.", error.message)
     }
 
     @Test
@@ -113,7 +113,7 @@ class SafeApiCallTest {
         assertTrue(result is NetworkResult.Error)
         val error = result as NetworkResult.Error
         assertEquals(NetworkErrorType.Server, error.type)
-        assertEquals("Máy chủ đang gặp sự cố. Vui lòng thử lại sau.", error.message)
+        assertEquals("The server is having trouble. Please try again later.", error.message)
     }
 
     @Test
