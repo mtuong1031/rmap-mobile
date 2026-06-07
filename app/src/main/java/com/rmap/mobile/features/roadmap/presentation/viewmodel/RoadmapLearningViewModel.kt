@@ -114,6 +114,40 @@ class RoadmapLearningViewModel(
         }
     }
 
+    fun onStartRoadmapForQuizClick() {
+        val state = _uiState.value
+        if (state.isCompleted || state.canTakeQuiz || state.isNodeLocked || state.isStartingRoadmapForQuiz) return
+
+        val roadmapId = state.roadmapId.takeIf { it.isNotBlank() } ?: return
+        val nodeId = state.nodeId.takeIf { it.isNotBlank() } ?: return
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isStartingRoadmapForQuiz = true,
+                    errorMessageResId = null
+                )
+            }
+            roadmapRepository.startRoadmap(roadmapId)
+                .onSuccess {
+                    _uiState.update {
+                        it.copy(
+                            canTakeQuiz = true,
+                            canMarkCompleted = false,
+                            isNodeLocked = false,
+                            isStartingRoadmapForQuiz = false,
+                            completionBlockedMessageResId = null
+                        )
+                    }
+                    _events.emit(RoadmapLearningEvent.NavigateToQuiz(roadmapId = roadmapId, nodeId = nodeId))
+                }
+                .onFailure {
+                    _uiState.update { it.copy(isStartingRoadmapForQuiz = false) }
+                    _events.emit(RoadmapLearningEvent.NodeCompletionFailed)
+                }
+        }
+    }
+
     private fun loadLearningContent(
         roadmapId: String,
         nodeId: String,
@@ -279,4 +313,5 @@ sealed class RoadmapLearningEvent {
     data object NodeCompleted : RoadmapLearningEvent()
     data object NodeCompletionFailed : RoadmapLearningEvent()
     data object NodeCompletionRequiresQuiz : RoadmapLearningEvent()
+    data class NavigateToQuiz(val roadmapId: String, val nodeId: String) : RoadmapLearningEvent()
 }

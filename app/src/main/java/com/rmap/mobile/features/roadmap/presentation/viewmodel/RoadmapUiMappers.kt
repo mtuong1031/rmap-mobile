@@ -44,7 +44,7 @@ fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
     val groups = sections.mapIndexed { index, section ->
         section.toRoadmapGroupUiModel(
             index = index,
-            useResourceDescription = isTemplate
+            hasStartedLearning = hasStartedLearning
         )
     }
     val milestones = milestones.map { milestone -> milestone.toRoadmapMilestoneUiModel() }
@@ -53,7 +53,8 @@ fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
         milestones = milestones
     )
     val nodes = groups.flatMap { group -> group.nodes }
-    val hasStartedLearning = completedLessons > 0 ||
+    val hasStartedRoadmap = completedLessons > 0 ||
+        hasStartedLearning ||
         progressFraction > 0f ||
         nodes.any { node ->
             node.status == RoadmapNodeStatus.Completed || node.status == RoadmapNodeStatus.InProgress
@@ -81,7 +82,7 @@ fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
         totalRequiredNodes = requiredNodes.size,
         nextActionTitle = nextAction.title,
         nextActionTarget = nextAction.target,
-        primaryAction = if (hasStartedLearning) {
+        primaryAction = if (hasStartedRoadmap) {
             RoadmapPrimaryAction.ContinueLearning
         } else {
             RoadmapPrimaryAction.StartLearning
@@ -241,10 +242,12 @@ private fun RoadmapMilestone.toRoadmapMilestoneUiModel(): RoadmapMilestoneUiMode
 
 private fun LearningModuleSection.toRoadmapGroupUiModel(
     index: Int,
-    useResourceDescription: Boolean
+    hasStartedLearning: Boolean
 ): RoadmapGroupUiModel {
     val nodes = modules.flatMap { module ->
-        module.toRoadmapNodeUiModels(useResourceDescription = useResourceDescription)
+        module.toRoadmapNodeUiModels(
+            hasStartedLearning = hasStartedLearning
+        )
     }
     val requiredNodes = nodes.filter { node -> node.requirement == RoadmapNodeRequirement.Required }
         .ifEmpty { nodes }
@@ -266,59 +269,75 @@ private fun LearningModuleSection.toRoadmapGroupUiModel(
     )
 }
 
-private fun LearningModule.toRoadmapNodeUiModels(useResourceDescription: Boolean): List<RoadmapNodeUiModel> {
-    return listOf(toRoadmapNodeUiModel(useResourceDescription = useResourceDescription)) +
+private fun LearningModule.toRoadmapNodeUiModels(
+    hasStartedLearning: Boolean
+): List<RoadmapNodeUiModel> {
+    return listOf(
+        toRoadmapNodeUiModel(
+            hasStartedLearning = hasStartedLearning
+        )
+    ) +
         subLessons.map { subLesson ->
             subLesson.toRoadmapNodeUiModel(
                 parentIcon = icon,
-                useResourceDescription = useResourceDescription
+                hasStartedLearning = hasStartedLearning
             )
         }
 }
 
-private fun LearningModule.toRoadmapNodeUiModel(useResourceDescription: Boolean): RoadmapNodeUiModel {
+private fun LearningModule.toRoadmapNodeUiModel(
+    hasStartedLearning: Boolean
+): RoadmapNodeUiModel {
+    val displayStatus = status.toStartedRoadmapStatus(hasStartedLearning)
     val description = nodeDescription(
         estimatedHours = estimatedHours,
         resourcesCount = resourcesCount,
-        status = status,
-        useResourceDescription = useResourceDescription
+        status = displayStatus
     )
     return RoadmapNodeUiModel(
         id = id,
         skillId = skillId,
         title = title,
         icon = icon.toImageVector(),
-        status = status.toRoadmapNodeStatus(),
+        status = displayStatus.toRoadmapNodeStatus(),
         requirement = requirement.toRoadmapNodeRequirement(),
         descriptionResId = description.resId,
         descriptionArgs = description.args,
         resourcesCount = resourcesCount,
-        action = status.toRoadmapNodeAction()
+        action = displayStatus.toRoadmapNodeAction()
     )
 }
 
 private fun SubLesson.toRoadmapNodeUiModel(
     parentIcon: LearningTopicIcon,
-    useResourceDescription: Boolean
+    hasStartedLearning: Boolean
 ): RoadmapNodeUiModel {
+    val displayStatus = status.toStartedRoadmapStatus(hasStartedLearning)
     val description = nodeDescription(
         estimatedHours = estimatedHours,
         resourcesCount = resourcesCount,
-        status = status,
-        useResourceDescription = useResourceDescription
+        status = displayStatus
     )
     return RoadmapNodeUiModel(
         id = id,
         skillId = skillId,
         title = title,
         icon = parentIcon.toImageVector(),
-        status = status.toRoadmapNodeStatus(),
+        status = displayStatus.toRoadmapNodeStatus(),
         requirement = requirement.toRoadmapNodeRequirement(),
         descriptionResId = description.resId,
         descriptionArgs = description.args,
         resourcesCount = resourcesCount,
-        action = status.toRoadmapNodeAction()
+        action = displayStatus.toRoadmapNodeAction()
     )
+}
+
+private fun LearningStatus.toStartedRoadmapStatus(hasStartedLearning: Boolean): LearningStatus {
+    return if (hasStartedLearning && this == LearningStatus.NotStarted) {
+        LearningStatus.InProgress
+    } else {
+        this
+    }
 }
 
 private fun List<RoadmapNodeUiModel>.toRoadmapGroupState(index: Int): RoadmapGroupState {
@@ -361,20 +380,17 @@ private fun LearningStatus.toRoadmapNodeAction(): RoadmapNodeAction? {
 private fun nodeDescription(
     estimatedHours: Int?,
     resourcesCount: Int,
-    status: LearningStatus,
-    useResourceDescription: Boolean
+    status: LearningStatus
 ): NodeDescription {
-    if (useResourceDescription) {
-        return NodeDescription(
-            resId = R.string.roadmap_detail_node_resources_available,
-            args = listOf(resourcesCount.coerceAtLeast(0).toString())
-        )
-    }
-
     return if (estimatedHours != null && estimatedHours > 0) {
         NodeDescription(
             resId = R.string.roadmap_detail_node_estimated_hours,
             args = listOf(estimatedHours.toString())
+        )
+    } else if (resourcesCount > 0) {
+        NodeDescription(
+            resId = R.string.roadmap_detail_node_resources_available,
+            args = listOf(resourcesCount.toString())
         )
     } else {
         when (status) {

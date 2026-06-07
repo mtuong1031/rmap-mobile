@@ -238,6 +238,64 @@ class RoadmapLearningViewModelTest {
     }
 
     @Test
+    fun `onStartRoadmapForQuizClick starts roadmap and emits quiz navigation`() = runTest {
+        val roadmapRepository = FakeRoadmapRepository(
+            nodeContentResult = Result.success(testContent.copy(status = LearningStatus.NotStarted, quizPassed = false)),
+            startResult = Result.success(Unit)
+        )
+        val viewModel = RoadmapLearningViewModel(
+            skillLearningRepository = FakeSkillLearningRepository(),
+            roadmapRepository = roadmapRepository
+        )
+        viewModel.loadLearningContent(
+            roadmapId = "roadmap-1",
+            nodeId = "node-api",
+            skillId = "skill-api",
+            isCompleted = false
+        )
+        val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
+
+        viewModel.onStartRoadmapForQuizClick()
+
+        assertEquals(listOf("roadmap-1"), roadmapRepository.startedRoadmapIds)
+        assertEquals(
+            RoadmapLearningEvent.NavigateToQuiz(
+                roadmapId = "roadmap-1",
+                nodeId = "node-api"
+            ),
+            event.await()
+        )
+        assertTrue(viewModel.uiState.value.canTakeQuiz)
+        assertFalse(viewModel.uiState.value.isStartingRoadmapForQuiz)
+    }
+
+    @Test
+    fun `onStartRoadmapForQuizClick emits failure when start roadmap fails`() = runTest {
+        val roadmapRepository = FakeRoadmapRepository(
+            nodeContentResult = Result.success(testContent.copy(status = LearningStatus.NotStarted, quizPassed = false)),
+            startResult = Result.failure(IllegalStateException("Server error"))
+        )
+        val viewModel = RoadmapLearningViewModel(
+            skillLearningRepository = FakeSkillLearningRepository(),
+            roadmapRepository = roadmapRepository
+        )
+        viewModel.loadLearningContent(
+            roadmapId = "roadmap-1",
+            nodeId = "node-api",
+            skillId = "skill-api",
+            isCompleted = false
+        )
+        val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
+
+        viewModel.onStartRoadmapForQuizClick()
+
+        assertEquals(listOf("roadmap-1"), roadmapRepository.startedRoadmapIds)
+        assertEquals(RoadmapLearningEvent.NodeCompletionFailed, event.await())
+        assertFalse(viewModel.uiState.value.canTakeQuiz)
+        assertFalse(viewModel.uiState.value.isStartingRoadmapForQuiz)
+    }
+
+    @Test
     fun `onMarkCompletedClick with template roadmap emits failure when backend update fails`() = runTest {
         val roadmapRepository = FakeRoadmapRepository(
             detailResult = Result.success(fallbackDetail.copy(isTemplate = true)),
@@ -318,11 +376,13 @@ class RoadmapLearningViewModelTest {
             testContent.copy(status = LearningStatus.InProgress, quizPassed = true)
         ),
         private val detailResult: Result<RoadmapDetail> = Result.failure(UnsupportedOperationException()),
-        private val updateResult: Result<NodeProgressUpdateResult>? = null
+        private val updateResult: Result<NodeProgressUpdateResult>? = null,
+        private val startResult: Result<Unit> = Result.failure(UnsupportedOperationException())
     ) : RoadmapRepository {
         val progressUpdates = mutableListOf<ProgressUpdateRequest>()
         val requestedDetailIds = mutableListOf<String>()
         val nodeContentRequests = mutableListOf<NodeContentRequest>()
+        val startedRoadmapIds = mutableListOf<String>()
 
         override suspend fun getLearningProgress(): Result<LearningProgress> {
             return Result.failure(UnsupportedOperationException())
@@ -400,7 +460,8 @@ class RoadmapLearningViewModelTest {
         }
 
         override suspend fun startRoadmap(roadmapId: String): Result<Unit> {
-            return Result.failure(UnsupportedOperationException())
+            startedRoadmapIds += roadmapId
+            return startResult
         }
 
         override suspend fun updateNodeProgress(

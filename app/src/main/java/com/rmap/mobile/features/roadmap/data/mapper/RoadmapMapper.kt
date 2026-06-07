@@ -86,12 +86,24 @@ fun RoadmapWithNodesDto.toDomain(progress: RoadmapProgressDto): RoadmapDetail {
         progressByNodeId[node.id.orEmpty()].toLearningStatus() == LearningStatus.Completed
     }
     val totalLessons = progress.totalNodes ?: allNodes.size
+    val hasStartedLearning = progress.hasStartedLearning() ||
+        progressByNodeId.values.any { nodeProgress -> nodeProgress.hasStartedLearning() }
 
     val rawContentItems = sortedNodes.map { node ->
         if (node.isMilestoneNode()) {
-            RoadmapContentItem.Milestone(node.toRoadmapMilestone(progressByNodeId))
+            RoadmapContentItem.Milestone(
+                node.toRoadmapMilestone(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = false
+                )
+            )
         } else {
-            RoadmapContentItem.Group(node.toLearningModuleSection(progressByNodeId))
+            RoadmapContentItem.Group(
+                node.toLearningModuleSection(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = hasStartedLearning
+                )
+            )
         }
     }
     val lockedSections = rawContentItems
@@ -125,7 +137,8 @@ fun RoadmapWithNodesDto.toDomain(progress: RoadmapProgressDto): RoadmapDetail {
         roleId = roleId.orEmpty(),
         roleName = displayRoleName(),
         description = description,
-        isTemplate = isTemplate == true
+        isTemplate = isTemplate == true,
+        hasStartedLearning = hasStartedLearning
     )
 }
 
@@ -517,18 +530,33 @@ private fun SubLesson.lockIncomplete(): SubLesson {
 }
 
 private fun RoadmapNodeDto.toLearningModuleSection(
-    progressByNodeId: Map<String, NodeProgressDto>
+    progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean
 ): LearningModuleSection {
     val sortedChildren = children.orEmpty().sortedByRoadmapOrder()
     val sectionTitle = displayName().requiredApiField("name")
     val modules = if (isGroupNode() && sortedChildren.isNotEmpty()) {
         sortedChildren.map { child ->
-            child.toLearningModule(progressByNodeId, includeChildSubLessons = true)
+            child.toLearningModule(
+                progressByNodeId = progressByNodeId,
+                hasStartedLearning = hasStartedLearning,
+                includeChildSubLessons = true
+            )
         }
     } else {
-        listOf(toLearningModule(progressByNodeId, includeChildSubLessons = false)) +
+        listOf(
+            toLearningModule(
+                progressByNodeId = progressByNodeId,
+                hasStartedLearning = hasStartedLearning,
+                includeChildSubLessons = false
+            )
+        ) +
             sortedChildren.map { child ->
-                child.toLearningModule(progressByNodeId, includeChildSubLessons = true)
+                child.toLearningModule(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = hasStartedLearning,
+                    includeChildSubLessons = true
+                )
             }
     }
 
@@ -540,14 +568,20 @@ private fun RoadmapNodeDto.toLearningModuleSection(
 
 private fun RoadmapNodeDto.toLearningModule(
     progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean,
     includeChildSubLessons: Boolean
 ): LearningModule {
     val nodeId = id.requiredApiField("id")
-    val status = progressByNodeId[nodeId].toLearningStatus()
+    val status = progressByNodeId[nodeId].toLearningStatus(hasStartedLearning)
     val subLessons = if (includeChildSubLessons) {
         children.orEmpty()
             .sortedByRoadmapOrder()
-            .flatMap { child -> child.toSubLessons(progressByNodeId) }
+            .flatMap { child ->
+                child.toSubLessons(
+                    progressByNodeId = progressByNodeId,
+                    hasStartedLearning = hasStartedLearning
+                )
+            }
     } else {
         emptyList()
     }
@@ -568,12 +602,13 @@ private fun RoadmapNodeDto.toLearningModule(
 }
 
 private fun RoadmapNodeDto.toSubLessons(
-    progressByNodeId: Map<String, NodeProgressDto>
+    progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean
 ): List<SubLesson> {
     val nodeId = id.requiredApiField("id")
     val subLesson = SubLesson(
         title = displayName().requiredApiField("name"),
-        status = progressByNodeId[nodeId].toLearningStatus(),
+        status = progressByNodeId[nodeId].toLearningStatus(hasStartedLearning),
         id = nodeId,
         skillId = skillId.orNodeSkillId(nodeId),
         requirement = learningRequirement(),
@@ -583,20 +618,26 @@ private fun RoadmapNodeDto.toSubLessons(
     )
     val descendants = children.orEmpty()
         .sortedByRoadmapOrder()
-        .flatMap { child -> child.toSubLessons(progressByNodeId) }
+        .flatMap { child ->
+            child.toSubLessons(
+                progressByNodeId = progressByNodeId,
+                hasStartedLearning = hasStartedLearning
+            )
+        }
 
     return listOf(subLesson) + descendants
 }
 
 private fun RoadmapNodeDto.toRoadmapMilestone(
-    progressByNodeId: Map<String, NodeProgressDto>
+    progressByNodeId: Map<String, NodeProgressDto>,
+    hasStartedLearning: Boolean
 ): RoadmapMilestone {
     val nodeId = id.requiredApiField("milestone.id")
     return RoadmapMilestone(
         id = nodeId,
         title = displayName().requiredApiField("milestone.name"),
         description = description,
-        status = progressByNodeId[nodeId].toLearningStatus()
+        status = progressByNodeId[nodeId].toLearningStatus(hasStartedLearning)
     )
 }
 
@@ -611,13 +652,32 @@ private fun NodeProgressDto?.toNodeProgressUpdateResult(
     )
 }
 
-private fun NodeProgressDto?.toLearningStatus(): LearningStatus {
+private fun NodeProgressDto?.toLearningStatus(hasStartedLearning: Boolean = false): LearningStatus {
     return when (this?.status?.lowercase()) {
         "completed" -> LearningStatus.Completed
         "in_progress" -> LearningStatus.InProgress
         "locked" -> LearningStatus.Locked
-        else -> LearningStatus.NotStarted
+        else -> if (hasStartedLearning || this.hasStartedLearning()) {
+            LearningStatus.InProgress
+        } else {
+            LearningStatus.NotStarted
+        }
     }
+}
+
+private fun RoadmapProgressDto.hasStartedLearning(): Boolean {
+    return (inProgressNodes ?: 0) > 0 ||
+        (completedNodes ?: 0) > 0 ||
+        (completionPercentage ?: 0f) > 0f ||
+        nodes.orEmpty().any { nodeProgress -> nodeProgress.hasStartedLearning() }
+}
+
+private fun NodeProgressDto?.hasStartedLearning(): Boolean {
+    return this != null && (
+        !startedAt.isNullOrBlank() ||
+            status.equals("in_progress", ignoreCase = true) ||
+            status.equals("completed", ignoreCase = true)
+        )
 }
 
 private fun UpdateNodeProgressResponseDto.toNodeProgressDto(): NodeProgressDto {

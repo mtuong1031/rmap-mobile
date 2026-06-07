@@ -21,13 +21,19 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,8 +65,19 @@ fun RoadmapLearningScreen(
     onRetryClick: () -> Unit,
     onResourceClick: (SkillLearningResourceUiModel) -> Unit,
     onTakeQuizClick: () -> Unit,
+    onStartRoadmapForQuizClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isStartForQuizDialogVisible by rememberSaveable { mutableStateOf(false) }
+    val requiresRoadmapStartForQuiz = !uiState.isCompleted && !uiState.canTakeQuiz && !uiState.isNodeLocked
+    val handleTakeQuizClick = {
+        if (requiresRoadmapStartForQuiz) {
+            isStartForQuizDialogVisible = true
+        } else {
+            onTakeQuizClick()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -105,7 +122,7 @@ fun RoadmapLearningScreen(
                     canTakeQuiz = uiState.canTakeQuiz,
                     isNodeLocked = uiState.isNodeLocked,
                     onResourceClick = onResourceClick,
-                    onTakeQuizClick = onTakeQuizClick
+                    onTakeQuizClick = handleTakeQuizClick
                 )
             }
         }
@@ -113,6 +130,41 @@ fun RoadmapLearningScreen(
         RoadmapLearningTopBar(
             onBackClick = onBackClick,
             modifier = Modifier.align(Alignment.TopCenter)
+        )
+    }
+
+    if (isStartForQuizDialogVisible) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!uiState.isStartingRoadmapForQuiz) {
+                    isStartForQuizDialogVisible = false
+                }
+            },
+            title = {
+                Text(text = stringResource(R.string.roadmap_learning_start_for_quiz_title))
+            },
+            text = {
+                Text(text = stringResource(R.string.roadmap_learning_start_for_quiz_message))
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !uiState.isStartingRoadmapForQuiz,
+                    onClick = {
+                        isStartForQuizDialogVisible = false
+                        onStartRoadmapForQuizClick()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.roadmap_learning_start_for_quiz_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !uiState.isStartingRoadmapForQuiz,
+                    onClick = { isStartForQuizDialogVisible = false }
+                ) {
+                    Text(text = stringResource(R.string.roadmap_learning_start_for_quiz_cancel))
+                }
+            }
         )
     }
 }
@@ -580,7 +632,8 @@ private fun RoadmapLearningScreenPreview() {
             onBackClick = {},
             onRetryClick = {},
             onResourceClick = {},
-            onTakeQuizClick = {}
+            onTakeQuizClick = {},
+            onStartRoadmapForQuizClick = {}
         )
     }
 }

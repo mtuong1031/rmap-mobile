@@ -75,14 +75,14 @@ fun RoadmapDetailHeroProgressCard(
                 .padding(Dimens.spacingLg),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
-                verticalAlignment = Alignment.Top
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = stringResource(R.string.roadmap_detail_label_roadmap).uppercase(),
@@ -91,22 +91,24 @@ fun RoadmapDetailHeroProgressCard(
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            color = onPrimary,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+
+                    RoadmapPill(
+                        text = categoryLabel,
+                        containerColor = onPrimary.copy(alpha = 0.2f),
+                        contentColor = onPrimary,
+                        borderColor = onPrimary.copy(alpha = 0.1f)
                     )
                 }
 
-                RoadmapPill(
-                    text = categoryLabel,
-                    containerColor = onPrimary.copy(alpha = 0.2f),
-                    contentColor = onPrimary,
-                    borderColor = onPrimary.copy(alpha = 0.1f)
+                Text(
+                    text = title,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = onPrimary,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 

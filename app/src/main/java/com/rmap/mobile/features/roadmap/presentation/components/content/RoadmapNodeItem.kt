@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -166,12 +168,12 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
         RoadmapNodeStatus.Completed -> Icons.Default.Check
         RoadmapNodeStatus.Locked -> Icons.Default.Lock
         RoadmapNodeStatus.InProgress,
-        RoadmapNodeStatus.NotStarted -> node.icon
+        RoadmapNodeStatus.NotStarted -> node.requirement.toNodeRequirementIcon()
     }
     val tint = when (node.status) {
         RoadmapNodeStatus.Completed -> CompletedNodeIconTint
-        RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.primary
-        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary
+        RoadmapNodeStatus.InProgress,
+        RoadmapNodeStatus.NotStarted -> node.requirement.toNodeRequirementIconTint()
         RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
     }
     val borderColor = when (node.status) {
@@ -193,11 +195,37 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = node.requirementIconContentDescription(),
             tint = tint,
             modifier = Modifier.size(Dimens.iconXs)
         )
     }
+}
+
+private fun RoadmapNodeRequirement.toNodeRequirementIcon() = when (this) {
+    RoadmapNodeRequirement.Required -> Icons.Outlined.PushPin
+    RoadmapNodeRequirement.Optional -> Icons.Outlined.Extension
+}
+
+@Composable
+private fun RoadmapNodeUiModel.requirementIconContentDescription(): String? {
+    return when (status) {
+        RoadmapNodeStatus.InProgress,
+        RoadmapNodeStatus.NotStarted -> stringResource(requirement.toNodeRequirementIconContentDescriptionResId())
+        RoadmapNodeStatus.Completed,
+        RoadmapNodeStatus.Locked -> null
+    }
+}
+
+private fun RoadmapNodeRequirement.toNodeRequirementIconContentDescriptionResId() = when (this) {
+    RoadmapNodeRequirement.Required -> R.string.roadmap_detail_required_skill_icon
+    RoadmapNodeRequirement.Optional -> R.string.roadmap_detail_optional_skill_icon
+}
+
+@Composable
+private fun RoadmapNodeRequirement.toNodeRequirementIconTint() = when (this) {
+    RoadmapNodeRequirement.Required -> MaterialTheme.colorScheme.primary
+    RoadmapNodeRequirement.Optional -> MaterialTheme.colorScheme.onSurfaceVariant
 }
 
 @Composable

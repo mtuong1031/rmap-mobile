@@ -101,8 +101,8 @@ data class HomeSearchSkillDto(
     @SerializedName("skillId") val skillId: String,
     @SerializedName("name") val name: String,
     @SerializedName("description") val description: String?,
-    @SerializedName("roleCategory") val roleCategory: String,
-    @SerializedName("categoryLabel") val categoryLabel: String,
+    @SerializedName("roleCategory") val roleCategory: String?,
+    @SerializedName("categoryLabel") val categoryLabel: String?,
     @SerializedName("defaultEstimatedHours") val defaultEstimatedHours: Int?
 )
 

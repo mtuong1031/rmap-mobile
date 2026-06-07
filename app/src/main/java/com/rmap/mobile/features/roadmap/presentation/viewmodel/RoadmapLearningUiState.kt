@@ -14,6 +14,7 @@ data class RoadmapLearningUiState(
     val isNodeLocked: Boolean = false,
     val isLoading: Boolean = true,
     val isCompleting: Boolean = false,
+    val isStartingRoadmapForQuiz: Boolean = false,
     @StringRes val completionBlockedMessageResId: Int? = null,
     @StringRes val errorMessageResId: Int? = null
 )
