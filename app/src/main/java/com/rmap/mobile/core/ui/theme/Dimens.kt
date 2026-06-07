@@ -48,7 +48,6 @@ object Dimens {
     val aiIconContainerSize = 34.dp
     val profileEditButtonSize = 36.dp
     val profileExperienceIconContainerSize = 52.dp
-    val bookmarkShareButtonSize = 54.dp
     val exploreSearchBarHeight = 58.dp
     val iconFrameSize = 72.dp
     val progressIndicatorLg = 76.dp
@@ -57,8 +56,6 @@ object Dimens {
     val recommendedCardHeight = 170.dp
     val recommendedCardGlowSize = 140.dp
     val recommendedCardGlowOffset = 40.dp
-    val bookmarkCoverHeight = 150.dp
-    val bookmarkTabIndicatorWidth = 60.dp
     val profileAvatarSize = 128.dp
     val statCardMinWidth = 108.dp
     val statCardHeight = 114.dp
