@@ -11,12 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.components.RMapCard
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationStatus
 
 @Composable
@@ -105,5 +107,22 @@ fun AiRoadmapGenerationContent(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "AI Generation Content", backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AiRoadmapGenerationContentPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        AiRoadmapGenerationContent(
+            status = AiRoadmapPreviewData.generationStatus,
+            title = "Your roadmap is being created",
+            body = "This can take around one to two minutes. You can explore the app while RMap keeps working.",
+            progressText = "64%",
+            exploreText = "Explore app",
+            cancelText = "Cancel",
+            onExploreClick = {},
+            onCancelClick = {}
+        )
     }
 }

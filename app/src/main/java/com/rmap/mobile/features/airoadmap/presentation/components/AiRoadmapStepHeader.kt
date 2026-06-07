@@ -9,23 +9,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun AiRoadmapStepHeader(
@@ -39,13 +38,10 @@ fun AiRoadmapStepHeader(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(
-            if (compact) Dimens.spacingSm else Dimens.spacingMd
-        )
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
     ) {
         if (compact && onBackClick != null) {
             CompactAiRoadmapHeaderBar(
-                eyebrow = eyebrow,
                 backContentDescription = backContentDescription,
                 onBackClick = onBackClick
             )
@@ -69,84 +65,75 @@ fun AiRoadmapStepHeader(
                     )
                 )
             }
+
+            Text(
+                text = title,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+
+            Text(
+                text = description,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
         }
+    }
+}
 
-        Text(
-            text = title,
-            modifier = Modifier.fillMaxWidth(),
-            style = if (compact) {
-                MaterialTheme.typography.headlineSmall
-            } else {
-                MaterialTheme.typography.headlineMedium
-            }.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Bold
-            )
+@Preview(showBackground = true, name = "AI Step Header", backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AiRoadmapStepHeaderPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        AiRoadmapStepHeader(
+            eyebrow = "AI Roadmap",
+            title = "Create a personalized roadmap",
+            description = "Tell RMap your goal, timeline, and learning pace."
         )
+    }
+}
 
-        Text(
-            text = description,
-            modifier = Modifier.fillMaxWidth(),
-            style = if (compact) {
-                MaterialTheme.typography.bodyMedium
-            } else {
-                MaterialTheme.typography.bodyLarge
-            }.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+@Preview(showBackground = true, name = "AI Step Header - Back", backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AiRoadmapStepHeaderCompactPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        AiRoadmapStepHeader(
+            eyebrow = "AI Roadmap",
+            title = "Create roadmap",
+            description = "Set the goal, deadline, and daily pace.",
+            compact = true,
+            backContentDescription = "Back",
+            onBackClick = {}
         )
     }
 }
 
 @Composable
 private fun CompactAiRoadmapHeaderBar(
-    eyebrow: String,
     backContentDescription: String?,
     onBackClick: () -> Unit
 ) {
-    Surface(
-        shape = AppShapes.pill,
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = Dimens.cardElevationNone,
-        shadowElevation = Dimens.cardElevationNone
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimens.controlXl),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(
-                start = Dimens.spacingXs,
-                top = Dimens.spacingXs,
-                end = Dimens.spacingMd,
-                bottom = Dimens.spacingXs
-            ),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
-            verticalAlignment = Alignment.CenterVertically
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier.size(Dimens.controlSm)
         ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.size(Dimens.controlSm)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = backContentDescription,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(Dimens.iconMd)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(Dimens.iconLg)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            )
-
-            AiRoadmapSparkIcon()
-
-            Text(
-                text = eyebrow,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = backContentDescription,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(Dimens.iconLg)
             )
         }
     }

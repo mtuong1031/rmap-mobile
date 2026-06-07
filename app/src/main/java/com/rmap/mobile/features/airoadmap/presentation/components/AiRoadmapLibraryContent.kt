@@ -1,5 +1,6 @@
 package com.rmap.mobile.features.airoadmap.presentation.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,11 +10,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -119,7 +121,7 @@ fun AiRoadmapLibraryContent(
                 size = RMapButtonSize.Large,
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Outlined.AutoAwesome,
+                        imageVector = Icons.Outlined.Route,
                         contentDescription = null
                     )
                 }
@@ -198,10 +200,9 @@ private val AiRoadmapEmptyContentMaxWidth = 282.dp
 private val AiRoadmapEmptyIconContainerShape = RoundedCornerShape(24.dp)
 private val AiRoadmapEmptyMinHeight = 420.dp
 private val AiRoadmapEmptyMaxHeight = 520.dp
-private val AiGeneratedRoadmapLeadingSize = 44.dp
-private val AiGeneratedRoadmapIconContainerShape = RoundedCornerShape(14.dp)
 private const val AiRoadmapEmptyHeightRatio = 1.42f
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AiRoadmapEmptyHero(
@@ -378,21 +379,6 @@ private fun AiGeneratedRoadmapListItem(
         horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(AiGeneratedRoadmapLeadingSize)
-                .clip(AiGeneratedRoadmapIconContainerShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.AutoAwesome,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(Dimens.iconMd)
-            )
-        }
-
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXsPlus)
@@ -464,15 +450,7 @@ private fun AiGeneratedRoadmapListItem(
 private fun AiRoadmapLibraryContentPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         AiRoadmapLibraryContent(
-            roadmaps = listOf(
-                AiGeneratedRoadmapUiModel(
-                    id = "ai-android",
-                    title = "Android Developer",
-                    lessonsCount = 24,
-                    durationWeeks = 8,
-                    createdDaysAgo = 0
-                )
-            ),
+            roadmaps = AiRoadmapPreviewData.generatedRoadmaps,
             searchQuery = "",
             searchPlaceholder = "Search AI roadmaps...",
             createButtonText = "Create roadmap with AI",
@@ -482,15 +460,91 @@ private fun AiRoadmapLibraryContentPreview() {
             emptyBody = "Create your first personalized roadmap from your topic, deadline, and learning pace.",
             searchEmptyTitle = "No matching roadmaps",
             searchEmptyBody = "Try a different keyword or create a new roadmap from your current goal.",
-            metadataText = { lessons, weeks -> "$lessons lessons • $weeks weeks" },
-            createdAtText = { "Generated today" },
+            metadataText = { lessons, weeks -> "$lessons lessons, $weeks weeks" },
+            createdAtText = { daysAgo -> if (daysAgo == 0) "Generated today" else "$daysAgo days ago" },
             seeAllText = "SEE ALL",
             seeLessText = "SEE LESS",
             seeMoreText = { remainingCount -> "See more $remainingCount" },
             exploreButtonText = "Explore roadmaps",
-            totalRoadmapCount = 1,
+            totalRoadmapCount = AiRoadmapPreviewData.generatedRoadmaps.size + 2,
             hasAnyRoadmaps = true,
             isSearching = false,
+            canToggleAll = true,
+            isShowingAll = false,
+            hasMore = true,
+            onSearchQueryChange = {},
+            onCreateClick = {},
+            onExploreClick = {},
+            onRoadmapClick = {},
+            onSeeMoreClick = {},
+            onSeeAllClick = {},
+            onSeeLessClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "AI Roadmap Library Content - Empty", backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AiRoadmapLibraryContentEmptyPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        AiRoadmapLibraryContent(
+            roadmaps = emptyList(),
+            searchQuery = "",
+            searchPlaceholder = "Search AI roadmaps...",
+            createButtonText = "Create roadmap with AI",
+            sectionTitle = "Generated roadmaps",
+            sectionSubtitle = "Roadmaps created from your goals and pace.",
+            emptyTitle = "No AI roadmaps yet",
+            emptyBody = "Create your first personalized roadmap from your topic, deadline, and learning pace.",
+            searchEmptyTitle = "No matching roadmaps",
+            searchEmptyBody = "Try a different keyword or create a new roadmap from your current goal.",
+            metadataText = { lessons, weeks -> "$lessons lessons, $weeks weeks" },
+            createdAtText = { daysAgo -> if (daysAgo == 0) "Generated today" else "$daysAgo days ago" },
+            seeAllText = "SEE ALL",
+            seeLessText = "SEE LESS",
+            seeMoreText = { remainingCount -> "See more $remainingCount" },
+            exploreButtonText = "Explore roadmaps",
+            totalRoadmapCount = 0,
+            hasAnyRoadmaps = false,
+            isSearching = false,
+            canToggleAll = false,
+            isShowingAll = false,
+            hasMore = false,
+            onSearchQueryChange = {},
+            onCreateClick = {},
+            onExploreClick = {},
+            onRoadmapClick = {},
+            onSeeMoreClick = {},
+            onSeeAllClick = {},
+            onSeeLessClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "AI Roadmap Library Content - Search Empty", backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AiRoadmapLibraryContentSearchEmptyPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        AiRoadmapLibraryContent(
+            roadmaps = emptyList(),
+            searchQuery = "Kotlin",
+            searchPlaceholder = "Search AI roadmaps...",
+            createButtonText = "Create roadmap with AI",
+            sectionTitle = "Generated roadmaps",
+            sectionSubtitle = "Roadmaps created from your goals and pace.",
+            emptyTitle = "No AI roadmaps yet",
+            emptyBody = "Create your first personalized roadmap from your topic, deadline, and learning pace.",
+            searchEmptyTitle = "No matching roadmaps",
+            searchEmptyBody = "Try a different keyword or create a new roadmap from your current goal.",
+            metadataText = { lessons, weeks -> "$lessons lessons, $weeks weeks" },
+            createdAtText = { daysAgo -> if (daysAgo == 0) "Generated today" else "$daysAgo days ago" },
+            seeAllText = "SEE ALL",
+            seeLessText = "SEE LESS",
+            seeMoreText = { remainingCount -> "See more $remainingCount" },
+            exploreButtonText = "Explore roadmaps",
+            totalRoadmapCount = AiRoadmapPreviewData.generatedRoadmaps.size,
+            hasAnyRoadmaps = true,
+            isSearching = true,
             canToggleAll = false,
             isShowingAll = false,
             hasMore = false,

@@ -15,6 +15,7 @@ enum class AiRoadmapFormError {
     DeadlineInPast,
     QuestionsLoadFailed,
     AnswerAllQuestions,
+    CustomAnswerRequired,
     GenerationFailed
 }
 
@@ -30,20 +31,17 @@ data class AiRoadmapQuestionUiModel(
     val prompt: String,
     val options: List<AiRoadmapQuestionOptionUiModel>,
     val selectedOptionId: String? = null,
+    val isCustomAnswerSelected: Boolean = false,
     val customAnswer: String = ""
 ) {
-    val requiresCustomAnswer: Boolean
-        get() = options.isEmpty()
+    val hasSelection: Boolean
+        get() = selectedOptionId != null || isCustomAnswerSelected
 
     val hasAnswer: Boolean
-        get() = if (requiresCustomAnswer) {
-            customAnswer.isNotBlank()
-        } else {
-            selectedOptionId != null
-        }
+        get() = selectedOptionId != null || customAnswer.isNotBlank()
 
     val answerText: String
-        get() = if (requiresCustomAnswer) {
+        get() = if (isCustomAnswerSelected) {
             customAnswer.trim()
         } else {
             options.firstOrNull { it.id == selectedOptionId }?.label.orEmpty()
@@ -119,7 +117,7 @@ data class AiRoadmapUiState(
         get() = questions.count { it.hasAnswer }
 
     val isCurrentQuestionAnswered: Boolean
-        get() = currentQuestion?.hasAnswer == true
+        get() = currentQuestion?.hasSelection == true
 
     val isFirstQuestion: Boolean
         get() = currentQuestionIndex == 0

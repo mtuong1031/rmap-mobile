@@ -2,7 +2,6 @@ package com.rmap.mobile.features.airoadmap.data
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -28,6 +27,10 @@ import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.SessionCookieJar
 import com.rmap.mobile.core.storage.SharedPreferencesSessionCookieStorage
 import com.rmap.mobile.features.airoadmap.data.mapper.toBackendRoleCategory
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.rmap.mobile.features.airoadmap.data.mapper.toDto
 import com.rmap.mobile.features.airoadmap.data.model.GenerateRoadmapResponseDto
 import com.rmap.mobile.features.airoadmap.data.remote.AiRoadmapApi
@@ -63,29 +66,44 @@ class AiRoadmapGenerationWorker(
         }
 
         ensureNotificationChannel()
-        updateProgress(goal = goal, progress = 5, stage = STAGE_STARTING)
+        updateProgress(goal = goal, progress = 5, stage = "")
 
         if (isStopped) {
             return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_CANCELLED))
         }
 
-        updateProgress(goal = goal, progress = 30, stage = STAGE_GENERATING)
-        val result = generateRoadmap(
-            request = AiRoadmapGenerationRequest(
-                draft = AiRoadmapDraft(
-                    topic = goal,
-                    deadlineEpochMillis = deadlineEpochMillis,
-                    dailyStudyHours = dailyStudyHours,
-                    roleCategory = roleCategory
-                ),
-                answers = quizQuestions.zip(quizAnswers).map { (question, answer) ->
-                    AiRoadmapAnswer(
-                        question = question,
-                        answer = answer
+        val result = coroutineScope {
+            val roadmapDeferred = async {
+                generateRoadmap(
+                    request = AiRoadmapGenerationRequest(
+                        draft = AiRoadmapDraft(
+                            topic = goal,
+                            deadlineEpochMillis = deadlineEpochMillis,
+                            dailyStudyHours = dailyStudyHours,
+                            roleCategory = roleCategory
+                        ),
+                        answers = quizQuestions.zip(quizAnswers).map { (question, answer) ->
+                            AiRoadmapAnswer(
+                                question = question,
+                                answer = answer
+                            )
+                        }
                     )
-                }
-            )
-        )
+                )
+            }
+
+            val progressJob = launch {
+                updateProgress(goal = goal, progress = 30, stage = "")
+                delay(5000)
+                updateProgress(goal = goal, progress = 60, stage = "")
+                delay(5000)
+                updateProgress(goal = goal, progress = 90, stage = "")
+            }
+
+            val apiResult = roadmapDeferred.await()
+            progressJob.cancel()
+            apiResult
+        }
 
         if (isStopped) {
             return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_CANCELLED))
@@ -111,7 +129,7 @@ class AiRoadmapGenerationWorker(
                     workDataOf(
                         KEY_ERROR_MESSAGE to result.message,
                         KEY_PROGRESS to 30,
-                        KEY_STAGE to STAGE_GENERATING
+                        KEY_STAGE to ""
                     )
                 )
             }
@@ -264,8 +282,6 @@ class AiRoadmapGenerationWorker(
         private const val ERROR_MISSING_DAILY_STUDY_HOURS = "Missing daily study hours"
         private const val ERROR_MISSING_QUIZ_ANSWERS = "Missing quiz answers"
         private const val ERROR_CANCELLED = "Roadmap generation was cancelled"
-        private const val STAGE_STARTING = "Starting"
-        private const val STAGE_GENERATING = "Generating roadmap"
         private const val STAGE_READY = "Ready"
         private val NOTIFICATION_COLOR = Color.rgb(43, 127, 255)
     }

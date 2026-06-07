@@ -14,8 +14,6 @@ import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -69,7 +67,7 @@ class AiRoadmapViewModelTest {
     }
 
     @Test
-    fun onOptionSelected_advancesToNextQuestion() = runTest {
+    fun onOptionSelected_keepsCurrentQuestionUntilNextIsClicked() = runTest {
         val viewModel = preparedViewModel()
 
         viewModel.onOptionSelected("level", "level-1")
@@ -77,10 +75,37 @@ class AiRoadmapViewModelTest {
         assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
         assertEquals("level-1", viewModel.uiState.value.questions.first().selectedOptionId)
 
-        advanceTimeBy(500L)
-        runCurrent()
+        viewModel.onNextQuestion()
 
         assertEquals(1, viewModel.uiState.value.currentQuestionIndex)
+    }
+
+    @Test
+    fun onCustomAnswerChange_acceptsCustomAnswerForQuestionWithOptions() = runTest {
+        val viewModel = preparedViewModel()
+
+        viewModel.onOptionSelected("level", "level-1")
+        viewModel.onCustomAnswerChange("level", "I know Compose but need backend basics")
+
+        val firstQuestion = viewModel.uiState.value.questions.first()
+        assertTrue(firstQuestion.hasAnswer)
+        assertTrue(firstQuestion.isCustomAnswerSelected)
+        assertEquals(null, firstQuestion.selectedOptionId)
+        assertEquals("I know Compose but need backend basics", firstQuestion.customAnswer)
+        assertEquals("I know Compose but need backend basics", firstQuestion.answerText)
+    }
+
+    @Test
+    fun onNextQuestion_requiresTextWhenCustomOptionIsSelected() = runTest {
+        val viewModel = preparedViewModel()
+
+        viewModel.onCustomAnswerChange("level", "")
+        viewModel.onNextQuestion()
+
+        val firstQuestion = viewModel.uiState.value.questions.first()
+        assertTrue(firstQuestion.isCustomAnswerSelected)
+        assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
+        assertEquals(AiRoadmapFormError.CustomAnswerRequired, viewModel.uiState.value.formError)
     }
 
     @Test

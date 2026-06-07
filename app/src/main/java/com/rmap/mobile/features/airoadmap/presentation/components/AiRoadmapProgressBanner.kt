@@ -18,8 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationStatus
 
 @Composable
@@ -70,6 +72,19 @@ fun AiRoadmapProgressBanner(
             progress = { status.progressPercent.toFloat().coerceIn(0f, 100f) / 100f },
             modifier = Modifier.fillMaxWidth(),
             trackColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "AI Progress Banner", backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun AiRoadmapProgressBannerPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        AiRoadmapProgressBanner(
+            status = AiRoadmapPreviewData.generationStatus,
+            title = "Roadmap generation in progress",
+            actionText = "View",
+            onClick = {}
         )
     }
 }
