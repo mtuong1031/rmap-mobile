@@ -134,7 +134,8 @@ data class HomeTemplateRoadmap(
 data class HomeTemplateCategory(
     val category: String,
     val label: String,
-    val templatesCount: Int
+    val templatesCount: Int,
+    val shortLabel: String = label
 )
 
 data class HomeTrendingRoadmap(

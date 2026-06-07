@@ -49,9 +49,7 @@ fun HomeRecommendedRoadmapsSection(
     metadataSeparatorText: String,
     starterBadgeText: String,
     modifier: Modifier = Modifier,
-    bookmarkContentDescription: String? = null,
-    onRoadmapClick: ((HomeRoadmapCardUiModel) -> Unit)? = null,
-    onBookmarkClick: ((HomeRoadmapCardUiModel) -> Unit)? = null
+    onRoadmapClick: ((HomeRoadmapCardUiModel) -> Unit)? = null
 ) {
     val pagerState = rememberPagerState(pageCount = { roadmaps.size })
     val flingBehavior = PagerDefaults.flingBehavior(
@@ -113,9 +111,7 @@ fun HomeRecommendedRoadmapsSection(
                         starterBadgeText = starterBadgeText,
                         modifier = Modifier.fillMaxWidth(),
                         metadataBottomSpacing = metadataBottomSpacing,
-                        bookmarkContentDescription = bookmarkContentDescription,
                         onClick = onRoadmapClick?.let { callback -> { callback(item) } },
-                        onBookmarkClick = onBookmarkClick?.let { callback -> { callback(item) } },
                     )
                 }
             }

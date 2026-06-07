@@ -10,10 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +39,6 @@ fun HomeSearchSkillsSection(
     canSeeMore: Boolean,
     isLoadingMore: Boolean,
     onSkillClick: (HomeSearchSkillItemUiModel) -> Unit,
-    onBookmarkClick: (HomeSearchSkillItemUiModel) -> Unit,
     onSeeMoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -63,8 +58,7 @@ fun HomeSearchSkillsSection(
             skills.forEach { item ->
                 HomeSearchSkillCard(
                     item = item,
-                    onClick = { onSkillClick(item) },
-                    onBookmarkClick = { onBookmarkClick(item) }
+                    onClick = { onSkillClick(item) }
                 )
             }
 
@@ -85,8 +79,7 @@ fun HomeSearchSkillsSection(
 @Composable
 private fun HomeSearchSkillCard(
     item: HomeSearchSkillItemUiModel,
-    onClick: () -> Unit,
-    onBookmarkClick: () -> Unit
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -132,57 +125,8 @@ private fun HomeSearchSkillCard(
             )
         }
 
-        HomeSearchSkillSaveButton(
-            isSaved = item.isSaved,
-            onClick = onBookmarkClick
-        )
     }
 }
-
-@Composable
-private fun HomeSearchSkillSaveButton(
-    isSaved: Boolean,
-    onClick: () -> Unit
-) {
-    val containerColor = if (isSaved) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    val iconColor = if (isSaved) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    val icon = if (isSaved) {
-        Icons.Filled.Bookmark
-    } else {
-        Icons.Outlined.BookmarkBorder
-    }
-
-    androidx.compose.foundation.layout.Box(
-        modifier = Modifier
-            .size(HomeSearchSkillTrailingSize)
-            .clip(AppShapes.pill)
-            .background(containerColor)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                role = Role.Button,
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconColor,
-            modifier = Modifier.size(Dimens.iconSm)
-        )
-    }
-}
-
-private val HomeSearchSkillTrailingSize = Dimens.controlMd
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF)
 @Composable
@@ -194,27 +138,12 @@ private fun HomeSearchSkillsSectionPreview() {
                 HomeSearchSkillItemUiModel(
                     id = "frontend-react",
                     title = "Frontend Super Star",
-                    parentText = "Part of: React Fundamentals",
-                    snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
-                        skillId = "frontend-react",
-                        title = "Frontend Super Star",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web Development",
-                        iconKey = "Code"
-                    )
+                    parentText = "Part of: React Fundamentals"
                 ),
                 HomeSearchSkillItemUiModel(
                     id = "frontend-pro",
                     title = "Frontend",
-                    parentText = "Part of: Frontend Pro",
-                    snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
-                        skillId = "frontend-pro",
-                        title = "Frontend",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web Development",
-                        iconKey = "Code"
-                    ),
-                    isSaved = true
+                    parentText = "Part of: Frontend Pro"
                 )
             ),
             seeMoreText = "SEE MORE",
@@ -222,7 +151,6 @@ private fun HomeSearchSkillsSectionPreview() {
             canSeeMore = true,
             isLoadingMore = false,
             onSkillClick = {},
-            onBookmarkClick = {},
             onSeeMoreClick = {},
             modifier = Modifier.padding(Dimens.spacingLg)
         )

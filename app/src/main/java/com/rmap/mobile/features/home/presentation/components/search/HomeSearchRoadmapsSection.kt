@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -47,7 +44,6 @@ fun HomeSearchRoadmapsSection(
     canSeeMore: Boolean,
     isLoadingMore: Boolean,
     onRoadmapClick: (HomeSearchRoadmapItemUiModel) -> Unit,
-    onBookmarkClick: (HomeSearchRoadmapItemUiModel) -> Unit,
     onSeeMoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -68,8 +64,7 @@ fun HomeSearchRoadmapsSection(
                 HomeSearchRoadmapCard(
                     item = item,
                     metadataSeparatorText = metadataSeparatorText,
-                    onClick = { onRoadmapClick(item) },
-                    onBookmarkClick = { onBookmarkClick(item) }
+                    onClick = { onRoadmapClick(item) }
                 )
             }
 
@@ -91,8 +86,7 @@ fun HomeSearchRoadmapsSection(
 fun HomeSearchRoadmapCard(
     item: HomeSearchRoadmapItemUiModel,
     metadataSeparatorText: String,
-    onClick: () -> Unit,
-    onBookmarkClick: () -> Unit
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -163,53 +157,6 @@ fun HomeSearchRoadmapCard(
             }
         }
 
-        HomeSearchRoadmapSaveButton(
-            isSaved = item.isSaved,
-            onClick = onBookmarkClick
-        )
-    }
-}
-
-@Composable
-private fun HomeSearchRoadmapSaveButton(
-    isSaved: Boolean,
-    onClick: () -> Unit
-) {
-    val containerColor = if (isSaved) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    val iconColor = if (isSaved) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    val icon = if (isSaved) {
-        Icons.Filled.Bookmark
-    } else {
-        Icons.Outlined.BookmarkBorder
-    }
-
-    Box(
-        modifier = Modifier
-            .size(HomeSearchRoadmapTrailingSize)
-            .clip(AppShapes.pill)
-            .background(containerColor)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                role = Role.Button,
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconColor,
-            modifier = Modifier.size(Dimens.iconSm)
-        )
     }
 }
 
@@ -260,16 +207,6 @@ private fun HomeSearchRoadmapsSectionPreview() {
                     title = "React Fundamentals",
                     categoryLabel = "Web Development",
                     metadataText = "4 weeks",
-                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
-                        roadmapId = "1",
-                        title = "React Fundamentals",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web",
-                        nodesTotal = 0,
-                        durationLabel = "4 weeks",
-                        iconKey = "Code"
-                    ),
-                    isSaved = true,
                     style = HomeSearchRoadmapItemDefaults.reactStyle()
                 ),
                 HomeSearchRoadmapItemUiModel(
@@ -277,15 +214,6 @@ private fun HomeSearchRoadmapsSectionPreview() {
                     title = "Frontend Starter",
                     categoryLabel = "Web Development",
                     metadataText = "3 weeks",
-                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
-                        roadmapId = "2",
-                        title = "Frontend Starter",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web",
-                        nodesTotal = 0,
-                        durationLabel = "3 weeks",
-                        iconKey = "Code"
-                    ),
                     leadingText = "FE",
                     style = HomeSearchRoadmapItemDefaults.starterStyle()
                 )
@@ -296,7 +224,6 @@ private fun HomeSearchRoadmapsSectionPreview() {
             canSeeMore = true,
             isLoadingMore = false,
             onRoadmapClick = {},
-            onBookmarkClick = {},
             onSeeMoreClick = {},
             modifier = Modifier.padding(Dimens.spacingMd)
         )
@@ -314,21 +241,10 @@ private fun HomeSearchRoadmapResultCardPreview() {
                     title = "React Fundamentals",
                     categoryLabel = "Web Development",
                     metadataText = "4 weeks",
-                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
-                        roadmapId = "1",
-                        title = "React Fundamentals",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web",
-                        nodesTotal = 0,
-                        durationLabel = "4 weeks",
-                        iconKey = "Code"
-                    ),
-                    isSaved = true,
                     style = HomeSearchRoadmapItemDefaults.reactStyle()
                 ),
                 metadataSeparatorText = "•",
-                onClick = {},
-                onBookmarkClick = {}
+                onClick = {}
             )
         }
     }

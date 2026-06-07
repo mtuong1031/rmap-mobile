@@ -51,7 +51,6 @@ fun RoadmapDetailScreen(
     uiState: RoadmapDetailUiState,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onBookmarkClick: () -> Unit = {},
     onContinueClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onSearchFocus: () -> Unit = {},
@@ -59,7 +58,6 @@ fun RoadmapDetailScreen(
     onSearchClearClick: () -> Unit = {},
     onSearchBackClick: () -> Unit = {},
     onNodeActionClick: (RoadmapNodeUiModel) -> Unit = {},
-    onNodeBookmarkClick: (RoadmapNodeUiModel) -> Unit = {},
     onGroupClick: (RoadmapGroupUiModel) -> Unit = {},
     onMilestoneClick: (RoadmapMilestoneUiModel) -> Unit = {}
 ) {
@@ -161,8 +159,7 @@ fun RoadmapDetailScreen(
                                 RoadmapDetailSectionSpacer()
                                 RoadmapGroupCard(
                                     group = group,
-                                    onNodeActionClick = onNodeActionClick,
-                                    onNodeBookmarkClick = onNodeBookmarkClick
+                                    onNodeActionClick = onNodeActionClick
                                 )
                             }
                         }
@@ -186,8 +183,7 @@ fun RoadmapDetailScreen(
                                 RoadmapDetailSectionSpacer()
                                 RoadmapGroupCard(
                                     group = group,
-                                    onNodeActionClick = onNodeActionClick,
-                                    onNodeBookmarkClick = onNodeBookmarkClick
+                                    onNodeActionClick = onNodeActionClick
                                 )
                             }
                         }
@@ -199,8 +195,7 @@ fun RoadmapDetailScreen(
                                 RoadmapDetailSectionSpacer()
                                 RoadmapGroupCard(
                                     group = group,
-                                    onNodeActionClick = onNodeActionClick,
-                                    onNodeBookmarkClick = onNodeBookmarkClick
+                                    onNodeActionClick = onNodeActionClick
                                 )
                             }
                         }
@@ -236,8 +231,6 @@ fun RoadmapDetailScreen(
         if (!uiState.isSearchActive) {
             RoadmapDetailTopBar(
                 onBackClick = onBackClick,
-                onBookmarkClick = onBookmarkClick,
-                isBookmarked = uiState.isBookmarked,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
             )

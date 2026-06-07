@@ -10,8 +10,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
-import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
-import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.home.domain.model.HomeActiveRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeContent
 import com.rmap.mobile.features.home.domain.model.HomePaceWarning
@@ -22,17 +20,11 @@ import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardDefaults
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
-import com.rmap.mobile.features.roadmap.domain.model.toHomeBrowseCategoryLabel
-import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryDisplayLabel
 import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryIcon
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -40,17 +32,13 @@ import java.util.TimeZone
 
 class HomeViewModel(
     private val homeRepository: HomeRepository = RMapAppGraph.homeRepository,
-    private val bookmarkRepository: BookmarkRepository = RMapAppGraph.bookmarkRepository,
     private val authRepository: AuthRepository = RMapAppGraph.authRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-    private val _events = MutableSharedFlow<HomeEvent>()
-    val events: SharedFlow<HomeEvent> = _events.asSharedFlow()
 
     init {
         loadHome()
-        observeSavedRoadmaps()
         observeAuthState()
     }
 
@@ -62,7 +50,6 @@ class HomeViewModel(
                 .onSuccess { content ->
                     _uiState.update {
                         content.toUiState(
-                            savedRoadmapIds = it.savedRoadmapIds,
                             userName = it.userName,
                             isAuthenticated = it.isAuthenticated,
                             greetingPeriod = it.greetingPeriod
@@ -74,54 +61,6 @@ class HomeViewModel(
                         it.copy(
                             isLoading = false,
                             errorMessage = error.message ?: "Unable to load home"
-                        )
-                    }
-                }
-        }
-    }
-
-    fun onRecommendedRoadmapBookmarkClick(item: HomeRecommendedRoadmapState) {
-        viewModelScope.launch {
-            val wasSaved = item.id in _uiState.value.savedRoadmapIds
-            val result = if (wasSaved) {
-                bookmarkRepository.deleteRoadmap(item.id)
-            } else {
-                bookmarkRepository.saveRoadmap(item.snapshot.toDomain())
-            }
-
-            result
-                .onSuccess {
-                    updateSavedRoadmapState(
-                        roadmapId = item.id,
-                        isSaved = !wasSaved
-                    )
-                    _events.emit(
-                        if (wasSaved) {
-                            HomeEvent.RoadmapBookmarkRemoved
-                        } else {
-                            HomeEvent.RoadmapBookmarkSaved
-                        }
-                    )
-                }
-                .onFailure { error ->
-                    _uiState.update { it.copy(errorMessage = error.message ?: "Unable to update bookmark") }
-                    _events.emit(HomeEvent.BookmarkActionFailed)
-                }
-        }
-    }
-
-    private fun observeSavedRoadmaps() {
-        viewModelScope.launch {
-            bookmarkRepository.observeSavedRoadmaps()
-                .catch { error ->
-                    _uiState.update { it.copy(errorMessage = error.message ?: "Unable to load bookmarks") }
-                }
-                .collect { savedRoadmaps ->
-                    _uiState.update {
-                        it.copy(
-                            savedRoadmapIds = savedRoadmaps
-                                .map { bookmark -> bookmark.summary.id }
-                                .toSet()
                         )
                     }
                 }
@@ -143,23 +82,9 @@ class HomeViewModel(
         }
     }
 
-    private fun updateSavedRoadmapState(
-        roadmapId: String,
-        isSaved: Boolean
-    ) {
-        _uiState.update {
-            val nextIds = if (isSaved) {
-                it.savedRoadmapIds + roadmapId
-            } else {
-                it.savedRoadmapIds - roadmapId
-            }
-            it.copy(savedRoadmapIds = nextIds)
-        }
-    }
 }
 
 private fun HomeContent.toUiState(
-    savedRoadmapIds: Set<String>,
     userName: String,
     isAuthenticated: Boolean,
     greetingPeriod: HomeGreetingPeriod
@@ -184,7 +109,6 @@ private fun HomeContent.toUiState(
         beginnerRoadmaps = trendings.map { it.toBeginnerRoadmapState() },
         categories = categories.map { it.toCategoryState() },
         trendingRoadmaps = trendings.map { it.toTrendingRoadmapCardUiModel() },
-        savedRoadmapIds = savedRoadmapIds,
         isLoading = false,
         errorMessage = null
     )
@@ -216,7 +140,6 @@ private fun HomePaceWarning.toState(): HomePaceWarningState {
 
 private fun HomeTemplateRoadmap.toRecommendedRoadmapState(): HomeRecommendedRoadmapState {
     val icon = roleCategory.toRoadmapCategoryIcon()
-    val displayLabel = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel)
     val nodeCount = when {
         nodesTotal > 0 -> nodesTotal
         requiredNodesTotal > 0 -> requiredNodesTotal
@@ -226,28 +149,19 @@ private fun HomeTemplateRoadmap.toRecommendedRoadmapState(): HomeRecommendedRoad
     return HomeRecommendedRoadmapState(
         id = roadmapId,
         categoryId = roleCategory,
-        categoryLabel = displayLabel,
+        categoryLabel = categoryLabel,
         title = title,
         nodesText = "$nodeCount nodes",
         durationText = duration,
         icon = icon,
-        isBeginner = false,
-        snapshot = HomeRoadmapBookmarkSnapshotState(
-            roadmapId = roadmapId,
-            title = title,
-            categoryId = roleCategory,
-            categoryLabel = displayLabel,
-            nodesTotal = nodeCount,
-            durationLabel = duration,
-            iconKey = icon.name
-        )
+        isBeginner = false
     )
 }
 
 private fun HomeTemplateCategory.toCategoryState(): HomeCategoryState {
     return HomeCategoryState(
         id = category,
-        label = category.toHomeBrowseCategoryLabel(label),
+        label = shortLabel,
         countText = templatesCount.toString(),
         icon = category.toRoadmapCategoryIcon()
     )
@@ -258,7 +172,7 @@ private fun HomeTrendingRoadmap.toTrendingRoadmapCardUiModel(): TrendingRoadmapC
     return TrendingRoadmapCardUiModel(
         id = roadmapId,
         rankText = "#$rank",
-        categoryLabel = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel),
+        categoryLabel = categoryLabel,
         title = title,
         metadataText = "$nodesTotal nodes • ${toDurationText()}",
         trendText = trendText,
@@ -278,26 +192,16 @@ private fun HomeTrendingRoadmap.toTrendingRoadmapCardUiModel(): TrendingRoadmapC
 
 private fun HomeTrendingRoadmap.toBeginnerRoadmapState(): HomeRecommendedRoadmapState {
     val icon = roleCategory.toRoadmapCategoryIcon()
-    val displayLabel = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel)
     val duration = toDurationText()
     return HomeRecommendedRoadmapState(
         id = roadmapId,
         categoryId = roleCategory,
-        categoryLabel = displayLabel,
+        categoryLabel = categoryLabel,
         title = title,
         nodesText = "$nodesTotal nodes",
         durationText = duration,
         icon = icon,
-        isBeginner = true,
-        snapshot = HomeRoadmapBookmarkSnapshotState(
-            roadmapId = roadmapId,
-            title = title,
-            categoryId = roleCategory,
-            categoryLabel = displayLabel,
-            nodesTotal = nodesTotal,
-            durationLabel = duration,
-            iconKey = icon.name
-        )
+        isBeginner = true
     )
 }
 
@@ -323,18 +227,6 @@ private fun HomeTrendingRoadmap.toDurationText(): String {
         ?: "Self-paced"
 }
 
-private fun HomeRoadmapBookmarkSnapshotState.toDomain(): RoadmapBookmarkSnapshot {
-    return RoadmapBookmarkSnapshot(
-        roadmapId = roadmapId,
-        title = title,
-        categoryId = categoryId,
-        categoryLabel = categoryLabel,
-        nodesTotal = nodesTotal,
-        durationLabel = durationLabel,
-        iconKey = iconKey
-    )
-}
-
 internal fun String.toFirstName(): String {
     return trim()
         .split(Regex("\\s+"))
@@ -351,12 +243,6 @@ internal fun currentVietnamGreetingPeriod(
         in 17..21 -> HomeGreetingPeriod.Evening
         else -> HomeGreetingPeriod.Night
     }
-}
-
-sealed class HomeEvent {
-    data object RoadmapBookmarkSaved : HomeEvent()
-    data object RoadmapBookmarkRemoved : HomeEvent()
-    data object BookmarkActionFailed : HomeEvent()
 }
 
 private val VIETNAM_TIME_ZONE: TimeZone = TimeZone.getTimeZone("Asia/Ho_Chi_Minh")

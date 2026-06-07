@@ -184,7 +184,8 @@ private fun HomeTemplateRoadmapDto.toDomain(): HomeTemplateRoadmap = HomeTemplat
 private fun HomeTemplateCategoryDto.toDomain(): HomeTemplateCategory = HomeTemplateCategory(
     category = category,
     label = label,
-    templatesCount = templatesCount
+    templatesCount = templatesCount,
+    shortLabel = shortLabel
 )
 
 private fun HomeTrendingRoadmapDto.toDomain(): HomeTrendingRoadmap = HomeTrendingRoadmap(

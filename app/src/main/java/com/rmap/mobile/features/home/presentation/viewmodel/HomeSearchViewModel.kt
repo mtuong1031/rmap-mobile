@@ -7,31 +7,22 @@ import com.rmap.mobile.core.ui.theme.OnSecondaryContainerLight
 import com.rmap.mobile.core.ui.theme.PrimaryContainerLight
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.SecondaryContainerLight
-import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
 import com.rmap.mobile.core.utils.RMapAppGraph
-import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
-import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.home.domain.model.HomeSearchResult
 import com.rmap.mobile.features.home.domain.model.HomeSearchRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeSearchSkill
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.home.domain.repository.RecentSearchRepository
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemStyle
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemUiModel
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillItemUiModel
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
-import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryDisplayLabel
 import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryIcon
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
@@ -39,14 +30,10 @@ import kotlinx.coroutines.launch
 
 class HomeSearchViewModel(
     private val homeRepository: HomeRepository = RMapAppGraph.homeRepository,
-    private val bookmarkRepository: BookmarkRepository = RMapAppGraph.bookmarkRepository,
     private val recentSearchRepository: RecentSearchRepository = RMapAppGraph.recentSearchRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeSearchUiState())
     val uiState: StateFlow<HomeSearchUiState> = _uiState.asStateFlow()
-
-    private val _events = MutableSharedFlow<HomeSearchEvent>()
-    val events: SharedFlow<HomeSearchEvent> = _events.asSharedFlow()
 
     private var searchJob: Job? = null
     private var roadmapMoreJob: Job? = null
@@ -165,56 +152,6 @@ class HomeSearchViewModel(
         }
     }
 
-    fun onRoadmapBookmarkClick(item: HomeSearchRoadmapItemUiModel) {
-        viewModelScope.launch {
-            val result = if (item.isSaved) {
-                bookmarkRepository.deleteRoadmap(item.id)
-            } else {
-                bookmarkRepository.saveRoadmap(item.snapshot.toDomain())
-            }
-
-            result
-                .onSuccess {
-                    updateSavedState(item.id, isSaved = !item.isSaved)
-                    _events.emit(
-                        if (item.isSaved) {
-                            HomeSearchEvent.RoadmapBookmarkRemoved
-                        } else {
-                            HomeSearchEvent.RoadmapBookmarkSaved
-                        }
-                    )
-                }
-                .onFailure {
-                    _events.emit(HomeSearchEvent.BookmarkActionFailed)
-                }
-        }
-    }
-
-    fun onSkillBookmarkClick(item: HomeSearchSkillItemUiModel) {
-        viewModelScope.launch {
-            val result = if (item.isSaved) {
-                bookmarkRepository.deleteSkill(item.id)
-            } else {
-                bookmarkRepository.saveSkill(item.snapshot.toDomain())
-            }
-
-            result
-                .onSuccess {
-                    updateSkillSavedState(item.id, isSaved = !item.isSaved)
-                    _events.emit(
-                        if (item.isSaved) {
-                            HomeSearchEvent.SkillBookmarkRemoved
-                        } else {
-                            HomeSearchEvent.SkillBookmarkSaved
-                        }
-                    )
-                }
-                .onFailure {
-                    _events.emit(HomeSearchEvent.BookmarkActionFailed)
-                }
-        }
-    }
-
     private suspend fun performSearch(
         query: String,
         roadmapPage: Int,
@@ -270,27 +207,10 @@ class HomeSearchViewModel(
         }
     }
 
-    private suspend fun List<HomeSearchSkill>.toSkillUiModels(): List<HomeSearchSkillItemUiModel> {
-        val savedIds = map { skill -> skill.skillId }
-            .associateWith { skillId -> bookmarkRepository.isSkillSaved(skillId).getOrDefault(false) }
+    private fun List<HomeSearchSkill>.toSkillUiModels(): List<HomeSearchSkillItemUiModel> = map { it.toSkillUiModel() }
 
-        return map { skill ->
-            skill.toSkillUiModel(
-                isSaved = savedIds[skill.skillId] == true
-            )
-        }
-    }
-
-    private suspend fun List<HomeSearchRoadmap>.toRoadmapUiModels(): List<HomeSearchRoadmapItemUiModel> {
-        val savedIds = map { roadmap -> roadmap.roadmapId }
-            .associateWith { roadmapId -> bookmarkRepository.isRoadmapSaved(roadmapId).getOrDefault(false) }
-
-        return map { roadmap ->
-            roadmap.toHomeSearchRoadmapItemUiModel(
-                isSaved = savedIds[roadmap.roadmapId] == true
-            )
-        }
-    }
+    private fun List<HomeSearchRoadmap>.toRoadmapUiModels(): List<HomeSearchRoadmapItemUiModel> =
+        map { it.toHomeSearchRoadmapItemUiModel() }
 
     private fun observeRecentSearches() {
         viewModelScope.launch {
@@ -306,39 +226,6 @@ class HomeSearchViewModel(
         }
     }
 
-    private fun updateSavedState(
-        roadmapId: String,
-        isSaved: Boolean
-    ) {
-        _uiState.update {
-            it.copy(
-                roadmaps = it.roadmaps.map { roadmap ->
-                    if (roadmap.id == roadmapId) {
-                        roadmap.copy(isSaved = isSaved)
-                    } else {
-                        roadmap
-                    }
-                }
-            )
-        }
-    }
-
-    private fun updateSkillSavedState(
-        skillId: String,
-        isSaved: Boolean
-    ) {
-        _uiState.update {
-            it.copy(
-                skills = it.skills.map { skill ->
-                    if (skill.id == skillId) {
-                        skill.copy(isSaved = isSaved)
-                    } else {
-                        skill
-                    }
-                }
-            )
-        }
-    }
 }
 
 data class HomeSearchUiState(
@@ -358,57 +245,24 @@ data class HomeSearchUiState(
     val errorMessage: String? = null
 )
 
-sealed class HomeSearchEvent {
-    data object RoadmapBookmarkSaved : HomeSearchEvent()
-    data object RoadmapBookmarkRemoved : HomeSearchEvent()
-    data object SkillBookmarkSaved : HomeSearchEvent()
-    data object SkillBookmarkRemoved : HomeSearchEvent()
-    data object BookmarkActionFailed : HomeSearchEvent()
-}
-
-private fun HomeSearchRoadmap.toHomeSearchRoadmapItemUiModel(
-    isSaved: Boolean
-): HomeSearchRoadmapItemUiModel {
+private fun HomeSearchRoadmap.toHomeSearchRoadmapItemUiModel(): HomeSearchRoadmapItemUiModel {
     val icon = roleCategory.toRoadmapCategoryIcon()
-    val displayLabel = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel)
     val duration = toDurationText()
     return HomeSearchRoadmapItemUiModel(
         id = roadmapId,
         title = title,
-        categoryLabel = displayLabel,
+        categoryLabel = categoryLabel,
         metadataText = duration,
         style = toHomeSearchRoadmapItemStyle(icon),
-        snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
-            roadmapId = roadmapId,
-            title = title,
-            categoryId = roleCategory,
-            categoryLabel = displayLabel,
-            nodesTotal = 0,
-            durationLabel = duration,
-            iconKey = icon.name
-        ),
-        isSaved = isSaved,
         leadingIcon = icon.toImageVector()
     )
 }
 
-private fun HomeSearchSkill.toSkillUiModel(
-    isSaved: Boolean
-): HomeSearchSkillItemUiModel {
-    val icon = roleCategory.toRoadmapCategoryIcon()
-    val displayLabel = roleCategory.toRoadmapCategoryDisplayLabel(categoryLabel)
+private fun HomeSearchSkill.toSkillUiModel(): HomeSearchSkillItemUiModel {
     return HomeSearchSkillItemUiModel(
         id = skillId,
         title = name,
-        parentText = displayLabel,
-        snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
-            skillId = skillId,
-            title = name,
-            categoryId = roleCategory,
-            categoryLabel = displayLabel,
-            iconKey = icon.name
-        ),
-        isSaved = isSaved
+        parentText = categoryLabel
     )
 }
 
@@ -441,28 +295,6 @@ private fun HomeSearchRoadmap.toHomeSearchRoadmapItemStyle(
             categoryColor = OnPrimaryContainerLight
         )
     }
-}
-
-private fun HomeSearchRoadmapBookmarkSnapshotUiModel.toDomain(): RoadmapBookmarkSnapshot {
-    return RoadmapBookmarkSnapshot(
-        roadmapId = roadmapId,
-        title = title,
-        categoryId = categoryId,
-        categoryLabel = categoryLabel,
-        nodesTotal = nodesTotal,
-        durationLabel = durationLabel,
-        iconKey = iconKey
-    )
-}
-
-private fun HomeSearchSkillBookmarkSnapshotUiModel.toDomain(): SkillBookmarkSnapshot {
-    return SkillBookmarkSnapshot(
-        skillId = skillId,
-        title = title,
-        categoryId = categoryId,
-        categoryLabel = categoryLabel,
-        iconKey = iconKey
-    )
 }
 
 private const val HOME_SEARCH_DEBOUNCE_MILLIS = 500L

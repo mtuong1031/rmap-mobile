@@ -1,11 +1,6 @@
 package com.rmap.mobile.features.home.presentation.viewmodel
 
 import com.rmap.mobile.MainDispatcherRule
-import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
-import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
-import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
-import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
-import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.model.User
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
@@ -24,14 +19,12 @@ import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -44,7 +37,6 @@ class HomeViewModelTest {
     fun `initial load populates home sections`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            bookmarkRepository = FakeBookmarkRepository(),
             authRepository = FakeAuthRepository()
         )
 
@@ -64,7 +56,6 @@ class HomeViewModelTest {
     fun `warning is only available on roadmap with pace warning`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            bookmarkRepository = FakeBookmarkRepository(),
             authRepository = FakeAuthRepository()
         )
 
@@ -76,27 +67,9 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `bookmark recommendation saves snapshot and updates saved ids`() = runTest {
-        val bookmarkRepository = FakeBookmarkRepository()
-        val viewModel = HomeViewModel(
-            homeRepository = FakeHomeRepository(),
-            bookmarkRepository = bookmarkRepository,
-            authRepository = FakeAuthRepository()
-        )
-        advanceUntilIdle()
-
-        viewModel.onRecommendedRoadmapBookmarkClick(viewModel.uiState.value.recommendedRoadmaps.single())
-        advanceUntilIdle()
-
-        assertEquals("template-1", bookmarkRepository.savedSnapshot?.roadmapId)
-        assertTrue("template-1" in viewModel.uiState.value.savedRoadmapIds)
-    }
-
-    @Test
     fun `authenticated greeting uses first name from full name`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            bookmarkRepository = FakeBookmarkRepository(),
             authRepository = FakeAuthRepository()
         )
 
@@ -129,38 +102,6 @@ private class FakeHomeRepository : HomeRepository {
         roadmapPage: Int,
         skillPage: Int
     ): Result<HomeSearchResult> = error("Not used in HomeViewModelTest")
-}
-
-private class FakeBookmarkRepository : BookmarkRepository {
-    private val savedRoadmaps = MutableStateFlow<List<RoadmapBookmark>>(emptyList())
-    var savedSnapshot: RoadmapBookmarkSnapshot? = null
-
-    override fun observeSavedRoadmaps(): Flow<List<RoadmapBookmark>> = savedRoadmaps
-
-    override fun observeSavedSkills(): Flow<List<SkillBookmark>> = MutableStateFlow(emptyList())
-
-    override suspend fun getSavedRoadmaps(): Result<List<RoadmapBookmark>> = Result.success(savedRoadmaps.value)
-
-    override suspend fun getSavedSkills(): Result<List<SkillBookmark>> = Result.success(emptyList())
-
-    override suspend fun saveRoadmap(roadmapId: String): Result<Unit> = Result.success(Unit)
-
-    override suspend fun saveRoadmap(snapshot: RoadmapBookmarkSnapshot): Result<Unit> {
-        savedSnapshot = snapshot
-        return Result.success(Unit)
-    }
-
-    override suspend fun deleteRoadmap(roadmapId: String): Result<Unit> = Result.success(Unit)
-
-    override suspend fun isRoadmapSaved(roadmapId: String): Result<Boolean> = Result.success(false)
-
-    override suspend fun saveSkill(skillId: String, roadmapId: String): Result<Unit> = Result.success(Unit)
-
-    override suspend fun saveSkill(snapshot: SkillBookmarkSnapshot): Result<Unit> = Result.success(Unit)
-
-    override suspend fun deleteSkill(skillId: String): Result<Unit> = Result.success(Unit)
-
-    override suspend fun isSkillSaved(skillId: String): Result<Boolean> = Result.success(false)
 }
 
 private class FakeAuthRepository : AuthRepository {

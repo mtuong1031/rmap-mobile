@@ -18,8 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -50,8 +48,6 @@ private val HomeRoadmapCardWidth = 260.dp
 internal val HomeRoadmapCardContentPadding = 20.dp
 private val HomeRoadmapIconContainerSize = 56.dp
 private val HomeRoadmapIconSize = 26.dp
-private val HomeRoadmapBookmarkButtonSize = 32.dp
-private val HomeRoadmapBookmarkIconSize = 16.dp
 private val HomeRoadmapMetaIconSize = 14.dp
 private val HomeRoadmapCtaIconSize = 14.dp
 private val HomeRoadmapBeginnerCtaIconSize = 20.dp
@@ -76,8 +72,7 @@ data class HomeRoadmapCardUiModel(
     val actionText: String,
     val icon: ImageVector,
     val style: HomeRoadmapCardStyle,
-    val isBeginner: Boolean = false,
-    val isSaved: Boolean = false
+    val isBeginner: Boolean = false
 )
 
 object HomeRoadmapCardDefaults {
@@ -122,9 +117,7 @@ fun HomeRoadmapCard(
     starterBadgeText: String,
     modifier: Modifier = Modifier.width(HomeRoadmapCardDefaults.CardWidth),
     metadataBottomSpacing: Dp = Dimens.spacingLg,
-    bookmarkContentDescription: String? = null,
-    onClick: (() -> Unit)? = null,
-    onBookmarkClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val clickModifier = if (onClick != null) {
@@ -169,11 +162,7 @@ fun HomeRoadmapCard(
                     style = item.style
                 )
 
-                HomeRoadmapBookmarkButton(
-                    contentDescription = bookmarkContentDescription,
-                    isSaved = item.isSaved,
-                    onClick = onBookmarkClick
-                )
+                Spacer(modifier = Modifier.size(HomeRoadmapIconContainerSize))
             }
 
             Spacer(modifier = Modifier.height(Dimens.spacingLgPlus))
@@ -302,58 +291,6 @@ private fun HomeRoadmapIconTile(
             contentDescription = null,
             tint = style.iconColor,
             modifier = Modifier.size(HomeRoadmapIconSize)
-        )
-    }
-}
-
-@Composable
-private fun HomeRoadmapBookmarkButton(
-    contentDescription: String?,
-    isSaved: Boolean,
-    onClick: (() -> Unit)?
-) {
-    val clickModifier = if (onClick != null) {
-        Modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            role = Role.Button,
-            onClick = onClick
-        )
-    } else {
-        Modifier
-    }
-
-    val containerColor = if (isSaved) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceContainer
-    }
-    val iconColor = if (isSaved) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.secondary
-    }
-    val icon = if (isSaved) {
-        Icons.Filled.Bookmark
-    } else {
-        Icons.Outlined.BookmarkBorder
-    }
-
-    Box(
-        modifier = Modifier
-            .size(HomeRoadmapBookmarkButtonSize)
-            .background(
-                color = containerColor,
-                shape = AppShapes.pill
-            )
-            .then(clickModifier),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            tint = iconColor,
-            modifier = Modifier.size(HomeRoadmapBookmarkIconSize)
         )
     }
 }

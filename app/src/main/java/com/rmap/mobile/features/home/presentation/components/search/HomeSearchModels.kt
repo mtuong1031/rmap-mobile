@@ -14,21 +14,8 @@ data class HomeSearchRoadmapItemUiModel(
     val categoryLabel: String,
     val metadataText: String,
     val style: HomeSearchRoadmapItemStyle,
-    val snapshot: HomeSearchRoadmapBookmarkSnapshotUiModel,
-    val isSaved: Boolean = false,
     val leadingIcon: ImageVector? = null,
     val leadingText: String? = null
-)
-
-@Immutable
-data class HomeSearchRoadmapBookmarkSnapshotUiModel(
-    val roadmapId: String,
-    val title: String,
-    val categoryId: String,
-    val categoryLabel: String,
-    val nodesTotal: Int,
-    val durationLabel: String,
-    val iconKey: String
 )
 
 @Immutable
@@ -62,18 +49,7 @@ object HomeSearchRoadmapItemDefaults {
 data class HomeSearchSkillItemUiModel(
     val id: String,
     val title: String,
-    val parentText: String,
-    val snapshot: HomeSearchSkillBookmarkSnapshotUiModel,
-    val isSaved: Boolean = false
-)
-
-@Immutable
-data class HomeSearchSkillBookmarkSnapshotUiModel(
-    val skillId: String,
-    val title: String,
-    val categoryId: String,
-    val categoryLabel: String,
-    val iconKey: String
+    val parentText: String
 )
 
 @Immutable

@@ -151,7 +151,8 @@ data class HomeTemplateCategoriesResponseDto(
 data class HomeTemplateCategoryDto(
     @SerializedName("category") val category: String,
     @SerializedName("label") val label: String,
-    @SerializedName("templatesCount") val templatesCount: Int
+    @SerializedName("templatesCount") val templatesCount: Int,
+    @SerializedName("shortLabel") val shortLabel: String = label
 )
 
 data class HomeTemplateTrendingsResponseDto(

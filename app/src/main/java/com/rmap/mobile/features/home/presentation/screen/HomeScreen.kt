@@ -14,9 +14,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
-import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.NightsStay
@@ -75,7 +75,6 @@ import com.rmap.mobile.features.home.presentation.viewmodel.HomeGreetingPeriod
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeRecommendedRoadmapState
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeUiState
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
-import com.rmap.mobile.features.roadmap.domain.model.toHomeBrowseCategoryLabel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
 import com.rmap.mobile.navigation.NavBarDestination
 
@@ -98,7 +97,6 @@ fun HomeScreen(
     onHomeStatItemClick: ((index: Int, item: HomeStatItemUiModel) -> Unit)? = null,
     onCategoryItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)? = null,
     onRecommendedRoadmapClick: ((HomeRecommendedRoadmapState) -> Unit)? = null,
-    onRecommendedRoadmapBookmarkClick: ((HomeRecommendedRoadmapState) -> Unit)? = null,
     onRoadmapClick: ((TrendingRoadmapCardUiModel) -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
@@ -167,11 +165,9 @@ fun HomeScreen(
     )
 
     val recommendedRoadmaps = uiState.recommendedRoadmaps.toRoadmapCardPairs(
-        savedRoadmapIds = uiState.savedRoadmapIds,
         actionText = stringResource(R.string.home_roadmap_view_action)
     )
     val beginnerRoadmaps = uiState.beginnerRoadmaps.toRoadmapCardPairs(
-        savedRoadmapIds = uiState.savedRoadmapIds,
         actionText = stringResource(R.string.home_roadmap_view_action)
     )
 
@@ -218,6 +214,7 @@ fun HomeScreen(
                         headingText = headingText,
                         greetingIcon = greetingVisual.icon,
                         greetingIconTint = greetingVisual.tint,
+                        actionIcon = Icons.Outlined.Home,
                         onActionClick = onHeaderActionClick,
                         modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                     )
@@ -341,17 +338,11 @@ fun HomeScreen(
                                     roadmaps = recommendedRoadmaps.map { it.second },
                                     metadataSeparatorText = stringResource(R.string.separator_bullet),
                                     starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
-                                    bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
                                     onRoadmapClick = { item ->
                                         recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
                                             onRecommendedRoadmapClick?.invoke(roadmap)
                                         }
-                                    },
-                                    onBookmarkClick = { item ->
-                                        recommendedRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
-                                            onRecommendedRoadmapBookmarkClick?.invoke(roadmap)
-                                        }
-                                    },
+                                    }
                                 )
                             }
                         }
@@ -400,17 +391,11 @@ fun HomeScreen(
                                     roadmaps = beginnerRoadmaps.map { it.second },
                                     metadataSeparatorText = stringResource(R.string.separator_bullet),
                                     starterBadgeText = stringResource(R.string.home_roadmap_starter_badge),
-                                    bookmarkContentDescription = stringResource(R.string.content_description_bookmark),
                                     onRoadmapClick = { item ->
                                         beginnerRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
                                             onRecommendedRoadmapClick?.invoke(roadmap)
                                         }
-                                    },
-                                    onBookmarkClick = { item ->
-                                        beginnerRoadmaps.firstOrNull { it.second.id == item.id }?.first?.let { roadmap ->
-                                            onRecommendedRoadmapBookmarkClick?.invoke(roadmap)
-                                        }
-                                    },
+                                    }
                                 )
                             }
                         }
@@ -530,21 +515,19 @@ private const val HomeInitialCategoryLimit = 6
 
 @Composable
 private fun List<HomeRecommendedRoadmapState>.toRoadmapCardPairs(
-    savedRoadmapIds: Set<String>,
     actionText: String
 ): List<Pair<HomeRecommendedRoadmapState, HomeRoadmapCardUiModel>> {
     return map { roadmap ->
         roadmap to HomeRoadmapCardUiModel(
             id = roadmap.id,
-            categoryLabel = roadmap.categoryId.toHomeBrowseCategoryLabel(roadmap.categoryLabel),
+            categoryLabel = roadmap.categoryLabel,
             title = roadmap.title,
             nodesText = roadmap.nodesText,
             durationText = roadmap.durationText,
             actionText = actionText,
             icon = roadmap.icon.toImageVector(),
             style = roadmap.icon.toHomeRoadmapCardStyle(),
-            isBeginner = roadmap.isBeginner,
-            isSaved = savedRoadmapIds.contains(roadmap.id)
+            isBeginner = roadmap.isBeginner
         )
     }
 }

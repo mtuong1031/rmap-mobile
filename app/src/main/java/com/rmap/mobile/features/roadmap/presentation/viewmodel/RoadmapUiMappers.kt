@@ -30,10 +30,10 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 
-fun RoadmapCategory.toCategoryUiModel(roadmapCount: Int = 0): CategoryUiModel {
+fun RoadmapCategory.toCategoryUiModel(roadmapCount: Int = this.roadmapCount): CategoryUiModel {
     return CategoryUiModel(
         id = id,
-        name = name,
+        name = shortName,
         icon = icon.toImageVector(),
         backgroundColor = icon.toCategoryBackgroundColor(),
         roadmapCount = roadmapCount

@@ -26,10 +26,8 @@ import com.rmap.mobile.features.home.presentation.components.search.HomeRecentSe
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchHeader
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapsSection
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapsSkeletonSection
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemDefaults
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchRoadmapItemUiModel
-import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillBookmarkSnapshotUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillItemUiModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillsSection
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchSkillsSkeletonSection
@@ -60,10 +58,8 @@ fun HomeSearchScreen(
     onRemoveRecentSearchClick: (String) -> Unit,
     onPopularSearchClick: (String) -> Unit,
     onRoadmapClick: (HomeSearchRoadmapItemUiModel) -> Unit,
-    onRoadmapBookmarkClick: (HomeSearchRoadmapItemUiModel) -> Unit,
     onSeeMoreRoadmapsClick: () -> Unit,
     onSkillClick: (HomeSearchSkillItemUiModel) -> Unit,
-    onSkillBookmarkClick: (HomeSearchSkillItemUiModel) -> Unit,
     onSeeMoreSkillsClick: () -> Unit,
     onCreateWithAiClick: (HomeSearchAiSuggestionUiModel) -> Unit,
     modifier: Modifier = Modifier
@@ -125,7 +121,6 @@ fun HomeSearchScreen(
                             canSeeMore = hasMoreRoadmaps,
                             isLoadingMore = isLoadingMoreRoadmaps,
                             onRoadmapClick = onRoadmapClick,
-                            onBookmarkClick = onRoadmapBookmarkClick,
                             onSeeMoreClick = onSeeMoreRoadmapsClick,
                             modifier = Modifier.padding(horizontal = Dimens.spacingLg)
                         )
@@ -145,7 +140,6 @@ fun HomeSearchScreen(
                             canSeeMore = hasMoreSkills,
                             isLoadingMore = isLoadingMoreSkills,
                             onSkillClick = onSkillClick,
-                            onBookmarkClick = onSkillBookmarkClick,
                             onSeeMoreClick = onSeeMoreSkillsClick,
                             modifier = Modifier.padding(horizontal = Dimens.spacingLg)
                         )
@@ -218,15 +212,6 @@ private fun HomeSearchScreenPreview() {
                     title = "React Fundamentals",
                     categoryLabel = "Web Development",
                     metadataText = "4 weeks",
-                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
-                        roadmapId = "react-fundamentals",
-                        title = "React Fundamentals",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web",
-                        nodesTotal = 0,
-                        durationLabel = "4 weeks",
-                        iconKey = "Code"
-                    ),
                     leadingIcon = Icons.Outlined.TrackChanges,
                     style = HomeSearchRoadmapItemDefaults.reactStyle()
                 ),
@@ -235,15 +220,6 @@ private fun HomeSearchScreenPreview() {
                     title = "Frontend Interview Prep",
                     categoryLabel = "Web Development",
                     metadataText = "3 weeks",
-                    snapshot = HomeSearchRoadmapBookmarkSnapshotUiModel(
-                        roadmapId = "frontend-starter",
-                        title = "Frontend Interview Prep",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web",
-                        nodesTotal = 0,
-                        durationLabel = "3 weeks",
-                        iconKey = "Code"
-                    ),
                     leadingText = "FI",
                     style = HomeSearchRoadmapItemDefaults.starterStyle()
                 )
@@ -252,27 +228,12 @@ private fun HomeSearchScreenPreview() {
                 HomeSearchSkillItemUiModel(
                     id = "frontend-react",
                     title = "Frontend",
-                    parentText = "Part of: React Fundamentals",
-                    snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
-                        skillId = "frontend-react",
-                        title = "Frontend",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web Development",
-                        iconKey = "Code"
-                    )
+                    parentText = "Part of: React Fundamentals"
                 ),
                 HomeSearchSkillItemUiModel(
                     id = "frontend-pro",
                     title = "Frontend",
-                    parentText = "Part of: Frontend Pro",
-                    snapshot = HomeSearchSkillBookmarkSnapshotUiModel(
-                        skillId = "frontend-pro",
-                        title = "Frontend",
-                        categoryId = "WEB_DEVELOPMENT",
-                        categoryLabel = "Web Development",
-                        iconKey = "Code"
-                    ),
-                    isSaved = true
+                    parentText = "Part of: Frontend Pro"
                 )
             ),
             roadmapTotal = 2,
@@ -295,10 +256,8 @@ private fun HomeSearchScreenPreview() {
             onRemoveRecentSearchClick = {},
             onPopularSearchClick = {},
             onRoadmapClick = {},
-            onRoadmapBookmarkClick = {},
             onSeeMoreRoadmapsClick = {},
             onSkillClick = {},
-            onSkillBookmarkClick = {},
             onSeeMoreSkillsClick = {},
             onCreateWithAiClick = {}
         )

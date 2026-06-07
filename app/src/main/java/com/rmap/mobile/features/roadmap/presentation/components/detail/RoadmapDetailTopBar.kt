@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,8 +25,6 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 @Composable
 fun RoadmapDetailTopBar(
     onBackClick: () -> Unit,
-    onBookmarkClick: () -> Unit,
-    isBookmarked: Boolean,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -37,18 +33,13 @@ fun RoadmapDetailTopBar(
             .height(Dimens.controlXl)
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = Dimens.spacingLg),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
         RoadmapTopIconButton(
             icon = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = stringResource(R.string.content_description_back),
             onClick = onBackClick
-        )
-        RoadmapTopIconButton(
-            icon = if (isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-            contentDescription = stringResource(R.string.content_description_bookmark),
-            onClick = onBookmarkClick
         )
     }
 }
@@ -78,9 +69,7 @@ private fun RoadmapTopIconButton(
 private fun RoadmapDetailTopBarPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         RoadmapDetailTopBar(
-            onBackClick = {},
-            onBookmarkClick = {},
-            isBookmarked = false
+            onBackClick = {}
         )
     }
 }
