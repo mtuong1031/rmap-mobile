@@ -36,12 +36,13 @@
     <string name="action_see_all">SEE ALL</string>
     <string name="action_see_less">SEE LESS</string>
     <string name="action_see_more">SEE MORE</string>
+    <string name="action_explore_roadmaps">Explore roadmaps</string>
     <string name="action_retry">Retry</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
-    <string name="nav_bookmarks">Bookmarks</string>
-    <string name="nav_ai">AI</string>
+    <string name="nav_my_roadmap">My Roadmap</string>
+    <string name="nav_ai">AI Roadmap</string>
     <string name="nav_explore">Explore</string>
     <string name="nav_more">More</string>
 
@@ -104,8 +105,8 @@
     <string name="ai_roadmap_description">Tell RMap your goal, timeline, and learning pace. Then answer a few follow-up questions so the roadmap can fit your context.</string>
     <string name="ai_roadmap_setup_title">Create roadmap</string>
     <string name="ai_roadmap_setup_description">Set the goal, deadline, and daily pace. RMap will ask a few follow-up questions next.</string>
-    <string name="ai_roadmap_library_eyebrow">AI Library</string>
-    <string name="ai_roadmap_library_title">Your AI roadmaps</string>
+    <string name="ai_roadmap_library_eyebrow">Your personalized roadmaps</string>
+    <string name="ai_roadmap_library_title">Build your roadmap with AI</string>
     <string name="ai_roadmap_library_description">Search generated roadmaps, continue learning, or create a new plan from your current goal.</string>
     <string name="ai_roadmap_library_search_placeholder">Search AI roadmaps...</string>
     <string name="ai_roadmap_library_create">Create roadmap with AI</string>
@@ -121,26 +122,61 @@
         <item quantity="one">Generated %1$d day ago</item>
         <item quantity="other">Generated %1$d days ago</item>
     </plurals>
-    <string name="ai_roadmap_topic_label">Roadmap topic</string>
-    <string name="ai_roadmap_topic_placeholder">Example: Android Developer, React, Backend API</string>
+    <string name="ai_roadmap_topic_label">Your learning goal</string>
+    <string name="ai_roadmap_topic_text">Type a skill, role, or topic you want to focus on.</string>
+    <string name="ai_roadmap_topic_placeholder">e.g. Backend Intern, React Native</string>
+    <string name="ai_roadmap_setup_guide_title">What can I help you learn?</string>
+    <string name="ai_roadmap_setup_guide_body">Enter a topic below to generate a personalized roadmap for it.</string>
+    <string name="ai_roadmap_suggestions_label">Suggestions</string>
+    <string-array name="ai_roadmap_topic_suggestions">
+        <item>Backend Intern</item>
+        <item>Frontend Developer</item>
+        <item>iOS Developer</item>
+        <item>DevOps Engineer</item>
+        <item>Data Analyst</item>
+    </string-array>
     <string name="ai_roadmap_deadline_label">Target deadline</string>
     <string name="ai_roadmap_deadline_placeholder">Choose a deadline</string>
+    <string name="ai_roadmap_deadline_supporting_text">Pick when this goal should feel achievable.</string>
     <string name="ai_roadmap_daily_hours_label">Daily study time</string>
+    <string name="ai_roadmap_daily_hours_supporting_text">Choose a pace you can repeat on most days.</string>
     <string name="ai_roadmap_daily_hours_value">%1$.1f hours/day</string>
     <string name="ai_roadmap_submit_setup">Get personalized questions</string>
     <string name="ai_roadmap_loading_questions">Preparing questions...</string>
     <string name="ai_roadmap_question_progress">Question %1$d of %2$d</string>
     <string name="ai_roadmap_answered_count">%1$d/%2$d answered</string>
     <string name="ai_roadmap_custom_answer_label">Custom answer</string>
-    <string name="ai_roadmap_custom_answer_placeholder">Write your own answer if the options do not fit...</string>
+    <string name="ai_roadmap_custom_answer_placeholder">Or writing your own answer...</string>
     <string name="ai_roadmap_previous">Previous</string>
     <string name="ai_roadmap_next">Next</string>
     <string name="ai_roadmap_generate">Generate</string>
     <string name="ai_roadmap_generating_title">Your roadmap is being created</string>
     <string name="ai_roadmap_generating_body">This can take around one to two minutes. You can explore the app while RMap keeps the generation running in the background.</string>
+    <string name="ai_roadmap_generating_header_title">Almost done...</string>
+    <string name="ai_roadmap_generating_header_body">RMap is turning your answers into a personalized learning path.</string>
+    <string name="ai_roadmap_generating_background_note">You can explore the app while generation continues in the background. RMap will keep preparing your roadmap and notify you when it is ready.</string>
     <string name="ai_roadmap_generation_progress">%1$d%%</string>
+    <string name="ai_roadmap_generation_progress_title">Generation progress</string>
+    <string name="ai_roadmap_generation_step_goal">Analyzing your learning goal</string>
+    <string name="ai_roadmap_generation_step_skills">Organizing key skills</string>
+    <string name="ai_roadmap_generation_step_milestones">Building weekly milestones</string>
+    <string name="ai_roadmap_generation_step_lessons">Preparing your first lessons</string>
+    <string name="ai_roadmap_summary_section_title">Based on your inputs</string>
+    <string name="ai_roadmap_summary_section_subtitle">These details guide how the roadmap is paced and prioritized.</string>
+    <string name="ai_roadmap_summary_title_label">Roadmap title</string>
+    <string name="ai_roadmap_summary_deadline_label">Deadline</string>
+    <string name="ai_roadmap_summary_deadline_not_set">Not set</string>
+    <string name="ai_roadmap_summary_study_time_label">Study time</string>
+    <string name="ai_roadmap_summary_focus_label">Focus</string>
+    <string name="ai_roadmap_quiz_summary_title">Assessment answers</string>
+    <string name="ai_roadmap_quiz_summary_subtitle">%1$d answers help RMap tune your starting level and practice focus.</string>
+    <string name="ai_roadmap_quiz_summary_more">+%1$d more answers included</string>
     <string name="ai_roadmap_explore_while_generating">Explore app</string>
-    <string name="ai_roadmap_cancel_generation">Cancel</string>
+    <string name="ai_roadmap_cancel_generation">Cancel generation</string>
+    <string name="ai_roadmap_cancel_confirmation_title">Cancel roadmap generation?</string>
+    <string name="ai_roadmap_cancel_confirmation_body">This will stop creating your personalized roadmap. Your goal and assessments will be kept so you can start again later.</string>
+    <string name="ai_roadmap_cancel_confirmation_confirm">Yes, cancel</string>
+    <string name="ai_roadmap_cancel_confirmation_dismiss">Keep creating</string>
     <string name="ai_roadmap_banner_title">Roadmap generation in progress</string>
     <string name="ai_roadmap_banner_action">View</string>
     <string name="ai_roadmap_permission_title">Show roadmap progress in notifications?</string>
@@ -152,6 +188,7 @@
     <string name="ai_roadmap_error_deadline_past">Choose a future deadline.</string>
     <string name="ai_roadmap_error_questions">Unable to prepare personalized questions. Please try again.</string>
     <string name="ai_roadmap_error_answer_all">Answer every question before continuing.</string>
+    <string name="ai_roadmap_error_custom_answer_required">Write your own answer before continuing.</string>
     <string name="ai_roadmap_error_generation">Roadmap generation failed. Please try again later.</string>
     <string name="ai_roadmap_notification_channel_name">Roadmap generation</string>
     <string name="ai_roadmap_notification_channel_description">Progress updates while RMap creates your AI roadmap.</string>
@@ -162,17 +199,54 @@
     <string name="ai_roadmap_notification_ready_title">Roadmap ready</string>
     <string name="ai_roadmap_notification_ready_body">Your %1$s roadmap is ready to view.</string>
 
+    <!-- My Roadmap Screen -->
+    <string name="my_roadmap_header_eyebrow">My learning paths</string>
+    <string name="my_roadmap_header_title">My Roadmap</string>
+    <string name="my_roadmap_filter_active">Active</string>
+    <string name="my_roadmap_filter_all">All</string>
+    <string name="my_roadmap_filter_completed">Completed</string>
+    <string name="my_roadmap_filter_behind">Behind</string>
+    <string name="my_roadmap_list_title">Roadmaps</string>
+    <string name="my_roadmap_list_subtitle_active">Roadmaps you have started and can continue.</string>
+    <string name="my_roadmap_list_subtitle_all">All roadmaps in your learning library.</string>
+    <string name="my_roadmap_list_subtitle_completed">Roadmaps you have fully completed.</string>
+    <string name="my_roadmap_list_subtitle_behind">Roadmaps that need pacing attention.</string>
+    <string name="my_roadmap_progress_meta">%1$d%% • %2$d/%3$d nodes</string>
+    <string name="my_roadmap_badge_template">Template</string>
+    <string name="my_roadmap_badge_ai">AI roadmap</string>
+    <string name="my_roadmap_achievements_title">Achievements</string>
+    <string name="my_roadmap_achievements_subtitle">%1$d skills completed</string>
+    <string name="my_roadmap_achievement_category_skills">%1$d skills in this category</string>
+    <string name="my_roadmap_empty_title">No roadmap yet</string>
+    <string name="my_roadmap_empty_body">Create a personalized roadmap or explore ready-made paths.</string>
+    <string name="my_roadmap_empty_create_ai">Create with AI</string>
+    <string name="my_roadmap_empty_explore">Explore roadmaps</string>
+    <string name="my_roadmap_filter_empty_active">No active roadmaps yet.</string>
+    <string name="my_roadmap_filter_empty_all">No roadmaps match this view.</string>
+    <string name="my_roadmap_filter_empty_completed">No completed roadmaps yet.</string>
+    <string name="my_roadmap_filter_empty_behind">No roadmaps are behind pace.</string>
+    <string name="my_roadmap_filter_empty_show_all">Show all roadmaps</string>
+    <string name="my_roadmap_estimated_weeks">%1$d weeks estimated</string>
+    <string name="my_roadmap_no_deadline">No deadline</string>
+    <string name="my_roadmap_due_today">Due today</string>
+    <string name="my_roadmap_days_left">%1$d days left</string>
+    <string name="my_roadmap_weeks_left">%1$d weeks left</string>
+    <string name="my_roadmap_months_left">%1$d months left</string>
+    <string name="my_roadmap_status_on_track">On track</string>
+    <string name="my_roadmap_status_behind">Behind pace</string>
+    <string name="my_roadmap_status_completed">Completed</string>
+    <string name="my_roadmap_status_not_started">Not started</string>
+
     <!-- Explore Screen -->
-    <string name="explore_title">Explore roadmaps</string>
-    <string name="explore_search_placeholder">Search for skills or roles...</string>
+    <string name="explore_greeting">Explore roadmaps</string>
+    <string name="explore_title">What do you want to learn today?</string>
+    <string name="explore_search_placeholder">Search roadmap name...</string>
     <string name="explore_categories_title">Categories</string>
     <string name="explore_categories_subtitle">Choose a domain to narrow the library</string>
     <string name="explore_view_all">VIEW ALL</string>
     <string name="explore_recommended_title">Recommended For You</string>
-    <string name="explore_popular_title">Popular Roadmaps</string>
-    <string name="explore_popular_subtitle">Most started by learners this week</string>
     <string name="explore_roadmap_library_title">Roadmap Library</string>
-    <string name="explore_roadmap_library_subtitle">All available learning paths in RMap</string>
+    <string name="explore_roadmap_library_subtitle">Available template learning roadmaps in RMap</string>
     <string name="explore_roadmap_library_filtered_subtitle">Filtered by %1$s</string>
     <string name="explore_roadmap_library_empty">No roadmaps match the current filters.</string>
     <string name="explore_roadmap_library_see_more">See more %1$d</string>
@@ -274,40 +348,8 @@
     <string name="profile_setting_connected_accounts">Connected Accounts</string>
     <string name="profile_setting_sign_out">Sign Out</string>
 
-    <!-- Bookmarks Screen -->
-    <string name="bookmarks_heading">Your bookmarks</string>
-    <string name="bookmarks_search_placeholder">Search saved roadmaps or skills...</string>
-    <string name="bookmarks_tab_saved_roadmaps">Saved Roadmaps</string>
-    <string name="bookmarks_tab_saved_skills">Saved Skills</string>
-    <string name="bookmarks_section_curated_paths">Saved Roadmaps</string>
-    <string name="bookmarks_section_specific_skills">Saved Skills</string>
-    <string name="bookmarks_saved_count">%1$d saved</string>
-    <string name="bookmarks_pins_count">%1$d Pins</string>
-    <string name="bookmarks_continue_path">Continue Path</string>
-    <string name="bookmarks_join_now">Join Now</string>
-    <string name="bookmarks_start">Start</string>
-    <string name="bookmarks_status_filter_all">All</string>
-    <string name="bookmarks_status_in_progress">In Progress</string>
-    <string name="bookmarks_status_not_started">Not Started</string>
-    <string name="bookmarks_status_completed">Completed</string>
-    <string name="bookmarks_empty_title">No bookmarks yet</string>
-    <string name="bookmarks_empty_description">Save roadmaps and skill nodes you want to learn later.</string>
-    <string name="bookmarks_empty_explore_roadmaps">Explore roadmaps</string>
-    <string name="bookmarks_empty_browse_categories">Browse categories</string>
-    <string name="bookmarks_empty_suggested_domains">SUGGESTED DOMAINS</string>
-    <string name="bookmarks_empty_domain_web_development">Web Development</string>
-    <string name="bookmarks_empty_domain_data">Data</string>
-    <string name="bookmarks_empty_domain_devops">DevOps</string>
-    <string name="bookmarks_empty_domain_design">Design</string>
-    <string name="bookmarks_footer_hint">Saving more helps AI personalize your learning path.</string>
-    <string name="bookmarks_roadmap_saved">Roadmap saved.</string>
-    <string name="bookmarks_roadmap_removed">Roadmap removed.</string>
-    <string name="bookmarks_skill_saved">Skill saved.</string>
-    <string name="bookmarks_skill_removed">Skill removed.</string>
-    <string name="bookmarks_action_failed">Unable to update bookmark.</string>
     <string name="content_description_filter">Filter results</string>
     <string name="content_description_clear_search">Clear search</string>
-    <string name="content_description_bookmark">Toggle bookmark</string>
     <string name="content_description_header_action">Open profile</string>
     <string name="content_description_share">Share roadmap</string>
     <string name="skill_part_of_format">Part of: %1$s</string>

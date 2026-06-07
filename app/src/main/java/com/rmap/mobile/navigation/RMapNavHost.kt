@@ -2,7 +2,6 @@ package com.rmap.mobile.navigation
 
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,22 +34,19 @@ import com.rmap.mobile.features.airoadmap.presentation.components.AiRoadmapProgr
 import com.rmap.mobile.features.airoadmap.presentation.screen.AiRoadmapScreen
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapEvent
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapViewModel
-import com.rmap.mobile.features.bookmarks.presentation.screen.BookmarkWindowSizeClass
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.presentation.screen.AuthScreen
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthEvent
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthViewModel
-import com.rmap.mobile.features.bookmarks.presentation.screen.BookmarksScreen
-import com.rmap.mobile.features.bookmarks.presentation.viewmodel.BookmarksViewModel
 import com.rmap.mobile.features.explore.presentation.screen.ExploreScreen
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreViewModel
 import com.rmap.mobile.features.home.presentation.components.search.HomeSearchAiSuggestionUiModel
 import com.rmap.mobile.features.home.presentation.screen.HomeScreen
 import com.rmap.mobile.features.home.presentation.screen.HomeSearchScreen
-import com.rmap.mobile.features.home.presentation.viewmodel.HomeEvent
-import com.rmap.mobile.features.home.presentation.viewmodel.HomeSearchEvent
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeSearchViewModel
 import com.rmap.mobile.features.home.presentation.viewmodel.HomeViewModel
+import com.rmap.mobile.features.myroadmap.presentation.screen.MyRoadmapScreen
+import com.rmap.mobile.features.myroadmap.presentation.viewmodel.MyRoadmapViewModel
 import com.rmap.mobile.features.profile.presentation.screen.NotificationSettingsScreen
 import com.rmap.mobile.features.profile.presentation.screen.ProfileScreen
 import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsEvent
@@ -75,11 +71,6 @@ fun RMapNavHost(navController: NavHostController) {
     val coroutineScope = rememberCoroutineScope()
     val comingSoonMessage = stringResource(R.string.coming_soon_message)
     val debugNotificationSentMessage = stringResource(R.string.notification_debug_sent_snackbar)
-    val roadmapSavedMessage = stringResource(R.string.bookmarks_roadmap_saved)
-    val roadmapRemovedMessage = stringResource(R.string.bookmarks_roadmap_removed)
-    val skillSavedMessage = stringResource(R.string.bookmarks_skill_saved)
-    val skillRemovedMessage = stringResource(R.string.bookmarks_skill_removed)
-    val bookmarkFailedMessage = stringResource(R.string.bookmarks_action_failed)
     val startDestination = if (authState is AuthState.Authenticated) AppRoutes.HOME else AppRoutes.AUTH
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
@@ -113,7 +104,7 @@ fun RMapNavHost(navController: NavHostController) {
         }
 
         val route = when (destination) {
-            NavBarDestination.Bookmarks -> AppRoutes.BOOKMARKS
+            NavBarDestination.MyRoadmap -> AppRoutes.MY_ROADMAP
             NavBarDestination.Explore -> AppRoutes.EXPLORE
             NavBarDestination.More -> AppRoutes.PROFILE
             NavBarDestination.AiAssistant -> AppRoutes.AI_ROADMAP
@@ -160,10 +151,7 @@ fun RMapNavHost(navController: NavHostController) {
         val currentBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = currentBackStackEntry?.destination?.route
 
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val bookmarkWindowSizeClass = BookmarkWindowSizeClass.fromWidth(maxWidth)
-
-            NavHost(navController = navController, startDestination = startDestination) {
+        NavHost(navController = navController, startDestination = startDestination) {
             composable(AppRoutes.AUTH) {
                 val viewModel: AuthViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -193,16 +181,6 @@ fun RMapNavHost(navController: NavHostController) {
                 val viewModel: HomeViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-                LaunchedEffect(viewModel) {
-                    viewModel.events.collect { event ->
-                        when (event) {
-                            HomeEvent.RoadmapBookmarkSaved -> snackbarHostState.showSnackbar(roadmapSavedMessage)
-                            HomeEvent.RoadmapBookmarkRemoved -> snackbarHostState.showSnackbar(roadmapRemovedMessage)
-                            HomeEvent.BookmarkActionFailed -> snackbarHostState.showSnackbar(bookmarkFailedMessage)
-                        }
-                    }
-                }
-
                 HomeScreen(
                     uiState = uiState,
                     selectedDestination = NavBarDestination.Home,
@@ -218,7 +196,6 @@ fun RMapNavHost(navController: NavHostController) {
                     onContinueLearningPlanClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     },
-                    onRecommendedRoadmapBookmarkClick = viewModel::onRecommendedRoadmapBookmarkClick,
                     onCategoryItemClick = { _, item ->
                         navController.navigate(AppRoutes.explore(item.id)) {
                             launchSingleTop = true
@@ -235,18 +212,6 @@ fun RMapNavHost(navController: NavHostController) {
             composable(AppRoutes.HOME_SEARCH) {
                 val viewModel: HomeSearchViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                LaunchedEffect(viewModel) {
-                    viewModel.events.collect { event ->
-                        when (event) {
-                            HomeSearchEvent.RoadmapBookmarkSaved -> snackbarHostState.showSnackbar(roadmapSavedMessage)
-                            HomeSearchEvent.RoadmapBookmarkRemoved -> snackbarHostState.showSnackbar(roadmapRemovedMessage)
-                            HomeSearchEvent.SkillBookmarkSaved -> snackbarHostState.showSnackbar(skillSavedMessage)
-                            HomeSearchEvent.SkillBookmarkRemoved -> snackbarHostState.showSnackbar(skillRemovedMessage)
-                            HomeSearchEvent.BookmarkActionFailed -> snackbarHostState.showSnackbar(bookmarkFailedMessage)
-                        }
-                    }
-                }
 
                 HomeSearchScreen(
                     query = uiState.query,
@@ -283,12 +248,10 @@ fun RMapNavHost(navController: NavHostController) {
                     onRoadmapClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     },
-                    onRoadmapBookmarkClick = viewModel::onRoadmapBookmarkClick,
                     onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmapsClick,
                     onSkillClick = {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
-                    onSkillBookmarkClick = viewModel::onSkillBookmarkClick,
                     onSeeMoreSkillsClick = viewModel::onSeeMoreSkillsClick,
                     onCreateWithAiClick = {
                         navController.navigate(AppRoutes.AI_ROADMAP) {
@@ -332,6 +295,7 @@ fun RMapNavHost(navController: NavHostController) {
                     onNextQuestion = viewModel::onNextQuestion,
                     onSubmitAnswers = viewModel::onSubmitAnswers,
                     onCancelGeneration = viewModel::onCancelGeneration,
+                    onViewGeneratedRoadmap = viewModel::onViewGeneratedRoadmap,
                     onExploreClick = {
                         navController.navigate(AppRoutes.HOME) {
                             launchSingleTop = true
@@ -368,42 +332,35 @@ fun RMapNavHost(navController: NavHostController) {
                     onDestinationSelected = ::handleDestinationSelected,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     onCategoryClick = viewModel::onCategorySelected,
-                    onViewAllCategoriesClick = viewModel::onViewAllCategories,
                     onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmaps,
                     onSeeAllRoadmapsClick = viewModel::onSeeAllRoadmaps,
                     onSeeLessRoadmapsClick = viewModel::onSeeLessRoadmaps,
-                    onPopularRoadmapClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
                     onRoadmapClick = { item ->
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     }
                 )
             }
 
-            composable(AppRoutes.BOOKMARKS) {
-                val viewModel: BookmarksViewModel = viewModel()
+            composable(AppRoutes.MY_ROADMAP) {
+                val viewModel: MyRoadmapViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-                BookmarksScreen(
+                MyRoadmapScreen(
                     uiState = uiState,
-                    windowSizeClass = bookmarkWindowSizeClass,
-                    selectedDestination = NavBarDestination.Bookmarks,
+                    selectedDestination = NavBarDestination.MyRoadmap,
                     onDestinationSelected = ::handleDestinationSelected,
-                    onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onTabSelected = viewModel::onTabSelected,
-                    onStatusFilterSelected = viewModel::onStatusFilterSelected,
-                    onRoadmapActionClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
+                    onFilterSelected = viewModel::onFilterSelected,
+                    onRoadmapClick = { roadmapId ->
+                        navController.navigate(AppRoutes.roadmapDetail(roadmapId))
                     },
-                    onRoadmapShareClick = {
-                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    onCreateWithAiClick = {
+                        navController.navigate(AppRoutes.AI_ROADMAP) {
+                            launchSingleTop = true
+                        }
                     },
-                    onRoadmapBookmarkClick = viewModel::onRoadmapBookmarkClick,
-                    onSkillClick = {
-                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
-                    },
-                    onSkillBookmarkClick = viewModel::onSkillBookmarkClick
+                    onExploreRoadmapsClick = {
+                        navigateFromBottomBar(NavBarDestination.Explore)
+                    }
                 )
             }
 
@@ -500,11 +457,6 @@ fun RMapNavHost(navController: NavHostController) {
                                     )
                                 )
                             }
-                            RoadmapDetailEvent.RoadmapBookmarkSaved -> snackbarHostState.showSnackbar(roadmapSavedMessage)
-                            RoadmapDetailEvent.RoadmapBookmarkRemoved -> snackbarHostState.showSnackbar(roadmapRemovedMessage)
-                            RoadmapDetailEvent.SkillBookmarkSaved -> snackbarHostState.showSnackbar(skillSavedMessage)
-                            RoadmapDetailEvent.SkillBookmarkRemoved -> snackbarHostState.showSnackbar(skillRemovedMessage)
-                            RoadmapDetailEvent.BookmarkActionFailed -> snackbarHostState.showSnackbar(bookmarkFailedMessage)
                         }
                     }
                 }
@@ -512,7 +464,6 @@ fun RMapNavHost(navController: NavHostController) {
                 RoadmapDetailScreen(
                     uiState = uiState,
                     onBackClick = ::navigateBackFromRoadmapDetail,
-                    onBookmarkClick = viewModel::onBookmarkClick,
                     onContinueClick = viewModel::onContinueLearningClick,
                     onSearchQueryChange = viewModel::onSearchQueryChange,
                     onSearchFocus = viewModel::onSearchFocus,
@@ -520,7 +471,6 @@ fun RMapNavHost(navController: NavHostController) {
                     onSearchClearClick = viewModel::onSearchClearClick,
                     onSearchBackClick = viewModel::onSearchBackClick,
                     onNodeActionClick = viewModel::onNodeActionClick,
-                    onNodeBookmarkClick = viewModel::onNodeBookmarkClick,
                     onGroupClick = {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
@@ -627,7 +577,6 @@ fun RMapNavHost(navController: NavHostController) {
                         )
                     }
                 )
-            }
             }
         }
 

@@ -6,7 +6,6 @@ import com.rmap.mobile.core.network.SessionCookieJar
 import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.core.storage.SharedPreferencesSessionCookieStorage
 import com.rmap.mobile.core.storage.SessionCookieStorage
-import com.rmap.mobile.core.database.RMapDatabase
 import com.rmap.mobile.features.airoadmap.data.remote.AiRoadmapApi
 import com.rmap.mobile.features.airoadmap.data.repository.RemoteAiRoadmapRepository
 import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
@@ -17,8 +16,9 @@ import com.rmap.mobile.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.rmap.mobile.features.auth.domain.usecase.LoginUseCase
 import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
 import com.rmap.mobile.features.auth.domain.usecase.RegisterUseCase
-import com.rmap.mobile.features.bookmarks.data.repository.RoomBookmarkRepository
-import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
+import com.rmap.mobile.features.dashboard.data.remote.DashboardApi
+import com.rmap.mobile.features.dashboard.data.repository.DashboardRepositoryImpl
+import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.home.data.remote.HomeApi
 import com.rmap.mobile.features.home.data.repository.HomeRepositoryImpl
 import com.rmap.mobile.features.home.data.repository.SharedPreferencesRecentSearchRepository
@@ -40,10 +40,7 @@ object RMapAppGraph {
         private set
     lateinit var profileRepository: ProfileRepository
         private set
-
-    lateinit var database: RMapDatabase
-        private set
-    lateinit var bookmarkRepository: BookmarkRepository
+    lateinit var dashboardRepository: DashboardRepository
         private set
     lateinit var aiRoadmapRepository: AiRoadmapRepository
         private set
@@ -79,6 +76,7 @@ object RMapAppGraph {
             ::notificationSettingsRepository.isInitialized &&
             ::authRepository.isInitialized &&
             ::roadmapRepository.isInitialized &&
+            ::dashboardRepository.isInitialized &&
             ::profileRepository.isInitialized &&
             ::recentSearchRepository.isInitialized
         ) {
@@ -104,6 +102,10 @@ object RMapAppGraph {
             profileApi = apiClient.createService(ProfileApi::class.java),
             sessionManager = sessionManager
         )
+        dashboardRepository = DashboardRepositoryImpl(
+            dashboardApi = apiClient.createService(DashboardApi::class.java),
+            sessionManager = sessionManager
+        )
         roadmapRepository = RoadmapRepositoryImpl(
             roadmapApi = apiClient.createService(RoadmapApi::class.java),
             sessionManager = sessionManager
@@ -113,11 +115,6 @@ object RMapAppGraph {
         logoutUseCase = LogoutUseCase(authRepository)
         getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
 
-        database = RMapDatabase.getInstance(applicationContext)
-        bookmarkRepository = RoomBookmarkRepository(
-            bookmarkDao = database.bookmarkDao(),
-            roadmapRepository = roadmapRepository
-        )
         val scheduler = LearningReminderScheduler(applicationContext)
         aiRoadmapRepository = RemoteAiRoadmapRepository(
             context = applicationContext,

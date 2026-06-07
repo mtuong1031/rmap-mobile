@@ -4,7 +4,7 @@ object AppRoutes {
     const val AUTH = "auth"
     const val HOME = "home"
     const val HOME_SEARCH = "home_search"
-    const val BOOKMARKS = "bookmarks"
+    const val MY_ROADMAP = "my_roadmap"
     const val EXPLORE = "explore"
     const val EXPLORE_CATEGORY_ARG = "category"
     const val EXPLORE_WITH_CATEGORY = "explore?$EXPLORE_CATEGORY_ARG={$EXPLORE_CATEGORY_ARG}"
