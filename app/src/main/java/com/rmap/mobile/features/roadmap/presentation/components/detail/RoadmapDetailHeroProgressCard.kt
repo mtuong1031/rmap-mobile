@@ -77,10 +77,13 @@ fun RoadmapDetailHeroProgressCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
                 verticalAlignment = Alignment.Top
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
+                ) {
                     Text(
                         text = stringResource(R.string.roadmap_detail_label_roadmap).uppercase(),
                         style = MaterialTheme.typography.titleSmall.copy(
