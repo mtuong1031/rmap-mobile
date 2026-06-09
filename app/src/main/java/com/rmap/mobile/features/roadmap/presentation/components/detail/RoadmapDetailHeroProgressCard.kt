@@ -107,8 +107,6 @@ fun RoadmapDetailHeroProgressCard(
                         color = onPrimary,
                         fontWeight = FontWeight.Bold
                     ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
                 )
             }
 

@@ -12,6 +12,7 @@ import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoriesResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -82,7 +83,7 @@ interface RoadmapApi {
 
     @GET("roadmaps/templates")
     suspend fun listTemplates(
-        @Query("role_id") roleId: String? = null,
+        @Query("roleCategory") roleCategory: String? = null,
         @Query("page") page: Int? = null,
         @Query("perPage") perPage: Int? = null
     ): Response<RoadmapsResponseDto>
@@ -93,6 +94,9 @@ interface RoadmapApi {
         @Query("page") page: Int? = null,
         @Query("perPage") perPage: Int? = null
     ): Response<RoadmapsResponseDto>
+
+    @GET("templates/categories")
+    suspend fun listTemplateCategories(): Response<TemplateCategoriesResponseDto>
 
     @GET("templates/{templateId}")
     suspend fun getTemplate(

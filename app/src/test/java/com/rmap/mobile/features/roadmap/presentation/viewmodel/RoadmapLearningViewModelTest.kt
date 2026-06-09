@@ -400,8 +400,13 @@ class RoadmapLearningViewModelTest {
             return Result.success(emptyList())
         }
 
-        override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
-            return Result.success(emptyList())
+        override suspend fun searchRoadmaps(
+            query: String,
+            categoryId: String?,
+            page: Int,
+            perPage: Int
+        ): Result<Pair<List<RoadmapSummary>, Int>> {
+            return Result.success(Pair(emptyList(), 0))
         }
 
         override suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail> {
@@ -513,6 +518,7 @@ class RoadmapLearningViewModelTest {
                     title = "HTTP course",
                     url = "https://example.com/http",
                     platform = SkillResourcePlatform.Youtube,
+                    rawPlatform = "youtube",
                     isFree = true,
                     levelTag = SkillLevelTag.Fresher
                 )

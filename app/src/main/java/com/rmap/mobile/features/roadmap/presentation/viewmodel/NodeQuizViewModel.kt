@@ -23,8 +23,6 @@ class NodeQuizViewModel(
     private val _uiState = MutableStateFlow(NodeQuizUiState())
     val uiState: StateFlow<NodeQuizUiState> = _uiState.asStateFlow()
 
-    private var optionAutoAdvanceJob: Job? = null
-
     fun loadQuiz(
         roadmapId: String,
         nodeId: String
@@ -38,7 +36,6 @@ class NodeQuizViewModel(
         }
 
         viewModelScope.launch {
-            optionAutoAdvanceJob?.cancel()
             _uiState.update {
                 it.copy(
                     roadmapId = roadmapId,
@@ -74,9 +71,6 @@ class NodeQuizViewModel(
         questionId: String,
         optionKey: String
     ) {
-        optionAutoAdvanceJob?.cancel()
-        var selectedQuestionIndex: Int? = null
-
         _uiState.update { state ->
             val questionIndex = state.questions.indexOfFirst { it.id == questionId }
             val question = state.questions.getOrNull(questionIndex)
@@ -90,40 +84,15 @@ class NodeQuizViewModel(
             ) {
                 state
             } else {
-                if (questionIndex == state.currentQuestionIndex && questionIndex < state.questions.lastIndex) {
-                    selectedQuestionIndex = questionIndex
-                }
-
                 state.copy(
                     selectedAnswers = state.selectedAnswers + (questionId to optionKey),
                     errorMessage = null
                 )
             }
         }
-
-        val questionIndex = selectedQuestionIndex ?: return
-        optionAutoAdvanceJob = viewModelScope.launch {
-            delay(OPTION_AUTO_ADVANCE_DELAY_MILLIS)
-            _uiState.update { state ->
-                if (
-                    state.result == null &&
-                    !state.isSubmitting &&
-                    state.currentQuestionIndex == questionIndex &&
-                    state.selectedAnswers[questionId] == optionKey
-                ) {
-                    state.copy(
-                        currentQuestionIndex = (questionIndex + 1).coerceAtMost(state.questions.lastIndex),
-                        errorMessage = null
-                    )
-                } else {
-                    state
-                }
-            }
-        }
     }
 
     fun onPreviousQuestion() {
-        optionAutoAdvanceJob?.cancel()
         _uiState.update { state ->
             state.copy(
                 currentQuestionIndex = (state.currentQuestionIndex - 1).coerceAtLeast(0),
@@ -133,7 +102,6 @@ class NodeQuizViewModel(
     }
 
     fun onNextQuestion() {
-        optionAutoAdvanceJob?.cancel()
         _uiState.update { state ->
             if (!state.isCurrentQuestionAnswered) {
                 state.copy(errorMessage = QUIZ_ANSWER_CURRENT_QUESTION_ERROR)
@@ -147,7 +115,6 @@ class NodeQuizViewModel(
     }
 
     fun onSubmitClick() {
-        optionAutoAdvanceJob?.cancel()
         val state = _uiState.value
         if (!state.isCurrentQuestionAnswered) {
             _uiState.update { it.copy(errorMessage = QUIZ_ANSWER_CURRENT_QUESTION_ERROR) }
@@ -313,6 +280,5 @@ private fun NodeQuizSubmissionResult.toNodeQuizResultUiModel(): NodeQuizResultUi
     )
 }
 
-private const val OPTION_AUTO_ADVANCE_DELAY_MILLIS = 320L
 private const val QUIZ_ANSWER_CURRENT_QUESTION_ERROR = "Answer this question before continuing."
 private const val QUIZ_ANSWER_ALL_QUESTIONS_ERROR = "Answer every question before submitting."

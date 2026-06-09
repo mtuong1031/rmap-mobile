@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,15 +39,18 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
-import com.rmap.mobile.core.ui.components.quiz.RMapAnimatedQuestionPager
 import com.rmap.mobile.core.ui.components.quiz.RMapQuestionCardScaffold
-import com.rmap.mobile.core.ui.components.quiz.RMapQuestionNavigationActions
+import com.rmap.mobile.core.ui.components.quiz.RMapQuestionInlineError
 import com.rmap.mobile.core.ui.components.quiz.RMapQuestionOptionRow
 import com.rmap.mobile.core.ui.components.quiz.RMapQuestionOptionState
-import com.rmap.mobile.core.ui.components.quiz.RMapQuestionProgressHeader
+import com.rmap.mobile.core.ui.components.quiz.RMapQuestionPagerScaffold
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.SuccessContainerDark
+import com.rmap.mobile.core.ui.theme.SuccessContainerLight
+import com.rmap.mobile.core.ui.theme.SuccessDark
+import com.rmap.mobile.core.ui.theme.SuccessLight
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.NodeQuizOptionUiModel
@@ -117,9 +121,7 @@ fun NodeQuizScreen(
                     if (uiState.result == null) {
                         uiState.currentQuestion?.let { question ->
                             item {
-                                QuizQuestionPager(
-                                    question = question,
-                                    questions = uiState.questions,
+                                RMapQuestionPagerScaffold(
                                     currentQuestionIndex = uiState.currentQuestionIndex,
                                     questionProgressText = stringResource(
                                         R.string.roadmap_quiz_question_progress,
@@ -131,22 +133,35 @@ fun NodeQuizScreen(
                                         uiState.answeredQuestionCount,
                                         uiState.questions.size
                                     ),
-                                    selectedAnswers = uiState.selectedAnswers,
-                                    errorMessage = uiState.errorMessage,
-                                    isFirstQuestion = uiState.isFirstQuestion,
-                                    isLastQuestion = uiState.isLastQuestion,
-                                    isCurrentQuestionAnswered = uiState.isCurrentQuestionAnswered,
                                     progressFraction = uiState.progressFraction,
-                                    isSubmitting = uiState.isSubmitting,
-                                    onOptionSelected = onOptionSelected,
-                                    onPreviousQuestion = onPreviousQuestion,
-                                    onNextQuestion = onNextQuestion,
-                                    onSubmitClick = onSubmitClick
-                                )
+                                    errorText = uiState.errorMessage,
+                                    previousText = stringResource(R.string.roadmap_quiz_previous),
+                                    nextText = stringResource(R.string.roadmap_quiz_next),
+                                    finalText = stringResource(R.string.roadmap_quiz_submit),
+                                    isFirst = uiState.isFirstQuestion,
+                                    isLast = uiState.isLastQuestion,
+                                    isNextEnabled = uiState.isCurrentQuestionAnswered,
+                                    isBusy = uiState.isSubmitting,
+                                    onPrevious = onPreviousQuestion,
+                                    onNext = onNextQuestion,
+                                    onFinal = onSubmitClick
+                                ) { questionIndex ->
+                                    val currentQuestion = uiState.questions.getOrNull(questionIndex) ?: question
+                                    QuizQuestionCard(
+                                        questionNumber = questionIndex + 1,
+                                        question = currentQuestion,
+                                        selectedOption = uiState.selectedAnswers[currentQuestion.id],
+                                        result = null,
+                                        isLocked = uiState.isSubmitting,
+                                        onOptionSelected = { optionKey ->
+                                            onOptionSelected(currentQuestion.id, optionKey)
+                                        }
+                                    )
+                                }
                             }
                         }
                     } else {
-                        uiState.result?.let { result ->
+                        uiState.result.let { result ->
                             item {
                                 QuizReviewHeader(
                                     correctCount = result.correctCount,
@@ -157,7 +172,7 @@ fun NodeQuizScreen(
 
                         uiState.errorMessage?.let { message ->
                             item {
-                                QuizInlineError(message = message)
+                                RMapQuestionInlineError(message = message)
                             }
                         }
 
@@ -166,8 +181,8 @@ fun NodeQuizScreen(
                             key = { _, question -> question.id }
                         ) { index, question ->
                             val questionResult = uiState.result
-                                ?.questionResults
-                                ?.firstOrNull { result -> result.questionId == question.id }
+                                .questionResults
+                                .firstOrNull { result -> result.questionId == question.id }
                             QuizQuestionCard(
                                 questionNumber = index + 1,
                                 question = question,
@@ -249,18 +264,19 @@ private fun QuizResultSummaryCard(
     result: NodeQuizResultUiModel,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
     val accentColor = if (result.passed) {
-        MaterialTheme.colorScheme.tertiary
+        if (isDark) SuccessDark else SuccessLight
     } else {
         MaterialTheme.colorScheme.error
     }
     val accentContainerColor = if (result.passed) {
-        MaterialTheme.colorScheme.tertiaryContainer
+        if (isDark) SuccessContainerDark else SuccessContainerLight
     } else {
         MaterialTheme.colorScheme.errorContainer
     }
     val onAccentContainerColor = if (result.passed) {
-        MaterialTheme.colorScheme.onTertiaryContainer
+        if (isDark) SuccessDark else SuccessLight
     } else {
         MaterialTheme.colorScheme.onErrorContainer
     }
@@ -281,31 +297,48 @@ private fun QuizResultSummaryCard(
             modifier = Modifier.padding(Dimens.spacingXl),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(QuizResultIconContainerSize)
-                        .background(accentContainerColor, CircleShape),
-                    contentAlignment = Alignment.Center
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
                 ) {
-                    Icon(
-                        imageVector = if (result.passed) {
-                            Icons.Outlined.CheckCircle
-                        } else {
-                            Icons.Outlined.ErrorOutline
-                        },
-                        contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(Dimens.iconXl)
+                    Box(
+                        modifier = Modifier
+                            .size(QuizResultIconContainerSize)
+                            .background(accentContainerColor, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (result.passed) {
+                                Icons.Outlined.CheckCircle
+                            } else {
+                                Icons.Outlined.ErrorOutline
+                            },
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(Dimens.iconXl)
+                        )
+                    }
+
+                    RoadmapPill(
+                        text = stringResource(
+                            if (result.passed) {
+                                R.string.roadmap_quiz_passed
+                            } else {
+                                R.string.roadmap_quiz_try_again
+                            }
+                        ),
+                        containerColor = accentContainerColor,
+                        contentColor = onAccentContainerColor
                     )
                 }
 
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
                 ) {
                     Text(
@@ -334,18 +367,6 @@ private fun QuizResultSummaryCard(
                         )
                     )
                 }
-
-                RoadmapPill(
-                    text = stringResource(
-                        if (result.passed) {
-                            R.string.roadmap_quiz_passed
-                        } else {
-                            R.string.roadmap_quiz_try_again
-                        }
-                    ),
-                    containerColor = accentContainerColor,
-                    contentColor = onAccentContainerColor
-                )
             }
 
             Row(
@@ -408,101 +429,38 @@ private fun QuizReviewHeader(
     totalQuestions: Int,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
         ) {
             Text(
                 text = stringResource(R.string.roadmap_quiz_review_heading),
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
-                )
+                ),
+                modifier = Modifier.weight(1f).padding(end = Dimens.spacingSm)
             )
-            Text(
-                text = stringResource(R.string.roadmap_quiz_review_subtitle),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            RoadmapPill(
+                text = stringResource(R.string.roadmap_quiz_correct_summary, correctCount, totalQuestions),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        RoadmapPill(
-            text = stringResource(R.string.roadmap_quiz_correct_summary, correctCount, totalQuestions),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        Text(
+            text = stringResource(R.string.roadmap_quiz_review_subtitle),
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         )
     }
 }
 
-@Composable
-private fun QuizQuestionPager(
-    question: NodeQuizQuestionUiModel,
-    questions: List<NodeQuizQuestionUiModel>,
-    currentQuestionIndex: Int,
-    questionProgressText: String,
-    answeredText: String,
-    selectedAnswers: Map<String, String>,
-    errorMessage: String?,
-    isFirstQuestion: Boolean,
-    isLastQuestion: Boolean,
-    isCurrentQuestionAnswered: Boolean,
-    progressFraction: Float,
-    isSubmitting: Boolean,
-    onOptionSelected: (questionId: String, optionKey: String) -> Unit,
-    onPreviousQuestion: () -> Unit,
-    onNextQuestion: () -> Unit,
-    onSubmitClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-    ) {
-        RMapQuestionProgressHeader(
-            progressText = questionProgressText,
-            answeredText = answeredText,
-            progressFraction = progressFraction
-        )
-
-        RMapAnimatedQuestionPager(
-            currentQuestionIndex = currentQuestionIndex
-        ) { questionIndex ->
-            val currentQuestion = questions.getOrNull(questionIndex) ?: question
-            QuizQuestionCard(
-                questionNumber = questionIndex + 1,
-                question = currentQuestion,
-                selectedOption = selectedAnswers[currentQuestion.id],
-                result = null,
-                isLocked = isSubmitting,
-                onOptionSelected = { optionKey ->
-                    onOptionSelected(currentQuestion.id, optionKey)
-                }
-            )
-        }
-
-        errorMessage?.let { message ->
-            QuizInlineError(message = message)
-        }
-
-        RMapQuestionNavigationActions(
-            previousText = stringResource(R.string.roadmap_quiz_previous),
-            nextText = stringResource(R.string.roadmap_quiz_next),
-            finalText = stringResource(R.string.roadmap_quiz_submit),
-            isFirst = isFirstQuestion,
-            isLast = isLastQuestion,
-            enabled = isCurrentQuestionAnswered,
-            busy = isSubmitting,
-            onPrevious = onPreviousQuestion,
-            onNext = onNextQuestion,
-            onFinal = onSubmitClick
-        )
-    }
-}
 
 @Composable
 private fun QuizQuestionCard(
@@ -529,12 +487,12 @@ private fun QuizQuestionCard(
                         }
                     ),
                     containerColor = if (it.isCorrect) {
-                        MaterialTheme.colorScheme.tertiaryContainer
+                        if (isSystemInDarkTheme()) SuccessContainerDark else SuccessContainerLight
                     } else {
                         MaterialTheme.colorScheme.errorContainer
                     },
                     contentColor = if (it.isCorrect) {
-                        MaterialTheme.colorScheme.onTertiaryContainer
+                        if (isSystemInDarkTheme()) SuccessDark else SuccessLight
                     } else {
                         MaterialTheme.colorScheme.onErrorContainer
                     }
@@ -567,17 +525,17 @@ private fun QuizQuestionCard(
                                 ),
                                 contentColor = when (optionState) {
                                     RMapQuestionOptionState.Correct -> {
-                                        MaterialTheme.colorScheme.onTertiaryContainer
+                                        if (isSystemInDarkTheme()) SuccessDark else SuccessLight
                                     }
 
                                     RMapQuestionOptionState.Incorrect -> {
-                                        MaterialTheme.colorScheme.onErrorContainer
+                                        MaterialTheme.colorScheme.error
                                     }
 
                                     RMapQuestionOptionState.Default,
                                     RMapQuestionOptionState.Selected,
                                     RMapQuestionOptionState.Neutral -> {
-                                        MaterialTheme.colorScheme.onSurface
+                                        MaterialTheme.colorScheme.onSurfaceVariant
                                     }
                                 }
                             )
@@ -640,19 +598,6 @@ private fun NodeQuizQuestionResultUiModel.answerLabelFor(optionKey: String): Int
     }
 }
 
-@Composable
-private fun QuizInlineError(
-    message: String,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = message,
-        modifier = modifier.fillMaxWidth(),
-        style = MaterialTheme.typography.bodyMedium.copy(
-            color = MaterialTheme.colorScheme.error
-        )
-    )
-}
 
 @Composable
 private fun QuizErrorState(

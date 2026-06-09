@@ -50,7 +50,7 @@ class NodeQuizViewModelTest {
     }
 
     @Test
-    fun `selecting option auto advances to next question`() = runTest {
+    fun `selecting option does not auto advance to next question`() = runTest {
         val viewModel = NodeQuizViewModel(FakeRoadmapRepository())
         viewModel.loadQuiz(roadmapId = "roadmap-1", nodeId = "node-1")
         runCurrent()
@@ -58,11 +58,11 @@ class NodeQuizViewModelTest {
         viewModel.onOptionSelected(questionId = "question-1", optionKey = "A")
         assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
 
-        advanceTimeBy(321L)
+        advanceTimeBy(1000L)
         runCurrent()
 
-        assertEquals(1, viewModel.uiState.value.currentQuestionIndex)
-        assertEquals("question-2", viewModel.uiState.value.currentQuestion?.id)
+        assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
+        assertEquals("question-1", viewModel.uiState.value.currentQuestion?.id)
     }
 
     @Test
@@ -124,7 +124,12 @@ class NodeQuizViewModelTest {
             return Result.failure(NotImplementedError())
         }
 
-        override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
+        override suspend fun searchRoadmaps(
+            query: String,
+            categoryId: String?,
+            page: Int,
+            perPage: Int
+        ): Result<Pair<List<RoadmapSummary>, Int>> {
             return Result.failure(NotImplementedError())
         }
 

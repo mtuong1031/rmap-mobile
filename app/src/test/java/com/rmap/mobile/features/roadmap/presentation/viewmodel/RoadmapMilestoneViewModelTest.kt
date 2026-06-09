@@ -185,7 +185,12 @@ class RoadmapMilestoneViewModelTest {
             return Result.failure(NotImplementedError())
         }
 
-        override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
+        override suspend fun searchRoadmaps(
+            query: String,
+            categoryId: String?,
+            page: Int,
+            perPage: Int
+        ): Result<Pair<List<RoadmapSummary>, Int>> {
             return Result.failure(NotImplementedError())
         }
 

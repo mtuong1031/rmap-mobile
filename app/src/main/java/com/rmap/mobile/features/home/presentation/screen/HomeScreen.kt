@@ -45,8 +45,7 @@ import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapHeader
 import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
-import com.rmap.mobile.core.ui.components.RMapTextInput
-import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
+import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryCardGrid
@@ -221,33 +220,14 @@ fun HomeScreen(
                 }
 
                 item {
-                    Box(modifier = Modifier.padding(horizontal = sectionHorizontalPadding)) {
-                        RMapTextInput(
-                            value = searchQuery,
-                            onValueChange = onSearchQueryChange,
-                            placeholder = stringResource(R.string.home_search_placeholder),
-                            readOnly = true,
-                            textStyle = MaterialTheme.typography.bodyLarge,
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Outlined.Search,
-                                    contentDescription = null,
-                                    tint = RMapTextInputDefaults.colors().placeholderColor,
-                                )
-                            }
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    role = Role.Button,
-                                    onClick = onSearchClick
-                                )
-                        )
-                    }
+                    RMapSearchBar(
+                        query = searchQuery,
+                        onQueryChange = onSearchQueryChange,
+                        placeholder = stringResource(R.string.home_search_placeholder),
+                        readOnly = true,
+                        onClick = onSearchClick,
+                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                    )
                 }
 
                 if (isLoading) {

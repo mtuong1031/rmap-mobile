@@ -42,6 +42,13 @@ import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.components.RMapCard
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.SuccessContainerDark
+import com.rmap.mobile.core.ui.theme.SuccessContainerLight
+import com.rmap.mobile.core.ui.theme.SuccessDark
+import com.rmap.mobile.core.ui.theme.SuccessLight
 
 enum class RMapQuestionOptionState {
     Default,
@@ -134,32 +141,35 @@ fun RMapQuestionCardScaffold(
                 .padding(Dimens.spacingXl),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = eyebrow,
                         style = MaterialTheme.typography.labelLarge.copy(
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.SemiBold
-                        )
+                        ),
+                        modifier = Modifier.weight(1f, fill = false)
                     )
-                    Text(
-                        text = prompt,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
+                    trailingHeaderContent?.invoke(this)
                 }
-                trailingHeaderContent?.invoke(this)
+                Text(
+                    text = prompt,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 18.sp,
+                        lineHeight = 22.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             bodyContent()
@@ -278,7 +288,7 @@ private fun RMapQuestionOptionMarker(
             RMapQuestionOptionState.Correct -> Icon(
                 imageVector = Icons.Outlined.CheckCircle,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.tertiary,
+                tint = if (isSystemInDarkTheme()) SuccessDark else SuccessLight,
                 modifier = Modifier.size(Dimens.iconLg)
             )
 
@@ -304,9 +314,10 @@ private fun RMapQuestionOptionMarker(
 
 @Composable
 private fun RMapQuestionOptionState.containerColor(): Color {
+    val isDark = isSystemInDarkTheme()
     return when (this) {
         RMapQuestionOptionState.Selected -> MaterialTheme.colorScheme.primaryContainer
-        RMapQuestionOptionState.Correct -> MaterialTheme.colorScheme.tertiaryContainer
+        RMapQuestionOptionState.Correct -> if (isDark) SuccessContainerDark else SuccessContainerLight
         RMapQuestionOptionState.Incorrect -> MaterialTheme.colorScheme.errorContainer
         RMapQuestionOptionState.Default -> MaterialTheme.colorScheme.surface
         RMapQuestionOptionState.Neutral -> MaterialTheme.colorScheme.surfaceContainerLow
@@ -315,9 +326,10 @@ private fun RMapQuestionOptionState.containerColor(): Color {
 
 @Composable
 private fun RMapQuestionOptionState.borderColor(): Color {
+    val isDark = isSystemInDarkTheme()
     return when (this) {
         RMapQuestionOptionState.Selected -> MaterialTheme.colorScheme.primary
-        RMapQuestionOptionState.Correct -> MaterialTheme.colorScheme.tertiary.copy(alpha = OptionBorderAlpha)
+        RMapQuestionOptionState.Correct -> (if (isDark) SuccessDark else SuccessLight).copy(alpha = OptionBorderAlpha)
         RMapQuestionOptionState.Incorrect -> MaterialTheme.colorScheme.error.copy(alpha = OptionBorderAlpha)
         RMapQuestionOptionState.Default,
         RMapQuestionOptionState.Neutral -> MaterialTheme.colorScheme.outlineVariant
@@ -326,8 +338,9 @@ private fun RMapQuestionOptionState.borderColor(): Color {
 
 @Composable
 private fun RMapQuestionOptionState.contentColor(): Color {
+    val isDark = isSystemInDarkTheme()
     return when (this) {
-        RMapQuestionOptionState.Correct -> MaterialTheme.colorScheme.onTertiaryContainer
+        RMapQuestionOptionState.Correct -> if (isDark) SuccessDark else SuccessLight
         RMapQuestionOptionState.Incorrect -> MaterialTheme.colorScheme.onErrorContainer
         RMapQuestionOptionState.Default,
         RMapQuestionOptionState.Selected,
@@ -337,9 +350,10 @@ private fun RMapQuestionOptionState.contentColor(): Color {
 
 @Composable
 private fun RMapQuestionOptionState.markerContainerColor(): Color {
+    val isDark = isSystemInDarkTheme()
     return when (this) {
         RMapQuestionOptionState.Selected -> MaterialTheme.colorScheme.primary
-        RMapQuestionOptionState.Correct -> MaterialTheme.colorScheme.tertiaryContainer
+        RMapQuestionOptionState.Correct -> if (isDark) SuccessContainerDark else SuccessContainerLight
         RMapQuestionOptionState.Incorrect -> MaterialTheme.colorScheme.errorContainer
         RMapQuestionOptionState.Default,
         RMapQuestionOptionState.Neutral -> MaterialTheme.colorScheme.surfaceContainerHigh
@@ -348,11 +362,12 @@ private fun RMapQuestionOptionState.markerContainerColor(): Color {
 
 @Composable
 private fun RMapQuestionOptionState.markerContentColor(): Color {
+    val isDark = isSystemInDarkTheme()
     return when (this) {
         RMapQuestionOptionState.Selected -> MaterialTheme.colorScheme.onPrimary
         RMapQuestionOptionState.Default,
         RMapQuestionOptionState.Neutral -> MaterialTheme.colorScheme.onSurfaceVariant
-        RMapQuestionOptionState.Correct -> MaterialTheme.colorScheme.tertiary
+        RMapQuestionOptionState.Correct -> if (isDark) SuccessDark else SuccessLight
         RMapQuestionOptionState.Incorrect -> MaterialTheme.colorScheme.error
     }
 }
@@ -363,3 +378,213 @@ private fun RMapQuestionOptionState.isReviewEmphasis(): Boolean {
 
 private const val QuestionCardSlideDurationMillis = 260
 private const val OptionBorderAlpha = 0.45f
+
+@Composable
+fun RMapQuestionInlineError(
+    message: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = message,
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(AppShapes.chip)
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .padding(Dimens.spacingMd),
+        style = MaterialTheme.typography.bodySmall.copy(
+            color = MaterialTheme.colorScheme.onErrorContainer,
+            fontWeight = FontWeight.Medium
+        )
+    )
+}
+
+@Composable
+fun RMapQuestionPagerScaffold(
+    currentQuestionIndex: Int,
+    questionProgressText: String,
+    answeredText: String,
+    progressFraction: Float,
+    errorText: String?,
+    previousText: String,
+    nextText: String,
+    finalText: String,
+    isFirst: Boolean,
+    isLast: Boolean,
+    isNextEnabled: Boolean,
+    isBusy: Boolean,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onFinal: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable (questionIndex: Int) -> Unit
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+    ) {
+        RMapQuestionProgressHeader(
+            progressText = questionProgressText,
+            answeredText = answeredText,
+            progressFraction = progressFraction
+        )
+
+        RMapAnimatedQuestionPager(
+            currentQuestionIndex = currentQuestionIndex
+        ) { questionIndex ->
+            content(questionIndex)
+        }
+
+        if (errorText != null) {
+            RMapQuestionInlineError(message = errorText)
+        }
+
+        RMapQuestionNavigationActions(
+            previousText = previousText,
+            nextText = nextText,
+            finalText = finalText,
+            isFirst = isFirst,
+            isLast = isLast,
+            enabled = isNextEnabled,
+            busy = isBusy,
+            onPrevious = onPrevious,
+            onNext = onNext,
+            onFinal = onFinal
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun RMapQuestionProgressHeaderPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        RMapQuestionProgressHeader(
+            progressText = "Question 1 of 5",
+            answeredText = "0/5 answered",
+            progressFraction = 0.2f,
+            modifier = Modifier.padding(Dimens.spacingLg)
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun RMapQuestionInlineErrorPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        RMapQuestionInlineError(
+            message = "Please select an option before continuing.",
+            modifier = Modifier.padding(Dimens.spacingLg)
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun RMapQuestionOptionRowPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
+            modifier = Modifier.padding(Dimens.spacingLg)
+        ) {
+            RMapQuestionOptionRow(
+                markerText = "A",
+                label = "Default Option",
+                state = RMapQuestionOptionState.Default,
+                enabled = true,
+                onClick = {}
+            )
+            RMapQuestionOptionRow(
+                markerText = "B",
+                label = "Selected Option",
+                state = RMapQuestionOptionState.Selected,
+                enabled = true,
+                onClick = {}
+            )
+            RMapQuestionOptionRow(
+                markerText = "C",
+                label = "Correct Option",
+                state = RMapQuestionOptionState.Correct,
+                enabled = true,
+                onClick = {}
+            )
+            RMapQuestionOptionRow(
+                markerText = "D",
+                label = "Incorrect Option",
+                state = RMapQuestionOptionState.Incorrect,
+                enabled = true,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun RMapQuestionNavigationActionsPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        RMapQuestionNavigationActions(
+            previousText = "Previous",
+            nextText = "Next",
+            finalText = "Submit",
+            isFirst = false,
+            isLast = false,
+            enabled = true,
+            busy = false,
+            onPrevious = {},
+            onNext = {},
+            onFinal = {},
+            modifier = Modifier.padding(Dimens.spacingLg)
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun RMapQuestionCardScaffoldPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        RMapQuestionCardScaffold(
+            eyebrow = "Question 1",
+            prompt = "What is the capital of France?",
+            modifier = Modifier.padding(Dimens.spacingLg)
+        ) {
+            Text("Content inside the card", color = MaterialTheme.colorScheme.onSurface)
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun RMapQuestionPagerScaffoldPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        RMapQuestionPagerScaffold(
+            currentQuestionIndex = 0,
+            questionProgressText = "Question 1 of 5",
+            answeredText = "0/5 answered",
+            progressFraction = 0.2f,
+            errorText = "Please select an option",
+            previousText = "Previous",
+            nextText = "Next",
+            finalText = "Submit",
+            isFirst = true,
+            isLast = false,
+            isNextEnabled = true,
+            isBusy = false,
+            onPrevious = {},
+            onNext = {},
+            onFinal = {},
+            modifier = Modifier.padding(Dimens.spacingLg)
+        ) {
+            RMapQuestionCardScaffold(
+                eyebrow = "Question 1",
+                prompt = "What is the capital of France?"
+            ) {
+                RMapQuestionOptionRow(
+                    markerText = "A",
+                    label = "Paris",
+                    state = RMapQuestionOptionState.Selected,
+                    enabled = true,
+                    onClick = {}
+                )
+            }
+        }
+    }
+}

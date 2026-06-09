@@ -24,6 +24,9 @@ private val RMapTextTertiary = Color(0xFF99A1AF)
 private val RMapRed = Color(0xFFFB2C36)
 private val RMapRedSoft = Color(0xFFFEF2F2)
 
+private val RMapGreen = Color(0xFF10B981)
+private val RMapGreenSoft = Color(0xFFECFDF5)
+
 private val RMapPurple = Color(0xFF9810FA)
 private val RMapPurpleSoft = Color(0xFFFAF5FF)
 
@@ -70,6 +73,9 @@ val InverseOnSurfaceLight = RMapSurface
 val InversePrimaryLight = RMapBlueContainer
 val ScrimLight = Color(0x99000000)
 
+val SuccessLight = RMapGreen
+val SuccessContainerLight = RMapGreenSoft
+
 val PrimaryDark = Color(0xFF60A5FA)
 val OnPrimaryDark = RMapInk
 val PrimaryContainerDark = Color(0xFF1D3A5F)
@@ -101,6 +107,9 @@ val InverseSurfaceDark = RMapDarkText
 val InverseOnSurfaceDark = RMapDarkBackground
 val InversePrimaryDark = RMapBlueStrong
 val ScrimDark = Color(0xCC000000)
+
+val SuccessDark = Color(0xFF34D399)
+val SuccessContainerDark = Color(0xFF064E3B)
 
 // Custom Colors
 val OnSurfacePlaceholderLight = RMapTextTertiary
