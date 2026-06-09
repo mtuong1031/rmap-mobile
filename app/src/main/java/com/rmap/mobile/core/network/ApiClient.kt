@@ -24,7 +24,7 @@ class ApiClient(
             if (enableHttpLogging) {
                 addInterceptor(
                     HttpLoggingInterceptor().apply {
-                        level = HttpLoggingInterceptor.Level.BASIC
+                        level = HttpLoggingInterceptor.Level.HEADERS
                     }
                 )
             }

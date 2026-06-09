@@ -15,9 +15,9 @@ import com.rmap.mobile.features.auth.data.remote.AuthApi
 import com.rmap.mobile.features.auth.data.repository.AuthRepositoryImpl
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.auth.domain.usecase.GetCurrentUserUseCase
-import com.rmap.mobile.features.auth.domain.usecase.LoginUseCase
+import com.rmap.mobile.features.auth.domain.usecase.LoginWithGoogleUseCase
+import com.rmap.mobile.features.auth.domain.usecase.LoginWithGithubUseCase
 import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
-import com.rmap.mobile.features.auth.domain.usecase.RegisterUseCase
 import com.rmap.mobile.features.dashboard.data.remote.DashboardApi
 import com.rmap.mobile.features.dashboard.data.repository.DashboardRepositoryImpl
 import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
@@ -76,10 +76,12 @@ object RMapAppGraph {
         private set
     lateinit var recentSearchRepository: RecentSearchRepository
         private set
-    lateinit var loginUseCase: LoginUseCase
+
+    lateinit var loginWithGoogleUseCase: LoginWithGoogleUseCase
         private set
-    lateinit var registerUseCase: RegisterUseCase
+    lateinit var loginWithGithubUseCase: LoginWithGithubUseCase
         private set
+
     lateinit var logoutUseCase: LogoutUseCase
         private set
     lateinit var getCurrentUserUseCase: GetCurrentUserUseCase
@@ -125,8 +127,9 @@ object RMapAppGraph {
 //            roadmapApi = apiClient.createService(RoadmapApi::class.java),
 //            sessionManager = sessionManager
 //        )
-        loginUseCase = LoginUseCase(authRepository)
-        registerUseCase = RegisterUseCase(authRepository)
+
+        loginWithGoogleUseCase = LoginWithGoogleUseCase(authRepository)
+        loginWithGithubUseCase = LoginWithGithubUseCase(authRepository)
         logoutUseCase = LogoutUseCase(authRepository)
         getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
         roadmapRepository = RemoteRoadmapRepository(

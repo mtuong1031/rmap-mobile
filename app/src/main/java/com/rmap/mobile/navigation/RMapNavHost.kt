@@ -154,9 +154,19 @@ fun RMapNavHost(navController: NavHostController) {
         val currentRoute = currentBackStackEntry?.destination?.route
 
         NavHost(navController = navController, startDestination = startDestination) {
-            composable(AppRoutes.AUTH) {
+            composable(
+                route = AppRoutes.AUTH,
+                deepLinks = listOf(androidx.navigation.navDeepLink { uriPattern = "rmap://oauth/callback?code={code}" })
+            ) { backStackEntry ->
                 val viewModel: AuthViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                val code = backStackEntry.arguments?.getString("code")
+
+                LaunchedEffect(code) {
+                    if (!code.isNullOrBlank()) {
+                        viewModel.onGithubCodeReceived(code)
+                    }
+                }
 
                 LaunchedEffect(viewModel) {
                     viewModel.events.collect { event ->
@@ -170,12 +180,9 @@ fun RMapNavHost(navController: NavHostController) {
 
                 AuthScreen(
                     uiState = uiState,
-                    onEmailChange = viewModel::onEmailChange,
-                    onPasswordChange = viewModel::onPasswordChange,
-                    onFullNameChange = viewModel::onFullNameChange,
-                    onToggleMode = viewModel::onToggleMode,
-                    onTogglePasswordVisibility = viewModel::onTogglePasswordVisibility,
-                    onSubmit = viewModel::onSubmit
+                    onGoogleIdTokenReceived = viewModel::onGoogleIdTokenReceived,
+                    onLoginError = viewModel::onLoginError,
+                    onGithubLoginClick = { viewModel.onGithubLoginClick(context) }
                 )
             }
 

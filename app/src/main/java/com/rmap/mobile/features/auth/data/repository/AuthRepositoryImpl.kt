@@ -8,8 +8,8 @@ import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.core.network.toDomainResult
 import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.features.auth.data.mapper.toDomain
-import com.rmap.mobile.features.auth.data.model.LoginRequestDto
-import com.rmap.mobile.features.auth.data.model.RegisterRequestDto
+import com.rmap.mobile.features.auth.data.model.MobileOAuthRequestDto
+import com.rmap.mobile.features.auth.data.model.GithubMobileOAuthRequestDto
 import com.rmap.mobile.features.auth.data.model.UserDto
 import com.rmap.mobile.features.auth.data.remote.AuthApi
 import com.rmap.mobile.features.auth.domain.model.AuthState
@@ -26,48 +26,31 @@ class AuthRepositoryImpl(
     private val _authState = MutableStateFlow<AuthState>(AuthState.Checking)
     override val authState: StateFlow<AuthState> = _authState.asStateFlow()
 
-    override suspend fun login(
-        email: String,
-        password: String
-    ): Result<User> {
+
+
+    override suspend fun loginWithGoogle(idToken: String): Result<User> {
         val networkResult = SafeApiCall.execute {
-            authApi.login(
-                LoginRequestDto(
-                    email = email,
-                    password = password
-                )
+            authApi.loginWithGoogle(
+                MobileOAuthRequestDto(idToken = idToken)
             )
         }
 
         return when (networkResult) {
             is NetworkResult.Success -> getCurrentUser()
-            is NetworkResult.Error -> Result.failure(networkResult.toLoginException())
+            is NetworkResult.Error -> Result.failure(networkResult.toAppException())
         }
     }
 
-    override suspend fun register(
-        email: String,
-        password: String,
-        fullName: String
-    ): Result<User> {
-        val registerResult = SafeApiCall.execute {
-            authApi.register(
-                RegisterRequestDto(
-                    email = email,
-                    password = password,
-                    fullName = fullName
-                )
+    override suspend fun loginWithGithub(code: String): Result<User> {
+        val networkResult = SafeApiCall.execute {
+            authApi.loginWithGithub(
+                GithubMobileOAuthRequestDto(code = code)
             )
         }
 
-        return when (registerResult) {
-            is NetworkResult.Success -> registerResult.toUserResult()
-                .fold(
-                    onSuccess = { login(email = email, password = password) },
-                    onFailure = { Result.failure(it) }
-                )
-
-            is NetworkResult.Error -> Result.failure(registerResult.toAuthException())
+        return when (networkResult) {
+            is NetworkResult.Success -> getCurrentUser()
+            is NetworkResult.Error -> Result.failure(networkResult.toAppException())
         }
     }
 
@@ -117,34 +100,8 @@ class AuthRepositoryImpl(
                     throw invalidAuthResponse(code, error)
                 }
 
-            is NetworkResult.Error -> Result.failure(toAuthException())
+            is NetworkResult.Error -> Result.failure(toAppException())
         }
-    }
-
-    private fun NetworkResult.Error.toAuthException(): AppException {
-        return if (apiCode == INVALID_CREDENTIALS_CODE) {
-            invalidCredentialsException()
-        } else {
-            toAppException()
-        }
-    }
-
-    private fun NetworkResult.Error.toLoginException(): AppException {
-        return if (type == NetworkErrorType.Unauthorized) {
-            invalidCredentialsException()
-        } else {
-            toAuthException()
-        }
-    }
-
-    private fun NetworkResult.Error.invalidCredentialsException(): AppException {
-        return AppException(
-            message = "Invalid email or password.",
-            code = code,
-            type = type,
-            apiCode = apiCode,
-            cause = cause
-        )
     }
 
     private fun invalidAuthResponse(
@@ -160,6 +117,5 @@ class AuthRepositoryImpl(
     }
 
     private companion object {
-        const val INVALID_CREDENTIALS_CODE = 40101
     }
 }
