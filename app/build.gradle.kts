@@ -38,6 +38,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BASE_URL", "\"${requiredLocalProperty("BASE_URL")}\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${requiredLocalProperty("GOOGLE_WEB_CLIENT_ID")}\"")
+        buildConfigField("String", "GITHUB_MOBILE_CLIENT_ID", "\"${requiredLocalProperty("GITHUB_MOBILE_CLIENT_ID")}\"")
         manifestPlaceholders["usesCleartextTraffic"] = "false"
     }
 
@@ -86,11 +88,15 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.androidx.browser)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
