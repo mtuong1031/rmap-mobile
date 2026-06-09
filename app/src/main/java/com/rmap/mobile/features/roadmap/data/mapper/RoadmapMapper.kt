@@ -318,12 +318,14 @@ fun LearningStatus.toNodeStatusRequestValue(): String {
 
 fun List<RoadmapSummary>.toCategories(): List<RoadmapCategory> {
     return filter { it.categoryId.isNotBlank() }
-        .distinctBy { it.categoryId }
-        .map { summary ->
+        .groupBy { it.categoryId }
+        .map { (categoryId, roadmaps) ->
+            val summary = roadmaps.first()
             RoadmapCategory(
-                id = summary.categoryId,
-                name = summary.durationLabel.ifBlank { summary.categoryId },
-                icon = summary.icon
+                id = categoryId,
+                name = summary.durationLabel.ifBlank { categoryId },
+                icon = summary.icon,
+                roadmapCount = roadmaps.size
             )
         }
 }

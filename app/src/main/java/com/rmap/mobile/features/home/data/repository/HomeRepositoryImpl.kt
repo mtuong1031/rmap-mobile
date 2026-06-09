@@ -4,7 +4,7 @@ import com.rmap.mobile.core.network.NetworkResult
 import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.features.home.data.mapper.toHomeContent
-import com.rmap.mobile.features.home.data.mapper.toDomain
+import com.rmap.mobile.features.home.data.mapper.toSearchDomain
 import com.rmap.mobile.features.home.data.remote.HomeApi
 import com.rmap.mobile.features.home.domain.model.HomeContent
 import com.rmap.mobile.features.home.domain.model.HomeSearchResult
@@ -15,43 +15,33 @@ import kotlinx.coroutines.coroutineScope
 class HomeRepositoryImpl(
     private val homeApi: HomeApi
 ) : HomeRepository {
-    override suspend fun getHomeContent(): Result<HomeContent> {
+    override suspend fun getHomeContent(includePersonalDashboard: Boolean): Result<HomeContent> {
         return coroutineScope {
-            val dashboard = async { SafeApiCall.execute { homeApi.getDashboardHome() } }
-            val recommendations = async { SafeApiCall.execute { homeApi.getTemplateRecommendations() } }
-            val categories = async { SafeApiCall.execute { homeApi.getTemplateCategories() } }
-            val trendings = async { SafeApiCall.execute { homeApi.getTemplateTrendings() } }
+            val dashboard = if (includePersonalDashboard) {
+                async { SafeApiCall.execute { homeApi.getDashboardHome() } }
+            } else {
+                null
+            }
+            val templates = async {
+                SafeApiCall.execute {
+                    homeApi.getPublicTemplates(
+                        page = FIRST_PAGE,
+                        perPage = PUBLIC_TEMPLATE_LIMIT
+                    )
+                }
+            }
 
-            val dashboardResult = dashboard.await()
-            val recommendationsResult = recommendations.await()
-            val categoriesResult = categories.await()
-            val trendingsResult = trendings.await()
+            val templatesResult = templates.await()
+            val dashboardResult = dashboard?.await()
 
-            val error = listOf(
-                dashboardResult,
-                recommendationsResult,
-                categoriesResult,
-                trendingsResult
-            ).filterIsInstance<NetworkResult.Error>().firstOrNull()
-
-            if (error != null) {
-                Result.failure(error.toAppException())
-            } else if (
-                dashboardResult is NetworkResult.Success &&
-                recommendationsResult is NetworkResult.Success &&
-                categoriesResult is NetworkResult.Success &&
-                trendingsResult is NetworkResult.Success
-            ) {
-                Result.success(
+            when (templatesResult) {
+                is NetworkResult.Success -> Result.success(
                     toHomeContent(
-                        dashboard = dashboardResult.data,
-                        recommendations = recommendationsResult.data,
-                        categories = categoriesResult.data,
-                        trendings = trendingsResult.data
+                        dashboard = (dashboardResult as? NetworkResult.Success)?.data,
+                        templates = templatesResult.data
                     )
                 )
-            } else {
-                Result.failure(IllegalStateException("Unable to load home"))
+                is NetworkResult.Error -> Result.failure(templatesResult.toAppException())
             }
         }
     }
@@ -61,17 +51,27 @@ class HomeRepositoryImpl(
         roadmapPage: Int,
         skillPage: Int
     ): Result<HomeSearchResult> {
-        return when (
-            val result = SafeApiCall.execute {
-                homeApi.searchDashboard(
+        return when (val result = SafeApiCall.execute {
+            homeApi.getPublicTemplates(
+                page = FIRST_PAGE,
+                perPage = PUBLIC_TEMPLATE_LIMIT
+            )
+        }) {
+            is NetworkResult.Success -> Result.success(
+                result.data.toSearchDomain(
                     query = query,
                     roadmapPage = roadmapPage,
+                    roadmapPageSize = SEARCH_ROADMAP_PAGE_SIZE,
                     skillPage = skillPage
                 )
-            }
-        ) {
-            is NetworkResult.Success -> Result.success(result.data.toDomain())
+            )
             is NetworkResult.Error -> Result.failure(result.toAppException())
         }
+    }
+
+    private companion object {
+        const val FIRST_PAGE = 1
+        const val PUBLIC_TEMPLATE_LIMIT = 100
+        const val SEARCH_ROADMAP_PAGE_SIZE = 5
     }
 }

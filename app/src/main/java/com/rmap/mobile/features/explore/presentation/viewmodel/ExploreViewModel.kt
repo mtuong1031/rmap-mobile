@@ -8,6 +8,8 @@ import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toCategoryUiModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,8 +36,11 @@ class ExploreViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            val categoryResult = roadmapRepository.getExploreCategories()
-            val libraryResult = roadmapRepository.searchRoadmaps("")
+            val (categoryResult, libraryResult) = coroutineScope {
+                val categories = async { roadmapRepository.getExploreCategories() }
+                val library = async { roadmapRepository.searchRoadmaps("") }
+                categories.await() to library.await()
+            }
 
             val failure = listOf(categoryResult, libraryResult)
                 .firstOrNull { it.isFailure }

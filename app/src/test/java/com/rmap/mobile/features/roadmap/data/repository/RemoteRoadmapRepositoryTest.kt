@@ -80,18 +80,14 @@ class RemoteRoadmapRepositoryTest {
         assertEquals(1, api.getRoadmapCallCount)
         assertEquals(1, api.getRoadmapNodesCallCount)
         assertEquals(1, api.getRoadmapProgressCallCount)
-        assertEquals(0, api.getTemplateCallCount)
+        assertEquals(1, api.getTemplateCallCount)
         assertEquals(0, api.getTemplateNodesCallCount)
     }
 
     @Test
-    fun `getRoadmapDetail falls back to legacy template when roadmap detail is not found`() = runTest {
+    fun `getRoadmapDetail uses public template before personal endpoints`() = runTest {
         val api = FakeRoadmapApi().apply {
-            roadmapResponse = Response.error(
-                404,
-                """{"code":40400,"message":"Roadmap not found"}"""
-                    .toResponseBody("application/json".toMediaType())
-            )
+            templateResponse = Response.success(testRoadmap.copy(isTemplate = true))
         }
         val repository = newRepository(api)
 
@@ -99,9 +95,9 @@ class RemoteRoadmapRepositoryTest {
 
         assertTrue(result.isSuccess)
         assertEquals("roadmap-1", result.getOrThrow().id)
-        assertEquals(1, api.getRoadmapCallCount)
-        assertEquals(1, api.getRoadmapNodesCallCount)
-        assertEquals(1, api.getRoadmapProgressCallCount)
+        assertEquals(0, api.getRoadmapCallCount)
+        assertEquals(0, api.getRoadmapNodesCallCount)
+        assertEquals(0, api.getRoadmapProgressCallCount)
         assertEquals(1, api.getTemplateCallCount)
         assertEquals(1, api.getTemplateNodesCallCount)
     }
@@ -283,11 +279,38 @@ class RemoteRoadmapRepositoryTest {
         assertTrue(result.isSuccess)
         assertEquals(1, result.getOrThrow().single().totalLessonsCount)
         assertEquals(1, result.getOrThrow().single().skillNodesCount)
-        assertEquals(1, api.listTemplatesCallCount)
+        assertEquals(0, api.listTemplatesCallCount)
+        assertEquals(1, api.listPublicTemplatesCallCount)
         assertEquals(1, api.getTemplateNodesCallCount)
         assertEquals(0, api.listRoadmapsCallCount)
         assertEquals(0, api.getRoadmapCallCount)
         assertEquals(0, api.getRoadmapProgressCallCount)
+    }
+
+    @Test
+    fun `explore categories and library share cached template response`() = runTest {
+        val api = FakeRoadmapApi().apply {
+            templatesResponse = Response.success(
+                RoadmapsResponseDto(
+                    data = listOf(
+                        RoadmapDto(
+                            id = "roadmap-1",
+                            roleCategory = "WEB_DEVELOPMENT",
+                            title = "Frontend Roadmap"
+                        )
+                    )
+                )
+            )
+        }
+        val repository = newRepository(api)
+
+        val categories = repository.getExploreCategories()
+        val library = repository.searchRoadmaps("")
+
+        assertTrue(categories.isSuccess)
+        assertTrue(library.isSuccess)
+        assertEquals(1, api.listPublicTemplatesCallCount)
+        assertEquals(0, api.listTemplatesCallCount)
     }
 
     private fun newRepository(api: FakeRoadmapApi): RemoteRoadmapRepository {
@@ -307,6 +330,7 @@ class RemoteRoadmapRepositoryTest {
         var submitMilestoneCallCount = 0
         var listRoadmapsCallCount = 0
         var listTemplatesCallCount = 0
+        var listPublicTemplatesCallCount = 0
         var getTemplateCallCount = 0
         var getTemplateNodesCallCount = 0
         var lastStartedRoadmapId: String? = null
@@ -333,7 +357,11 @@ class RemoteRoadmapRepositoryTest {
             Response.success(RoadmapsResponseDto(data = emptyList()))
         var templatesResponse: Response<RoadmapsResponseDto> =
             Response.success(RoadmapsResponseDto(data = listOf(testRoadmap)))
-        var templateResponse: Response<RoadmapDto> = Response.success(testRoadmap.copy(isTemplate = true))
+        var templateResponse: Response<RoadmapDto> = Response.error(
+            404,
+            """{"code":40400,"message":"Template not found"}"""
+                .toResponseBody("application/json".toMediaType())
+        )
         var templateNodesResponse: Response<RoadmapNodesResponseDto> = Response.success(testNodes)
 
         override suspend fun listUserRoadmaps(
@@ -428,7 +456,7 @@ class RemoteRoadmapRepositoryTest {
             page: Int?,
             perPage: Int?
         ): Response<RoadmapsResponseDto> {
-            listTemplatesCallCount++
+            listPublicTemplatesCallCount++
             return templatesResponse
         }
 

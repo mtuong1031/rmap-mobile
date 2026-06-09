@@ -7,6 +7,8 @@ import com.rmap.mobile.features.home.data.model.HomeMetricsDto
 import com.rmap.mobile.features.home.data.model.HomeNextUnlockDto
 import com.rmap.mobile.features.home.data.model.HomePaceWarningDto
 import com.rmap.mobile.features.home.data.model.HomePlanNodeDto
+import com.rmap.mobile.features.home.data.model.HomePublicTemplateDto
+import com.rmap.mobile.features.home.data.model.HomePublicTemplatesResponseDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapChapterDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapGroupDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapProgressDto
@@ -41,17 +43,98 @@ import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 
 fun toHomeContent(
-    dashboard: HomeDashboardResponseDto,
-    recommendations: HomeTemplateRecommendationsResponseDto,
-    categories: HomeTemplateCategoriesResponseDto,
-    trendings: HomeTemplateTrendingsResponseDto
+    dashboard: HomeDashboardResponseDto?,
+    templates: HomePublicTemplatesResponseDto
 ): HomeContent {
+    val templateRoadmaps = templates.data.map { it.toHomeTemplateRoadmap() }
+    val categories = templateRoadmaps
+        .groupBy { it.roleCategory }
+        .map { (category, roadmaps) ->
+            HomeTemplateCategory(
+                category = category,
+                label = category.toCategoryLabel().orEmpty(),
+                templatesCount = roadmaps.size
+            )
+        }
+    val trendings = templateRoadmaps.mapIndexed { index, roadmap ->
+        HomeTrendingRoadmap(
+            rank = index + 1,
+            roadmapId = roadmap.roadmapId,
+            title = roadmap.title,
+            roleCategory = roadmap.roleCategory,
+            categoryLabel = roadmap.categoryLabel,
+            estimatedWeeks = roadmap.estimatedWeeks,
+            durationLabel = roadmap.durationLabel,
+            nodesTotal = roadmap.nodesTotal,
+            trendText = roadmap.categoryLabel
+        )
+    }
+
     return HomeContent(
-        activeRoadmaps = dashboard.activeRoadmaps.map { it.toDomain() },
-        metrics = dashboard.metrics.toDomain(),
-        recommendations = recommendations.relevantRoadmaps.map { it.toDomain() },
-        categories = categories.categories.map { it.toDomain() },
-        trendings = trendings.trendings.map { it.toDomain() }
+        activeRoadmaps = dashboard?.activeRoadmaps.orEmpty().map { it.toDomain() },
+        metrics = dashboard?.metrics?.toDomain() ?: HomeMetrics(
+            roadmapCompletionPct = 0.0,
+            streakDays = 0,
+            readinessPct = 0.0
+        ),
+        recommendations = templateRoadmaps,
+        categories = categories,
+        trendings = trendings
+    )
+}
+
+fun HomePublicTemplatesResponseDto.toSearchDomain(
+    query: String,
+    roadmapPage: Int,
+    roadmapPageSize: Int,
+    skillPage: Int
+): HomeSearchResult {
+    val normalizedQuery = query.trim()
+    val matchingTemplates = data.filter { template ->
+        normalizedQuery.isBlank() ||
+            template.title.contains(normalizedQuery, ignoreCase = true) ||
+            template.description.orEmpty().contains(normalizedQuery, ignoreCase = true) ||
+            template.goalName.orEmpty().contains(normalizedQuery, ignoreCase = true) ||
+            template.roleCategory.contains(normalizedQuery, ignoreCase = true) ||
+            template.roleCategory.toCategoryLabel()
+                .orEmpty()
+                .contains(normalizedQuery, ignoreCase = true)
+    }
+    val safeRoadmapPage = roadmapPage.coerceAtLeast(1)
+    val startIndex = (safeRoadmapPage - 1) * roadmapPageSize
+    val roadmaps = matchingTemplates
+        .drop(startIndex)
+        .take(roadmapPageSize)
+        .map { it.toHomeSearchRoadmap() }
+    val totalPages = if (matchingTemplates.isEmpty()) {
+        0
+    } else {
+        (matchingTemplates.size + roadmapPageSize - 1) / roadmapPageSize
+    }
+
+    return HomeSearchResult(
+        query = query,
+        roadmaps = HomeSearchRoadmapsPage(
+            data = roadmaps,
+            meta = HomeSearchPageMeta(
+                page = safeRoadmapPage,
+                perPage = roadmapPageSize,
+                total = matchingTemplates.size,
+                totalPages = totalPages
+            )
+        ),
+        skills = HomeSearchSkillsPage(
+            data = emptyList(),
+            meta = HomeSearchPageMeta(
+                page = skillPage.coerceAtLeast(1),
+                perPage = 0,
+                total = 0,
+                totalPages = 0
+            )
+        ),
+        totalResults = matchingTemplates.size,
+        roadmapPageSize = roadmapPageSize,
+        skillPageSize = 0
     )
 }
 
@@ -182,6 +265,37 @@ private fun HomeTemplateRoadmapDto.toDomain(): HomeTemplateRoadmap = HomeTemplat
     nodesTotal = nodesTotal,
     requiredNodesTotal = requiredNodesTotal
 )
+
+private fun HomePublicTemplateDto.toHomeTemplateRoadmap(): HomeTemplateRoadmap {
+    val categoryLabel = roleCategory.toCategoryLabel().orEmpty()
+    return HomeTemplateRoadmap(
+        roadmapId = id,
+        title = title,
+        description = description,
+        goalName = goalName?.takeIf { it.isNotBlank() } ?: title,
+        roleCategory = roleCategory,
+        categoryLabel = categoryLabel,
+        estimatedWeeks = estimatedWeeks,
+        durationLabel = estimatedWeeks?.let { "$it weeks" },
+        nodesTotal = 0,
+        requiredNodesTotal = 0
+    )
+}
+
+private fun HomePublicTemplateDto.toHomeSearchRoadmap(): HomeSearchRoadmap {
+    return HomeSearchRoadmap(
+        roadmapId = id,
+        title = title,
+        description = description,
+        goalName = goalName?.takeIf { it.isNotBlank() } ?: title,
+        isTemplate = isTemplate,
+        roadmapType = "template",
+        roleCategory = roleCategory,
+        categoryLabel = roleCategory.toCategoryLabel().orEmpty(),
+        estimatedWeeks = estimatedWeeks,
+        durationLabel = estimatedWeeks?.let { "$it weeks" }
+    )
+}
 
 private fun HomeTemplateCategoryDto.toDomain(): HomeTemplateCategory = HomeTemplateCategory(
     category = category,

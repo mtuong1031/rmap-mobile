@@ -67,6 +67,34 @@ data class HomeMetricsDto(
     @SerializedName("readinessPct") val readinessPct: Double
 )
 
+data class HomePublicTemplatesResponseDto(
+    @SerializedName("data") val data: List<HomePublicTemplateDto>,
+    @SerializedName("meta") val meta: HomePublicTemplatesMetaDto
+)
+
+data class HomePublicTemplateDto(
+    @SerializedName("deadlineDate") val deadlineDate: String?,
+    @SerializedName("description") val description: String?,
+    @SerializedName("estimatedWeeks") val estimatedWeeks: Int?,
+    @SerializedName("generatedAt") val generatedAt: String,
+    @SerializedName("goalName") val goalName: String?,
+    @SerializedName("hoursPerDay") val hoursPerDay: Int?,
+    @SerializedName("id") val id: String,
+    @SerializedName("isTemplate") val isTemplate: Boolean,
+    @SerializedName("roleCategory") val roleCategory: String,
+    @SerializedName("startedAt") val startedAt: String?,
+    @SerializedName("title") val title: String,
+    @SerializedName("updatedAt") val updatedAt: String,
+    @SerializedName("userId") val userId: String?
+)
+
+data class HomePublicTemplatesMetaDto(
+    @SerializedName("page") val page: Int,
+    @SerializedName(value = "perPage", alternate = ["per_page"]) val perPage: Int,
+    @SerializedName("total") val total: Int,
+    @SerializedName(value = "totalPages", alternate = ["total_pages"]) val totalPages: Int
+)
+
 data class HomeDashboardSearchResponseDto(
     @SerializedName("query") val query: String,
     @SerializedName("roadmaps") val roadmaps: HomeSearchRoadmapsPageDto,

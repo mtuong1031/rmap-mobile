@@ -21,6 +21,8 @@ class ProfileViewModel(
     private val authRepository: AuthRepository = RMapAppGraph.authRepository,
     private val logoutUseCase: LogoutUseCase = RMapAppGraph.logoutUseCase
 ) : ViewModel() {
+    private var loadedUserId: String? = null
+
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
@@ -28,11 +30,21 @@ class ProfileViewModel(
     val events: SharedFlow<ProfileEvent> = _events.asSharedFlow()
 
     init {
-        loadProfile()
         observeAuthState()
     }
 
     fun loadProfile() {
+        if (authRepository.authState.value !is AuthState.Authenticated) {
+            _uiState.update {
+                it.copy(
+                    isAuthenticated = false,
+                    isLoading = false,
+                    errorMessage = null
+                )
+            }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             profileRepository.getActivity()
@@ -61,15 +73,51 @@ class ProfileViewModel(
     private fun observeAuthState() {
         viewModelScope.launch {
             authRepository.authState.collect { authState ->
-                val user = (authState as? AuthState.Authenticated)?.user
-                _uiState.update {
-                    it.copy(
-                        name = user?.fullName.orEmpty(),
-                        role = user?.role?.toProfileRoleLabel().orEmpty(),
-                        avatarUrl = user?.avatarUrl.orEmpty()
-                    )
+                when (authState) {
+                    AuthState.Checking -> {
+                        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+                    }
+
+                    AuthState.Unauthenticated -> {
+                        loadedUserId = null
+                        _uiState.update {
+                            ProfileUiState(
+                                isAuthenticated = false,
+                                isLoading = false
+                            )
+                        }
+                    }
+
+                    is AuthState.Authenticated -> {
+                        val user = authState.user
+                        _uiState.update {
+                            it.copy(
+                                name = user.fullName,
+                                role = user.role.toProfileRoleLabel(),
+                                avatarUrl = user.avatarUrl.orEmpty(),
+                                isAuthenticated = true,
+                                errorMessage = null
+                            )
+                        }
+                        if (loadedUserId != user.id) {
+                            loadedUserId = user.id
+                            loadProfile()
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    fun onAuthenticateClick() {
+        viewModelScope.launch {
+            _events.emit(ProfileEvent.NavigateToAuthentication)
+        }
+    }
+
+    fun onExploreRoadmapsClick() {
+        viewModelScope.launch {
+            _events.emit(ProfileEvent.NavigateToExplore)
         }
     }
 

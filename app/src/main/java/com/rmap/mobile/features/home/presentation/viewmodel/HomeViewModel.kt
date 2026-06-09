@@ -46,7 +46,9 @@ class HomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-                    homeRepository.getHomeContent()
+            homeRepository.getHomeContent(
+                includePersonalDashboard = authRepository.authState.value is AuthState.Authenticated
+            )
                 .onSuccess { content ->
                     _uiState.update {
                         content.toUiState(

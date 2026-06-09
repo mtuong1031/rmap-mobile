@@ -15,10 +15,12 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -75,6 +78,7 @@ fun AuthScreen(
     onToggleMode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onSubmit: () -> Unit,
+    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     heroPainter: Painter? = null
 ) {
@@ -96,6 +100,20 @@ fun AuthScreen(
                 .fillMaxWidth()
                 .height(AuthHeroHeight)
         )
+
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .statusBarsPadding()
+                .padding(Dimens.spacingSm)
+                .align(Alignment.TopStart)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = stringResource(R.string.content_description_back),
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
 
         Surface(
             modifier = Modifier

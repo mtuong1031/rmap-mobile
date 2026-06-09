@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -39,6 +40,7 @@ class ProfileViewModelTest {
         runCurrent()
 
         assertFalse(viewModel.uiState.value.isLoading)
+        assertTrue(viewModel.uiState.value.isAuthenticated)
         assertEquals(1, repository.getActivityCalls)
         assertEquals(5, viewModel.uiState.value.streak)
         assertEquals(7, viewModel.uiState.value.longestStreak)
@@ -59,6 +61,21 @@ class ProfileViewModelTest {
         assertFalse(viewModel.uiState.value.isLoading)
         assertEquals("RMap Learner", viewModel.uiState.value.name)
         assertEquals("Frontend Developer", viewModel.uiState.value.role)
+    }
+
+    @Test
+    fun `guest profile does not request authenticated activity`() = runTest {
+        val repository = FakeProfileRepository()
+        val viewModel = newViewModel(
+            repository = repository,
+            authRepository = FakeAuthRepository(AuthState.Unauthenticated)
+        )
+
+        runCurrent()
+
+        assertFalse(viewModel.uiState.value.isLoading)
+        assertFalse(viewModel.uiState.value.isAuthenticated)
+        assertEquals(0, repository.getActivityCalls)
     }
 
     @Test
@@ -100,7 +117,7 @@ class ProfileViewModelTest {
     }
 
     private class FakeAuthRepository(
-        initialState: AuthState = AuthState.Unauthenticated
+        initialState: AuthState = AuthState.Authenticated(testUser)
     ) : AuthRepository {
         override val authState: StateFlow<AuthState> = MutableStateFlow(initialState)
 

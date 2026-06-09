@@ -26,6 +26,7 @@ object AppRoutes {
         "roadmap_learning/{$ROADMAP_ID_ARG}/{$NODE_ID_ARG}/{$SKILL_ID_ARG}/{$NODE_COMPLETED_ARG}"
     const val ROADMAP_NODE_QUIZ = "roadmap_learning/{$ROADMAP_ID_ARG}/{$NODE_ID_ARG}/quiz"
     const val ROADMAP_MILESTONE = "roadmap_milestone/{$ROADMAP_ID_ARG}/{$MILESTONE_ID_ARG}"
+    const val SKILL_DETAIL = "skill/{$SKILL_ID_ARG}"
 
     fun roadmapDetail(roadmapId: String): String = "roadmap_detail/$roadmapId"
 
@@ -52,6 +53,8 @@ object AppRoutes {
     ): String {
         return "roadmap_milestone/${roadmapId.encodeRouteArg()}/${milestoneId.encodeRouteArg()}"
     }
+
+    fun skillDetail(skillId: String): String = "skill/${skillId.encodeRouteArg()}"
 
     private fun String.encodeRouteArg(): String = Uri.encode(this)
 }

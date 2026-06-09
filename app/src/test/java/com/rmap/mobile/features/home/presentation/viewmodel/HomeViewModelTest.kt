@@ -95,7 +95,8 @@ class HomeViewModelTest {
 }
 
 private class FakeHomeRepository : HomeRepository {
-    override suspend fun getHomeContent(): Result<HomeContent> = Result.success(testHomeContent())
+    override suspend fun getHomeContent(includePersonalDashboard: Boolean): Result<HomeContent> =
+        Result.success(testHomeContent())
 
     override suspend fun searchDashboard(
         query: String,

@@ -40,12 +40,20 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 
 class RemoteRoadmapRepository(
     private val roadmapApi: RoadmapApi,
     private val sessionManager: SessionManager
 ) : RoadmapRepository {
+    private val templateCacheMutex = Mutex()
+    private var templateCache: TemplateCache? = null
+
     override suspend fun getLearningProgress(): Result<LearningProgress> {
         return when (val roadmapResult = getRoadmapsResult(page = FIRST_PAGE, perPage = FIRST_ITEM_PAGE_SIZE)) {
             is NetworkResult.Success -> {
@@ -102,6 +110,21 @@ class RemoteRoadmapRepository(
             return Result.failure(invalidRoadmapId())
         }
 
+        when (val templateResult = getTemplateResult(roadmapId)) {
+            is NetworkResult.Success -> {
+                return loadTemplateRoadmapDetail(
+                    templateResult = templateResult,
+                    roadmapId = roadmapId
+                )
+            }
+
+            is NetworkResult.Error -> {
+                if (templateResult.type != NetworkErrorType.NotFound) {
+                    return Result.failure(templateResult.toAppException())
+                }
+            }
+        }
+
         val (roadmapResult, nodesResult, progressResult) = coroutineScope {
             val roadmapDeferred = async { getRoadmapResult(roadmapId) }
             val nodesDeferred = async { getRoadmapNodesResult(roadmapId) }
@@ -122,20 +145,7 @@ class RemoteRoadmapRepository(
                 progressResult = progressResult
             )
 
-            is NetworkResult.Error -> when (roadmapResult.type) {
-                NetworkErrorType.NotFound -> {
-                    when (val templateResult = getTemplateResult(roadmapId)) {
-                        is NetworkResult.Success -> loadTemplateRoadmapDetail(
-                            templateResult = templateResult,
-                            roadmapId = roadmapId,
-                        )
-
-                        is NetworkResult.Error -> Result.failure(templateResult.toAppException())
-                    }
-                }
-
-                else -> Result.failure(roadmapResult.toAppException())
-            }
+            is NetworkResult.Error -> Result.failure(roadmapResult.toAppException())
         }
     }
 
@@ -401,25 +411,51 @@ class RemoteRoadmapRepository(
         hydrateNodes: Boolean,
         statusCode: Int
     ): Result<List<RoadmapSummary>> {
-        val summaries = mutableListOf<RoadmapSummary>()
-        templates.forEach { roadmap ->
-            val roadmapId = roadmap.id?.takeIf { it.isNotBlank() }
-                ?: return Result.failure(invalidRoadmapResponse(statusCode))
-            val nodes = if (hydrateNodes) {
-                when (val nodesResult = getTemplateNodesResult(roadmapId)) {
-                    is NetworkResult.Success -> nodesResult.data.nodes.orEmpty()
-                    is NetworkResult.Error -> emptyList()
+        val hydrationSemaphore = Semaphore(MAX_CONCURRENT_TEMPLATE_HYDRATIONS)
+        val summaryResults = coroutineScope {
+            templates.map { roadmap ->
+                async {
+                    hydrationSemaphore.withPermit {
+                        loadTemplateSummary(
+                            roadmap = roadmap,
+                            hydrateNodes = hydrateNodes,
+                            statusCode = statusCode
+                        )
+                    }
                 }
-            } else {
-                emptyList()
-            }
-            val summary = runCatching { roadmap.toSummary(nodes) }
-                .getOrElse { error ->
-                    return Result.failure(invalidRoadmapResponse(statusCode, error))
-                }
-            summaries += summary
+            }.awaitAll()
         }
-        return Result.success(summaries)
+
+        val failure = summaryResults.firstOrNull { it.isFailure }
+        return if (failure != null) {
+            Result.failure(
+                failure.exceptionOrNull() ?: invalidRoadmapResponse(statusCode)
+            )
+        } else {
+            Result.success(summaryResults.map { it.getOrThrow() })
+        }
+    }
+
+    private suspend fun loadTemplateSummary(
+        roadmap: RoadmapDto,
+        hydrateNodes: Boolean,
+        statusCode: Int
+    ): Result<RoadmapSummary> {
+        val roadmapId = roadmap.id?.takeIf { it.isNotBlank() }
+            ?: return Result.failure(invalidRoadmapResponse(statusCode))
+        val nodes = if (hydrateNodes) {
+            when (val nodesResult = getTemplateNodesResult(roadmapId)) {
+                is NetworkResult.Success -> nodesResult.data.nodes.orEmpty()
+                is NetworkResult.Error -> emptyList()
+            }
+        } else {
+            emptyList()
+        }
+
+        return runCatching { roadmap.toSummary(nodes) }
+            .recoverCatching { error ->
+                throw invalidRoadmapResponse(statusCode, error)
+            }
     }
 
     private suspend fun getRoadmapsResult(
@@ -508,22 +544,58 @@ class RemoteRoadmapRepository(
         page: Int,
         perPage: Int
     ): NetworkResult<RoadmapsResponseDto> {
-        val officialResult = SafeApiCall.execute {
-            roadmapApi.listTemplates(
+        return templateCacheMutex.withLock {
+            val now = System.nanoTime()
+            val cached = templateCache
+            if (
+                cached != null &&
+                cached.page == page &&
+                cached.perPage == perPage &&
+                now - cached.cachedAtNanos < TEMPLATE_CACHE_TTL_NANOS
+            ) {
+                return@withLock NetworkResult.Success(
+                    data = cached.response,
+                    code = cached.statusCode
+                )
+            }
+
+            when (val result = fetchTemplatesResult(page = page, perPage = perPage)) {
+                is NetworkResult.Success -> {
+                    templateCache = TemplateCache(
+                        page = page,
+                        perPage = perPage,
+                        response = result.data,
+                        statusCode = result.code,
+                        cachedAtNanos = System.nanoTime()
+                    )
+                    result
+                }
+
+                is NetworkResult.Error -> result
+            }
+        }
+    }
+
+    private suspend fun fetchTemplatesResult(
+        page: Int,
+        perPage: Int
+    ): NetworkResult<RoadmapsResponseDto> {
+        val publicResult = SafeApiCall.execute {
+            roadmapApi.listLegacyTemplates(
                 page = page,
                 perPage = perPage
             )
         }
 
-        return if (officialResult is NetworkResult.Error && officialResult.type == NetworkErrorType.NotFound) {
+        return if (publicResult is NetworkResult.Error && publicResult.type == NetworkErrorType.NotFound) {
             SafeApiCall.execute {
-                roadmapApi.listLegacyTemplates(
+                roadmapApi.listTemplates(
                     page = page,
                     perPage = perPage
                 )
             }
         } else {
-            officialResult
+            publicResult
         }
     }
 
@@ -610,5 +682,15 @@ class RemoteRoadmapRepository(
         const val FIRST_ITEM_PAGE_SIZE = 1
         const val ROADMAP_PAGE_SIZE = 20
         const val RECOMMENDED_ROADMAP_LIMIT = 5
+        const val MAX_CONCURRENT_TEMPLATE_HYDRATIONS = 4
+        const val TEMPLATE_CACHE_TTL_NANOS = 120_000_000_000L
     }
+
+    private data class TemplateCache(
+        val page: Int,
+        val perPage: Int,
+        val response: RoadmapsResponseDto,
+        val statusCode: Int,
+        val cachedAtNanos: Long
+    )
 }

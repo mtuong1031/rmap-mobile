@@ -11,6 +11,7 @@ data class ProfileUiState(
     val longestStreak: Int = 0,
     val certificates: Int = 0,
     val recentActivity: List<UserDailyActivity> = emptyList(),
+    val isAuthenticated: Boolean = false,
     val isLoading: Boolean = true,
     val errorMessage: String? = null
 )

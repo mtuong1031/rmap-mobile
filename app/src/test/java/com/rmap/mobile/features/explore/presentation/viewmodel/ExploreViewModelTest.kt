@@ -7,13 +7,18 @@ import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
+import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
+import com.rmap.mobile.features.roadmap.domain.model.MilestoneSubmission
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
+import com.rmap.mobile.features.roadmap.domain.model.NodeProgressUpdateResult
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
+import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -153,6 +158,17 @@ class ExploreViewModelTest {
             error("Not used")
         }
 
+        override suspend fun getMilestoneDetail(
+            roadmapId: String,
+            milestoneId: String
+        ): Result<MilestoneDetail> = error("Not used")
+
+        override suspend fun submitMilestone(
+            roadmapId: String,
+            milestoneId: String,
+            repoUrl: String
+        ): Result<MilestoneSubmission> = error("Not used")
+
         override suspend fun getNodeQuiz(roadmapId: String, nodeId: String): Result<NodeQuiz> = error("Not used")
 
         override suspend fun submitNodeQuiz(
@@ -160,6 +176,20 @@ class ExploreViewModelTest {
             nodeId: String,
             answers: List<NodeQuizAnswer>
         ): Result<NodeQuizSubmissionResult> = error("Not used")
+
+        override suspend fun getRoadmapNodeLearningContent(
+            roadmapId: String,
+            nodeId: String,
+            skillId: String
+        ): Result<SkillLearningContent> = error("Not used")
+
+        override suspend fun startRoadmap(roadmapId: String): Result<Unit> = error("Not used")
+
+        override suspend fun updateNodeProgress(
+            roadmapId: String,
+            nodeId: String,
+            status: LearningStatus
+        ): Result<NodeProgressUpdateResult> = error("Not used")
 
         private fun roadmap(id: String, title: String, categoryId: String): RoadmapSummary {
             return RoadmapSummary(

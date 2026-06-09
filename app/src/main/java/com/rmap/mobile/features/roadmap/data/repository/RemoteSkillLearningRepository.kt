@@ -9,6 +9,7 @@ import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.features.roadmap.data.mapper.toDomain
 import com.rmap.mobile.features.roadmap.data.remote.api.SkillApi
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
+import com.rmap.mobile.features.roadmap.domain.model.SkillDetail
 import com.rmap.mobile.features.roadmap.domain.repository.SkillLearningRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -17,6 +18,22 @@ class RemoteSkillLearningRepository(
     private val skillApi: SkillApi,
     private val sessionManager: SessionManager
 ) : SkillLearningRepository {
+    override suspend fun getSkillDetail(skillId: String): Result<SkillDetail> {
+        val normalizedSkillId = skillId.trim()
+        if (normalizedSkillId.isBlank()) {
+            return Result.failure(invalidSkillId())
+        }
+
+        return when (val result = SafeApiCall.execute { skillApi.getSkill(normalizedSkillId) }) {
+            is NetworkResult.Success -> runCatching { result.data.toDomain() }
+                .recoverCatching { error ->
+                    throw invalidSkillResponse(result.code, error)
+                }
+
+            is NetworkResult.Error -> Result.failure(result.toAppException())
+        }
+    }
+
     override suspend fun getSkillLearningContent(skillId: String): Result<SkillLearningContent> {
         val normalizedSkillId = skillId.trim()
         if (normalizedSkillId.isBlank()) {

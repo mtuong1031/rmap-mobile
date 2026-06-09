@@ -365,6 +365,8 @@ class RoadmapLearningViewModelTest {
     ) : SkillLearningRepository {
         val requestedSkillIds = mutableListOf<String>()
 
+        override suspend fun getSkillDetail(skillId: String) = result.map { it.skill }
+
         override suspend fun getSkillLearningContent(skillId: String): Result<SkillLearningContent> {
             requestedSkillIds += skillId
             return result

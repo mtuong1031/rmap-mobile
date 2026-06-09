@@ -69,6 +69,7 @@
     <string name="home_search_roadmaps_found_count">%1$d roadmaps founds</string>
     <string name="home_search_skills_found_count">%1$d skills founds</string>
     <string name="home_search_ai_suggestion_title">AI suggestion</string>
+    <string name="skill_detail_title">Skill detail</string>
 
     <string name="home_streak_label">Streak</string>
     <string name="home_learning_plan_title">Today\'s Learning Plan</string>
@@ -266,6 +267,14 @@
 
     <!-- Profile Screen -->
     <string name="profile_header_title">Your Profile</string>
+    <string name="profile_guest_header_title">Guest Profile</string>
+    <string name="profile_guest_title">You\'re browsing as a guest</string>
+    <string name="profile_guest_description">Explore public roadmap templates and preview every learning node. Sign in when you\'re ready to start learning and save your progress.</string>
+    <string name="profile_guest_benefit_progress">Save progress across roadmap nodes</string>
+    <string name="profile_guest_benefit_personalized">Create personalized learning roadmaps</string>
+    <string name="profile_guest_benefit_sync">Sync activity, streaks, and settings</string>
+    <string name="profile_guest_authenticate">Sign in or create account</string>
+    <string name="profile_guest_explore">Explore roadmap templates</string>
     <string name="profile_avatar_content_description">Profile avatar</string>
     <string name="profile_edit_avatar_content_description">Edit avatar</string>
     <string name="profile_total_experience_label">TOTAL EXPERIENCE</string>

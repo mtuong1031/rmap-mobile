@@ -8,6 +8,9 @@ import com.rmap.mobile.features.home.data.model.HomeMetricsDto
 import com.rmap.mobile.features.home.data.model.HomeNextUnlockDto
 import com.rmap.mobile.features.home.data.model.HomePaceWarningDto
 import com.rmap.mobile.features.home.data.model.HomePlanNodeDto
+import com.rmap.mobile.features.home.data.model.HomePublicTemplateDto
+import com.rmap.mobile.features.home.data.model.HomePublicTemplatesMetaDto
+import com.rmap.mobile.features.home.data.model.HomePublicTemplatesResponseDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapChapterDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapGroupDto
 import com.rmap.mobile.features.home.data.model.HomeRoadmapProgressDto
@@ -45,26 +48,17 @@ class HomeRepositoryImplTest {
         assertEquals(12.5, content.metrics.roadmapCompletionPct, 0.0)
         assertEquals("template-1", content.recommendations.single().roadmapId)
         assertEquals("WEB_DEVELOPMENT", content.categories.single().category)
-        assertEquals("trend-1", content.trendings.single().roadmapId)
+        assertEquals("template-1", content.trendings.single().roadmapId)
     }
 
     @Test
     fun `get home content tolerates nullable optional fields`() = runTest {
         val api = FakeHomeApi().apply {
-            recommendationsResponse = Response.success(
-                recommendationsDto(
-                    roadmap = templateRoadmapDto(
+            publicTemplatesResponse = Response.success(
+                publicTemplatesDto(
+                    template = publicTemplateDto(
                         description = null,
-                        estimatedWeeks = null,
-                        durationLabel = null
-                    )
-                )
-            )
-            trendingsResponse = Response.success(
-                trendingsDto(
-                    trending = trendingDto(
-                        estimatedWeeks = null,
-                        durationLabel = null
+                        estimatedWeeks = null
                     )
                 )
             )
@@ -79,9 +73,44 @@ class HomeRepositoryImplTest {
     }
 
     @Test
+    fun `get home content keeps public content when personalized dashboard fails`() = runTest {
+        val api = FakeHomeApi().apply {
+            dashboardResponse = Response.error(
+                401,
+                """{"code":40100,"message":"Authentication required"}"""
+                    .toResponseBody("application/json".toMediaType())
+            )
+        }
+        val repository = HomeRepositoryImpl(api)
+
+        val result = repository.getHomeContent()
+
+        assertTrue(result.isSuccess)
+        val content = result.getOrThrow()
+        assertTrue(content.activeRoadmaps.isEmpty())
+        assertEquals(0.0, content.metrics.roadmapCompletionPct, 0.0)
+        assertEquals("template-1", content.recommendations.single().roadmapId)
+        assertEquals("WEB_DEVELOPMENT", content.categories.single().category)
+        assertEquals("template-1", content.trendings.single().roadmapId)
+    }
+
+    @Test
+    fun `get home content skips personalized dashboard for guest`() = runTest {
+        val api = FakeHomeApi()
+        val repository = HomeRepositoryImpl(api)
+
+        val result = repository.getHomeContent(includePersonalDashboard = false)
+
+        assertTrue(result.isSuccess)
+        assertEquals(0, api.dashboardCallCount)
+        assertTrue(result.getOrThrow().activeRoadmaps.isEmpty())
+        assertEquals("template-1", result.getOrThrow().recommendations.single().roadmapId)
+    }
+
+    @Test
     fun `get home content returns failure when an endpoint fails`() = runTest {
         val api = FakeHomeApi().apply {
-            categoriesResponse = Response.error(
+            publicTemplatesResponse = Response.error(
                 500,
                 """{"code":50000,"message":"Internal error"}"""
                     .toResponseBody("application/json".toMediaType())
@@ -96,50 +125,33 @@ class HomeRepositoryImplTest {
     }
 
     @Test
-    fun `search dashboard maps roadmap and skill results`() = runTest {
+    fun `search dashboard maps matching public templates`() = runTest {
         val repository = HomeRepositoryImpl(FakeHomeApi())
 
-        val result = repository.searchDashboard(query = "full", roadmapPage = 1, skillPage = 1)
+        val result = repository.searchDashboard(query = "GraphQL", roadmapPage = 1, skillPage = 1)
 
         assertTrue(result.isSuccess)
         val search = result.getOrThrow()
-        assertEquals("full", search.query)
-        assertEquals("roadmap-search-1", search.roadmaps.data.single().roadmapId)
-        assertEquals("skill-search-1", search.skills.data.single().skillId)
-        assertEquals(true, search.roadmaps.meta.hasNextPage)
+        assertEquals("GraphQL", search.query)
+        assertEquals("template-1", search.roadmaps.data.single().roadmapId)
+        assertTrue(search.skills.data.isEmpty())
         assertEquals(false, search.skills.meta.hasNextPage)
     }
 
     @Test
-    fun `search dashboard tolerates skill result without category fields`() = runTest {
-        val api = FakeHomeApi().apply {
-            searchResponse = Response.success(
-                searchDto(
-                    skill = HomeSearchSkillDto(
-                        skillId = "skill-search-1",
-                        name = "FULL OUTER JOIN",
-                        description = "Join data",
-                        roleCategory = null,
-                        categoryLabel = null,
-                        defaultEstimatedHours = null
-                    )
-                )
-            )
-        }
-        val repository = HomeRepositoryImpl(api)
+    fun `search dashboard returns empty result when no template matches`() = runTest {
+        val repository = HomeRepositoryImpl(FakeHomeApi())
 
-        val result = repository.searchDashboard(query = "full", roadmapPage = 1, skillPage = 1)
+        val result = repository.searchDashboard(query = "No match", roadmapPage = 1, skillPage = 1)
 
         assertTrue(result.isSuccess)
-        val skill = result.getOrThrow().skills.data.single()
-        assertEquals("FULL_OUTER_JOIN", skill.roleCategory)
-        assertEquals("FULL OUTER JOIN", skill.categoryLabel)
+        assertTrue(result.getOrThrow().roadmaps.data.isEmpty())
     }
 
     @Test
     fun `search dashboard returns failure when API fails`() = runTest {
         val api = FakeHomeApi().apply {
-            searchResponse = Response.error(
+            publicTemplatesResponse = Response.error(
                 500,
                 """{"code":50000,"message":"Internal error"}"""
                     .toResponseBody("application/json".toMediaType())
@@ -155,14 +167,25 @@ class HomeRepositoryImplTest {
 }
 
 private class FakeHomeApi : HomeApi {
+    var dashboardCallCount: Int = 0
     var dashboardResponse: Response<HomeDashboardResponseDto> = Response.success(dashboardDto())
+    var publicTemplatesResponse: Response<HomePublicTemplatesResponseDto> =
+        Response.success(publicTemplatesDto())
     var recommendationsResponse: Response<HomeTemplateRecommendationsResponseDto> =
         Response.success(recommendationsDto())
     var categoriesResponse: Response<HomeTemplateCategoriesResponseDto> = Response.success(categoriesDto())
     var trendingsResponse: Response<HomeTemplateTrendingsResponseDto> = Response.success(trendingsDto())
     var searchResponse: Response<HomeDashboardSearchResponseDto> = Response.success(searchDto())
 
-    override suspend fun getDashboardHome(): Response<HomeDashboardResponseDto> = dashboardResponse
+    override suspend fun getDashboardHome(): Response<HomeDashboardResponseDto> {
+        dashboardCallCount += 1
+        return dashboardResponse
+    }
+
+    override suspend fun getPublicTemplates(
+        page: Int,
+        perPage: Int
+    ): Response<HomePublicTemplatesResponseDto> = publicTemplatesResponse
 
     override suspend fun searchDashboard(
         query: String,
@@ -177,6 +200,37 @@ private class FakeHomeApi : HomeApi {
 
     override suspend fun getTemplateTrendings(): Response<HomeTemplateTrendingsResponseDto> = trendingsResponse
 }
+
+private fun publicTemplatesDto(
+    template: HomePublicTemplateDto = publicTemplateDto()
+): HomePublicTemplatesResponseDto = HomePublicTemplatesResponseDto(
+    data = listOf(template),
+    meta = HomePublicTemplatesMetaDto(
+        page = 1,
+        perPage = 100,
+        total = 1,
+        totalPages = 1
+    )
+)
+
+private fun publicTemplateDto(
+    description: String? = "Description",
+    estimatedWeeks: Int? = 4
+): HomePublicTemplateDto = HomePublicTemplateDto(
+    deadlineDate = null,
+    description = description,
+    estimatedWeeks = estimatedWeeks,
+    generatedAt = "2026-06-01T00:00:00Z",
+    goalName = "GraphQL",
+    hoursPerDay = null,
+    id = "template-1",
+    isTemplate = true,
+    roleCategory = "WEB_DEVELOPMENT",
+    startedAt = null,
+    title = "GraphQL Roadmap",
+    updatedAt = "2026-06-01T00:00:00Z",
+    userId = null
+)
 
 private fun dashboardDto(): HomeDashboardResponseDto = HomeDashboardResponseDto(
     activeRoadmaps = listOf(

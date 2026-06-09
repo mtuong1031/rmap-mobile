@@ -16,6 +16,19 @@ import retrofit2.Response
 
 class RemoteSkillLearningRepositoryTest {
     @Test
+    fun `getSkillDetail fetches public skill without loading protected resources`() = runTest {
+        val api = FakeSkillApi()
+        val repository = newRepository(api)
+
+        val result = repository.getSkillDetail("skill-api")
+
+        assertTrue(result.isSuccess)
+        assertEquals("REST API", result.getOrThrow().name)
+        assertEquals(1, api.getSkillCallCount)
+        assertEquals(0, api.getSkillResourcesCallCount)
+    }
+
+    @Test
     fun `getSkillLearningContent fetches skill detail and resources`() = runTest {
         val api = FakeSkillApi()
         val repository = newRepository(api)

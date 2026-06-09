@@ -49,9 +49,13 @@ import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeRequir
 @Composable
 fun LearningNodeScreen(
     uiState: LearningNodeUiState,
+    topBarTitle: String,
     onBackClick: () -> Unit,
     onTakeQuizClick: () -> Unit,
     onRetryClick: () -> Unit,
+    showBottomAction: Boolean = true,
+    showLearningMetadata: Boolean = true,
+    showResources: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val uriHandler = LocalUriHandler.current
@@ -89,7 +93,10 @@ fun LearningNodeScreen(
                     verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
                 ) {
                     item {
-                        LearningNodeHeaderCard(uiState = uiState)
+                        LearningNodeHeaderCard(
+                            uiState = uiState,
+                            showLearningMetadata = showLearningMetadata
+                        )
                     }
 
                     if (uiState.prerequisites.isNotEmpty()) {
@@ -98,33 +105,37 @@ fun LearningNodeScreen(
                         }
                     }
 
-                    item {
-                        LearningResourcesSection(
-                            resources = uiState.resources,
-                            onResourceClick = { resource ->
-                                runCatching { uriHandler.openUri(resource.url) }
-                            }
-                        )
+                    if (showResources) {
+                        item {
+                            LearningResourcesSection(
+                                resources = uiState.resources,
+                                onResourceClick = { resource ->
+                                    runCatching { uriHandler.openUri(resource.url) }
+                                }
+                            )
+                        }
                     }
                 }
 
-                LearningNodeBottomAction(
-                    isQuizAvailable = uiState.isQuizAvailable,
-                    status = uiState.status,
-                    onTakeQuizClick = onTakeQuizClick,
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(
-                            start = Dimens.spacingScreenHorizontal,
-                            end = Dimens.spacingScreenHorizontal,
-                            bottom = Dimens.spacingXl
-                        )
-                )
+                if (showBottomAction) {
+                    LearningNodeBottomAction(
+                        isQuizAvailable = uiState.isQuizAvailable,
+                        status = uiState.status,
+                        onTakeQuizClick = onTakeQuizClick,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(
+                                start = Dimens.spacingScreenHorizontal,
+                                end = Dimens.spacingScreenHorizontal,
+                                bottom = Dimens.spacingXl
+                            )
+                    )
+                }
             }
         }
 
         LearningNodeTopBar(
-            title = stringResource(R.string.roadmap_learning_title),
+            title = topBarTitle,
             onBackClick = onBackClick,
             modifier = Modifier.align(Alignment.TopCenter)
         )
@@ -173,6 +184,7 @@ private fun LearningNodeTopBar(
 @Composable
 private fun LearningNodeHeaderCard(
     uiState: LearningNodeUiState,
+    showLearningMetadata: Boolean,
     modifier: Modifier = Modifier
 ) {
     RoadmapDecoratedCard(
@@ -215,28 +227,34 @@ private fun LearningNodeHeaderCard(
                     }
                 }
 
-                RoadmapPill(
-                    text = stringResource(uiState.status.labelResId()),
-                    containerColor = uiState.status.containerColor(),
-                    contentColor = uiState.status.contentColor()
-                )
+                if (showLearningMetadata) {
+                    RoadmapPill(
+                        text = stringResource(uiState.status.labelResId()),
+                        containerColor = uiState.status.containerColor(),
+                        contentColor = uiState.status.contentColor()
+                    )
+                }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RoadmapPill(
-                    text = stringResource(uiState.requirement.labelResId()),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.primary
-                )
-                uiState.estimatedHours?.let { estimatedHours ->
-                    RoadmapPill(
-                        text = stringResource(R.string.roadmap_learning_estimated_hours, estimatedHours),
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            if (showLearningMetadata || uiState.estimatedHours != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (showLearningMetadata) {
+                        RoadmapPill(
+                            text = stringResource(uiState.requirement.labelResId()),
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    uiState.estimatedHours?.let { estimatedHours ->
+                        RoadmapPill(
+                            text = stringResource(R.string.roadmap_learning_estimated_hours, estimatedHours),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
@@ -602,6 +620,7 @@ private fun LearningNodeScreenPreview() {
                 isQuizAvailable = true,
                 isLoading = false
             ),
+            topBarTitle = "Skill detail",
             onBackClick = {},
             onTakeQuizClick = {},
             onRetryClick = {}

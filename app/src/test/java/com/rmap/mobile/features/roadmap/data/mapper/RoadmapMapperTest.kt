@@ -20,6 +20,31 @@ import org.junit.Test
 
 class RoadmapMapperTest {
     @Test
+    fun `toCategories counts roadmaps in each category`() {
+        val categories = listOf(
+            RoadmapDto(
+                id = "backend-1",
+                roleCategory = "WEB_DEVELOPMENT",
+                title = "Backend Foundations"
+            ).toSummary(),
+            RoadmapDto(
+                id = "frontend-1",
+                roleCategory = "WEB_DEVELOPMENT",
+                title = "Frontend Foundations"
+            ).toSummary(),
+            RoadmapDto(
+                id = "devops-1",
+                roleCategory = "DEVOPS",
+                title = "DevOps Foundations"
+            ).toSummary()
+        ).toCategories()
+
+        assertEquals(2, categories.size)
+        assertEquals(2, categories.first { it.id == "web-development" }.roadmapCount)
+        assertEquals(1, categories.first { it.id == "devops" }.roadmapCount)
+    }
+
+    @Test
     fun `toDomain maps roadmap tree and progress statuses`() {
         val detail = roadmapWithNodes().toDomain(roadmapProgress())
 

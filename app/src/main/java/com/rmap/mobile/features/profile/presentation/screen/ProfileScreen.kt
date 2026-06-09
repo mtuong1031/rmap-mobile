@@ -20,6 +20,7 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.profile.domain.model.UserDailyActivity
 import com.rmap.mobile.features.profile.presentation.components.achievement.ProfileActivityDayUiModel
 import com.rmap.mobile.features.profile.presentation.components.achievement.WeeklyActivityCard
+import com.rmap.mobile.features.profile.presentation.components.guest.GuestProfileContent
 import com.rmap.mobile.features.profile.presentation.components.header.ProfileCard
 import com.rmap.mobile.features.profile.presentation.components.header.ProfileHeader
 import com.rmap.mobile.features.profile.presentation.components.loading.ProfileContentSkeleton
@@ -38,6 +39,8 @@ fun ProfileScreen(
     uiState: ProfileUiState,
     onEditProfile: () -> Unit,
     onSettingClick: (ProfileSettingAction) -> Unit,
+    onAuthenticateClick: () -> Unit,
+    onExploreRoadmapsClick: () -> Unit,
     onDestinationSelected: (NavBarDestination) -> Unit,
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.More
@@ -71,13 +74,35 @@ fun ProfileScreen(
             ) {
                 item {
                     ProfileHeader(
-                        title = stringResource(id = R.string.profile_header_title)
+                        title = stringResource(
+                            id = if (uiState.isAuthenticated) {
+                                R.string.profile_header_title
+                            } else {
+                                R.string.profile_guest_header_title
+                            }
+                        )
                     )
                 }
 
                 if (uiState.isLoading) {
                     item {
                         ProfileContentSkeleton()
+                    }
+                } else if (!uiState.isAuthenticated) {
+                    item {
+                        GuestProfileContent(
+                            title = stringResource(id = R.string.profile_guest_title),
+                            description = stringResource(id = R.string.profile_guest_description),
+                            benefits = listOf(
+                                stringResource(id = R.string.profile_guest_benefit_progress),
+                                stringResource(id = R.string.profile_guest_benefit_personalized),
+                                stringResource(id = R.string.profile_guest_benefit_sync)
+                            ),
+                            authenticateLabel = stringResource(id = R.string.profile_guest_authenticate),
+                            exploreLabel = stringResource(id = R.string.profile_guest_explore),
+                            onAuthenticateClick = onAuthenticateClick,
+                            onExploreClick = onExploreRoadmapsClick
+                        )
                     }
                 } else {
                     item {
@@ -200,10 +225,13 @@ private fun ProfileScreenPreview() {
                 xp = 450,
                 streak = 5,
                 certificates = 2,
+                isAuthenticated = true,
                 isLoading = false
             ),
             onEditProfile = {},
             onSettingClick = {},
+            onAuthenticateClick = {},
+            onExploreRoadmapsClick = {},
             onDestinationSelected = {}
         )
     }
@@ -219,6 +247,26 @@ private fun ProfileScreenLoadingPreview() {
             ),
             onEditProfile = {},
             onSettingClick = {},
+            onAuthenticateClick = {},
+            onExploreRoadmapsClick = {},
+            onDestinationSelected = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 844)
+@Composable
+private fun GuestProfileScreenPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        ProfileScreen(
+            uiState = ProfileUiState(
+                isAuthenticated = false,
+                isLoading = false
+            ),
+            onEditProfile = {},
+            onSettingClick = {},
+            onAuthenticateClick = {},
+            onExploreRoadmapsClick = {},
             onDestinationSelected = {}
         )
     }
