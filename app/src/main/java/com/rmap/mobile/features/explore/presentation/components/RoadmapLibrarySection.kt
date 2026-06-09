@@ -37,6 +37,7 @@ fun RoadmapLibrarySection(
     selectedCategoryName: String?,
     totalCount: Int,
     onRoadmapClick: (ExploreRoadmapCardUiModel) -> Unit,
+    isFetchingMore: Boolean,
     onSeeMoreClick: () -> Unit,
     onSeeAllClick: () -> Unit,
     onSeeLessClick: () -> Unit,
@@ -102,13 +103,17 @@ fun RoadmapLibrarySection(
                         onClick = { onRoadmapClick(roadmap) }
                     )
                 }
-            }
 
-            if (hasMore) {
-                RoadmapLibrarySeeMoreButton(
-                    remainingCount = totalCount - roadmaps.size,
-                    onClick = onSeeMoreClick
-                )
+                if (isFetchingMore) {
+                    repeat(3) {
+                        ExploreRoadmapRowSkeleton()
+                    }
+                } else if (hasMore) {
+                    RoadmapLibrarySeeMoreButton(
+                        remainingCount = totalCount - roadmaps.size,
+                        onClick = onSeeMoreClick
+                    )
+                }
             }
         }
     }

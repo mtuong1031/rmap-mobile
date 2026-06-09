@@ -23,7 +23,7 @@ import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.components.ExploreCategorySection
 import com.rmap.mobile.features.explore.presentation.components.ExploreContentSkeleton
-import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBar
+import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBarSkeleton
 import com.rmap.mobile.features.explore.presentation.components.RoadmapLibrarySection
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
@@ -90,9 +90,15 @@ fun ExploreScreen(
                         if (uiState.isLoading) {
                             ExploreSearchBarSkeleton()
                         } else {
-                            ExploreSearchBar(
+                            RMapSearchBar(
                                 query = uiState.searchQuery,
-                                onQueryChange = onSearchQueryChange
+                                onQueryChange = onSearchQueryChange,
+                                placeholder = stringResource(R.string.explore_search_placeholder),
+                                height = Dimens.exploreSearchBarHeight,
+                                contentPadding = PaddingValues(
+                                    start = Dimens.spacingLg,
+                                    end = Dimens.spacingLg
+                                )
                             )
                         }
                     }
@@ -116,6 +122,7 @@ fun ExploreScreen(
                             roadmaps = uiState.libraryRoadmaps,
                             selectedCategoryName = selectedCategoryName,
                             totalCount = uiState.totalLibraryCount,
+                            isFetchingMore = uiState.isFetchingMoreRoadmaps,
                             onRoadmapClick = onRoadmapClick,
                             onSeeMoreClick = onSeeMoreRoadmapsClick,
                             onSeeAllClick = onSeeAllRoadmapsClick,
@@ -164,9 +171,15 @@ private fun ExploreScreenLoadingPreview() {
 private fun SearchBarPreview() {
     RMapTheme {
         Box(modifier = Modifier.padding(Dimens.spacingLg)) {
-            ExploreSearchBar(
+            RMapSearchBar(
                 query = "",
-                onQueryChange = {}
+                onQueryChange = {},
+                placeholder = stringResource(R.string.explore_search_placeholder),
+                height = Dimens.exploreSearchBarHeight,
+                contentPadding = PaddingValues(
+                    start = Dimens.spacingLg,
+                    end = Dimens.spacingLg
+                )
             )
         }
     }

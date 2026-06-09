@@ -31,7 +31,7 @@ fun HomeSearchSectionHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = title.uppercase(),
+            text = title,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
@@ -46,7 +46,7 @@ fun HomeSearchSectionHeader(
         when {
             actionText != null && onActionClick != null -> {
                 Text(
-                    text = actionText.uppercase(),
+                    text = actionText,
                     modifier = Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,

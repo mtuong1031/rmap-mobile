@@ -229,3 +229,16 @@ data class PaginationMetaDto(
     @SerializedName(value = "per_page", alternate = ["perPage"]) val perPage: Int? = null,
     @SerializedName(value = "total_pages", alternate = ["totalPages"]) val totalPages: Int? = null
 )
+
+data class TemplateCategoryDto(
+    @SerializedName("category") val category: String,
+    @SerializedName("label") val label: String,
+    @SerializedName("templatesCount") val templatesCount: Int,
+    @SerializedName("shortLabel") val shortLabel: String = label
+)
+
+data class TemplateCategoriesResponseDto(
+    @SerializedName("total") val total: Int,
+    @SerializedName("categories") val categories: List<TemplateCategoryDto>
+)
+

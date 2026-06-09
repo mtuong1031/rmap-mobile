@@ -35,18 +35,21 @@ class RoadmapLearningViewModel(
     private var lastRequestedNodeId: String = ""
     private var lastRequestedSkillId: String = ""
     private var lastRequestedCompleted: Boolean = false
+    private var lastRequestedGroupTitle: String? = null
 
     fun loadLearningContent(
         roadmapId: String,
         nodeId: String,
         skillId: String,
-        isCompleted: Boolean
+        isCompleted: Boolean,
+        groupTitle: String? = null
     ) {
         loadLearningContent(
             roadmapId = roadmapId,
             nodeId = nodeId,
             skillId = skillId,
             isCompleted = isCompleted,
+            groupTitle = groupTitle,
             forceRefresh = false
         )
     }
@@ -57,6 +60,7 @@ class RoadmapLearningViewModel(
             nodeId = lastRequestedNodeId.ifBlank { _uiState.value.nodeId },
             skillId = lastRequestedSkillId.ifBlank { _uiState.value.skillId },
             isCompleted = lastRequestedCompleted || _uiState.value.isCompleted,
+            groupTitle = lastRequestedGroupTitle,
             forceRefresh = true
         )
     }
@@ -67,6 +71,7 @@ class RoadmapLearningViewModel(
             nodeId = lastRequestedNodeId.ifBlank { _uiState.value.nodeId },
             skillId = lastRequestedSkillId.ifBlank { _uiState.value.skillId },
             isCompleted = lastRequestedCompleted || _uiState.value.isCompleted,
+            groupTitle = lastRequestedGroupTitle,
             forceRefresh = true
         )
     }
@@ -153,6 +158,7 @@ class RoadmapLearningViewModel(
         nodeId: String,
         skillId: String,
         isCompleted: Boolean,
+        groupTitle: String?,
         forceRefresh: Boolean
     ) {
         val normalizedRoadmapId = roadmapId.trim()
@@ -163,6 +169,7 @@ class RoadmapLearningViewModel(
         lastRequestedNodeId = normalizedNodeId
         lastRequestedSkillId = normalizedSkillId
         lastRequestedCompleted = isCompleted
+        lastRequestedGroupTitle = groupTitle
 
         if (normalizedRoadmapId.isBlank() || normalizedNodeId.isBlank() || normalizedSkillId.isBlank()) {
             _uiState.update {
@@ -214,7 +221,9 @@ class RoadmapLearningViewModel(
                             nodeId = normalizedNodeId,
                             skillId = normalizedSkillId,
                             isCompleted = lastRequestedCompleted
-                        )
+                        ).let { state ->
+                            if (!groupTitle.isNullOrBlank()) state.copy(nodeTitle = groupTitle) else state
+                        }
                     }
                 }.onFailure { error ->
                     val skillContent = if (error.isNotFound()) {
@@ -239,7 +248,9 @@ class RoadmapLearningViewModel(
                                 nodeId = normalizedNodeId,
                                 skillId = normalizedSkillId,
                                 isCompleted = lastRequestedCompleted
-                            )
+                            ).let { state ->
+                                if (!groupTitle.isNullOrBlank()) state.copy(nodeTitle = groupTitle) else state
+                            }
                         }
                     } else {
                         _uiState.update {

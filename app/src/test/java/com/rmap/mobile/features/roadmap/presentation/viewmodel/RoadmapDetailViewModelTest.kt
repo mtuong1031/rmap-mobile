@@ -2,11 +2,6 @@ package com.rmap.mobile.features.roadmap.presentation.viewmodel
 
 import com.rmap.mobile.MainDispatcherRule
 import com.rmap.mobile.R
-import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmark
-import com.rmap.mobile.features.bookmarks.domain.model.RoadmapBookmarkSnapshot
-import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmark
-import com.rmap.mobile.features.bookmarks.domain.model.SkillBookmarkSnapshot
-import com.rmap.mobile.features.bookmarks.domain.repository.BookmarkRepository
 import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
@@ -47,8 +42,7 @@ class RoadmapDetailViewModelTest {
     fun `loadRoadmap success updates detail state`() {
         val repository = FakeRoadmapRepository()
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -70,8 +64,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(notStartedDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -88,8 +81,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(notStartedDetail.copy(hasStartedLearning = true))
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -106,8 +98,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(templateResourceDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -124,8 +115,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(resourcesOnlyDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -142,8 +132,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(notStartedDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
         viewModel.loadRoadmap("roadmap-1")
 
@@ -161,7 +150,8 @@ class RoadmapDetailViewModelTest {
                 roadmapId = "roadmap-1",
                 nodeId = "node-api",
                 skillId = "skill-api",
-                isCompleted = false
+                isCompleted = false,
+                groupTitle = "API Foundations"
             ),
             event.await()
         )
@@ -174,8 +164,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(notStartedDetail.copy(isTemplate = true))
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
         viewModel.loadRoadmap("roadmap-1")
 
@@ -193,7 +182,8 @@ class RoadmapDetailViewModelTest {
                 roadmapId = "roadmap-1",
                 nodeId = "node-api",
                 skillId = "skill-api",
-                isCompleted = false
+                isCompleted = false,
+                groupTitle = "API Foundations"
             ),
             event.await()
         )
@@ -209,8 +199,7 @@ class RoadmapDetailViewModelTest {
             startResult = Result.failure(IllegalStateException(failureMessage))
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
         viewModel.loadRoadmap("roadmap-1")
 
@@ -229,8 +218,7 @@ class RoadmapDetailViewModelTest {
     fun `loadRoadmap with blank id shows invalid id error without repository call`() {
         val repository = FakeRoadmapRepository()
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap(" ")
@@ -247,8 +235,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.failure(IllegalStateException("raw server error"))
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("missing")
@@ -265,8 +252,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.failure(IllegalStateException("raw server error"))
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -281,8 +267,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(testDetail.copy(sections = emptyList(), totalLessons = 0))
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -300,8 +285,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(orderedMilestoneDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
 
         viewModel.loadRoadmap("roadmap-1")
@@ -340,8 +324,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(orderedMilestoneDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
         viewModel.loadRoadmap("roadmap-1")
         val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
@@ -359,8 +342,7 @@ class RoadmapDetailViewModelTest {
     fun `onNodeActionClick with in-progress node navigates to learning without progress update`() = runTest {
         val repository = FakeRoadmapRepository()
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
         viewModel.loadRoadmap("roadmap-1")
         val node = viewModel.uiState.value.groups.first().nodes.first()
@@ -376,7 +358,8 @@ class RoadmapDetailViewModelTest {
                 roadmapId = "roadmap-1",
                 nodeId = "node-api",
                 skillId = "skill-api",
-                isCompleted = false
+                isCompleted = false,
+                groupTitle = "API Foundations"
             ),
             event.await()
         )
@@ -390,8 +373,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(notStartedDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
         viewModel.loadRoadmap("roadmap-1")
         val node = viewModel.uiState.value.groups.first().nodes.first()
@@ -410,7 +392,8 @@ class RoadmapDetailViewModelTest {
                 roadmapId = "roadmap-1",
                 nodeId = "node-api",
                 skillId = "skill-api",
-                isCompleted = false
+                isCompleted = false,
+                groupTitle = "API Foundations"
             ),
             event.await()
         )
@@ -424,8 +407,7 @@ class RoadmapDetailViewModelTest {
             detailResult = Result.success(lockedDetail)
         )
         val viewModel = RoadmapDetailViewModel(
-            repository = repository,
-            bookmarkRepository = FakeBookmarkRepository()
+            repository = repository
         )
         viewModel.loadRoadmap("roadmap-1")
         val node = viewModel.uiState.value.groups.first().nodes.first()
@@ -438,7 +420,8 @@ class RoadmapDetailViewModelTest {
                 roadmapId = "roadmap-1",
                 nodeId = "node-api",
                 skillId = "skill-api",
-                isCompleted = false
+                isCompleted = false,
+                groupTitle = "API Foundations"
             ),
             event.await()
         )
@@ -476,8 +459,13 @@ class RoadmapDetailViewModelTest {
             return Result.success(emptyList())
         }
 
-        override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
-            return Result.success(emptyList())
+        override suspend fun searchRoadmaps(
+            query: String,
+            categoryId: String?,
+            page: Int,
+            perPage: Int
+        ): Result<Pair<List<RoadmapSummary>, Int>> {
+            return Result.success(Pair(emptyList(), 0))
         }
 
         override suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail> {
@@ -579,58 +567,7 @@ class RoadmapDetailViewModelTest {
         val status: LearningStatus
     )
 
-    private class FakeBookmarkRepository : BookmarkRepository {
-        override fun observeSavedRoadmaps(): Flow<List<RoadmapBookmark>> {
-            return flowOf(emptyList())
-        }
 
-        override fun observeSavedSkills(): Flow<List<SkillBookmark>> {
-            return flowOf(emptyList())
-        }
-
-        override suspend fun getSavedRoadmaps(): Result<List<RoadmapBookmark>> {
-            return Result.success(emptyList())
-        }
-
-        override suspend fun getSavedSkills(): Result<List<SkillBookmark>> {
-            return Result.success(emptyList())
-        }
-
-        override suspend fun saveRoadmap(roadmapId: String): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun saveRoadmap(snapshot: RoadmapBookmarkSnapshot): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun deleteRoadmap(roadmapId: String): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun isRoadmapSaved(roadmapId: String): Result<Boolean> {
-            return Result.success(false)
-        }
-
-        override suspend fun saveSkill(
-            skillId: String,
-            roadmapId: String
-        ): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun saveSkill(snapshot: SkillBookmarkSnapshot): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun deleteSkill(skillId: String): Result<Unit> {
-            return Result.success(Unit)
-        }
-
-        override suspend fun isSkillSaved(skillId: String): Result<Boolean> {
-            return Result.success(false)
-        }
-    }
 
     private companion object {
         val testDetail = RoadmapDetail(

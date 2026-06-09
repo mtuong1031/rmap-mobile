@@ -37,7 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.RMapTextInput
+import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
@@ -57,16 +57,9 @@ fun RoadmapLocalSearchSection(
     onClearClick: () -> Unit = { onQueryChange("") },
     inputFocusRequester: FocusRequester? = null
 ) {
-    val placeholderColor = OnSurfacePlaceholderLight
     val isSearchScreenMode = mode != RoadmapLocalSearchMode.Inline
-    val showSearchIcon = mode != RoadmapLocalSearchMode.Typing
     val showFilterRow = mode != RoadmapLocalSearchMode.Typing && quickFilters.isNotEmpty()
     val textInputHeight = if (isSearchScreenMode) Dimens.controlLg else Dimens.controlXl
-    val inputContainerColor = if (isSearchScreenMode) {
-        MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.78f)
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -87,14 +80,11 @@ fun RoadmapLocalSearchSection(
                 )
             }
 
-            RMapTextInput(
-                value = query,
-                onValueChange = onQueryChange,
+            RMapSearchBar(
+                query = query,
+                onQueryChange = onQueryChange,
                 modifier = Modifier
                     .weight(1f)
-                    .then(
-                        inputFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
-                    )
                     .onFocusChanged { focusState ->
                         if (focusState.isFocused) {
                             onSearchFocusChange(true)
@@ -102,6 +92,7 @@ fun RoadmapLocalSearchSection(
                             onSearchFocusChange(false)
                         }
                     },
+                focusRequester = inputFocusRequester,
                 placeholder = stringResource(
                     if (isSearchScreenMode) {
                         R.string.roadmap_search_placeholder
@@ -111,39 +102,7 @@ fun RoadmapLocalSearchSection(
                     roadmapTitle
                 ),
                 height = textInputHeight,
-                textStyle = MaterialTheme.typography.bodyMedium,
-                colors = RMapTextInputDefaults.colors(
-                    containerColor = inputContainerColor,
-                    placeholderColor = placeholderColor,
-                    borderColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                ),
-                contentPadding = PaddingValues(
-                    start = if (showSearchIcon) Dimens.spacingLg else Dimens.spacingXl,
-                    end = Dimens.spacingMd
-                ),
-                leadingIconSpacing = Dimens.spacingSm,
-                border = if (isSearchScreenMode) null else RMapTextInputDefaults.border(
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                ),
-                leadingIcon = if (showSearchIcon) {
-                    {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = null,
-                            tint = placeholderColor,
-                            modifier = Modifier.size(Dimens.iconMd)
-                        )
-                    }
-                } else {
-                    null
-                },
-                trailingIcon = if (query.isNotEmpty()) {
-                    {
-                        RoadmapSearchClearButton(onClick = onClearClick)
-                    }
-                } else {
-                    null
-                }
+                textStyle = MaterialTheme.typography.bodyMedium
             )
         }
 

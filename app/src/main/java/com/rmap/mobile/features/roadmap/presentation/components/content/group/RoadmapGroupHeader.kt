@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapLinearProgress
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapLockedText
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
@@ -80,12 +75,6 @@ internal fun RoadmapGroupHeader(
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
-                )
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = null,
-                    tint = OnSurfacePlaceholderLight,
-                    modifier = Modifier.size(Dimens.iconXs)
                 )
             }
 

@@ -189,7 +189,9 @@ data class SkillLearningContent(
     val skill: SkillDetail,
     val resources: List<SkillResource>,
     val status: LearningStatus? = null,
-    val quizPassed: Boolean = false
+    val quizPassed: Boolean = false,
+    val nodeTitle: String? = null,
+    val requirement: LearningRequirement? = null
 ) {
     val isCompleted: Boolean
         get() = status == LearningStatus.Completed
@@ -212,6 +214,7 @@ data class SkillResource(
     val title: String,
     val url: String,
     val platform: SkillResourcePlatform,
+    val rawPlatform: String?,
     val isFree: Boolean,
     val levelTag: SkillLevelTag?
 )
@@ -220,6 +223,8 @@ enum class SkillResourcePlatform {
     Udemy,
     Coursera,
     Youtube,
+    Course,
+    Article,
     Other
 }
 

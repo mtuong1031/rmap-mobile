@@ -19,7 +19,7 @@ interface RoadmapRepository {
     suspend fun getTrendingRoadmaps(): Result<List<RoadmapSummary>>
     suspend fun getExploreCategories(): Result<List<RoadmapCategory>>
     suspend fun getRecommendedRoadmaps(): Result<List<RoadmapSummary>>
-    suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>>
+    suspend fun searchRoadmaps(query: String, categoryId: String? = null, page: Int = 1, perPage: Int = 20): Result<Pair<List<RoadmapSummary>, Int>>
     suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail>
     suspend fun getLearningNode(roadmapId: String, nodeId: String): Result<LearningNodeDetail>
     suspend fun getMilestoneDetail(roadmapId: String, milestoneId: String): Result<MilestoneDetail>

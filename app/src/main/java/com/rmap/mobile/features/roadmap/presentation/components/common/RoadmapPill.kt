@@ -29,13 +29,12 @@ internal fun RoadmapPill(
     dotColor: Color? = null,
     leadingIcon: (@Composable () -> Unit)? = null
 ) {
-    val shape = if (dotColor != null) AppShapes.small else AppShapes.chip
     Row(
         modifier = modifier
-            .background(containerColor, shape)
+            .background(containerColor, AppShapes.chip)
             .then(
                 if (borderColor != null) {
-                    Modifier.border(Dimens.borderThin, borderColor, shape)
+                    Modifier.border(Dimens.borderThin, borderColor, AppShapes.chip)
                 } else {
                     Modifier
                 }

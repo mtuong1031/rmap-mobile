@@ -141,16 +141,17 @@ class FakeRoadmapRepository : RoadmapRepository {
     override suspend fun getRecommendedRoadmaps(): Result<List<RoadmapSummary>> =
         Result.success(roadmaps.filter { it.recommendationBadge != null })
 
-    override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
-        val normalizedQuery = query.trim()
-        val result = if (normalizedQuery.isBlank()) {
-            roadmaps
-        } else {
-            roadmaps.filter { roadmap ->
-                roadmap.title.contains(normalizedQuery, ignoreCase = true)
-            }
+    override suspend fun searchRoadmaps(query: String, categoryId: String?, page: Int, perPage: Int): Result<Pair<List<RoadmapSummary>, Int>> {
+        var result = roadmaps
+        if (query.isNotBlank()) {
+            result = result.filter { it.title.contains(query, ignoreCase = true) }
         }
-        return Result.success(result)
+        if (categoryId != null) {
+            result = result.filter { it.categoryId == categoryId }
+        }
+        val startIndex = ((page - 1) * perPage).coerceAtMost(result.size)
+        val endIndex = (startIndex + perPage).coerceAtMost(result.size)
+        return Result.success(Pair(result.subList(startIndex, endIndex), result.size))
     }
 
     override suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail> {

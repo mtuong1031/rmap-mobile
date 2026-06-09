@@ -45,8 +45,7 @@ import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
-import com.rmap.mobile.core.ui.components.RMapTextInput
-import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
+import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -90,18 +89,11 @@ fun AiRoadmapLibraryContent(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)
     ) {
-        RMapTextInput(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
+        RMapSearchBar(
+            query = searchQuery,
+            onQueryChange = onSearchQueryChange,
             placeholder = searchPlaceholder,
-            textStyle = MaterialTheme.typography.bodyMedium,
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Search,
-                    contentDescription = null,
-                    tint = RMapTextInputDefaults.colors().placeholderColor
-                )
-            }
+            textStyle = MaterialTheme.typography.bodyMedium
         )
 
         if (roadmaps.isEmpty()) {

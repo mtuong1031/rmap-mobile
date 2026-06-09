@@ -490,7 +490,8 @@ fun RMapNavHost(navController: NavHostController) {
                                         roadmapId = event.roadmapId,
                                         nodeId = event.nodeId,
                                         skillId = event.skillId,
-                                        isCompleted = event.isCompleted
+                                        isCompleted = event.isCompleted,
+                                        groupTitle = event.groupTitle
                                     )
                                 )
                             }
@@ -584,6 +585,7 @@ fun RMapNavHost(navController: NavHostController) {
                 val nodeId = backStackEntry.arguments?.getString(AppRoutes.NODE_ID_ARG).orEmpty()
                 val skillId = backStackEntry.arguments?.getString(AppRoutes.SKILL_ID_ARG).orEmpty()
                 val isCompleted = backStackEntry.arguments?.getBoolean(AppRoutes.NODE_COMPLETED_ARG) == true
+                val groupTitle = backStackEntry.arguments?.getString(AppRoutes.GROUP_TITLE_ARG)
                 val shouldRefreshLearning by remember(backStackEntry) {
                     backStackEntry.savedStateHandle.getStateFlow(
                         AppRoutes.LEARNING_NODE_REFRESH_RESULT,
@@ -614,12 +616,13 @@ fun RMapNavHost(navController: NavHostController) {
                     }
                 }
 
-                LaunchedEffect(roadmapId, nodeId, skillId, isCompleted) {
+                LaunchedEffect(roadmapId, nodeId, skillId, isCompleted, groupTitle) {
                     viewModel.loadLearningContent(
                         roadmapId = roadmapId,
                         nodeId = nodeId,
                         skillId = skillId,
-                        isCompleted = isCompleted
+                        isCompleted = isCompleted,
+                        groupTitle = groupTitle
                     )
                 }
 

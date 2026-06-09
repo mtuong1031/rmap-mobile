@@ -9,5 +9,6 @@ data class ExploreUiState(
     val totalLibraryCount: Int = 0,
     val libraryVisibleCount: Int = 10,
     val isLoading: Boolean = true,
+    val isFetchingMoreRoadmaps: Boolean = false,
     val errorMessage: String? = null,
 )

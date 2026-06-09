@@ -21,6 +21,8 @@ import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizResponseDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoryDto
+import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoriesResponseDto
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.SkillResourcePlatform
 import kotlinx.coroutines.test.runTest
@@ -213,9 +215,13 @@ class RemoteRoadmapRepositoryTest {
         assertEquals("REST API", content.skill.name)
         assertEquals(LearningStatus.InProgress, content.status)
         assertTrue(content.quizPassed)
-        assertEquals(1, content.resources.size)
-        assertEquals("HTTP course", content.resources.single().title)
-        assertEquals(SkillResourcePlatform.Youtube, content.resources.single().platform)
+        assertEquals(3, content.resources.size)
+        assertEquals("HTTP video", content.resources[0].title)
+        assertEquals(SkillResourcePlatform.Youtube, content.resources[0].platform)
+        assertEquals("HTTP course", content.resources[1].title)
+        assertEquals(SkillResourcePlatform.Course, content.resources[1].platform)
+        assertEquals("HTTP article", content.resources[2].title)
+        assertEquals(SkillResourcePlatform.Article, content.resources[2].platform)
         assertEquals(1, api.getRoadmapNodeDetailCallCount)
         assertEquals("roadmap-1", api.lastNodeDetailRoadmapId)
         assertEquals("node-api", api.lastNodeDetailNodeId)
@@ -290,6 +296,40 @@ class RemoteRoadmapRepositoryTest {
         assertEquals(0, api.getRoadmapProgressCallCount)
     }
 
+    @Test
+    fun `getExploreCategories fetches and maps from listTemplateCategories endpoint`() = runTest {
+        val api = FakeRoadmapApi().apply {
+            templateCategoriesResponse = Response.success(
+                TemplateCategoriesResponseDto(
+                    total = 1,
+                    categories = listOf(
+                        TemplateCategoryDto(
+                            category = "WEB_DEVELOPMENT",
+                            label = "Web Development",
+                            templatesCount = 9,
+                            shortLabel = "Web"
+                        )
+                    )
+                )
+            )
+        }
+        val repository = newRepository(api)
+
+        val result = repository.getExploreCategories()
+
+        assertTrue(result.isSuccess)
+        val categories = result.getOrThrow()
+        assertEquals(1, categories.size)
+        val category = categories.single()
+        assertEquals("WEB_DEVELOPMENT", category.id)
+        assertEquals("Web Development", category.name)
+        assertEquals("Web", category.shortName)
+        assertEquals(9, category.roadmapCount)
+        assertEquals(1, api.listTemplateCategoriesCallCount)
+        assertEquals(0, api.listTemplatesCallCount)
+    }
+
+
     private fun newRepository(api: FakeRoadmapApi): RemoteRoadmapRepository {
         return RemoteRoadmapRepository(
             roadmapApi = api,
@@ -309,6 +349,7 @@ class RemoteRoadmapRepositoryTest {
         var listTemplatesCallCount = 0
         var getTemplateCallCount = 0
         var getTemplateNodesCallCount = 0
+        var listTemplateCategoriesCallCount = 0
         var lastStartedRoadmapId: String? = null
         var lastNodeDetailRoadmapId: String? = null
         var lastNodeDetailNodeId: String? = null
@@ -335,6 +376,9 @@ class RemoteRoadmapRepositoryTest {
             Response.success(RoadmapsResponseDto(data = listOf(testRoadmap)))
         var templateResponse: Response<RoadmapDto> = Response.success(testRoadmap.copy(isTemplate = true))
         var templateNodesResponse: Response<RoadmapNodesResponseDto> = Response.success(testNodes)
+        var templateCategoriesResponse: Response<TemplateCategoriesResponseDto> =
+            Response.success(TemplateCategoriesResponseDto(total = 0, categories = emptyList()))
+
 
         override suspend fun listUserRoadmaps(
             page: Int?,
@@ -437,6 +481,11 @@ class RemoteRoadmapRepositoryTest {
             return templateResponse
         }
 
+        override suspend fun listTemplateCategories(): Response<TemplateCategoriesResponseDto> {
+            listTemplateCategoriesCallCount++
+            return templateCategoriesResponse
+        }
+
         override suspend fun getTemplateNodes(templateId: String): Response<RoadmapNodesResponseDto> {
             getTemplateNodesCallCount++
             return templateNodesResponse
@@ -525,13 +574,31 @@ class RemoteRoadmapRepositoryTest {
                     """
                     [
                       {
-                        "id": "resource-http",
+                        "id": "resource-video",
+                        "skill_id": "skill-api",
+                        "title": "HTTP video",
+                        "url": "https://example.com/http-video",
+                        "resourceType": "YOUTUBE",
+                        "isFree": true,
+                        "levelTag": "fresher"
+                      },
+                      {
+                        "id": "resource-course",
                         "skill_id": "skill-api",
                         "title": "HTTP course",
                         "url": "https://example.com/http",
-                        "platform": "youtube",
+                        "resourceType": "COURSE",
                         "is_free": true,
                         "level_tag": "fresher"
+                      },
+                      {
+                        "id": "resource-article",
+                        "skillId": "skill-api",
+                        "title": "HTTP article",
+                        "url": "https://example.com/http-article",
+                        "resourceType": "ARTICLE",
+                        "isFree": true,
+                        "levelTag": "fresher"
                       }
                     ]
                     """.trimIndent()

@@ -36,9 +36,9 @@
     <string name="coming_soon_message">This action is coming soon.</string>
     <string name="separator_bullet">•</string>
     <string name="action_cancel">Cancel</string>
-    <string name="action_see_all">SEE ALL</string>
-    <string name="action_see_less">SEE LESS</string>
-    <string name="action_see_more">SEE MORE</string>
+    <string name="action_see_all">See all</string>
+    <string name="action_see_less">See less</string>
+    <string name="action_see_more">See more</string>
     <string name="action_explore_roadmaps">Explore roadmaps</string>
     <string name="action_retry">Retry</string>
 
@@ -51,7 +51,7 @@
 
     <!-- Home Screen -->
     <string name="roadmap_trending_title">Trending Roadmaps</string>
-    <string name="roadmap_see_all">SEE ALL</string>
+    <string name="roadmap_see_all">See all</string>
     <string name="roadmap_nodes_count">%1$d nodes</string>
 
     <string name="home_greeting">Good morning, %1$s</string>
@@ -64,9 +64,9 @@
     <string name="home_heading_next_skill">Ready for your next skill?</string>
     <string name="home_search_placeholder">Search roadmap, skill, or role...</string>
     <string name="home_search_screen_placeholder">Search roadmap, lessons...</string>
-    <string name="home_search_recent_title">Recent searches</string>
-    <string name="home_search_clear_all">Clear all</string>
-    <string name="home_search_popular_title">Popular searches</string>
+    <string name="home_search_recent_title">Recent Searches</string>
+    <string name="home_search_clear_all">Clear All</string>
+    <string name="home_search_popular_title">Popular Searches</string>
     <string name="home_search_roadmaps_title">Roadmaps</string>
     <string name="home_search_skills_title">Skills</string>
     <string name="home_search_roadmaps_found_count">%1$d roadmaps founds</string>
@@ -253,7 +253,7 @@
     <string name="explore_roadmap_library_filtered_subtitle">Filtered by %1$s</string>
     <string name="explore_roadmap_library_empty">No roadmaps match the current filters.</string>
     <string name="explore_roadmap_library_see_more">See more %1$d</string>
-    <string name="explore_roadmap_library_see_less">SEE LESS</string>
+    <string name="explore_roadmap_library_see_less">See less</string>
     <string name="explore_category_roadmap_count">%1$d paths</string>
     <string name="explore_category_frontend">Frontend</string>
     <string name="explore_category_backend">Backend</string>
@@ -449,7 +449,7 @@
     <string name="roadmap_detail_ai_tip_suffix"> before moving to %1$s.</string>
 
     <!-- Roadmap Learning Node Screen -->
-    <string name="roadmap_learning_title">Learning node</string>
+    <string name="roadmap_learning_title">Learning lesson</string>
     <string name="roadmap_learning_error_invalid_args">This learning link is invalid.</string>
     <string name="roadmap_learning_error_load_failed">Unable to load this skill. Please try again.</string>
     <string name="roadmap_learning_empty_description">No skill details are available yet.</string>
@@ -470,6 +470,8 @@
     <string name="roadmap_learning_platform_udemy">Udemy</string>
     <string name="roadmap_learning_platform_coursera">Coursera</string>
     <string name="roadmap_learning_platform_youtube">YouTube</string>
+    <string name="roadmap_learning_platform_course">Course</string>
+    <string name="roadmap_learning_platform_article">Article</string>
     <string name="roadmap_learning_platform_other">Other</string>
     <string name="roadmap_learning_level_fresher">Fresher</string>
     <string name="roadmap_learning_level_junior">Junior</string>
@@ -489,7 +491,7 @@
     <string name="roadmap_learning_error_fallback">Unable to load this learning node. Please try again.</string>
 
     <!-- Roadmap Milestone Screen -->
-    <string name="roadmap_milestone_screen_title">Milestone</string>
+    <string name="roadmap_milestone_screen_title">Milestone project</string>
     <string name="roadmap_milestone_error_invalid_args">This milestone link is invalid.</string>
     <string name="roadmap_milestone_error_load_failed">Unable to load this milestone. Please try again.</string>
     <string name="roadmap_milestone_error_submit_failed">Unable to submit this milestone. Please try again.</string>
@@ -502,6 +504,9 @@
     <string name="roadmap_milestone_hide_details">Hide details</string>
     <string name="roadmap_milestone_pass_threshold">%1$d%% pass threshold</string>
     <string name="roadmap_milestone_attempt_format">Attempt %1$d</string>
+    <string name="roadmap_milestone_attempt">Attempt</string>
+    <string name="roadmap_milestone_score">Score</string>
+    <string name="roadmap_milestone_tests_passed">Tests Passed</string>
     <string name="roadmap_milestone_raw_output_log">Raw output log</string>
     <string name="roadmap_milestone_copy_output_log">Copy output log</string>
     <string name="roadmap_milestone_submission_score">%1$d%% pass rate - %2$d/%3$d tests passed</string>

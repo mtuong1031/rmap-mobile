@@ -201,12 +201,17 @@ class RoadmapDetailViewModel(
         node: RoadmapNodeUiModel,
         isCompleted: Boolean
     ) {
+        val groupTitle = _uiState.value.groups.find { group -> 
+            group.nodes.any { it.id == node.id } 
+        }?.title
+
         _events.emit(
             RoadmapDetailEvent.NavigateToLearning(
                 roadmapId = roadmapId,
                 nodeId = node.id,
                 skillId = node.skillId,
-                isCompleted = isCompleted
+                isCompleted = isCompleted,
+                groupTitle = groupTitle
             )
         )
     }
@@ -280,7 +285,8 @@ sealed class RoadmapDetailEvent {
         val roadmapId: String,
         val nodeId: String,
         val skillId: String,
-        val isCompleted: Boolean
+        val isCompleted: Boolean,
+        val groupTitle: String? = null
     ) : RoadmapDetailEvent()
 }
 
