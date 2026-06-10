@@ -47,18 +47,19 @@ fun RoadmapGroupCard(
         }
     }
 
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
     RoadmapDecoratedCard(
         modifier = modifier,
         shape = AppShapes.searchBar,
-        containerColor = if (isLocked) {
-            MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.8f)
-        } else {
-            MaterialTheme.colorScheme.surface
+        containerColor = when {
+            isLocked -> MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.8f)
+            isDarkTheme -> MaterialTheme.colorScheme.surfaceContainer
+            else -> MaterialTheme.colorScheme.surface
         },
-        borderColor = if (isLocked) {
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.8f)
-        } else {
-            MaterialTheme.colorScheme.outlineVariant
+        borderColor = when {
+            isLocked -> MaterialTheme.colorScheme.outline.copy(alpha = 0.8f)
+            isDarkTheme -> MaterialTheme.colorScheme.outline
+            else -> MaterialTheme.colorScheme.outlineVariant
         },
         shadow = !isLocked
     ) {

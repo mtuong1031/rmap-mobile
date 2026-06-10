@@ -60,6 +60,7 @@ fun RoadmapNodeItem(
     onActionClick: () -> Unit,
     showInlineAction: Boolean = true,
 ) {
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
     val hasInlineAction = showInlineAction && node.status == RoadmapNodeStatus.NotStarted
     val isRowClickable = node.skillId.isNotBlank()
     val interactionSource = remember { MutableInteractionSource() }
@@ -78,6 +79,27 @@ fun RoadmapNodeItem(
             .then(clickModifier)
             .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingMd)
+
+    val titleColor = when {
+        isDarkTheme && node.status != RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.onSurface
+        isDarkTheme -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+        else -> when (node.status) {
+            RoadmapNodeStatus.InProgress -> roadmapDeepBlue
+            RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
+            RoadmapNodeStatus.Completed,
+            RoadmapNodeStatus.NotStarted -> roadmapInk
+        }
+    }
+
+    val subTextColor = when {
+        isDarkTheme && node.status != RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.onSurfaceVariant
+        isDarkTheme -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+        else -> if (node.status == RoadmapNodeStatus.Locked) {
+            OnSurfacePlaceholderLight
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    }
 
     Column {
         Row(
@@ -103,12 +125,7 @@ fun RoadmapNodeItem(
                             text = node.title,
                             modifier = Modifier.weight(1f),
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = when (node.status) {
-                                    RoadmapNodeStatus.InProgress -> roadmapDeepBlue
-                                    RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
-                                    RoadmapNodeStatus.Completed,
-                                    RoadmapNodeStatus.NotStarted -> roadmapInk
-                                },
+                                color = titleColor,
                                 fontWeight = FontWeight.SemiBold
                             ),
                             maxLines = 3,
@@ -121,11 +138,7 @@ fun RoadmapNodeItem(
                 Text(
                     text = formattedString(node.descriptionResId, node.descriptionArgs),
                     style = MaterialTheme.typography.labelMedium.copy(
-                        color = if (node.status == RoadmapNodeStatus.Locked) {
-                            OnSurfacePlaceholderLight
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                        color = subTextColor
                     ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -149,7 +162,13 @@ fun RoadmapNodeItem(
                     .fillMaxWidth()
                     .padding(start = NodeDividerStartPadding)
                     .height(Dimens.borderThin)
-                    .background(MaterialTheme.colorScheme.outlineVariant)
+                    .background(
+                        if (isDarkTheme) {
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant
+                        }
+                    )
             )
         }
     }
@@ -157,11 +176,17 @@ fun RoadmapNodeItem(
 
 @Composable
 private fun NodeIcon(node: RoadmapNodeUiModel) {
-    val containerColor = when (node.status) {
-        RoadmapNodeStatus.Completed -> roadmapSuccessBg
-        RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.surface
-        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
-        RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+    val containerColor = when {
+        isDarkTheme && node.status == RoadmapNodeStatus.Completed -> Color(0xFF064E3B)
+        isDarkTheme && node.status == RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.primaryContainer
+        isDarkTheme && node.status == RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerHigh
+        else -> when (node.status) {
+            RoadmapNodeStatus.Completed -> roadmapSuccessBg
+            RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.surface
+            RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
+            RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
+        }
     }
     val icon = when (node.status) {
         RoadmapNodeStatus.Completed -> Icons.Default.Check
@@ -169,17 +194,25 @@ private fun NodeIcon(node: RoadmapNodeUiModel) {
         RoadmapNodeStatus.InProgress,
         RoadmapNodeStatus.NotStarted -> node.requirement.toNodeRequirementIcon()
     }
-    val tint = when (node.status) {
-        RoadmapNodeStatus.Completed -> CompletedNodeIconTint
-        RoadmapNodeStatus.InProgress,
-        RoadmapNodeStatus.NotStarted -> node.requirement.toNodeRequirementIconTint()
-        RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
+    val tint = when {
+        isDarkTheme && node.status == RoadmapNodeStatus.Completed -> Color(0xFF34D399)
+        isDarkTheme && node.status == RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.primary
+        isDarkTheme && node.status == RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+        else -> when (node.status) {
+            RoadmapNodeStatus.Completed -> CompletedNodeIconTint
+            RoadmapNodeStatus.InProgress,
+            RoadmapNodeStatus.NotStarted -> node.requirement.toNodeRequirementIconTint()
+            RoadmapNodeStatus.Locked -> OnSurfacePlaceholderLight
+        }
     }
-    val borderColor = when (node.status) {
-        RoadmapNodeStatus.Completed -> roadmapSuccessBorder
-        RoadmapNodeStatus.InProgress -> tint
-        RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.34f)
-        RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
+    val borderColor = when {
+        isDarkTheme -> Color.Transparent // Hide border in dark mode for better look
+        else -> when (node.status) {
+            RoadmapNodeStatus.Completed -> roadmapSuccessBorder
+            RoadmapNodeStatus.InProgress -> tint
+            RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary.copy(alpha = 0.34f)
+            RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.outlineVariant
+        }
     }
 
     Box(
@@ -229,6 +262,7 @@ private fun RoadmapNodeRequirement.toNodeRequirementIconTint() = when (this) {
 
 @Composable
 private fun NodeStatusBadge(node: RoadmapNodeUiModel) {
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
     RoadmapPill(
         text = stringResource(
             when (node.status) {
@@ -238,20 +272,30 @@ private fun NodeStatusBadge(node: RoadmapNodeUiModel) {
                 RoadmapNodeStatus.Locked -> R.string.roadmap_detail_locked
             }
         ),
-        containerColor = when (node.status) {
-            RoadmapNodeStatus.Completed -> roadmapSuccessBg
-            RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.inversePrimary
-            RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
-            RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
+        containerColor = when {
+            isDarkTheme && node.status == RoadmapNodeStatus.Completed -> Color(0xFF064E3B)
+            isDarkTheme && node.status == RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.primaryContainer
+            isDarkTheme && node.status == RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerHigh
+            else -> when (node.status) {
+                RoadmapNodeStatus.Completed -> roadmapSuccessBg
+                RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.inversePrimary
+                RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primaryContainer
+                RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
+            }
         },
-        contentColor = when (node.status) {
-            RoadmapNodeStatus.Completed -> roadmapSuccess
-            RoadmapNodeStatus.InProgress -> roadmapDeepBlue
-            RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary
-            RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.onSurfaceVariant
+        contentColor = when {
+            isDarkTheme && node.status == RoadmapNodeStatus.Completed -> Color(0xFF34D399)
+            isDarkTheme && node.status == RoadmapNodeStatus.InProgress -> MaterialTheme.colorScheme.onPrimaryContainer
+            isDarkTheme && node.status == RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+            else -> when (node.status) {
+                RoadmapNodeStatus.Completed -> roadmapSuccess
+                RoadmapNodeStatus.InProgress -> roadmapDeepBlue
+                RoadmapNodeStatus.NotStarted -> MaterialTheme.colorScheme.primary
+                RoadmapNodeStatus.Locked -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
         },
         dotColor = if (node.status == RoadmapNodeStatus.InProgress) {
-            MaterialTheme.colorScheme.primary
+            if (isDarkTheme) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
         } else {
             null
         }

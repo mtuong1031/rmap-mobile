@@ -206,6 +206,30 @@ private fun AuthFormSection(
     ) {
         AuthHeader()
 
+        val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+
+        val googleButtonColors = if (isDarkTheme) {
+            androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(com.rmap.mobile.core.ui.theme.OnSurfaceDisabledLight.value)
+            )
+        } else {
+            com.rmap.mobile.core.ui.components.RMapButtonDefaults.colors(variant = RMapButtonVariant.Primary)
+        }
+
+        val githubButtonColors = if (isDarkTheme) {
+            androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(com.rmap.mobile.core.ui.theme.OnSurfaceDisabledLight.value)
+            )
+        } else {
+            com.rmap.mobile.core.ui.components.RMapButtonDefaults.colors(variant = RMapButtonVariant.Secondary)
+        }
+
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
             RMapButton(
                 text = stringResource(id = R.string.auth_continue_with_google),
@@ -213,13 +237,14 @@ private fun AuthFormSection(
                 enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
                 variant = RMapButtonVariant.Primary,
+                colors = googleButtonColors,
                 size = RMapButtonSize.Large,
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_logo_google),
                         contentDescription = null,
                         modifier = Modifier.size(Dimens.iconLg),
-                        tint = MaterialTheme.colorScheme.onPrimary
+                        tint = if (isDarkTheme) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary
                     )
                 }
             )
@@ -230,13 +255,14 @@ private fun AuthFormSection(
                 enabled = !uiState.isLoading,
                 modifier = Modifier.fillMaxWidth(),
                 variant = RMapButtonVariant.Secondary,
+                colors = githubButtonColors,
                 size = RMapButtonSize.Large,
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_logo_github),
                         contentDescription = null,
                         modifier = Modifier.size(Dimens.iconLg),
-                        tint = Color.Unspecified
+                        tint = if (isDarkTheme) Color.White else Color.Unspecified
                     )
                 }
             )

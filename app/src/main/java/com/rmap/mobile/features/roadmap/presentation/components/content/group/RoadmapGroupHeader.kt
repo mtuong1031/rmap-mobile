@@ -55,6 +55,7 @@ internal fun RoadmapGroupHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
@@ -66,10 +67,10 @@ internal fun RoadmapGroupHeader(
                 Text(
                     text = group.title,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = if (group.state == RoadmapGroupState.Locked) {
-                            roadmapLockedText
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
+                        color = when {
+                            group.state == RoadmapGroupState.Locked -> roadmapLockedText
+                            isDarkTheme -> MaterialTheme.colorScheme.onSurface
+                            else -> MaterialTheme.colorScheme.onSurface
                         },
                         fontWeight = FontWeight.Bold
                     ),
@@ -89,18 +90,18 @@ internal fun RoadmapGroupHeader(
                         group.totalRequiredNodes
                     ),
                     style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isDarkTheme) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium
                     )
                 )
                 RoadmapLinearProgress(
                     progress = group.progressFraction,
                     modifier = Modifier.width(GroupProgressWidth),
-                    trackColor = MaterialTheme.colorScheme.outlineVariant,
-                    indicatorColor = if (group.state == RoadmapGroupState.Completed) {
-                        roadmapSuccess
-                    } else {
-                        MaterialTheme.colorScheme.primary
+                    trackColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.outlineVariant,
+                    indicatorColor = when {
+                        group.state == RoadmapGroupState.Completed && isDarkTheme -> androidx.compose.ui.graphics.Color(0xFF34D399)
+                        group.state == RoadmapGroupState.Completed -> roadmapSuccess
+                        else -> MaterialTheme.colorScheme.primary
                     }
                 )
             }

@@ -43,8 +43,8 @@ import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
 private const val CategoryCarouselPageSize = 8
 private const val CategoryCarouselColumnCount = 4
 private const val CategoryCarouselRowCount = 2
-private val ExploreCategoryIconContainerSize = 72.dp
-private val ExploreCategoryIconSize = 28.dp
+private val ExploreCategoryIconContainerSize = 68.dp
+private val ExploreCategoryIconSize = 26.dp
 private val ExploreCategoryCarouselDotHeight = 6.dp
 private val ExploreCategoryCarouselActiveDotWidth = 18.dp
 private val ExploreCategoryCarouselInactiveDotWidth = 6.dp
@@ -164,16 +164,24 @@ private fun CategoryItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        category.backgroundColor
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+
+    val borderColor = when {
+        isDarkTheme && selected -> MaterialTheme.colorScheme.primary
+        isDarkTheme && !selected -> MaterialTheme.colorScheme.outline.copy(alpha = 0.75f)
+        selected -> MaterialTheme.colorScheme.primary
+        else -> category.backgroundColor
     }
-    val iconContainerColor = if (selected) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surface
+    
+    val iconContainerColor = when {
+        isDarkTheme && selected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
+        isDarkTheme && !selected -> MaterialTheme.colorScheme.surfaceContainer
+        selected -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.surface
     }
+    
+    val titleColor = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface
+    val subtitleColor = if (isDarkTheme) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -208,7 +216,7 @@ private fun CategoryItem(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = titleColor
             ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
@@ -219,7 +227,7 @@ private fun CategoryItem(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.labelSmall.copy(
-                color = MaterialTheme.colorScheme.secondary
+                color = subtitleColor
             ),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
