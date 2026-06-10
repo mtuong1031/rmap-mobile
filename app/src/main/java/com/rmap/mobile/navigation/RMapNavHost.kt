@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -192,7 +193,11 @@ fun RMapNavHost(navController: NavHostController) {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = innerPadding.calculateBottomPadding())
+            .consumeWindowInsets(androidx.compose.foundation.layout.PaddingValues(bottom = innerPadding.calculateBottomPadding()))
+        ) {
             NavHost(
                 navController = navController, 
                 startDestination = startDestination,
@@ -828,6 +833,6 @@ fun RMapNavHost(navController: NavHostController) {
                     .fillMaxWidth()
             )
         }
-    }
+     
 }
 }

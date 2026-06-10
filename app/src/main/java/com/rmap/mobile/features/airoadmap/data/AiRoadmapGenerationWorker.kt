@@ -25,6 +25,7 @@ import com.rmap.mobile.core.network.ApiClient
 import com.rmap.mobile.core.network.NetworkResult
 import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.SessionCookieJar
+import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.core.storage.SharedPreferencesSessionCookieStorage
 import com.rmap.mobile.features.airoadmap.data.mapper.toBackendRoleCategory
 import kotlinx.coroutines.async
@@ -142,7 +143,13 @@ class AiRoadmapGenerationWorker(
         val cookieJar = SessionCookieJar(
             SharedPreferencesSessionCookieStorage(context.applicationContext)
         )
-        val api = ApiClient.fromBuildConfig(cookieJar).createService(AiRoadmapApi::class.java)
+        val sessionManager = SessionManager(
+            clearSessionStorage = cookieJar::clear
+        )
+        val api = ApiClient.fromBuildConfig(
+            cookieJar = cookieJar,
+            sessionManager = sessionManager
+        ).createService(AiRoadmapApi::class.java)
         return SafeApiCall.execute {
             api.generateRoadmap(request.toDto())
         }

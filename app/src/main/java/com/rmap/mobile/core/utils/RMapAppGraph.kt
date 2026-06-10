@@ -106,7 +106,7 @@ object RMapAppGraph {
         sessionManager = SessionManager(
             clearSessionStorage = sessionCookieJar::clear
         )
-        apiClient = ApiClient.fromBuildConfig(sessionCookieJar)
+        apiClient = ApiClient.fromBuildConfig(sessionCookieJar, sessionManager)
         authRepository = AuthRepositoryImpl(
             authApi = apiClient.createService(AuthApi::class.java),
             sessionManager = sessionManager
