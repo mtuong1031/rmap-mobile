@@ -63,11 +63,17 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.LaunchedEffect
+
 @Composable
 fun MyRoadmapScreen(
     uiState: MyRoadmapUiState,
     selectedDestination: NavBarDestination,
     onDestinationSelected: (NavBarDestination) -> Unit,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onFilterSelected: (MyRoadmapFilter) -> Unit,
     onRoadmapClick: (String) -> Unit,
     onCreateWithAiClick: () -> Unit,
@@ -75,6 +81,12 @@ fun MyRoadmapScreen(
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
+
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),

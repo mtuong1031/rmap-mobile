@@ -76,12 +76,17 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
 import com.rmap.mobile.navigation.NavBarDestination
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.Home,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onHeaderActionClick: () -> Unit = {},
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
@@ -99,6 +104,12 @@ fun HomeScreen(
 ) {
     val listState = rememberLazyListState()
     val sectionHorizontalPadding = Dimens.spacingScreenHorizontal
+
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
 
     val greetingText = if (uiState.isAuthenticated && uiState.userName.isNotBlank()) {
         stringResource(

@@ -29,12 +29,17 @@ import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreRoadmapCardUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreUiState
 import com.rmap.mobile.navigation.NavBarDestination
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun ExploreScreen(
     uiState: ExploreUiState,
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.Explore,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onHeaderActionClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
@@ -45,6 +50,13 @@ fun ExploreScreen(
     onSeeLessRoadmapsClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
+    
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
+
     val selectedCategoryName = uiState.categories
         .firstOrNull { it.id == uiState.selectedCategoryId }
         ?.name
