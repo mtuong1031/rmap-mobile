@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
@@ -148,12 +149,80 @@ fun RMapNavHost(navController: NavHostController) {
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
-        val currentBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = currentBackStackEntry?.destination?.route
+    val topLevelRoutes = listOf(
+        AppRoutes.HOME,
+        AppRoutes.MY_ROADMAP,
+        AppRoutes.AI_ROADMAP,
+        AppRoutes.EXPLORE,
+        AppRoutes.PROFILE
+    )
 
-        NavHost(navController = navController, startDestination = startDestination) {
+    fun getTabIndex(route: String?): Int {
+        return topLevelRoutes.indexOf(route)
+    }
+
+    val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+    val isTopLevelRoute = currentRoute in topLevelRoutes
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isTopLevelRoute,
+                enter = androidx.compose.animation.slideInVertically(initialOffsetY = { it }) + androidx.compose.animation.fadeIn(),
+                exit = androidx.compose.animation.slideOutVertically(targetOffsetY = { it }) + androidx.compose.animation.fadeOut()
+            ) {
+                val selectedDestination = when (currentRoute) {
+                    AppRoutes.HOME -> NavBarDestination.Home
+                    AppRoutes.EXPLORE -> NavBarDestination.Explore
+                    AppRoutes.AI_ROADMAP -> NavBarDestination.AiAssistant
+                    AppRoutes.MY_ROADMAP -> NavBarDestination.MyRoadmap
+                    AppRoutes.PROFILE -> NavBarDestination.More
+                    else -> NavBarDestination.Home
+                }
+                com.rmap.mobile.core.ui.components.RMapNavigationBar(
+                    selectedDestination = selectedDestination,
+                    onDestinationSelected = ::handleDestinationSelected
+                )
+            }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            NavHost(
+                navController = navController, 
+                startDestination = startDestination,
+                enterTransition = {
+                    val initialIndex = getTabIndex(initialState.destination.route)
+                    val targetIndex = getTabIndex(targetState.destination.route)
+                    if (initialIndex != -1 && targetIndex != -1 && initialIndex != targetIndex) {
+                        val isForward = targetIndex > initialIndex
+                        androidx.compose.animation.slideInHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            initialOffsetX = { if (isForward) it / 4 else -it / 4 }
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+                    } else {
+                        androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+                    }
+                },
+                exitTransition = {
+                    val initialIndex = getTabIndex(initialState.destination.route)
+                    val targetIndex = getTabIndex(targetState.destination.route)
+                    if (initialIndex != -1 && targetIndex != -1 && initialIndex != targetIndex) {
+                        val isForward = targetIndex > initialIndex
+                        androidx.compose.animation.slideOutHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            targetOffsetX = { if (isForward) -it / 4 else it / 4 }
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+                    } else {
+                        androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+                    }
+                }
+            ) {
             composable(
                 route = AppRoutes.AUTH,
                 deepLinks = listOf(androidx.navigation.navDeepLink { uriPattern = "rmap://oauth/callback?code={code}" })
@@ -759,10 +828,6 @@ fun RMapNavHost(navController: NavHostController) {
                     .fillMaxWidth()
             )
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
     }
+}
 }
