@@ -31,6 +31,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.channels.BufferOverflow
@@ -92,7 +94,8 @@ fun RMapNavHost(navController: NavHostController) {
     val resourceOpenFailedMessage = stringResource(R.string.roadmap_learning_resource_open_failed)
     val milestoneSubmissionQueuedMessage = stringResource(R.string.roadmap_milestone_submission_queued)
     val milestoneSubmissionFailedMessage = stringResource(R.string.roadmap_milestone_error_submit_failed)
-    val startDestination = if (authState is AuthState.Authenticated) AppRoutes.HOME_GRAPH else AppRoutes.AUTH_GRAPH
+    val startDestination = if (authState is AuthState.Authenticated) AppRoutes.MAIN_TABS else AppRoutes.AUTH_GRAPH
+    val pagerState = rememberPagerState(pageCount = { 5 })
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
     }
@@ -118,49 +121,29 @@ fun RMapNavHost(navController: NavHostController) {
         return
     }
 
-    fun navigateFromBottomBar(destination: NavBarDestination) {
-        val route = when (destination) {
-            NavBarDestination.MyRoadmap -> AppRoutes.MY_ROADMAP_GRAPH
-            NavBarDestination.Home -> AppRoutes.HOME_GRAPH
-            NavBarDestination.Explore -> AppRoutes.EXPLORE_GRAPH
-            NavBarDestination.More -> AppRoutes.PROFILE_GRAPH
-            NavBarDestination.AiAssistant -> AppRoutes.AI_ROADMAP_GRAPH
+    fun handleDestinationSelected(destination: NavBarDestination) {
+        val targetPage = when (destination) {
+            NavBarDestination.Home -> 0
+            NavBarDestination.MyRoadmap -> 1
+            NavBarDestination.AiAssistant -> 2
+            NavBarDestination.Explore -> 3
+            NavBarDestination.More -> 4
+        }
+        val currentRoute = navController.currentDestination?.route
+
+        if (currentRoute == AppRoutes.HOME_SEARCH) {
+            navController.popBackStack(AppRoutes.MAIN_TABS, inclusive = false)
         }
 
-        navController.navigate(route) {
-            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
+        if (pagerState.currentPage == targetPage) {
+            coroutineScope.launch { tabReselectEvent.emit(destination) }
+        } else {
+            coroutineScope.launch { pagerState.animateScrollToPage(targetPage) }
         }
     }
 
-    fun handleDestinationSelected(destination: NavBarDestination) {
-        val targetGraphRoute = when (destination) {
-            NavBarDestination.MyRoadmap -> AppRoutes.MY_ROADMAP_GRAPH
-            NavBarDestination.Home -> AppRoutes.HOME_GRAPH
-            NavBarDestination.Explore -> AppRoutes.EXPLORE_GRAPH
-            NavBarDestination.More -> AppRoutes.PROFILE_GRAPH
-            NavBarDestination.AiAssistant -> AppRoutes.AI_ROADMAP_GRAPH
-        }
-        val currentRoute = navController.currentDestination?.route
-        val currentGraph = navController.currentDestination?.parent?.route
-
-        if (currentGraph == targetGraphRoute || currentRoute == targetGraphRoute) {
-            val rootOfTab = when (destination) {
-                NavBarDestination.MyRoadmap -> AppRoutes.MY_ROADMAP
-                NavBarDestination.Home -> AppRoutes.HOME
-                NavBarDestination.Explore -> AppRoutes.EXPLORE
-                NavBarDestination.More -> AppRoutes.PROFILE
-                NavBarDestination.AiAssistant -> AppRoutes.AI_ROADMAP
-            }
-            if (currentRoute == rootOfTab) {
-                coroutineScope.launch { tabReselectEvent.emit(destination) }
-            } else {
-                navController.popBackStack(rootOfTab, inclusive = false)
-            }
-        } else {
-            navigateFromBottomBar(destination)
-        }
+    fun navigateFromBottomBar(destination: NavBarDestination) {
+        handleDestinationSelected(destination)
     }
 
     fun navigateBackFromRoadmapDetail() {
@@ -188,18 +171,6 @@ fun RMapNavHost(navController: NavHostController) {
         }
     }
 
-    val topLevelRoutes = listOf(
-        AppRoutes.HOME,
-        AppRoutes.MY_ROADMAP,
-        AppRoutes.AI_ROADMAP,
-        AppRoutes.EXPLORE,
-        AppRoutes.PROFILE
-    )
-
-    fun getTabIndex(route: String?): Int {
-        return topLevelRoutes.indexOf(route)
-    }
-
     val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -207,15 +178,7 @@ fun RMapNavHost(navController: NavHostController) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            val currentGraph = navBackStackEntry?.destination?.parent?.route
-
-            val isTopLevelRoute = currentRoute in listOf(
-                AppRoutes.HOME,
-                AppRoutes.EXPLORE,
-                AppRoutes.AI_ROADMAP,
-                AppRoutes.MY_ROADMAP,
-                AppRoutes.PROFILE
-            ) || (currentRoute == AppRoutes.HOME_SEARCH)
+            val isTopLevelRoute = currentRoute == AppRoutes.MAIN_TABS || currentRoute == AppRoutes.HOME_SEARCH
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = isTopLevelRoute,
@@ -223,12 +186,15 @@ fun RMapNavHost(navController: NavHostController) {
                 exit = androidx.compose.animation.slideOutVertically(targetOffsetY = { it }) + androidx.compose.animation.fadeOut()
             ) {
                 val selectedDestination = when {
-                    currentGraph == AppRoutes.HOME_GRAPH || currentRoute == AppRoutes.HOME -> NavBarDestination.Home
-                    currentGraph == AppRoutes.EXPLORE_GRAPH || currentRoute == AppRoutes.EXPLORE -> NavBarDestination.Explore
-                    currentGraph == AppRoutes.AI_ROADMAP_GRAPH || currentRoute == AppRoutes.AI_ROADMAP -> NavBarDestination.AiAssistant
-                    currentGraph == AppRoutes.MY_ROADMAP_GRAPH || currentRoute == AppRoutes.MY_ROADMAP -> NavBarDestination.MyRoadmap
-                    currentGraph == AppRoutes.PROFILE_GRAPH || currentRoute == AppRoutes.PROFILE -> NavBarDestination.More
-                    else -> NavBarDestination.Home
+                    currentRoute == AppRoutes.HOME_SEARCH -> NavBarDestination.Home
+                    else -> when (pagerState.currentPage) {
+                        0 -> NavBarDestination.Home
+                        1 -> NavBarDestination.MyRoadmap
+                        2 -> NavBarDestination.AiAssistant
+                        3 -> NavBarDestination.Explore
+                        4 -> NavBarDestination.More
+                        else -> NavBarDestination.Home
+                    }
                 }
                 com.rmap.mobile.core.ui.components.RMapNavigationBar(
                     selectedDestination = selectedDestination,
@@ -251,51 +217,50 @@ fun RMapNavHost(navController: NavHostController) {
                 enterTransition = {
                     val targetRoute = targetState.destination.route
                     val initialRoute = initialState.destination.route
-                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.HOME) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.HOME)
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
                     if (isHomeAndSearch) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
-                    } else if (getTabIndex(initialRoute) != -1 && getTabIndex(targetRoute) != -1 && initialRoute != targetRoute) {
-                        val isForward = getTabIndex(targetRoute) > getTabIndex(initialRoute)
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
                         androidx.compose.animation.slideInHorizontally(
                             animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-                            initialOffsetX = { if (isForward) it / 4 else -it / 4 }
+                            initialOffsetX = { -it / 4 }
                         ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
-                    } else if (getTabIndex(targetRoute) == -1) {
+                    } else {
                         androidx.compose.animation.slideInHorizontally(
                             animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
                             initialOffsetX = { it }
                         ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
-                    } else {
-                        androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
                     }
                 },
                 exitTransition = {
                     val targetRoute = targetState.destination.route
                     val initialRoute = initialState.destination.route
-                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.HOME) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.HOME)
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
                     if (isHomeAndSearch) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
-                    } else if (getTabIndex(initialRoute) != -1 && getTabIndex(targetRoute) != -1 && initialRoute != targetRoute) {
-                        val isForward = getTabIndex(targetRoute) > getTabIndex(initialRoute)
-                        androidx.compose.animation.slideOutHorizontally(
-                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-                            targetOffsetX = { if (isForward) -it / 4 else it / 4 }
-                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
-                    } else if (getTabIndex(targetRoute) == -1) {
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
                         androidx.compose.animation.slideOutHorizontally(
                             animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
                             targetOffsetX = { -it / 4 }
                         ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
                     } else {
-                        androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                        androidx.compose.animation.slideOutHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            targetOffsetX = { -it / 4 }
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
                     }
                 },
                 popEnterTransition = {
                     val targetRoute = targetState.destination.route
                     val initialRoute = initialState.destination.route
-                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.HOME) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.HOME)
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
                     if (isHomeAndSearch) {
                         androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
+                        androidx.compose.animation.slideInHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            initialOffsetX = { -it / 4 }
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
                     } else {
                         androidx.compose.animation.slideInHorizontally(
                             animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
@@ -306,9 +271,14 @@ fun RMapNavHost(navController: NavHostController) {
                 popExitTransition = {
                     val targetRoute = targetState.destination.route
                     val initialRoute = initialState.destination.route
-                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.HOME) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.HOME)
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
                     if (isHomeAndSearch) {
                         androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
+                        androidx.compose.animation.slideOutHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            targetOffsetX = { it }
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
                     } else {
                         androidx.compose.animation.slideOutHorizontally(
                             animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
@@ -335,7 +305,7 @@ fun RMapNavHost(navController: NavHostController) {
                     LaunchedEffect(viewModel) {
                         viewModel.events.collect { event ->
                             when (event) {
-                                AuthEvent.NavigateToHome -> navController.navigate(AppRoutes.HOME_GRAPH) {
+                                AuthEvent.NavigateToHome -> navController.navigate(AppRoutes.MAIN_TABS) {
                                     popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
                                 }
                             }
@@ -351,37 +321,163 @@ fun RMapNavHost(navController: NavHostController) {
                 }
             }
 
-            navigation(startDestination = AppRoutes.HOME, route = AppRoutes.HOME_GRAPH) {
-                composable(AppRoutes.HOME) {
-                    val viewModel: HomeViewModel = viewModel()
-                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                    
-                    val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.Home } }
-
-                    HomeScreen(
-                        uiState = uiState,
-                    selectedDestination = NavBarDestination.Home,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onSearchClick = {
-                        navController.navigate(AppRoutes.HOME_SEARCH) {
-                            launchSingleTop = true
+            composable(AppRoutes.MAIN_TABS) {
+                androidx.activity.compose.BackHandler(enabled = pagerState.currentPage != 0) {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(0)
+                    }
+                }
+                androidx.compose.foundation.pager.HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    when (page) {
+                        0 -> {
+                            val viewModel: HomeViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.Home } }
+        
+                            HomeScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.Home,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onSearchClick = {
+                                    navController.navigate(AppRoutes.HOME_SEARCH) {
+                                        launchSingleTop = true
+                                    }
+                                },
+                                onRoadmapClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                onContinueLearningPlanClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                onRecommendedRoadmapClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                onCreateRoadmapWithAiClick = {
+                                    handleDestinationSelected(NavBarDestination.AiAssistant)
+                                },
+                                reselectEvent = reselectEvent
+                            )
                         }
-                    },
-                    onRoadmapClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
-                    onContinueLearningPlanClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
-                    onRecommendedRoadmapClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
-                    onCreateRoadmapWithAiClick = {
-                        navController.navigate(AppRoutes.AI_ROADMAP) {
-                            launchSingleTop = true
+                        1 -> {
+                            val viewModel: MyRoadmapViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.MyRoadmap } }
+        
+                            MyRoadmapScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.MyRoadmap,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onFilterSelected = viewModel::onFilterSelected,
+                                onRoadmapClick = { roadmapId ->
+                                    navController.navigate(AppRoutes.roadmapDetail(roadmapId))
+                                },
+                                onCreateWithAiClick = {
+                                    handleDestinationSelected(NavBarDestination.AiAssistant)
+                                },
+                                onExploreRoadmapsClick = {
+                                    handleDestinationSelected(NavBarDestination.Explore)
+                                },
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                        2 -> {
+                            val viewModel: AiRoadmapViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.AiAssistant } }
+        
+                            LaunchedEffect(viewModel) {
+                                viewModel.events.collect { event ->
+                                    when (event) {
+                                        is AiRoadmapEvent.NavigateToRoadmapDetail -> {
+                                            navController.navigate(AppRoutes.roadmapDetail(event.roadmapId))
+                                        }
+                                    }
+                                }
+                            }
+        
+                            AiRoadmapScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.AiAssistant,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onSearchQueryChange = viewModel::onSearchQueryChange,
+                                onCreateRoadmapClick = viewModel::onCreateRoadmapClick,
+                                onSeeMoreGeneratedRoadmaps = viewModel::onSeeMoreGeneratedRoadmaps,
+                                onSeeAllGeneratedRoadmaps = viewModel::onSeeAllGeneratedRoadmaps,
+                                onSeeLessGeneratedRoadmaps = viewModel::onSeeLessGeneratedRoadmaps,
+                                onBackToLibrary = viewModel::onBackToLibrary,
+                                onTopicChange = viewModel::onTopicChange,
+                                onDeadlineSelected = viewModel::onDeadlineSelected,
+                                onDailyStudyHoursChange = viewModel::onDailyStudyHoursChange,
+                                onSubmitSetup = viewModel::onSubmitSetup,
+                                onOptionSelected = viewModel::onOptionSelected,
+                                onCustomAnswerChange = viewModel::onCustomAnswerChange,
+                                onPreviousQuestion = viewModel::onPreviousQuestion,
+                                onNextQuestion = viewModel::onNextQuestion,
+                                onSubmitAnswers = viewModel::onSubmitAnswers,
+                                onCancelGeneration = viewModel::onCancelGeneration,
+                                onViewGeneratedRoadmap = viewModel::onViewGeneratedRoadmap,
+                                onExploreClick = {
+                                    handleDestinationSelected(NavBarDestination.Home)
+                                },
+                                onExploreRoadmapsClick = {
+                                    handleDestinationSelected(NavBarDestination.Explore)
+                                },
+                                onRoadmapSelected = viewModel::onRoadmapSelected,
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                        3 -> {
+                            val viewModel: ExploreViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.Explore } }
+        
+                            ExploreScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.Explore,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onSearchQueryChange = viewModel::onSearchQueryChange,
+                                onCategoryClick = viewModel::onCategorySelected,
+                                onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmaps,
+                                onSeeAllRoadmapsClick = viewModel::onSeeAllRoadmaps,
+                                onSeeLessRoadmapsClick = viewModel::onSeeLessRoadmaps,
+                                onRoadmapClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                        4 -> {
+                            val viewModel: ProfileViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val profileComingSoonMessage = stringResource(R.string.coming_soon_message)
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.More } }
+        
+                            LaunchedEffect(viewModel) {
+                                viewModel.events.collect { event ->
+                                    when (event) {
+                                        ProfileEvent.NavigateToNotificationSettings -> navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
+                                        ProfileEvent.ShowComingSoon -> snackbarHostState.showSnackbar(profileComingSoonMessage)
+                                        ProfileEvent.SignedOut -> navController.navigate(AppRoutes.AUTH) {
+                                            popUpTo(0) { inclusive = true }
+                                        }
+                                    }
+                                }
+                            }
+        
+                            ProfileScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.More,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onEditProfile = viewModel::onEditProfile,
+                                onSettingClick = viewModel::onSettingClick,
+                                reselectEvent = reselectEvent
+                            )
                         }
                     }
-                )
+                }
             }
 
             composable(AppRoutes.HOME_SEARCH) {
@@ -428,144 +524,10 @@ fun RMapNavHost(navController: NavHostController) {
                         coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
                     onSeeMoreSkillsClick = viewModel::onSeeMoreSkillsClick,
-                        onCreateWithAiClick = {
-                            navController.navigate(AppRoutes.AI_ROADMAP_GRAPH) {
-                                launchSingleTop = true
-                            }
-                        }
-                    )
-                }
-            }
-
-            navigation(startDestination = AppRoutes.AI_ROADMAP, route = AppRoutes.AI_ROADMAP_GRAPH) {
-                composable(AppRoutes.AI_ROADMAP) {
-                    val viewModel: AiRoadmapViewModel = viewModel()
-                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                    
-                    val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.AiAssistant } }
-
-                    LaunchedEffect(viewModel) {
-                        viewModel.events.collect { event ->
-                        when (event) {
-                            is AiRoadmapEvent.NavigateToRoadmapDetail -> {
-                                navController.navigate(AppRoutes.roadmapDetail(event.roadmapId))
-                            }
-                        }
-                    }
-                }
-
-                AiRoadmapScreen(
-                    uiState = uiState,
-                    selectedDestination = NavBarDestination.AiAssistant,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onCreateRoadmapClick = viewModel::onCreateRoadmapClick,
-                    onSeeMoreGeneratedRoadmaps = viewModel::onSeeMoreGeneratedRoadmaps,
-                    onSeeAllGeneratedRoadmaps = viewModel::onSeeAllGeneratedRoadmaps,
-                    onSeeLessGeneratedRoadmaps = viewModel::onSeeLessGeneratedRoadmaps,
-                    onBackToLibrary = viewModel::onBackToLibrary,
-                    onTopicChange = viewModel::onTopicChange,
-                    onDeadlineSelected = viewModel::onDeadlineSelected,
-                    onDailyStudyHoursChange = viewModel::onDailyStudyHoursChange,
-                    onSubmitSetup = viewModel::onSubmitSetup,
-                    onOptionSelected = viewModel::onOptionSelected,
-                    onCustomAnswerChange = viewModel::onCustomAnswerChange,
-                    onPreviousQuestion = viewModel::onPreviousQuestion,
-                    onNextQuestion = viewModel::onNextQuestion,
-                    onSubmitAnswers = viewModel::onSubmitAnswers,
-                    onCancelGeneration = viewModel::onCancelGeneration,
-                    onViewGeneratedRoadmap = viewModel::onViewGeneratedRoadmap,
-                        onExploreClick = {
-                            navController.navigate(AppRoutes.HOME_GRAPH) {
-                                launchSingleTop = true
-                            }
-                        },
-                        onExploreRoadmapsClick = {
-                            navigateFromBottomBar(NavBarDestination.Explore)
-                        },
-                        onRoadmapSelected = viewModel::onRoadmapSelected
-                    )
-                }
-            }
-
-            navigation(startDestination = AppRoutes.EXPLORE, route = AppRoutes.EXPLORE_GRAPH) {
-                composable(AppRoutes.EXPLORE) {
-                    val viewModel: ExploreViewModel = viewModel()
-                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                    val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.Explore } }
-
-                    ExploreScreen(
-                        uiState = uiState,
-                    selectedDestination = NavBarDestination.Explore,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onCategoryClick = viewModel::onCategorySelected,
-                    onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmaps,
-                    onSeeAllRoadmapsClick = viewModel::onSeeAllRoadmaps,
-                    onSeeLessRoadmapsClick = viewModel::onSeeLessRoadmaps,
-                    onRoadmapClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    }
-                )
-                }
-            }
-
-            navigation(startDestination = AppRoutes.MY_ROADMAP, route = AppRoutes.MY_ROADMAP_GRAPH) {
-                composable(AppRoutes.MY_ROADMAP) {
-                    val viewModel: MyRoadmapViewModel = viewModel()
-                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                    val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.MyRoadmap } }
-
-                    MyRoadmapScreen(
-                        uiState = uiState,
-                    selectedDestination = NavBarDestination.MyRoadmap,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onFilterSelected = viewModel::onFilterSelected,
-                    onRoadmapClick = { roadmapId ->
-                        navController.navigate(AppRoutes.roadmapDetail(roadmapId))
-                    },
                     onCreateWithAiClick = {
-                        navController.navigate(AppRoutes.AI_ROADMAP_GRAPH) {
-                            launchSingleTop = true
-                        }
-                    },
-                    onExploreRoadmapsClick = {
-                        navigateFromBottomBar(NavBarDestination.Explore)
+                        handleDestinationSelected(NavBarDestination.AiAssistant)
                     }
                 )
-                }
-            }
-
-            navigation(startDestination = AppRoutes.PROFILE, route = AppRoutes.PROFILE_GRAPH) {
-                composable(AppRoutes.PROFILE) {
-                    val viewModel: ProfileViewModel = viewModel()
-                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                    val profileComingSoonMessage = stringResource(R.string.coming_soon_message)
-
-                    val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.More } }
-
-                    LaunchedEffect(viewModel) {
-                    viewModel.events.collect { event ->
-                        when (event) {
-                            ProfileEvent.NavigateToNotificationSettings -> navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
-                            ProfileEvent.ShowComingSoon -> snackbarHostState.showSnackbar(profileComingSoonMessage)
-                            ProfileEvent.SignedOut -> navController.navigate(AppRoutes.AUTH) {
-                                popUpTo(AppRoutes.HOME) { inclusive = true }
-                            }
-                        }
-                    }
-                }
-
-                ProfileScreen(
-                    uiState = uiState,
-                    selectedDestination = NavBarDestination.More,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onEditProfile = viewModel::onEditProfile,
-                    onSettingClick = viewModel::onSettingClick
-                )
-                }
             }
 
             composable(AppRoutes.NOTIFICATION_SETTINGS) {

@@ -100,7 +100,7 @@ fun HomeScreen(
     onHomeStatItemClick: ((index: Int, item: HomeStatItemUiModel) -> Unit)? = null,
     onCategoryItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)? = null,
     onRecommendedRoadmapClick: ((HomeRecommendedRoadmapState) -> Unit)? = null,
-    onRoadmapClick: ((TrendingRoadmapCardUiModel) -> Unit)? = null,
+    onRoadmapClick: ((TrendingRoadmapCardUiModel) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val sectionHorizontalPadding = Dimens.spacingScreenHorizontal
@@ -200,7 +200,6 @@ fun HomeScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
@@ -406,7 +405,6 @@ fun HomeScreen(
             }
         }
     }
-}
 
 private fun HomeGreetingPeriod.labelResId(): Int {
     return when (this) {

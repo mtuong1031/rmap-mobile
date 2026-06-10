@@ -47,7 +47,7 @@ fun ExploreScreen(
     onRoadmapClick: (ExploreRoadmapCardUiModel) -> Unit = {},
     onSeeMoreRoadmapsClick: () -> Unit = {},
     onSeeAllRoadmapsClick: () -> Unit = {},
-    onSeeLessRoadmapsClick: () -> Unit = {},
+    onSeeLessRoadmapsClick: () -> Unit = {}
 ) {
     val listState = rememberLazyListState()
     
@@ -65,7 +65,6 @@ fun ExploreScreen(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
@@ -133,7 +132,6 @@ fun ExploreScreen(
                             onSeeLessClick = onSeeLessRoadmapsClick
                         )
                     }
-                }
             }
         }
     }
