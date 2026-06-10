@@ -5,8 +5,8 @@
     <string name="auth_heading_continue_account">Continue with an account</string>
     <string name="auth_heading_create_account">Create your account</string>
     <string name="auth_welcome_prefix">Welcome to</string>
-    <string name="auth_brand_name">rmap</string>
-    <string name="auth_welcome_suffix">studio</string>
+    <string name="auth_brand_name">RMap</string>
+    <string name="auth_welcome_suffix">- The platform helps you master any programming topics. 🚀</string>
     <string name="auth_sign_in_title">Start your learning roadmap</string>
     <string name="auth_sign_in_description">Sign in to save your roadmap, progress, and daily streak.</string>
     <string name="auth_sign_up_title">Create your account</string>
@@ -21,7 +21,7 @@
     <string name="auth_or_divider">or</string>
     <string name="auth_continue_with_google">Continue with Google</string>
     <string name="auth_continue_with_github">Continue with Github</string>
-    <string name="auth_sign_in_or_sign_up">Sign in or sign up</string>
+    <string name="auth_sign_in_or_sign_up">Start your learning journey</string>
     <string name="auth_new_to_rmap">New to RMap?</string>
     <string name="auth_create_an_account">Create an account</string>
     <string name="auth_already_have_account">Already have an account?</string>
@@ -33,6 +33,8 @@
     <string name="auth_have_account">Already have an account?</string>
     <string name="auth_toggle_password_visibility">Toggle password visibility</string>
     <string name="auth_sign_in_failed">Unable to sign in. Please try again.</string>
+    <string name="auth_error_no_accounts">No matching accounts found.</string>
+    <string name="auth_error_cancelled">Sign-in was cancelled.</string>
     <string name="coming_soon_message">This action is coming soon.</string>
     <string name="separator_bullet">•</string>
     <string name="action_cancel">Cancel</string>

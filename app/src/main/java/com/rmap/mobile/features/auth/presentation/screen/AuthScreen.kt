@@ -5,19 +5,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -40,10 +39,12 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
@@ -58,8 +59,6 @@ import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthUiState
-
-private val AuthHeroHeight = 320.dp
 
 @Composable
 fun AuthScreen(
@@ -111,12 +110,17 @@ fun AuthScreen(
                         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                         onGoogleIdTokenReceived(googleIdTokenCredential.idToken)
                     } else {
-                        onLoginError("Unexpected credential type: ${credential.type}")
+                        onLoginError(context.getString(R.string.auth_sign_in_failed))
                     }
-                } catch (e: androidx.credentials.exceptions.GetCredentialException) {
-                    onLoginError("GetCredentialException: ${e.message}")
+                } catch (e: GetCredentialException) {
+                    val message = when (e) {
+                        is NoCredentialException -> context.getString(R.string.auth_error_no_accounts)
+                        is GetCredentialCancellationException -> context.getString(R.string.auth_error_cancelled)
+                        else -> context.getString(R.string.auth_sign_in_failed)
+                    }
+                    onLoginError(message)
                 } catch (e: Exception) {
-                    onLoginError("Exception: ${e.message}")
+                    onLoginError(context.getString(R.string.auth_sign_in_failed))
                 }
             }
         }
@@ -137,7 +141,7 @@ fun AuthScreen(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.4f)
+                .fillMaxHeight(0.45f)
                 .align(Alignment.BottomCenter),
             shape = AppShapes.bottomSheet,
             color = MaterialTheme.colorScheme.background,
@@ -214,7 +218,7 @@ private fun AuthFormSection(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_logo_google),
                         contentDescription = null,
-                        modifier = Modifier.size(Dimens.iconMd),
+                        modifier = Modifier.size(Dimens.iconLg),
                         tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
@@ -231,21 +235,32 @@ private fun AuthFormSection(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_logo_github),
                         contentDescription = null,
-                        modifier = Modifier.size(Dimens.iconMd),
-                        tint = MaterialTheme.colorScheme.onSurface
+                        modifier = Modifier.size(Dimens.iconLg),
+                        tint = Color.Unspecified
                     )
                 }
             )
         }
 
         uiState.errorMessage?.let { errorMessage ->
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.error,
-                    fontWeight = FontWeight.Medium
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.ErrorOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(Dimens.iconSm)
                 )
-            )
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            }
         }
     }
 }
