@@ -3,13 +3,11 @@ package com.rmap.mobile.navigation
 import android.net.Uri
 
 object AppRoutes {
+    // Root routes
     const val AUTH_GRAPH = "auth_graph"
-    const val HOME_GRAPH = "home_graph"
-    const val EXPLORE_GRAPH = "explore_graph"
-    const val AI_ROADMAP_GRAPH = "ai_roadmap_graph"
-    const val MY_ROADMAP_GRAPH = "my_roadmap_graph"
-    const val PROFILE_GRAPH = "profile_graph"
-    
+    const val MAIN_TABS = "main_tabs"
+
+    // Authentication
     const val AUTH = "auth"
     const val HOME = "home"
     const val HOME_SEARCH = "home_search"
