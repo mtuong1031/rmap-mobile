@@ -32,16 +32,29 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.LaunchedEffect
+
 @Composable
 fun ProfileScreen(
     uiState: ProfileUiState,
     onEditProfile: () -> Unit,
     onSettingClick: (ProfileSettingAction) -> Unit,
     onDestinationSelected: (NavBarDestination) -> Unit,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.More
 ) {
     val listState = rememberLazyListState()
+    
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
+    
     val weeklyActivityDays = uiState.recentActivity.toProfileActivityDays()
     val activeDaysThisWeek = weeklyActivityDays.count { it.isComplete }
 
