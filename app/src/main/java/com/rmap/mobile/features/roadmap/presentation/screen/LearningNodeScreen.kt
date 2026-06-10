@@ -50,6 +50,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import com.rmap.mobile.core.utils.parseMarkdownToAnnotatedString
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapDeepBlue
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBg
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBorder
@@ -246,11 +247,15 @@ private fun LearningNodeHeaderCard(
                     )
                 }
 
+                val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
                 RoadmapPill(
                     text = stringResource(uiState.status.labelResId()),
                     containerColor = uiState.status.containerColor(),
                     contentColor = uiState.status.contentColor(),
-                    borderColor = uiState.status.borderColor()
+                    borderColor = uiState.status.borderColor(),
+                    dotColor = if (uiState.status == LearningNodeStatusUiModel.InProgress) {
+                        if (isDarkTheme) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
+                    } else null
                 )
             }
 
@@ -652,19 +657,36 @@ private fun LearningNodeStatusUiModel.labelResId(): Int {
 }
 
 @Composable
-private fun LearningNodeStatusUiModel.containerColor() = when (this) {
-    LearningNodeStatusUiModel.Completed -> roadmapSuccessBg
-    LearningNodeStatusUiModel.InProgress -> MaterialTheme.colorScheme.inversePrimary
-    LearningNodeStatusUiModel.NotStarted -> MaterialTheme.colorScheme.primaryContainer
-    LearningNodeStatusUiModel.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
+private fun LearningNodeStatusUiModel.containerColor(): androidx.compose.ui.graphics.Color {
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+    return when {
+        isDarkTheme && this == LearningNodeStatusUiModel.Completed -> androidx.compose.ui.graphics.Color(0xFF064E3B)
+        isDarkTheme && this == LearningNodeStatusUiModel.InProgress -> MaterialTheme.colorScheme.primaryContainer
+        isDarkTheme && this == LearningNodeStatusUiModel.Locked -> MaterialTheme.colorScheme.surfaceContainerHigh
+        isDarkTheme && this == LearningNodeStatusUiModel.NotStarted -> MaterialTheme.colorScheme.surfaceContainerLow
+        else -> when (this) {
+            LearningNodeStatusUiModel.Completed -> roadmapSuccessBg
+            LearningNodeStatusUiModel.InProgress -> MaterialTheme.colorScheme.inversePrimary
+            LearningNodeStatusUiModel.NotStarted -> MaterialTheme.colorScheme.primaryContainer
+            LearningNodeStatusUiModel.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
+        }
+    }
 }
 
 @Composable
-private fun LearningNodeStatusUiModel.contentColor() = when (this) {
-    LearningNodeStatusUiModel.Completed -> roadmapSuccess
-    LearningNodeStatusUiModel.InProgress -> MaterialTheme.colorScheme.primary
-    LearningNodeStatusUiModel.NotStarted -> MaterialTheme.colorScheme.primary
-    LearningNodeStatusUiModel.Locked -> MaterialTheme.colorScheme.onSurfaceVariant
+private fun LearningNodeStatusUiModel.contentColor(): androidx.compose.ui.graphics.Color {
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+    return when {
+        isDarkTheme && this == LearningNodeStatusUiModel.Completed -> androidx.compose.ui.graphics.Color(0xFF34D399)
+        isDarkTheme && this == LearningNodeStatusUiModel.InProgress -> MaterialTheme.colorScheme.onPrimaryContainer
+        isDarkTheme && this == LearningNodeStatusUiModel.Locked -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+        else -> when (this) {
+            LearningNodeStatusUiModel.Completed -> roadmapSuccess
+            LearningNodeStatusUiModel.InProgress -> MaterialTheme.colorScheme.primary
+            LearningNodeStatusUiModel.NotStarted -> MaterialTheme.colorScheme.primary
+            LearningNodeStatusUiModel.Locked -> MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    }
 }
 
 @Composable

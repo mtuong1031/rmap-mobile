@@ -38,11 +38,20 @@ fun RoadmapNextActionBar(
     onContinueClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
     RoadmapDecoratedCard(
         modifier = modifier,
         shape = AppShapes.button,
-        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
-        borderColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+        containerColor = if (isDarkTheme) {
+            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.96f)
+        } else {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+        },
+        borderColor = if (isDarkTheme) {
+            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f)
+        } else {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+        }
     ) {
         Row(
             modifier = Modifier.padding(
@@ -61,7 +70,7 @@ fun RoadmapNextActionBar(
                 Text(
                     text = stringResource(R.string.roadmap_detail_next_action_label).uppercase(),
                     style = MaterialTheme.typography.labelSmall.copy(
-                        color = OnSurfacePlaceholderLight,
+                        color = if (isDarkTheme) MaterialTheme.colorScheme.onSurfaceVariant else OnSurfacePlaceholderLight,
                         fontWeight = FontWeight.Bold
                     ),
                     maxLines = 1
@@ -72,7 +81,7 @@ fun RoadmapNextActionBar(
                         nextActionTitle = nextActionTitle
                     ),
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = roadmapInk,
+                        color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else roadmapInk,
                         fontWeight = FontWeight.Bold
                     ),
                     maxLines = 1,
@@ -93,11 +102,17 @@ fun RoadmapNextActionBar(
                 modifier = Modifier.widthIn(min = NextActionButtonMinWidth),
                 variant = RMapButtonVariant.Primary,
                 size = RMapButtonSize.XSmall,
+                colors = if (isDarkTheme) {
+                    androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = androidx.compose.ui.graphics.Color(0xFF0F172A)
+                    )
+                } else null,
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
+                        tint = if (isDarkTheme) androidx.compose.ui.graphics.Color(0xFF0F172A) else MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(RMapButtonSize.XSmall.iconSize)
                     )
                 }

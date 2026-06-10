@@ -328,6 +328,7 @@ private fun SkillLearningHeaderCard(
                     )
                 }
 
+                val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
                 RoadmapPill(
                     text = stringResource(
                         roadmapLearningStatusLabelResId(
@@ -345,7 +346,10 @@ private fun SkillLearningHeaderCard(
                         isCompleted = isCompleted,
                         canTakeQuiz = canTakeQuiz,
                         isNodeLocked = isNodeLocked
-                    )
+                    ),
+                    dotColor = if (!isCompleted && !isNodeLocked && canTakeQuiz) {
+                        if (isDarkTheme) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
+                    } else null
                 )
             }
 
@@ -664,10 +668,15 @@ private fun roadmapLearningStatusContainerColor(
 ): Color {
     val isDark = isSystemInDarkTheme()
     return when {
-        isCompleted -> if (isDark) SuccessContainerDark else SuccessContainerLight
-        isNodeLocked -> MaterialTheme.colorScheme.surfaceContainerLow
-        canTakeQuiz -> MaterialTheme.colorScheme.inversePrimary
-        else -> MaterialTheme.colorScheme.primaryContainer
+        isDark && isCompleted -> Color(0xFF064E3B)
+        isDark && isNodeLocked -> MaterialTheme.colorScheme.surfaceContainerHigh
+        isDark && canTakeQuiz -> MaterialTheme.colorScheme.primaryContainer
+        else -> when {
+            isCompleted -> SuccessContainerLight
+            isNodeLocked -> MaterialTheme.colorScheme.surfaceContainerLow
+            canTakeQuiz -> MaterialTheme.colorScheme.inversePrimary
+            else -> MaterialTheme.colorScheme.primaryContainer
+        }
     }
 }
 
@@ -679,10 +688,15 @@ private fun roadmapLearningStatusContentColor(
 ): Color {
     val isDark = isSystemInDarkTheme()
     return when {
-        isCompleted -> if (isDark) SuccessDark else SuccessLight
-        isNodeLocked -> MaterialTheme.colorScheme.onSurfaceVariant
-        canTakeQuiz -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.primary
+        isDark && isCompleted -> Color(0xFF34D399)
+        isDark && isNodeLocked -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+        isDark && canTakeQuiz -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> when {
+            isCompleted -> SuccessLight
+            isNodeLocked -> MaterialTheme.colorScheme.onSurfaceVariant
+            canTakeQuiz -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.primary
+        }
     }
 }
 

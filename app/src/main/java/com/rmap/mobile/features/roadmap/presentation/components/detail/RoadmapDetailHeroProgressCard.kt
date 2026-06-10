@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -53,25 +54,43 @@ fun RoadmapDetailHeroProgressCard(
 ) {
     val progress = progressFraction.coerceIn(0f, 1f)
     val progressPercent = (progress * 100).toInt()
+    
+    val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
     val primary = MaterialTheme.colorScheme.primary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val secondary = MaterialTheme.colorScheme.secondary
+
+    val contentColorMain = if (isDarkTheme) onSurface else onPrimary
+    val contentColorSub = if (isDarkTheme) secondary else onPrimary.copy(alpha = 0.9f)
+    val pillContainerColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceVariant else onPrimary.copy(alpha = 0.2f)
+    val pillContentColor = if (isDarkTheme) onSurface else onPrimary
+    val pillBorderColor = if (isDarkTheme) MaterialTheme.colorScheme.outlineVariant else onPrimary.copy(alpha = 0.1f)
+    val progressTrackColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else onPrimary.copy(alpha = 0.22f)
+    val progressIndicatorColor = if (isDarkTheme) primary else onPrimary
+    val buttonVariant = if (isDarkTheme) RMapButtonVariant.Primary else RMapButtonVariant.Secondary
+    val buttonContainerColor = if (isDarkTheme) primary else MaterialTheme.colorScheme.surface
+    val buttonContentColor = if (isDarkTheme) onPrimary else primary
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(RoadmapHeroProgressCardHeight)
+            .heightIn(min = RoadmapHeroProgressCardHeight)
     ) {
         RMapHeroSectionBackground(modifier = Modifier.matchParentSize())
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clip(AppShapes.heroCard)
-                .background(primary.copy(alpha = 0.96f))
-        )
+        
+        if (!isDarkTheme) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(AppShapes.heroCard)
+                    .background(primary.copy(alpha = 0.96f))
+            )
+        }
 
         Column(
             modifier = Modifier
-                .matchParentSize()
+                .fillMaxWidth()
                 .padding(Dimens.spacingLg),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
@@ -87,16 +106,16 @@ fun RoadmapDetailHeroProgressCard(
                     Text(
                         text = stringResource(R.string.roadmap_detail_label_roadmap).uppercase(),
                         style = MaterialTheme.typography.titleSmall.copy(
-                            color = onPrimary.copy(alpha = 0.8f),
+                            color = contentColorSub,
                             fontWeight = FontWeight.Bold
                         )
                     )
 
                     RoadmapPill(
                         text = categoryLabel,
-                        containerColor = onPrimary.copy(alpha = 0.2f),
-                        contentColor = onPrimary,
-                        borderColor = onPrimary.copy(alpha = 0.1f)
+                        containerColor = pillContainerColor,
+                        contentColor = pillContentColor,
+                        borderColor = pillBorderColor
                     )
                 }
 
@@ -104,7 +123,7 @@ fun RoadmapDetailHeroProgressCard(
                     text = title,
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.titleLarge.copy(
-                        color = onPrimary,
+                        color = contentColorMain,
                         fontWeight = FontWeight.Bold
                     ),
                 )
@@ -123,21 +142,21 @@ fun RoadmapDetailHeroProgressCard(
                             totalRequiredNodes
                         ),
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = onPrimary.copy(alpha = 0.9f)
+                            color = contentColorSub
                         )
                     )
                     Text(
                         text = stringResource(R.string.home_progress_percent_short, progressPercent),
                         style = MaterialTheme.typography.titleMedium.copy(
-                            color = onPrimary,
+                            color = if (isDarkTheme) primary else onPrimary,
                             fontWeight = FontWeight.Bold
                         )
                     )
                 }
                 RoadmapLinearProgress(
                     progress = progress,
-                    trackColor = onPrimary.copy(alpha = 0.22f),
-                    indicatorColor = onPrimary
+                    trackColor = progressTrackColor,
+                    indicatorColor = progressIndicatorColor
                 )
             }
 
@@ -148,19 +167,19 @@ fun RoadmapDetailHeroProgressCard(
                 ),
                 onClick = onContinueClick,
                 modifier = Modifier.fillMaxWidth(),
-                variant = RMapButtonVariant.Secondary,
+                variant = buttonVariant,
                 size = RMapButtonSize.Medium,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
                         contentDescription = null,
-                        tint = primary,
+                        tint = buttonContentColor,
                         modifier = Modifier.size(RMapButtonSize.Medium.iconSize)
                     )
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = primary
+                    containerColor = buttonContainerColor,
+                    contentColor = buttonContentColor
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = Dimens.cardElevationNone),
                 border = null,
@@ -169,7 +188,10 @@ fun RoadmapDetailHeroProgressCard(
                 )
             )
 
-            NextUnlockText(nextUnlockTitle = nextUnlockTitle)
+            NextUnlockText(
+                nextUnlockTitle = nextUnlockTitle,
+                textColor = contentColorSub
+            )
         }
     }
 }
@@ -189,7 +211,10 @@ private fun roadmapPrimaryActionText(
 }
 
 @Composable
-private fun NextUnlockText(nextUnlockTitle: String) {
+private fun NextUnlockText(
+    nextUnlockTitle: String,
+    textColor: androidx.compose.ui.graphics.Color
+) {
     val prefix = stringResource(R.string.roadmap_detail_next_unlock, "")
     Text(
         text = buildAnnotatedString {
@@ -200,7 +225,7 @@ private fun NextUnlockText(nextUnlockTitle: String) {
         },
         modifier = Modifier.fillMaxWidth(),
         style = MaterialTheme.typography.bodySmall.copy(
-            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.82f)
+            color = textColor
         ),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
