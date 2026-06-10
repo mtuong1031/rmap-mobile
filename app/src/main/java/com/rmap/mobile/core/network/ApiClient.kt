@@ -9,13 +9,17 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+import com.rmap.mobile.core.session.SessionManager
+
 class ApiClient(
     baseUrl: String,
     cookieJar: CookieJar,
+    sessionManager: SessionManager,
     enableHttpLogging: Boolean = BuildConfig.DEBUG
 ) {
     val okHttpClient: OkHttpClient = OkHttpClient.Builder()
         .cookieJar(cookieJar)
+        .authenticator(TokenAuthenticator(baseUrl, cookieJar, sessionManager))
         .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -42,10 +46,11 @@ class ApiClient(
     inline fun <reified T> createService(): T = createService(T::class.java)
 
     companion object {
-        fun fromBuildConfig(cookieJar: CookieJar): ApiClient {
+        fun fromBuildConfig(cookieJar: CookieJar, sessionManager: SessionManager): ApiClient {
             return ApiClient(
                 baseUrl = BuildConfig.BASE_URL,
                 cookieJar = cookieJar,
+                sessionManager = sessionManager,
                 enableHttpLogging = BuildConfig.DEBUG
             )
         }
