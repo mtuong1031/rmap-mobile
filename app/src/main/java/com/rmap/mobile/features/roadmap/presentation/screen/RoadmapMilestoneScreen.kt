@@ -52,14 +52,26 @@ import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAm
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmberText
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapMilestoneSoftBg
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
-import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBg
-import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBorder
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneDetailStatusUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneSubmissionStatusUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneSubmissionUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneTestCaseUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneTestSuiteUiModel
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneSubmissionTestResultUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneUiState
+import com.rmap.mobile.core.ui.components.HighlightStatCardDefaults
+import com.rmap.mobile.core.ui.components.HighlightStatCardRow
+import com.rmap.mobile.core.ui.components.HighlightStatItemUiModel
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.Score
+import androidx.compose.material.icons.automirrored.outlined.FactCheck
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.rotate
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmber
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmberDark
+import androidx.compose.material.icons.outlined.AutoAwesome
 
 @Composable
 fun RoadmapMilestoneScreen(
@@ -191,39 +203,62 @@ private fun MilestoneHeaderCard(
     modifier: Modifier = Modifier
 ) {
     RoadmapDecoratedCard(
-        modifier = modifier,
-        shape = AppShapes.heroCard,
-        containerColor = uiState.status.heroContainerColor(),
-        borderColor = uiState.status.heroBorderColor()
+        modifier = modifier.fillMaxWidth(),
+        borderColor = roadmapAmberBorder,
+        useHeroBackground = true,
+        backgroundBrush = Brush.linearGradient(
+            colors = listOf(
+                roadmapMilestoneSoftBg.copy(alpha = 0.96f),
+                roadmapAmberBg.copy(alpha = 0.98f)
+            )
+        )
     ) {
+        Icon(
+            imageVector = Icons.Outlined.AutoAwesome,
+            contentDescription = null,
+            tint = roadmapAmber.copy(alpha = 0.18f),
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = Dimens.spacingSm)
+                .size(Dimens.iconFrameSize + Dimens.spacingMd)
+                .rotate(12f)
+        )
+
         Column(
             modifier = Modifier.padding(Dimens.spacingXl),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
-            ) {
+            RoadmapPill(
+                text = stringResource(R.string.roadmap_detail_milestone_label),
+                containerColor = roadmapAmberBg,
+                contentColor = roadmapAmber,
+                borderColor = roadmapAmberBorder,
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.AutoAwesome,
+                        contentDescription = null,
+                        tint = roadmapAmber,
+                        modifier = Modifier.size(Dimens.iconXxs)
+                    )
+                }
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)) {
                 Text(
                     text = uiState.title,
-                    style = AppTextStyles.heroTitle.copy(color = uiState.status.heroContentColor()),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = roadmapAmberDark,
+                        fontWeight = FontWeight.Bold
+                    ),
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
-                RoadmapPill(
-                    text = stringResource(uiState.status.labelResId()),
-                    containerColor = uiState.status.containerColor(),
-                    contentColor = uiState.status.contentColor()
+                Text(
+                    text = uiState.description?.takeIf { it.isNotBlank() }
+                        ?: stringResource(R.string.roadmap_milestone_project_brief_empty),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = roadmapAmberText)
                 )
             }
-
-            Text(
-                text = uiState.description?.takeIf { it.isNotBlank() }
-                    ?: stringResource(R.string.roadmap_milestone_project_brief_empty),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    color = uiState.status.heroSupportingColor()
-                )
-            )
         }
     }
 }
@@ -294,7 +329,7 @@ private fun MilestoneTestSuiteSection(
                 )
                 Text(
                     text = testSuite.summary,
-                    style = MaterialTheme.typography.bodyLarge.copy(
+                    style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
                     maxLines = if (expanded) Int.MAX_VALUE else 3,
@@ -353,7 +388,7 @@ private fun MilestoneTestCaseCard(
             )
             Text(
                 text = testCase.description,
-                style = MaterialTheme.typography.bodyLarge.copy(
+                style = MaterialTheme.typography.bodyMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
@@ -366,9 +401,78 @@ private fun MilestoneSubmissionSection(
     submission: RoadmapMilestoneSubmissionUiModel,
     modifier: Modifier = Modifier
 ) {
+    @Suppress("DEPRECATION")
     val clipboardManager = LocalClipboardManager.current
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)
+    ) {
+        RoadmapDecoratedCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = AppShapes.card,
+            containerColor = MaterialTheme.colorScheme.surface,
+            borderColor = MaterialTheme.colorScheme.outlineVariant
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimens.spacingXl),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+            ) {
+                Text(
+                    text = stringResource(submission.status.headingResId()),
+                    style = AppTextStyles.titleMediumStrong.copy(
+                        color = submission.status.contentColor()
+                    )
+                )
+
+                val statItems = listOfNotNull(
+                    HighlightStatItemUiModel(
+                        valueText = submission.attemptNumber.toString(),
+                        labelText = stringResource(R.string.roadmap_milestone_attempt),
+                        icon = Icons.Outlined.Refresh,
+                        style = HighlightStatCardDefaults.neutralStyle()
+                    ),
+                    submission.passRatePercent?.let {
+                        HighlightStatItemUiModel(
+                            valueText = "$it%",
+                            labelText = stringResource(R.string.roadmap_milestone_score),
+                            icon = Icons.Outlined.Score,
+                            style = if (it >= 80) HighlightStatCardDefaults.goalStyle() else HighlightStatCardDefaults.streakStyle()
+                        )
+                    },
+                    submission.passedTests?.let {
+                        HighlightStatItemUiModel(
+                            valueText = "$it/${submission.totalTests}",
+                            labelText = stringResource(R.string.roadmap_milestone_tests_passed),
+                            icon = Icons.AutoMirrored.Outlined.FactCheck,
+                            style = if (it == submission.totalTests) HighlightStatCardDefaults.goalStyle() else HighlightStatCardDefaults.errorStyle()
+                        )
+                    }
+                )
+
+                if (statItems.isNotEmpty()) {
+                    HighlightStatCardRow(items = statItems)
+                }
+            }
+        }
+
+        if (submission.testResults.isNotEmpty()) {
+            MilestoneSubmissionTestResultsSection(testResults = submission.testResults)
+        } else if (!submission.outputLog.isNullOrBlank()) {
+            MilestoneSubmissionOutputLogSection(
+                outputLog = submission.outputLog,
+                clipboardManager = clipboardManager
+            )
+        }
+    }
+}
+
+@Composable
+private fun MilestoneSubmissionTestResultsSection(
+    testResults: List<RoadmapMilestoneSubmissionTestResultUiModel>,
+    modifier: Modifier = Modifier
+) {
     RoadmapDecoratedCard(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         shape = AppShapes.card,
         containerColor = MaterialTheme.colorScheme.surface,
         borderColor = MaterialTheme.colorScheme.outlineVariant
@@ -377,78 +481,107 @@ private fun MilestoneSubmissionSection(
             modifier = Modifier.padding(Dimens.spacingXl),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)) {
+            SectionTitle(text = "Test Results")
+            Column(
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)
+            ) {
+                testResults.forEach { result ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                                shape = AppShapes.button
+                            )
+                            .padding(Dimens.spacingLg),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+                    ) {
+                        Icon(
+                            imageVector = if (result.passed) Icons.Outlined.CheckCircle else Icons.Outlined.Cancel,
+                            contentDescription = null,
+                            tint = if (result.passed) roadmapSuccess else MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(Dimens.iconMd)
+                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)) {
+                            Text(
+                                text = result.name,
+                                style = AppTextStyles.titleMediumStrong.copy(
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            if (!result.passed && result.message.isNotBlank()) {
+                                Text(
+                                    text = result.message,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MilestoneSubmissionOutputLogSection(
+    outputLog: String,
+    @Suppress("DEPRECATION") clipboardManager: androidx.compose.ui.platform.ClipboardManager,
+    modifier: Modifier = Modifier
+) {
+    RoadmapDecoratedCard(
+        modifier = modifier.fillMaxWidth(),
+        shape = AppShapes.card,
+        containerColor = MaterialTheme.colorScheme.surface,
+        borderColor = MaterialTheme.colorScheme.outlineVariant
+    ) {
+        Column(
+            modifier = Modifier.padding(Dimens.spacingXl),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = stringResource(submission.status.headingResId()),
-                    style = AppTextStyles.titleMediumStrong.copy(
-                        color = submission.status.contentColor()
+                    text = stringResource(R.string.roadmap_milestone_raw_output_log),
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold
                     )
                 )
+                IconButton(
+                    onClick = { clipboardManager.setText(AnnotatedString(outputLog)) },
+                    modifier = Modifier.size(Dimens.controlSm)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ContentCopy,
+                        contentDescription = stringResource(R.string.roadmap_milestone_copy_output_log),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(Dimens.iconMd)
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        shape = RoundedCornerShape(Dimens.cardRadiusSm)
+                    )
+                    .padding(Dimens.spacingMd)
+            ) {
                 Text(
-                    text = stringResource(R.string.roadmap_milestone_attempt_format, submission.attemptNumber),
+                    text = outputLog,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
-            }
-
-            submission.passRatePercent?.let { passRate ->
-                Text(
-                    text = stringResource(
-                        R.string.roadmap_milestone_submission_score,
-                        passRate,
-                        submission.passedTests ?: 0,
-                        submission.totalTests ?: 0
-                    ),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                )
-            }
-
-            submission.outputLog?.takeIf { it.isNotBlank() }?.let { outputLog ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(R.string.roadmap_milestone_raw_output_log),
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                    IconButton(
-                        onClick = { clipboardManager.setText(AnnotatedString(outputLog)) },
-                        modifier = Modifier.size(Dimens.controlSm)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.ContentCopy,
-                            contentDescription = stringResource(R.string.roadmap_milestone_copy_output_log),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(Dimens.iconMd)
-                        )
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            color = MaterialTheme.colorScheme.surfaceContainerLow,
-                            shape = RoundedCornerShape(Dimens.cardRadiusSm)
-                        )
-                        .padding(Dimens.spacingMd)
-                ) {
-                    Text(
-                        text = outputLog,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    )
-                }
             }
         }
     }
@@ -586,60 +719,6 @@ private fun SectionTitle(
     )
 }
 
-private fun RoadmapMilestoneDetailStatusUiModel.labelResId(): Int {
-    return when (this) {
-        RoadmapMilestoneDetailStatusUiModel.Completed -> R.string.roadmap_detail_status_completed
-        RoadmapMilestoneDetailStatusUiModel.InProgress -> R.string.roadmap_detail_status_in_progress
-        RoadmapMilestoneDetailStatusUiModel.NotStarted -> R.string.roadmap_detail_status_not_started
-        RoadmapMilestoneDetailStatusUiModel.Locked -> R.string.roadmap_detail_locked
-    }
-}
-
-@Composable
-private fun RoadmapMilestoneDetailStatusUiModel.containerColor() = when (this) {
-    RoadmapMilestoneDetailStatusUiModel.Completed -> roadmapSuccessBg
-    RoadmapMilestoneDetailStatusUiModel.InProgress -> roadmapAmberBg
-    RoadmapMilestoneDetailStatusUiModel.NotStarted -> MaterialTheme.colorScheme.primaryContainer
-    RoadmapMilestoneDetailStatusUiModel.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
-}
-
-@Composable
-private fun RoadmapMilestoneDetailStatusUiModel.contentColor() = when (this) {
-    RoadmapMilestoneDetailStatusUiModel.Completed -> roadmapSuccess
-    RoadmapMilestoneDetailStatusUiModel.InProgress -> roadmapAmberText
-    RoadmapMilestoneDetailStatusUiModel.NotStarted -> MaterialTheme.colorScheme.primary
-    RoadmapMilestoneDetailStatusUiModel.Locked -> MaterialTheme.colorScheme.onSurfaceVariant
-}
-
-@Composable
-private fun RoadmapMilestoneDetailStatusUiModel.heroContainerColor() = when (this) {
-    RoadmapMilestoneDetailStatusUiModel.Completed -> roadmapSuccessBg
-    RoadmapMilestoneDetailStatusUiModel.InProgress -> roadmapMilestoneSoftBg
-    RoadmapMilestoneDetailStatusUiModel.NotStarted -> MaterialTheme.colorScheme.secondaryContainer
-    RoadmapMilestoneDetailStatusUiModel.Locked -> MaterialTheme.colorScheme.surfaceContainerLow
-}
-
-@Composable
-private fun RoadmapMilestoneDetailStatusUiModel.heroBorderColor() = when (this) {
-    RoadmapMilestoneDetailStatusUiModel.Completed -> roadmapSuccessBorder
-    RoadmapMilestoneDetailStatusUiModel.InProgress -> roadmapAmberBorder
-    RoadmapMilestoneDetailStatusUiModel.NotStarted -> MaterialTheme.colorScheme.secondaryContainer
-    RoadmapMilestoneDetailStatusUiModel.Locked -> MaterialTheme.colorScheme.outlineVariant
-}
-
-@Composable
-private fun RoadmapMilestoneDetailStatusUiModel.heroContentColor() = when (this) {
-    RoadmapMilestoneDetailStatusUiModel.Completed -> MaterialTheme.colorScheme.onSurface
-    RoadmapMilestoneDetailStatusUiModel.InProgress -> MaterialTheme.colorScheme.onSurface
-    RoadmapMilestoneDetailStatusUiModel.NotStarted -> MaterialTheme.colorScheme.onSecondaryContainer
-    RoadmapMilestoneDetailStatusUiModel.Locked -> MaterialTheme.colorScheme.onSurface
-}
-
-@Composable
-private fun RoadmapMilestoneDetailStatusUiModel.heroSupportingColor() = when (this) {
-    RoadmapMilestoneDetailStatusUiModel.NotStarted -> MaterialTheme.colorScheme.onSecondaryContainer
-    else -> MaterialTheme.colorScheme.onSurfaceVariant
-}
 
 private fun RoadmapMilestoneSubmissionStatusUiModel.headingResId(): Int {
     return when (this) {
@@ -694,7 +773,19 @@ private fun RoadmapMilestoneScreenPreview() {
                     passRatePercent = null,
                     passedTests = null,
                     totalTests = null,
-                    attemptNumber = 6
+                    attemptNumber = 6,
+                    testResults = listOf(
+                        RoadmapMilestoneSubmissionTestResultUiModel(
+                            name = "Tailwind CSS Dependency Check",
+                            message = "Tailwind CSS is missing from package.json",
+                            passed = false
+                        ),
+                        RoadmapMilestoneSubmissionTestResultUiModel(
+                            name = "Linting and Formatting Setup",
+                            message = "Requirement met.",
+                            passed = true
+                        )
+                    )
                 ),
                 repoUrl = "",
                 isTestSuiteExpanded = false,

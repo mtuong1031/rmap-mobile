@@ -12,7 +12,7 @@ class AppAccessPolicyTest {
         assertTrue(AppAccessPolicy.canAccess(AppRoutes.HOME_SEARCH, isAuthenticated = false))
         assertTrue(AppAccessPolicy.canAccess(AppRoutes.EXPLORE, isAuthenticated = false))
         assertTrue(AppAccessPolicy.canAccess(AppRoutes.PROFILE, isAuthenticated = false))
-        assertTrue(AppAccessPolicy.canAccess(AppRoutes.skillDetail("skill-1"), isAuthenticated = false))
+        assertTrue(AppAccessPolicy.canAccess("skill/skill-1", isAuthenticated = false))
         assertTrue(
             AppAccessPolicy.canAccess(
                 AppRoutes.roadmapDetail("template-1"),
@@ -27,12 +27,7 @@ class AppAccessPolicyTest {
         assertFalse(AppAccessPolicy.canAccess(AppRoutes.AI_ROADMAP, isAuthenticated = false))
         assertFalse(
             AppAccessPolicy.canAccess(
-                AppRoutes.roadmapLearning(
-                    roadmapId = "roadmap-1",
-                    nodeId = "node-1",
-                    skillId = "skill-1",
-                    isCompleted = false
-                ),
+                "roadmap_learning/roadmap-1/node-1/skill-1/false",
                 isAuthenticated = false
             )
         )

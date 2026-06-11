@@ -153,7 +153,7 @@ private fun HomeTemplateRoadmap.toRecommendedRoadmapState(): HomeRecommendedRoad
         categoryId = roleCategory,
         categoryLabel = categoryLabel,
         title = title,
-        nodesText = "$nodeCount nodes",
+        nodesText = nodeCount.toNodeCountText(),
         durationText = duration,
         icon = icon,
         isBeginner = false
@@ -176,7 +176,7 @@ private fun HomeTrendingRoadmap.toTrendingRoadmapCardUiModel(): TrendingRoadmapC
         rankText = "#$rank",
         categoryLabel = categoryLabel,
         title = title,
-        metadataText = "$nodesTotal nodes • ${toDurationText()}",
+        metadataText = nodesTotal.toMetadataText(toDurationText()),
         trendText = trendText,
         leadingIcon = icon.toImageVector(),
         trendIcon = trendText.toTrendingIcon(),
@@ -200,7 +200,7 @@ private fun HomeTrendingRoadmap.toBeginnerRoadmapState(): HomeRecommendedRoadmap
         categoryId = roleCategory,
         categoryLabel = categoryLabel,
         title = title,
-        nodesText = "$nodesTotal nodes",
+        nodesText = nodesTotal.toNodeCountText(),
         durationText = duration,
         icon = icon,
         isBeginner = true
@@ -227,6 +227,14 @@ private fun HomeTrendingRoadmap.toDurationText(): String {
     return durationLabel?.takeIf { it.isNotBlank() }
         ?: estimatedWeeks?.let { "$it weeks" }
         ?: "Self-paced"
+}
+
+private fun Int.toNodeCountText(): String {
+    return takeIf { it > 0 }?.let { "$it nodes" }.orEmpty()
+}
+
+private fun Int.toMetadataText(durationText: String): String {
+    return if (this > 0) "$this nodes • $durationText" else durationText
 }
 
 internal fun String.toFirstName(): String {

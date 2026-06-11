@@ -23,6 +23,8 @@ fun SkillLearningContent.toRoadmapLearningUiState(
         roadmapId = roadmapId,
         nodeId = nodeId,
         skillId = skillId,
+        nodeTitle = nodeTitle ?: skill.name,
+        requirement = requirement?.toRoadmapNodeRequirement() ?: RoadmapNodeRequirement.Required,
         skill = skill.toUiModel(),
         resources = resources.map { resource -> resource.toUiModel() },
         isCompleted = resolvedCompleted,
@@ -56,9 +58,17 @@ private fun SkillResource.toUiModel(): SkillLearningResourceUiModel {
         title = title,
         url = url,
         platformLabelResId = platform.toLabelResId(),
+        rawPlatform = rawPlatform,
         isFree = isFree,
         levelLabelResId = levelTag?.toLabelResId()
     )
+}
+
+private fun com.rmap.mobile.features.roadmap.domain.model.LearningRequirement.toRoadmapNodeRequirement(): RoadmapNodeRequirement {
+    return when (this) {
+        com.rmap.mobile.features.roadmap.domain.model.LearningRequirement.Required -> RoadmapNodeRequirement.Required
+        com.rmap.mobile.features.roadmap.domain.model.LearningRequirement.Optional -> RoadmapNodeRequirement.Optional
+    }
 }
 
 private fun SkillResourcePlatform.toLabelResId(): Int {
@@ -66,6 +76,8 @@ private fun SkillResourcePlatform.toLabelResId(): Int {
         SkillResourcePlatform.Udemy -> R.string.roadmap_learning_platform_udemy
         SkillResourcePlatform.Coursera -> R.string.roadmap_learning_platform_coursera
         SkillResourcePlatform.Youtube -> R.string.roadmap_learning_platform_youtube
+        SkillResourcePlatform.Course -> R.string.roadmap_learning_platform_course
+        SkillResourcePlatform.Article -> R.string.roadmap_learning_platform_article
         SkillResourcePlatform.Other -> R.string.roadmap_learning_platform_other
     }
 }

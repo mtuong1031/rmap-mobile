@@ -3,6 +3,11 @@ package com.rmap.mobile.navigation
 import android.net.Uri
 
 object AppRoutes {
+    // Root routes
+    const val AUTH_GRAPH = "auth_graph"
+    const val MAIN_TABS = "main_tabs"
+
+    // Authentication
     const val AUTH = "auth"
     const val HOME = "home"
     const val HOME_SEARCH = "home_search"
@@ -21,9 +26,10 @@ object AppRoutes {
     const val ROADMAP_DETAIL_SCROLL_HERO = "hero"
     const val ROADMAP_DETAIL_SCROLL_IN_PROGRESS_GROUP = "inProgressGroup"
     const val LEARNING_NODE_REFRESH_RESULT = "learningNodeRefreshResult"
+    const val GROUP_TITLE_ARG = "groupTitle"
     const val ROADMAP_DETAIL = "roadmap_detail/{$ROADMAP_ID_ARG}"
     const val ROADMAP_LEARNING =
-        "roadmap_learning/{$ROADMAP_ID_ARG}/{$NODE_ID_ARG}/{$SKILL_ID_ARG}/{$NODE_COMPLETED_ARG}"
+        "roadmap_learning/{$ROADMAP_ID_ARG}/{$NODE_ID_ARG}/{$SKILL_ID_ARG}/{$NODE_COMPLETED_ARG}?$GROUP_TITLE_ARG={$GROUP_TITLE_ARG}"
     const val ROADMAP_NODE_QUIZ = "roadmap_learning/{$ROADMAP_ID_ARG}/{$NODE_ID_ARG}/quiz"
     const val ROADMAP_MILESTONE = "roadmap_milestone/{$ROADMAP_ID_ARG}/{$MILESTONE_ID_ARG}"
     const val SKILL_DETAIL = "skill/{$SKILL_ID_ARG}"
@@ -34,10 +40,16 @@ object AppRoutes {
         roadmapId: String,
         nodeId: String,
         skillId: String,
-        isCompleted: Boolean
+        isCompleted: Boolean,
+        groupTitle: String? = null
     ): String {
-        return "roadmap_learning/${roadmapId.encodeRouteArg()}/${nodeId.encodeRouteArg()}/" +
+        val base = "roadmap_learning/${roadmapId.encodeRouteArg()}/${nodeId.encodeRouteArg()}/" +
             "${skillId.encodeRouteArg()}/$isCompleted"
+        return if (groupTitle != null) {
+            "$base?$GROUP_TITLE_ARG=${groupTitle.encodeRouteArg()}"
+        } else {
+            base
+        }
     }
 
     fun roadmapNodeQuiz(

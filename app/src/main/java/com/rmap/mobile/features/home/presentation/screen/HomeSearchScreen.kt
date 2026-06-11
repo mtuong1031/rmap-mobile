@@ -14,6 +14,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
@@ -62,6 +63,7 @@ fun HomeSearchScreen(
     onSkillClick: (HomeSearchSkillItemUiModel) -> Unit,
     onSeeMoreSkillsClick: () -> Unit,
     onCreateWithAiClick: (HomeSearchAiSuggestionUiModel) -> Unit,
+    isAuthenticated: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val showSearchResults = query.isNotBlank()
@@ -114,8 +116,9 @@ fun HomeSearchScreen(
                             roadmaps = roadmaps,
                             metadataSeparatorText = stringResource(R.string.separator_bullet),
                             seeMoreText = stringResource(R.string.action_see_more),
-                            resultCountText = stringResource(
-                                R.string.home_search_roadmaps_found_count,
+                            resultCountText = pluralStringResource(
+                                R.plurals.home_search_roadmaps_found_count,
+                                roadmapTotal,
                                 roadmapTotal
                             ),
                             canSeeMore = hasMoreRoadmaps,
@@ -133,8 +136,9 @@ fun HomeSearchScreen(
                             title = stringResource(R.string.home_search_skills_title),
                             skills = skills,
                             seeMoreText = stringResource(R.string.action_see_more),
-                            resultCountText = stringResource(
-                                R.string.home_search_skills_found_count,
+                            resultCountText = pluralStringResource(
+                                R.plurals.home_search_skills_found_count,
+                                skillTotal,
                                 skillTotal
                             ),
                             canSeeMore = hasMoreSkills,
@@ -152,6 +156,11 @@ fun HomeSearchScreen(
                             title = stringResource(R.string.home_search_ai_suggestion_title),
                             suggestion = aiSuggestion,
                             onCreateWithAiClick = onCreateWithAiClick,
+                            authenticationRequiredText = if (isAuthenticated) {
+                                null
+                            } else {
+                                stringResource(R.string.home_search_sign_in_required)
+                            },
                             modifier = Modifier.padding(horizontal = Dimens.spacingLg)
                         )
                     }

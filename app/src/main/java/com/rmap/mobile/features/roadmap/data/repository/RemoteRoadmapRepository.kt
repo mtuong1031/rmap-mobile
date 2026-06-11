@@ -6,12 +6,12 @@ import com.rmap.mobile.core.network.NetworkResult
 import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.core.session.SessionManager
-import com.rmap.mobile.features.roadmap.data.mapper.toCategories
 import com.rmap.mobile.features.roadmap.data.mapper.toDomain
 import com.rmap.mobile.features.roadmap.data.mapper.toLearningNodeDetail
 import com.rmap.mobile.features.roadmap.data.mapper.toLearningProgress
 import com.rmap.mobile.features.roadmap.data.mapper.toMilestoneDetail
 import com.rmap.mobile.features.roadmap.data.mapper.toNodeStatusRequestValue
+import com.rmap.mobile.features.roadmap.data.mapper.toCategories
 import com.rmap.mobile.features.roadmap.data.mapper.toRoadmapWithNodes
 import com.rmap.mobile.features.roadmap.data.mapper.toSkillLearningContent
 import com.rmap.mobile.features.roadmap.data.mapper.toSummary
@@ -40,20 +40,12 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.sync.withPermit
 
 class RemoteRoadmapRepository(
     private val roadmapApi: RoadmapApi,
     private val sessionManager: SessionManager
 ) : RoadmapRepository {
-    private val templateCacheMutex = Mutex()
-    private var templateCache: TemplateCache? = null
-
     override suspend fun getLearningProgress(): Result<LearningProgress> {
         return when (val roadmapResult = getRoadmapsResult(page = FIRST_PAGE, perPage = FIRST_ITEM_PAGE_SIZE)) {
             is NetworkResult.Success -> {
@@ -82,25 +74,52 @@ class RemoteRoadmapRepository(
     }
 
     override suspend fun getExploreCategories(): Result<List<RoadmapCategory>> {
-        return loadTemplates(hydrateNodes = false).map { roadmaps -> roadmaps.toCategories() }
+        return when (val result = SafeApiCall.execute(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            roadmapApi.listTemplateCategories()
+        }) {
+            is NetworkResult.Success -> result.toDomainResult { response ->
+                response.categories.map { it.toDomain() }
+            }
+            is NetworkResult.Error -> {
+                if (result.type == NetworkErrorType.NotFound) {
+                    loadTemplates(hydrateNodes = false).map { roadmaps -> roadmaps.toCategories() }
+                } else {
+                    Result.failure(result.toAppException())
+                }
+            }
+        }
     }
 
     override suspend fun getRecommendedRoadmaps(): Result<List<RoadmapSummary>> {
         return loadTemplates(hydrateNodes = true).map { roadmaps -> roadmaps.take(RECOMMENDED_ROADMAP_LIMIT) }
     }
 
-    override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
+    override suspend fun searchRoadmaps(query: String, categoryId: String?, page: Int, perPage: Int): Result<Pair<List<RoadmapSummary>, Int>> {
         val normalizedQuery = query.trim()
-        return loadTemplates(hydrateNodes = false).map { roadmaps ->
-            if (normalizedQuery.isBlank()) {
-                roadmaps
-            } else {
-                roadmaps.filter { roadmap ->
-                    roadmap.title.contains(normalizedQuery, ignoreCase = true) ||
-                        roadmap.durationLabel.contains(normalizedQuery, ignoreCase = true) ||
-                        roadmap.categoryId.contains(normalizedQuery, ignoreCase = true)
+        val result = getTemplatesResult(categoryId = categoryId, page = page, perPage = perPage)
+        return when (result) {
+            is NetworkResult.Success -> {
+                val totalCount = result.data.meta?.total ?: 0
+                loadTemplateSummaries(
+                    templates = result.data.data.orEmpty(),
+                    hydrateNodes = false,
+                    statusCode = result.code
+                ).map { roadmaps ->
+                    val filteredRoadmaps = if (normalizedQuery.isBlank()) {
+                        roadmaps
+                    } else {
+                        roadmaps.filter { roadmap ->
+                            roadmap.title.contains(normalizedQuery, ignoreCase = true) ||
+                                roadmap.durationLabel.contains(normalizedQuery, ignoreCase = true) ||
+                                roadmap.categoryId.contains(normalizedQuery, ignoreCase = true)
+                        }
+                    }
+                    Pair(filteredRoadmaps, totalCount)
                 }
             }
+            is NetworkResult.Error -> Result.failure(result.toAppException())
         }
     }
 
@@ -117,7 +136,6 @@ class RemoteRoadmapRepository(
                     roadmapId = roadmapId
                 )
             }
-
             is NetworkResult.Error -> {
                 if (templateResult.type != NetworkErrorType.NotFound) {
                     return Result.failure(templateResult.toAppException())
@@ -411,51 +429,25 @@ class RemoteRoadmapRepository(
         hydrateNodes: Boolean,
         statusCode: Int
     ): Result<List<RoadmapSummary>> {
-        val hydrationSemaphore = Semaphore(MAX_CONCURRENT_TEMPLATE_HYDRATIONS)
-        val summaryResults = coroutineScope {
-            templates.map { roadmap ->
-                async {
-                    hydrationSemaphore.withPermit {
-                        loadTemplateSummary(
-                            roadmap = roadmap,
-                            hydrateNodes = hydrateNodes,
-                            statusCode = statusCode
-                        )
-                    }
+        val summaries = mutableListOf<RoadmapSummary>()
+        templates.forEach { roadmap ->
+            val roadmapId = roadmap.id?.takeIf { it.isNotBlank() }
+                ?: return Result.failure(invalidRoadmapResponse(statusCode))
+            val nodes = if (hydrateNodes) {
+                when (val nodesResult = getTemplateNodesResult(roadmapId)) {
+                    is NetworkResult.Success -> nodesResult.data.nodes.orEmpty()
+                    is NetworkResult.Error -> emptyList()
                 }
-            }.awaitAll()
-        }
-
-        val failure = summaryResults.firstOrNull { it.isFailure }
-        return if (failure != null) {
-            Result.failure(
-                failure.exceptionOrNull() ?: invalidRoadmapResponse(statusCode)
-            )
-        } else {
-            Result.success(summaryResults.map { it.getOrThrow() })
-        }
-    }
-
-    private suspend fun loadTemplateSummary(
-        roadmap: RoadmapDto,
-        hydrateNodes: Boolean,
-        statusCode: Int
-    ): Result<RoadmapSummary> {
-        val roadmapId = roadmap.id?.takeIf { it.isNotBlank() }
-            ?: return Result.failure(invalidRoadmapResponse(statusCode))
-        val nodes = if (hydrateNodes) {
-            when (val nodesResult = getTemplateNodesResult(roadmapId)) {
-                is NetworkResult.Success -> nodesResult.data.nodes.orEmpty()
-                is NetworkResult.Error -> emptyList()
+            } else {
+                emptyList()
             }
-        } else {
-            emptyList()
+            val summary = runCatching { roadmap.toSummary(nodes) }
+                .getOrElse { error ->
+                    return Result.failure(invalidRoadmapResponse(statusCode, error))
+                }
+            summaries += summary
         }
-
-        return runCatching { roadmap.toSummary(nodes) }
-            .recoverCatching { error ->
-                throw invalidRoadmapResponse(statusCode, error)
-            }
+        return Result.success(summaries)
     }
 
     private suspend fun getRoadmapsResult(
@@ -541,61 +533,28 @@ class RemoteRoadmapRepository(
     }
 
     private suspend fun getTemplatesResult(
+        categoryId: String? = null,
         page: Int,
         perPage: Int
     ): NetworkResult<RoadmapsResponseDto> {
-        return templateCacheMutex.withLock {
-            val now = System.nanoTime()
-            val cached = templateCache
-            if (
-                cached != null &&
-                cached.page == page &&
-                cached.perPage == perPage &&
-                now - cached.cachedAtNanos < TEMPLATE_CACHE_TTL_NANOS
-            ) {
-                return@withLock NetworkResult.Success(
-                    data = cached.response,
-                    code = cached.statusCode
-                )
-            }
-
-            when (val result = fetchTemplatesResult(page = page, perPage = perPage)) {
-                is NetworkResult.Success -> {
-                    templateCache = TemplateCache(
-                        page = page,
-                        perPage = perPage,
-                        response = result.data,
-                        statusCode = result.code,
-                        cachedAtNanos = System.nanoTime()
-                    )
-                    result
-                }
-
-                is NetworkResult.Error -> result
-            }
-        }
-    }
-
-    private suspend fun fetchTemplatesResult(
-        page: Int,
-        perPage: Int
-    ): NetworkResult<RoadmapsResponseDto> {
-        val publicResult = SafeApiCall.execute {
-            roadmapApi.listLegacyTemplates(
+        val officialResult = SafeApiCall.execute {
+            roadmapApi.listTemplates(
+                roleCategory = categoryId,
                 page = page,
                 perPage = perPage
             )
         }
 
-        return if (publicResult is NetworkResult.Error && publicResult.type == NetworkErrorType.NotFound) {
+        return if (officialResult is NetworkResult.Error && officialResult.type == NetworkErrorType.NotFound) {
             SafeApiCall.execute {
-                roadmapApi.listTemplates(
+                roadmapApi.listLegacyTemplates(
+                    roleCategory = categoryId,
                     page = page,
                     perPage = perPage
                 )
             }
         } else {
-            publicResult
+            officialResult
         }
     }
 
@@ -682,15 +641,5 @@ class RemoteRoadmapRepository(
         const val FIRST_ITEM_PAGE_SIZE = 1
         const val ROADMAP_PAGE_SIZE = 20
         const val RECOMMENDED_ROADMAP_LIMIT = 5
-        const val MAX_CONCURRENT_TEMPLATE_HYDRATIONS = 4
-        const val TEMPLATE_CACHE_TTL_NANOS = 120_000_000_000L
     }
-
-    private data class TemplateCache(
-        val page: Int,
-        val perPage: Int,
-        val response: RoadmapsResponseDto,
-        val statusCode: Int,
-        val cachedAtNanos: Long
-    )
 }

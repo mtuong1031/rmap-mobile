@@ -83,6 +83,22 @@ object HighlightStatCardDefaults {
             iconColor = PrimaryLight,
         )
     }
+
+    @Composable
+    fun neutralStyle(): HighlightStatCardStyle {
+        return HighlightStatCardStyle(
+            iconContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+
+    @Composable
+    fun errorStyle(): HighlightStatCardStyle {
+        return HighlightStatCardStyle(
+            iconContainerColor = MaterialTheme.colorScheme.errorContainer,
+            iconColor = MaterialTheme.colorScheme.error
+        )
+    }
 }
 
 @Composable

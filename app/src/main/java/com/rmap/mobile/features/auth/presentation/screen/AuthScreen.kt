@@ -2,7 +2,6 @@ package com.rmap.mobile.features.auth.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,38 +9,31 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,44 +41,93 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.launch
+import java.security.MessageDigest
+import java.util.UUID
+import com.rmap.mobile.BuildConfig
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
-import com.rmap.mobile.core.ui.components.RMapTextInput
-import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.auth.presentation.viewmodel.AuthMode
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthUiState
-
-private val AuthHeroHeight = 320.dp
 
 @Composable
 fun AuthScreen(
     uiState: AuthUiState,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onFullNameChange: (String) -> Unit,
-    onToggleMode: () -> Unit,
-    onTogglePasswordVisibility: () -> Unit,
-    onSubmit: () -> Unit,
-    onBackClick: () -> Unit = {},
+    onGoogleIdTokenReceived: (String) -> Unit,
+    onLoginError: (String) -> Unit,
+    onGithubLoginClick: () -> Unit,
+    onBackClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     heroPainter: Painter? = null
 ) {
     val isPreview = LocalInspectionMode.current
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val resolvedHeroPainter = heroPainter ?: if (isPreview) {
         ColorPainter(Color(0xFFE8DDFF))
     } else {
         painterResource(id = R.drawable.auth_hero)
+    }
+
+    val handleGoogleLogin = {
+        if (!isPreview) {
+            coroutineScope.launch {
+                try {
+                    val credentialManager = CredentialManager.create(context)
+                    val rawNonce = UUID.randomUUID().toString()
+                    val bytes = rawNonce.toByteArray()
+                    val md = MessageDigest.getInstance("SHA-256")
+                    val digest = md.digest(bytes)
+                    val hashedNonce = digest.fold("") { str, it -> str + "%02x".format(it) }
+
+                    val googleIdOption = GetGoogleIdOption.Builder()
+                        .setFilterByAuthorizedAccounts(false)
+                        .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                        .setNonce(hashedNonce)
+                        .setAutoSelectEnabled(false)
+                        .build()
+
+                    val request = GetCredentialRequest.Builder()
+                        .addCredentialOption(googleIdOption)
+                        .build()
+
+                    val result = credentialManager.getCredential(
+                        request = request,
+                        context = context,
+                    )
+
+                    val credential = result.credential
+                    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                        onGoogleIdTokenReceived(googleIdTokenCredential.idToken)
+                    } else {
+                        onLoginError(context.getString(R.string.auth_sign_in_failed))
+                    }
+                } catch (e: GetCredentialException) {
+                    val message = when (e) {
+                        is NoCredentialException -> context.getString(R.string.auth_error_no_accounts)
+                        is GetCredentialCancellationException -> context.getString(R.string.auth_error_cancelled)
+                        else -> context.getString(R.string.auth_sign_in_failed)
+                    }
+                    onLoginError(message)
+                } catch (e: Exception) {
+                    onLoginError(context.getString(R.string.auth_sign_in_failed))
+                }
+            }
+        }
     }
 
     Box(
@@ -98,27 +139,29 @@ fun AuthScreen(
             painter = resolvedHeroPainter,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(AuthHeroHeight)
+                .fillMaxHeight(0.6f)
         )
 
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier
-                .statusBarsPadding()
-                .padding(Dimens.spacingSm)
-                .align(Alignment.TopStart)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(R.string.content_description_back),
-                tint = MaterialTheme.colorScheme.onBackground
-            )
+        if (onBackClick != null) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(Dimens.spacingSm)
+                    .align(Alignment.TopStart)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = stringResource(R.string.content_description_back),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
 
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.58f)
+                .fillMaxHeight(0.45f)
                 .align(Alignment.BottomCenter),
             shape = AppShapes.bottomSheet,
             color = MaterialTheme.colorScheme.background,
@@ -126,12 +169,8 @@ fun AuthScreen(
         ) {
             AuthFormSection(
                 uiState = uiState,
-                onEmailChange = onEmailChange,
-                onPasswordChange = onPasswordChange,
-                onFullNameChange = onFullNameChange,
-                onToggleMode = onToggleMode,
-                onTogglePasswordVisibility = onTogglePasswordVisibility,
-                onSubmit = onSubmit,
+                onGoogleLoginClick = handleGoogleLogin,
+                onGithubLoginClick = onGithubLoginClick,
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding()
@@ -177,152 +216,106 @@ private fun HeroSection(
 @Composable
 private fun AuthFormSection(
     uiState: AuthUiState,
-    onEmailChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit,
-    onFullNameChange: (String) -> Unit,
-    onToggleMode: () -> Unit,
-    onTogglePasswordVisibility: () -> Unit,
-    onSubmit: () -> Unit,
+    onGoogleLoginClick: () -> Unit,
+    onGithubLoginClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)
     ) {
-        AuthHeader(mode = uiState.mode)
+        AuthHeader()
+
+        val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+
+        val googleButtonColors = if (isDarkTheme) {
+            androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(com.rmap.mobile.core.ui.theme.OnSurfaceDisabledLight.value)
+            )
+        } else {
+            com.rmap.mobile.core.ui.components.RMapButtonDefaults.colors(variant = RMapButtonVariant.Primary)
+        }
+
+        val githubButtonColors = if (isDarkTheme) {
+            androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                disabledContainerColor = MaterialTheme.colorScheme.outline,
+                disabledContentColor = Color(com.rmap.mobile.core.ui.theme.OnSurfaceDisabledLight.value)
+            )
+        } else {
+            com.rmap.mobile.core.ui.components.RMapButtonDefaults.colors(variant = RMapButtonVariant.Secondary)
+        }
 
         Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)) {
-            if (uiState.isRegisterMode) {
-                AuthInput(
-                    value = uiState.fullName,
-                    onValueChange = onFullNameChange,
-                    placeholder = stringResource(R.string.auth_full_name_placeholder),
-                    enabled = !uiState.isLoading,
-                    leadingIcon = {
-                        AuthInputIcon(imageVector = Icons.Outlined.Person)
-                    }
-                )
-            }
-
-            AuthInput(
-                value = uiState.email,
-                onValueChange = onEmailChange,
-                placeholder = stringResource(R.string.auth_email_placeholder),
+            RMapButton(
+                text = stringResource(id = R.string.auth_continue_with_google),
+                onClick = onGoogleLoginClick,
                 enabled = !uiState.isLoading,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                ),
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Primary,
+                colors = googleButtonColors,
+                size = RMapButtonSize.Large,
                 leadingIcon = {
-                    AuthInputIcon(imageVector = Icons.Outlined.Email)
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_logo_google),
+                        contentDescription = null,
+                        modifier = Modifier.size(Dimens.iconLg),
+                        tint = if (isDarkTheme) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             )
 
-            AuthInput(
-                value = uiState.password,
-                onValueChange = onPasswordChange,
-                placeholder = stringResource(R.string.auth_password_placeholder),
+            RMapButton(
+                text = stringResource(id = R.string.auth_continue_with_github),
+                onClick = onGithubLoginClick,
                 enabled = !uiState.isLoading,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                ),
-                visualTransformation = if (uiState.isPasswordVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Secondary,
+                colors = githubButtonColors,
+                size = RMapButtonSize.Large,
                 leadingIcon = {
-                    AuthInputIcon(imageVector = Icons.Outlined.Lock)
-                },
-                trailingIcon = if (uiState.password.isNotEmpty()) {
-                    {
-                        Box(
-                            modifier = Modifier
-                                .size(RMapTextInputDefaults.ClearButtonSize)
-                                .clickable(
-                                    enabled = !uiState.isLoading,
-                                    onClick = onTogglePasswordVisibility
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = if (uiState.isPasswordVisible) {
-                                    Icons.Outlined.VisibilityOff
-                                } else {
-                                    Icons.Outlined.Visibility
-                                },
-                                contentDescription = stringResource(R.string.auth_toggle_password_visibility),
-                                tint = RMapTextInputDefaults.colors().placeholderColor,
-                                modifier = Modifier.size(Dimens.iconLg)
-                            )
-                        }
-                    }
-                } else null
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_logo_github),
+                        contentDescription = null,
+                        modifier = Modifier.size(Dimens.iconLg),
+                        tint = if (isDarkTheme) Color.White else Color.Unspecified
+                    )
+                }
             )
         }
 
         uiState.errorMessage?.let { errorMessage ->
-            Text(
-                text = errorMessage,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.error,
-                    fontWeight = FontWeight.Medium
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.ErrorOutline,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(Dimens.iconSm)
                 )
-            )
-        }
-
-        RMapButton(
-            text = if (uiState.isRegisterMode) {
-                stringResource(R.string.auth_create_account)
-            } else {
-                stringResource(R.string.auth_sign_in)
-            },
-            onClick = onSubmit,
-            enabled = !uiState.isLoading,
-            modifier = Modifier.fillMaxWidth(),
-            variant = RMapButtonVariant.Primary,
-            size = RMapButtonSize.Large,
-            leadingIcon = if (uiState.isLoading) {
-                {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.fillMaxSize()
+                Text(
+                    text = errorMessage,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Medium
                     )
-                }
-            } else {
-                null
+                )
             }
-        )
-
-        ModeToggleRow(
-            mode = uiState.mode,
-            enabled = !uiState.isLoading,
-            onToggleMode = onToggleMode
-        )
+        }
     }
 }
 
 @Composable
-private fun AuthInputIcon(imageVector: ImageVector) {
-    Icon(
-        imageVector = imageVector,
-        contentDescription = null,
-        tint = RMapTextInputDefaults.colors().placeholderColor,
-        modifier = Modifier.size(Dimens.iconLg)
-    )
-}
-
-@Composable
-private fun AuthHeader(mode: AuthMode) {
+private fun AuthHeader() {
     Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)) {
         Text(
-            text = if (mode == AuthMode.Register) {
-                stringResource(R.string.auth_heading_create_account)
-            } else {
-                stringResource(R.string.auth_heading_continue_account)
-            },
+            text = stringResource(id = R.string.auth_sign_in_or_sign_up),
             style = MaterialTheme.typography.headlineSmall.copy(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -336,69 +329,6 @@ private fun AuthHeader(mode: AuthMode) {
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.70f)
             )
         )
-    }
-}
-
-@Composable
-private fun AuthInput(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    enabled: Boolean,
-    modifier: Modifier = Modifier,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    leadingIcon: (@Composable () -> Unit)? = null,
-    trailingIcon: (@Composable () -> Unit)? = null
-) {
-    RMapTextInput(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.fillMaxWidth(),
-        placeholder = placeholder,
-        enabled = enabled,
-        textStyle = MaterialTheme.typography.bodyLarge,
-        keyboardOptions = keyboardOptions,
-        visualTransformation = visualTransformation,
-        leadingIcon = leadingIcon,
-        trailingIcon = trailingIcon
-    )
-}
-
-@Composable
-private fun ModeToggleRow(
-    mode: AuthMode,
-    enabled: Boolean,
-    onToggleMode: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = if (mode == AuthMode.Register) {
-                stringResource(R.string.auth_have_account)
-            } else {
-                stringResource(R.string.auth_need_account)
-            },
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.70f)
-            )
-        )
-
-        TextButton(
-            onClick = onToggleMode,
-            enabled = enabled
-        ) {
-            Text(
-                text = if (mode == AuthMode.Register) {
-                    stringResource(R.string.auth_sign_in)
-                } else {
-                    stringResource(R.string.auth_create_account)
-                }
-            )
-        }
     }
 }
 
@@ -429,16 +359,10 @@ private fun welcomeAnnotatedText(): AnnotatedString {
 private fun AuthScreenPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         AuthScreen(
-            uiState = AuthUiState(
-                email = "learner@example.com",
-                password = "password123"
-            ),
-            onEmailChange = {},
-            onPasswordChange = {},
-            onFullNameChange = {},
-            onToggleMode = {},
-            onTogglePasswordVisibility = {},
-            onSubmit = {},
+            uiState = AuthUiState(),
+            onGoogleIdTokenReceived = {},
+            onLoginError = {},
+            onGithubLoginClick = {},
             heroPainter = ColorPainter(Color(0xFFE8DDFF))
         )
     }

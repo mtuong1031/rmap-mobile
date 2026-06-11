@@ -31,16 +31,19 @@ fun SkillResourceDto.toDomain(defaultSkillId: String? = null): SkillResource {
         title = title.requiredSkillApiField("resource.title"),
         url = url.requiredSkillApiField("resource.url"),
         platform = platform.toSkillResourcePlatform(),
+        rawPlatform = platform,
         isFree = isFree == true,
         levelTag = levelTag.toSkillLevelTag()
     )
 }
 
 private fun String?.toSkillResourcePlatform(): SkillResourcePlatform {
-    return when (this?.lowercase()) {
+    return when (this?.trim()?.lowercase()) {
         "udemy" -> SkillResourcePlatform.Udemy
         "coursera" -> SkillResourcePlatform.Coursera
         "youtube" -> SkillResourcePlatform.Youtube
+        "course" -> SkillResourcePlatform.Course
+        "article", "blog" -> SkillResourcePlatform.Article
         else -> SkillResourcePlatform.Other
     }
 }

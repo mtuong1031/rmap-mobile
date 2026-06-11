@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,6 +39,7 @@ fun HomeSearchAiSuggestionSection(
     title: String,
     suggestion: HomeSearchAiSuggestionUiModel,
     onCreateWithAiClick: (HomeSearchAiSuggestionUiModel) -> Unit,
+    authenticationRequiredText: String? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -90,6 +92,28 @@ fun HomeSearchAiSuggestionSection(
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 )
+
+                if (authenticationRequiredText != null) {
+                    Row(
+                        modifier = Modifier.padding(top = Dimens.spacingXs),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(Dimens.iconXs)
+                        )
+                        Text(
+                            text = authenticationRequiredText,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
+                }
 
                 Row(
                     modifier = Modifier

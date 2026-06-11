@@ -21,6 +21,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ButtonDefaults
@@ -52,11 +57,20 @@ import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.cardShadow
+import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
+import androidx.compose.foundation.isSystemInDarkTheme
+import com.rmap.mobile.core.utils.parseMarkdownToAnnotatedString
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapLearningUiState
+import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeRequirement
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.SkillLearningDetailUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.SkillLearningResourceUiModel
+import com.rmap.mobile.core.ui.theme.SuccessContainerDark
+import com.rmap.mobile.core.ui.theme.SuccessContainerLight
+import com.rmap.mobile.core.ui.theme.SuccessDark
+import com.rmap.mobile.core.ui.theme.SuccessLight
 
 @Composable
 fun RoadmapLearningScreen(
@@ -78,59 +92,67 @@ fun RoadmapLearningScreen(
         }
     }
 
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .safeDrawingPadding()
     ) {
-        when {
-            uiState.isLoading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-
-            uiState.errorMessageResId != null -> {
-                RoadmapLearningMessageState(
-                    icon = Icons.Outlined.ErrorOutline,
-                    messageResId = uiState.errorMessageResId,
-                    actionTextResId = R.string.roadmap_detail_retry,
-                    onActionClick = onRetryClick,
-                    iconTint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(Dimens.spacingXxl)
-                )
-            }
-
-            uiState.skill == null -> {
-                RoadmapLearningMessageState(
-                    icon = Icons.Outlined.Code,
-                    messageResId = R.string.roadmap_learning_empty_description,
-                    actionTextResId = R.string.roadmap_detail_retry,
-                    onActionClick = onRetryClick,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(Dimens.spacingXxl)
-                )
-            }
-
-            else -> {
-                RoadmapLearningContent(
-                    skill = uiState.skill,
-                    resources = uiState.resources,
-                    isCompleted = uiState.isCompleted,
-                    canTakeQuiz = uiState.canTakeQuiz,
-                    isNodeLocked = uiState.isNodeLocked,
-                    onResourceClick = onResourceClick,
-                    onTakeQuizClick = handleTakeQuizClick
-                )
-            }
-        }
-
         RoadmapLearningTopBar(
             onBackClick = onBackClick,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
         )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+
+                uiState.errorMessageResId != null -> {
+                    RoadmapLearningMessageState(
+                        icon = Icons.Outlined.ErrorOutline,
+                        messageResId = uiState.errorMessageResId,
+                        actionTextResId = R.string.roadmap_detail_retry,
+                        onActionClick = onRetryClick,
+                        iconTint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(Dimens.spacingXxl)
+                    )
+                }
+
+                uiState.skill == null -> {
+                    RoadmapLearningMessageState(
+                        icon = Icons.Outlined.Code,
+                        messageResId = R.string.roadmap_learning_empty_description,
+                        actionTextResId = R.string.roadmap_detail_retry,
+                        onActionClick = onRetryClick,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(Dimens.spacingXxl)
+                    )
+                }
+
+                else -> {
+                    RoadmapLearningContent(
+                        nodeTitle = uiState.nodeTitle,
+                        requirement = uiState.requirement,
+                        skill = uiState.skill,
+                        resources = uiState.resources,
+                        isCompleted = uiState.isCompleted,
+                        canTakeQuiz = uiState.canTakeQuiz,
+                        isNodeLocked = uiState.isNodeLocked,
+                        onResourceClick = onResourceClick,
+                        onTakeQuizClick = handleTakeQuizClick
+                    )
+                }
+            }
+        }
     }
 
     if (isStartForQuizDialogVisible) {
@@ -171,6 +193,8 @@ fun RoadmapLearningScreen(
 
 @Composable
 private fun RoadmapLearningContent(
+    nodeTitle: String,
+    requirement: RoadmapNodeRequirement,
     skill: SkillLearningDetailUiModel,
     resources: List<SkillLearningResourceUiModel>,
     isCompleted: Boolean,
@@ -184,7 +208,7 @@ private fun RoadmapLearningContent(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = Dimens.spacingScreenHorizontal,
-                top = Dimens.controlXl + Dimens.spacingXl,
+                top = Dimens.spacingLg,
                 end = Dimens.spacingScreenHorizontal,
                 bottom = RoadmapLearningContentBottomPadding
             ),
@@ -192,10 +216,19 @@ private fun RoadmapLearningContent(
         ) {
             item {
                 SkillLearningHeaderCard(
+                    nodeTitle = nodeTitle,
+                    requirement = requirement,
                     skill = skill,
                     isCompleted = isCompleted,
                     canTakeQuiz = canTakeQuiz,
                     isNodeLocked = isNodeLocked
+                )
+            }
+
+            item {
+                SkillLearningDetailsSection(
+                    description = skill.description?.takeIf { it.isNotBlank() }
+                        ?: stringResource(R.string.roadmap_learning_no_description)
                 )
             }
 
@@ -248,49 +281,54 @@ private fun RoadmapLearningContent(
 
 @Composable
 private fun SkillLearningHeaderCard(
+    nodeTitle: String,
+    requirement: RoadmapNodeRequirement,
     skill: SkillLearningDetailUiModel,
     isCompleted: Boolean,
     canTakeQuiz: Boolean,
     isNodeLocked: Boolean
 ) {
-    RoadmapDecoratedCard(
-        shape = AppShapes.searchBar,
-        containerColor = MaterialTheme.colorScheme.surface,
-        borderColor = MaterialTheme.colorScheme.outlineVariant,
-        shadow = true
+    Box(
+        modifier = Modifier.fillMaxWidth()
     ) {
+        RMapHeroSectionBackground(
+            modifier = Modifier.matchParentSize()
+        )
+
         Column(
-            modifier = Modifier.padding(Dimens.spacingLg),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+            modifier = Modifier.padding(Dimens.spacingXxl),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).padding(end = Dimens.spacingMd),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
                 ) {
                     Text(
-                        text = skill.name,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface,
+                        text = nodeTitle,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold
-                        ),
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = skill.name,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    Text(
+                        text = skill.name,
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Black
+                        ),
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
 
+                val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
                 RoadmapPill(
                     text = stringResource(
                         roadmapLearningStatusLabelResId(
@@ -308,7 +346,10 @@ private fun SkillLearningHeaderCard(
                         isCompleted = isCompleted,
                         canTakeQuiz = canTakeQuiz,
                         isNodeLocked = isNodeLocked
-                    )
+                    ),
+                    dotColor = if (!isCompleted && !isNodeLocked && canTakeQuiz) {
+                        if (isDarkTheme) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
+                    } else null
                 )
             }
 
@@ -317,26 +358,102 @@ private fun SkillLearningHeaderCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RoadmapPill(
-                    text = stringResource(R.string.roadmap_detail_status_required),
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.primary
+                    text = stringResource(
+                        if (requirement == RoadmapNodeRequirement.Required) R.string.roadmap_detail_status_required
+                        else R.string.roadmap_detail_status_optional
+                    ),
+                    containerColor = if (requirement == RoadmapNodeRequirement.Required) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                    contentColor = if (requirement == RoadmapNodeRequirement.Required) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 skill.estimatedHours?.takeIf { it > 0 }?.let { estimatedHours ->
-                    RoadmapPill(
-                        text = stringResource(R.string.roadmap_learning_estimated_hours, estimatedHours),
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                                shape = AppShapes.pill
+                            )
+                            .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXs),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Schedule,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(Dimens.iconSm)
+                        )
+                        Text(
+                            text = stringResource(R.string.roadmap_learning_estimated_hours, estimatedHours),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                    }
                 }
             }
+        }
+    }
+}
 
-            Text(
-                text = skill.description?.takeIf { it.isNotBlank() }
-                    ?: stringResource(R.string.roadmap_learning_no_description),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+@Composable
+private fun SkillLearningDetailsSection(
+    description: String,
+    modifier: Modifier = Modifier
+) {
+    val isDark = isSystemInDarkTheme()
+    val containerColor = if (isDark) {
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+    } else {
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+    }
+    val borderColor = if (isDark) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+    ) {
+        Text(
+            text = "About this skill",
+            style = MaterialTheme.typography.titleMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold
             )
+        )
+
+        RoadmapDecoratedCard(
+            shape = AppShapes.button,
+            containerColor = containerColor,
+            borderColor = borderColor,
+            shadow = false
+        ) {
+            Row(
+                modifier = Modifier.padding(Dimens.spacingLg),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
+                verticalAlignment = Alignment.Top
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Lightbulb,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(Dimens.iconLg)
+                )
+                Text(
+                    text = parseMarkdownToAnnotatedString(
+                        text = description,
+                        codeTextColor = MaterialTheme.colorScheme.primary,
+                        codeBackgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.2f
+                    )
+                )
+            }
         }
     }
 }
@@ -361,13 +478,22 @@ private fun SkillLearningResourceCard(
             Box(
                 modifier = Modifier
                     .size(Dimens.controlMd)
-                    .background(MaterialTheme.colorScheme.primaryContainer, AppShapes.iconContainer),
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = AppShapes.iconContainer
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Code,
+                    imageVector = when (resource.platformLabelResId) {
+                        R.string.roadmap_learning_platform_youtube -> Icons.Outlined.PlayCircle
+                        R.string.roadmap_learning_platform_udemy,
+                        R.string.roadmap_learning_platform_coursera,
+                        R.string.roadmap_learning_platform_course -> Icons.Outlined.School
+                        else -> Icons.AutoMirrored.Outlined.Article
+                    },
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(Dimens.iconMd)
                 )
             }
@@ -388,7 +514,11 @@ private fun SkillLearningResourceCard(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs)) {
                     Text(
-                        text = stringResource(resource.platformLabelResId),
+                        text = if (resource.platformLabelResId == R.string.roadmap_learning_platform_other && !resource.rawPlatform.isNullOrBlank()) {
+                            resource.rawPlatform.lowercase().replaceFirstChar { it.uppercase() }
+                        } else {
+                            stringResource(resource.platformLabelResId)
+                        },
                         style = MaterialTheme.typography.labelMedium.copy(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
@@ -438,10 +568,11 @@ private fun RoadmapLearningBottomAction(
     val isUnavailableQuizAction = !isCompleted && !isQuizAvailable
 
     RoadmapDecoratedCard(
-        modifier = modifier,
+        modifier = modifier.cardShadow(AppShapes.button),
         shape = AppShapes.button,
         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-        borderColor = MaterialTheme.colorScheme.outlineVariant
+        borderColor = MaterialTheme.colorScheme.surface,
+        shadow = false
     ) {
         Column(
             modifier = Modifier
@@ -494,10 +625,8 @@ private fun RoadmapLearningTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = Dimens.spacingScreenHorizontal,
-                vertical = Dimens.spacingSm
-            ),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = Dimens.spacingSm),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackClick) {
@@ -537,11 +666,17 @@ private fun roadmapLearningStatusContainerColor(
     canTakeQuiz: Boolean,
     isNodeLocked: Boolean
 ): Color {
+    val isDark = isSystemInDarkTheme()
     return when {
-        isCompleted -> MaterialTheme.colorScheme.tertiaryContainer
-        isNodeLocked -> MaterialTheme.colorScheme.surfaceContainerLow
-        canTakeQuiz -> MaterialTheme.colorScheme.inversePrimary
-        else -> MaterialTheme.colorScheme.primaryContainer
+        isDark && isCompleted -> Color(0xFF064E3B)
+        isDark && isNodeLocked -> MaterialTheme.colorScheme.surfaceContainerHigh
+        isDark && canTakeQuiz -> MaterialTheme.colorScheme.primaryContainer
+        else -> when {
+            isCompleted -> SuccessContainerLight
+            isNodeLocked -> MaterialTheme.colorScheme.surfaceContainerLow
+            canTakeQuiz -> MaterialTheme.colorScheme.inversePrimary
+            else -> MaterialTheme.colorScheme.primaryContainer
+        }
     }
 }
 
@@ -551,11 +686,17 @@ private fun roadmapLearningStatusContentColor(
     canTakeQuiz: Boolean,
     isNodeLocked: Boolean
 ): Color {
+    val isDark = isSystemInDarkTheme()
     return when {
-        isCompleted -> MaterialTheme.colorScheme.tertiary
-        isNodeLocked -> MaterialTheme.colorScheme.onSurfaceVariant
-        canTakeQuiz -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.primary
+        isDark && isCompleted -> Color(0xFF34D399)
+        isDark && isNodeLocked -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f)
+        isDark && canTakeQuiz -> MaterialTheme.colorScheme.onPrimaryContainer
+        else -> when {
+            isCompleted -> SuccessLight
+            isNodeLocked -> MaterialTheme.colorScheme.onSurfaceVariant
+            canTakeQuiz -> MaterialTheme.colorScheme.primary
+            else -> MaterialTheme.colorScheme.primary
+        }
     }
 }
 
@@ -622,6 +763,7 @@ private fun RoadmapLearningScreenPreview() {
                         title = "HTTP and REST fundamentals",
                         url = "https://example.com",
                         platformLabelResId = R.string.roadmap_learning_platform_youtube,
+                        rawPlatform = "youtube",
                         isFree = true,
                         levelLabelResId = R.string.roadmap_learning_level_fresher
                     )

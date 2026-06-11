@@ -6,10 +6,9 @@ import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
+import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toCategoryUiModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +27,10 @@ class ExploreViewModel(
     private var allLibraryRoadmaps: List<RoadmapSummary> = emptyList()
     private var categoryLabels: Map<String, String> = emptyMap()
 
+    private var currentLibraryPage = 1
+    private var isFetchingLibrary = false
+    private var serverTotalLibraryCount = 0
+
     init {
         loadExplore()
     }
@@ -36,11 +39,20 @@ class ExploreViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            val (categoryResult, libraryResult) = coroutineScope {
-                val categories = async { roadmapRepository.getExploreCategories() }
-                val library = async { roadmapRepository.searchRoadmaps("") }
-                categories.await() to library.await()
-            }
+            val categoryResult = roadmapRepository.getExploreCategories()
+
+            val selectedCategoryId = _uiState.value.selectedCategoryId
+            val categories = categoryResult.getOrNull() ?: emptyList()
+            val validSelectedCategoryId = selectedCategoryId
+                ?.takeIf { id -> categories.any { category -> category.id == id } }
+
+            currentLibraryPage = 1
+            val libraryResult = roadmapRepository.searchRoadmaps(
+                query = "",
+                categoryId = validSelectedCategoryId,
+                page = currentLibraryPage,
+                perPage = LibraryPageSize
+            )
 
             val failure = listOf(categoryResult, libraryResult)
                 .firstOrNull { it.isFailure }
@@ -54,30 +66,21 @@ class ExploreViewModel(
                 return@launch
             }
 
-            val selectedCategoryId = _uiState.value.selectedCategoryId
-            val categories = categoryResult.getOrThrow()
-            val validSelectedCategoryId = selectedCategoryId
-                ?.takeIf { id -> categories.any { category -> category.id == id } }
-            allLibraryRoadmaps = libraryResult.getOrThrow()
-            categoryLabels = categories.associate { it.id to it.name }
-            val visibleRoadmaps = allLibraryRoadmaps
-                .filterByTitle(_uiState.value.searchQuery)
-                .filterByCategory(validSelectedCategoryId)
-            _uiState.value = ExploreUiState(
-                userName = (authRepository.authState.value as? AuthState.Authenticated)
-                    ?.user
-                    ?.fullName
-                    .orEmpty(),
-                searchQuery = _uiState.value.searchQuery,
+            val (roadmaps, totalCount) = libraryResult.getOrThrow()
+            allLibraryRoadmaps = roadmaps
+            serverTotalLibraryCount = totalCount
+
+            categoryLabels = categories.associate { it.id.toStableLearningId() to it.name }
+
+            _uiState.update { it.copy(categories = categories.map { c -> c.toCategoryUiModel() }) }
+
+            refreshLibrary(
+                query = _uiState.value.searchQuery,
                 selectedCategoryId = validSelectedCategoryId,
-                categories = categories.map { category -> category.toCategoryUiModel() },
-                libraryRoadmaps = visibleRoadmaps.toVisibleLibraryRoadmaps(
-                    visibleCount = LibraryPageSize
-                ),
-                totalLibraryCount = visibleRoadmaps.size,
-                libraryVisibleCount = LibraryPageSize,
-                isLoading = false
+                visibleCount = LibraryPageSize
             )
+
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 
@@ -103,11 +106,7 @@ class ExploreViewModel(
                 libraryVisibleCount = LibraryPageSize
             )
         }
-        refreshLibrary(
-            query = _uiState.value.searchQuery,
-            selectedCategoryId = nextCategoryId,
-            visibleCount = LibraryPageSize
-        )
+        fetchLibraryForCurrentFilters()
     }
 
     fun selectCategoryById(categoryId: String) {
@@ -119,29 +118,122 @@ class ExploreViewModel(
                 libraryVisibleCount = LibraryPageSize
             )
         }
-        refreshLibrary(
-            query = _uiState.value.searchQuery,
-            selectedCategoryId = categoryId,
-            visibleCount = LibraryPageSize
-        )
+        fetchLibraryForCurrentFilters()
+    }
+
+    private fun fetchLibraryForCurrentFilters() {
+        if (isFetchingLibrary) return
+        isFetchingLibrary = true
+        currentLibraryPage = 1
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isFetchingMoreRoadmaps = true) }
+            val libraryResult = roadmapRepository.searchRoadmaps(
+                query = "", // Server doesn't support query search
+                categoryId = _uiState.value.selectedCategoryId,
+                page = currentLibraryPage,
+                perPage = LibraryPageSize
+            )
+
+            if (libraryResult.isSuccess) {
+                val (roadmaps, totalCount) = libraryResult.getOrThrow()
+                allLibraryRoadmaps = roadmaps
+                serverTotalLibraryCount = totalCount
+            }
+
+            _uiState.update { it.copy(isFetchingMoreRoadmaps = false) }
+            isFetchingLibrary = false
+
+            refreshLibrary(
+                query = _uiState.value.searchQuery,
+                selectedCategoryId = _uiState.value.selectedCategoryId,
+                visibleCount = LibraryPageSize
+            )
+        }
     }
 
     fun onSeeMoreRoadmaps() {
-        val nextVisibleCount = _uiState.value.libraryVisibleCount + LibraryPageSize
-        _uiState.update { it.copy(libraryVisibleCount = nextVisibleCount) }
-        refreshLibrary(
-            query = _uiState.value.searchQuery,
-            selectedCategoryId = _uiState.value.selectedCategoryId,
-            visibleCount = nextVisibleCount
-        )
+        if (isFetchingLibrary) return
+
+        val isFilteringByQueryLocally = _uiState.value.searchQuery.isNotBlank()
+        if (isFilteringByQueryLocally || allLibraryRoadmaps.size >= serverTotalLibraryCount) {
+            val nextVisibleCount = _uiState.value.libraryVisibleCount + LibraryPageSize
+            _uiState.update { it.copy(libraryVisibleCount = nextVisibleCount) }
+            refreshLibrary(
+                query = _uiState.value.searchQuery,
+                selectedCategoryId = _uiState.value.selectedCategoryId,
+                visibleCount = nextVisibleCount
+            )
+            return
+        }
+
+        isFetchingLibrary = true
+        currentLibraryPage++
+        _uiState.update { it.copy(isFetchingMoreRoadmaps = true) }
+        viewModelScope.launch {
+            val libraryResult = roadmapRepository.searchRoadmaps(
+                query = "",
+                categoryId = _uiState.value.selectedCategoryId,
+                page = currentLibraryPage,
+                perPage = LibraryPageSize
+            )
+            if (libraryResult.isSuccess) {
+                val (newRoadmaps, totalCount) = libraryResult.getOrThrow()
+                serverTotalLibraryCount = totalCount
+                val newRoadmapsFiltered = newRoadmaps.filter { newRm -> allLibraryRoadmaps.none { existing -> existing.id == newRm.id } }
+                allLibraryRoadmaps = allLibraryRoadmaps + newRoadmapsFiltered
+
+                val nextVisibleCount = _uiState.value.libraryVisibleCount + LibraryPageSize
+                _uiState.update { it.copy(libraryVisibleCount = nextVisibleCount) }
+                refreshLibrary(
+                    query = _uiState.value.searchQuery,
+                    selectedCategoryId = _uiState.value.selectedCategoryId,
+                    visibleCount = nextVisibleCount
+                )
+            } else {
+                currentLibraryPage--
+            }
+            _uiState.update { it.copy(isFetchingMoreRoadmaps = false) }
+            isFetchingLibrary = false
+        }
     }
 
     fun onSeeAllRoadmaps() {
-        refreshLibrary(
-            query = _uiState.value.searchQuery,
-            selectedCategoryId = _uiState.value.selectedCategoryId,
-            visibleCount = Int.MAX_VALUE
-        )
+        if (isFetchingLibrary) return
+
+        if (allLibraryRoadmaps.size >= serverTotalLibraryCount) {
+            _uiState.update { it.copy(libraryVisibleCount = Int.MAX_VALUE) }
+            refreshLibrary(
+                query = _uiState.value.searchQuery,
+                selectedCategoryId = _uiState.value.selectedCategoryId,
+                visibleCount = Int.MAX_VALUE
+            )
+            return
+        }
+
+        isFetchingLibrary = true
+        _uiState.update { it.copy(isFetchingMoreRoadmaps = true) }
+        viewModelScope.launch {
+            val libraryResult = roadmapRepository.searchRoadmaps(
+                query = "",
+                categoryId = _uiState.value.selectedCategoryId,
+                page = 1,
+                perPage = serverTotalLibraryCount.coerceAtLeast(100)
+            )
+            if (libraryResult.isSuccess) {
+                val (roadmaps, totalCount) = libraryResult.getOrThrow()
+                serverTotalLibraryCount = totalCount
+                allLibraryRoadmaps = roadmaps
+            }
+            _uiState.update { it.copy(libraryVisibleCount = Int.MAX_VALUE) }
+            refreshLibrary(
+                query = _uiState.value.searchQuery,
+                selectedCategoryId = _uiState.value.selectedCategoryId,
+                visibleCount = Int.MAX_VALUE
+            )
+            _uiState.update { it.copy(isFetchingMoreRoadmaps = false) }
+            isFetchingLibrary = false
+        }
     }
 
     fun onSeeLessRoadmaps() {
@@ -162,11 +254,19 @@ class ExploreViewModel(
             .filterByTitle(query)
             .filterByCategory(selectedCategoryId)
 
+        val isFilteringByQueryLocally = query.isNotBlank()
+        val totalCountForUi = if (isFilteringByQueryLocally) {
+            filteredRoadmaps.size
+        } else {
+            serverTotalLibraryCount.coerceAtLeast(filteredRoadmaps.size)
+        }
+
         _uiState.update {
             it.copy(
+                selectedCategoryId = selectedCategoryId,
                 libraryRoadmaps = filteredRoadmaps.toVisibleLibraryRoadmaps(visibleCount),
-                totalLibraryCount = filteredRoadmaps.size,
-                libraryVisibleCount = visibleCount.coerceAtMost(filteredRoadmaps.size),
+                totalLibraryCount = totalCountForUi,
+                libraryVisibleCount = visibleCount,
                 errorMessage = null
             )
         }
@@ -176,7 +276,8 @@ class ExploreViewModel(
         return if (categoryId == null) {
             this
         } else {
-            filter { it.categoryId == categoryId }
+            val stableId = categoryId.toStableLearningId()
+            filter { it.categoryId == categoryId || it.categoryId == stableId }
         }
     }
 

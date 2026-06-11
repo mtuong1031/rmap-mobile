@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapCard
 import com.rmap.mobile.core.ui.components.RMapHeader
-import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
@@ -64,11 +63,17 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.LaunchedEffect
+
 @Composable
 fun MyRoadmapScreen(
     uiState: MyRoadmapUiState,
     selectedDestination: NavBarDestination,
     onDestinationSelected: (NavBarDestination) -> Unit,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onFilterSelected: (MyRoadmapFilter) -> Unit,
     onRoadmapClick: (String) -> Unit,
     onCreateWithAiClick: () -> Unit,
@@ -77,23 +82,22 @@ fun MyRoadmapScreen(
 ) {
     val listState = rememberLazyListState()
 
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            RMapNavigationBar(
-                selectedDestination = selectedDestination,
-                onDestinationSelected = onDestinationSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = Dimens.spacingScreenTopCompact,
-                bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
+                bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
         ) {

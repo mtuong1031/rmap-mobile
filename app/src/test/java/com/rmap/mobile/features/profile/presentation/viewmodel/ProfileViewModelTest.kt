@@ -121,11 +121,9 @@ class ProfileViewModelTest {
     ) : AuthRepository {
         override val authState: StateFlow<AuthState> = MutableStateFlow(initialState)
 
-        override suspend fun login(email: String, password: String): Result<User> = Result.success(testUser)
+        override suspend fun loginWithGoogle(idToken: String): Result<User> = Result.success(testUser)
 
-        override suspend fun register(email: String, password: String, fullName: String): Result<User> {
-            return Result.success(testUser)
-        }
+        override suspend fun loginWithGithub(code: String): Result<User> = Result.success(testUser)
 
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
 

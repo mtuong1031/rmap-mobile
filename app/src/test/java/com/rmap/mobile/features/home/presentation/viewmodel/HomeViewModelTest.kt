@@ -80,6 +80,19 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `guest home load excludes personal dashboard`() = runTest {
+        val homeRepository = FakeHomeRepository()
+        HomeViewModel(
+            homeRepository = homeRepository,
+            authRepository = FakeAuthRepository(AuthState.Unauthenticated)
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(false, homeRepository.lastIncludePersonalDashboard)
+    }
+
+    @Test
     fun `maps vietnam hour to greeting period`() {
         assertEquals(HomeGreetingPeriod.Morning, currentVietnamGreetingPeriod(hourOfDay = 8))
         assertEquals(HomeGreetingPeriod.Afternoon, currentVietnamGreetingPeriod(hourOfDay = 13))
@@ -95,8 +108,12 @@ class HomeViewModelTest {
 }
 
 private class FakeHomeRepository : HomeRepository {
-    override suspend fun getHomeContent(includePersonalDashboard: Boolean): Result<HomeContent> =
-        Result.success(testHomeContent())
+    var lastIncludePersonalDashboard: Boolean? = null
+
+    override suspend fun getHomeContent(includePersonalDashboard: Boolean): Result<HomeContent> {
+        lastIncludePersonalDashboard = includePersonalDashboard
+        return Result.success(testHomeContent())
+    }
 
     override suspend fun searchDashboard(
         query: String,
@@ -105,23 +122,23 @@ private class FakeHomeRepository : HomeRepository {
     ): Result<HomeSearchResult> = error("Not used in HomeViewModelTest")
 }
 
-private class FakeAuthRepository : AuthRepository {
-    override val authState = MutableStateFlow<AuthState>(
-        AuthState.Authenticated(
-            User(
-                id = "user-1",
-                email = "thinh@gmail.com",
-                fullName = "Thinh Hoang Duy",
-                avatarUrl = null,
-                role = "user",
-                createdAt = "2026-05-31T08:11:01.885Z"
-            )
+private class FakeAuthRepository(
+    initialState: AuthState = AuthState.Authenticated(
+        User(
+            id = "user-1",
+            email = "thinh@gmail.com",
+            fullName = "Thinh Hoang Duy",
+            avatarUrl = null,
+            role = "user",
+            createdAt = "2026-05-31T08:11:01.885Z"
         )
     )
+) : AuthRepository {
+    override val authState = MutableStateFlow(initialState)
 
-    override suspend fun login(email: String, password: String): Result<User> = error("Not used")
+    override suspend fun loginWithGoogle(idToken: String): Result<User> = error("Not used")
 
-    override suspend fun register(email: String, password: String, fullName: String): Result<User> = error("Not used")
+    override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
 
     override suspend fun logout(): Result<Unit> = error("Not used")
 

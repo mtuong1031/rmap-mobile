@@ -136,12 +136,20 @@ class ExploreViewModelTest {
             )
         }
 
-        override suspend fun searchRoadmaps(query: String): Result<List<RoadmapSummary>> {
+        override suspend fun searchRoadmaps(
+            query: String,
+            categoryId: String?,
+            page: Int,
+            perPage: Int
+        ): Result<Pair<List<RoadmapSummary>, Int>> {
             searchCalls += 1
             return Result.success(
-                listOf(
-                    roadmap("vue", "Vue Developer Roadmap", "FRAMEWORKS"),
-                    roadmap("ux", "UX Design Roadmap", "DESIGN")
+                Pair(
+                    listOf(
+                        roadmap("vue", "Vue Developer Roadmap", "FRAMEWORKS"),
+                        roadmap("ux", "UX Design Roadmap", "DESIGN")
+                    ),
+                    2
                 )
             )
         }
@@ -158,17 +166,6 @@ class ExploreViewModelTest {
             error("Not used")
         }
 
-        override suspend fun getMilestoneDetail(
-            roadmapId: String,
-            milestoneId: String
-        ): Result<MilestoneDetail> = error("Not used")
-
-        override suspend fun submitMilestone(
-            roadmapId: String,
-            milestoneId: String,
-            repoUrl: String
-        ): Result<MilestoneSubmission> = error("Not used")
-
         override suspend fun getNodeQuiz(roadmapId: String, nodeId: String): Result<NodeQuiz> = error("Not used")
 
         override suspend fun submitNodeQuiz(
@@ -177,19 +174,12 @@ class ExploreViewModelTest {
             answers: List<NodeQuizAnswer>
         ): Result<NodeQuizSubmissionResult> = error("Not used")
 
-        override suspend fun getRoadmapNodeLearningContent(
-            roadmapId: String,
-            nodeId: String,
-            skillId: String
-        ): Result<SkillLearningContent> = error("Not used")
-
+        override suspend fun getMilestoneDetail(roadmapId: String, milestoneId: String): Result<MilestoneDetail> = error("Not used")
+        override suspend fun submitMilestone(roadmapId: String, milestoneId: String, repoUrl: String): Result<MilestoneSubmission> = error("Not used")
+        override suspend fun getRoadmapNodeLearningContent(roadmapId: String, nodeId: String, skillId: String): Result<SkillLearningContent> = error("Not used")
         override suspend fun startRoadmap(roadmapId: String): Result<Unit> = error("Not used")
+        override suspend fun updateNodeProgress(roadmapId: String, nodeId: String, status: LearningStatus): Result<NodeProgressUpdateResult> = error("Not used")
 
-        override suspend fun updateNodeProgress(
-            roadmapId: String,
-            nodeId: String,
-            status: LearningStatus
-        ): Result<NodeProgressUpdateResult> = error("Not used")
 
         private fun roadmap(id: String, title: String, categoryId: String): RoadmapSummary {
             return RoadmapSummary(
@@ -208,9 +198,9 @@ class ExploreViewModelTest {
     private class FakeAuthRepository : AuthRepository {
         override val authState: StateFlow<AuthState> = MutableStateFlow(AuthState.Unauthenticated)
 
-        override suspend fun login(email: String, password: String): Result<User> = error("Not used")
+        override suspend fun loginWithGoogle(idToken: String): Result<User> = error("Not used")
 
-        override suspend fun register(email: String, password: String, fullName: String): Result<User> = error("Not used")
+        override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
 
         override suspend fun logout(): Result<Unit> = error("Not used")
 

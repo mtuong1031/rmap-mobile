@@ -365,25 +365,27 @@ private fun HomeRoadmapMetadata(
             modifier = Modifier.size(HomeRoadmapMetaIconSize)
         )
 
-        Text(
-            text = nodesText,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.secondary
+        if (nodesText.isNotBlank()) {
+            Text(
+                text = nodesText,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
             )
-        )
 
-        Text(
-            text = separatorText,
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.secondary
+            Text(
+                text = separatorText,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
             )
-        )
+        }
 
         Text(
             text = durationText,

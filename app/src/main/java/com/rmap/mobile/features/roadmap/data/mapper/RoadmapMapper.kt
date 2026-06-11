@@ -22,7 +22,9 @@ import com.rmap.mobile.features.roadmap.data.remote.model.SkillResourceDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizQuestionResultDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizRequestDto
 import com.rmap.mobile.features.roadmap.data.remote.model.SubmitQuizResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoryDto
 import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressResponseDto
+import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryIcon
 import com.rmap.mobile.features.roadmap.domain.model.LearningDifficulty
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
@@ -228,7 +230,9 @@ fun RoadmapNodeDetailResponseDto.toSkillLearningContent(
         skill = skill,
         resources = resources,
         status = progress.toLearningStatus(),
-        quizPassed = progress?.quizPassed == true
+        quizPassed = progress?.quizPassed == true,
+        nodeTitle = node?.displayName(),
+        requirement = node?.nodeType.toLearningRequirement()
     )
 }
 
@@ -316,6 +320,16 @@ fun LearningStatus.toNodeStatusRequestValue(): String {
     }
 }
 
+fun TemplateCategoryDto.toDomain(): RoadmapCategory {
+    return RoadmapCategory(
+        id = category,
+        name = label,
+        icon = category.toRoadmapCategoryIcon(),
+        shortName = shortLabel,
+        roadmapCount = templatesCount
+    )
+}
+
 fun List<RoadmapSummary>.toCategories(): List<RoadmapCategory> {
     return filter { it.categoryId.isNotBlank() }
         .groupBy { it.categoryId }
@@ -325,10 +339,12 @@ fun List<RoadmapSummary>.toCategories(): List<RoadmapCategory> {
                 id = categoryId,
                 name = summary.durationLabel.ifBlank { categoryId },
                 icon = summary.icon,
+                shortName = summary.durationLabel.ifBlank { categoryId },
                 roadmapCount = roadmaps.size
             )
         }
 }
+
 
 private fun RoadmapNodeDetailResponseDto.toDetailDto(): RoadmapNodeDetailDto {
     return data?.copy(
@@ -430,7 +446,7 @@ private fun JsonObject.toSkillResourceDto(): SkillResourceDto {
         skillId = stringValue("skill_id", "skillId"),
         title = stringValue("title"),
         url = stringValue("url"),
-        platform = stringValue("platform"),
+        platform = stringValue("platform", "resourceType"),
         isFree = booleanValue("is_free", "isFree"),
         levelTag = stringValue("level_tag", "levelTag")
     )

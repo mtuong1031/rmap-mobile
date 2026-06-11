@@ -29,6 +29,7 @@ import com.rmap.mobile.features.profile.presentation.components.common.ProfileSe
 fun GuestProfileContent(
     title: String,
     description: String,
+    benefitsTitle: String,
     benefits: List<String>,
     authenticateLabel: String,
     exploreLabel: String,
@@ -77,6 +78,14 @@ fun GuestProfileContent(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
         ) {
+            Text(
+                text = benefitsTitle,
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
             benefits.forEach { benefit ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

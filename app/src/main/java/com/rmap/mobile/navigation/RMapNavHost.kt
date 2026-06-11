@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +32,13 @@ import androidx.navigation.navArgument
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navigation
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.channels.BufferOverflow
 import com.rmap.mobile.R
 import com.rmap.mobile.core.session.SessionEvent
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -39,6 +48,8 @@ import com.rmap.mobile.features.airoadmap.presentation.screen.AiRoadmapScreen
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapEvent
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapViewModel
 import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.presentation.components.AuthPromptReason
+import com.rmap.mobile.features.auth.presentation.components.AuthRequiredDialog
 import com.rmap.mobile.features.auth.presentation.screen.AuthScreen
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthEvent
 import com.rmap.mobile.features.auth.presentation.viewmodel.AuthViewModel
@@ -90,10 +101,21 @@ fun RMapNavHost(navController: NavHostController) {
     val resourceOpenFailedMessage = stringResource(R.string.roadmap_learning_resource_open_failed)
     val milestoneSubmissionQueuedMessage = stringResource(R.string.roadmap_milestone_submission_queued)
     val milestoneSubmissionFailedMessage = stringResource(R.string.roadmap_milestone_error_submit_failed)
-    val startDestination = AppRoutes.HOME
+    val isAuthenticated = authState is AuthState.Authenticated
+    val startDestination = AppRoutes.MAIN_TABS
+    val pagerState = rememberPagerState(pageCount = { 5 })
+    var pendingDestinationName by rememberSaveable { mutableStateOf<String?>(null) }
     var pendingRoute by rememberSaveable { mutableStateOf<String?>(null) }
+    var authPromptReasonName by rememberSaveable { mutableStateOf<String?>(null) }
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    }
+
+    val tabReselectEvent = remember {
+        MutableSharedFlow<NavBarDestination>(
+            extraBufferCapacity = 1,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST
+        )
     }
 
     LaunchedEffect(Unit) {
@@ -110,49 +132,61 @@ fun RMapNavHost(navController: NavHostController) {
         return
     }
 
-    fun hasAuthenticatedSession(): Boolean {
-        return RMapAppGraph.authRepository.authState.value is AuthState.Authenticated
-    }
-
-    fun requestAuthentication(route: String) {
+    fun openAuthentication(
+        destination: NavBarDestination? = null,
+        route: String? = null
+    ) {
+        pendingDestinationName = destination?.name
         pendingRoute = route
+        authPromptReasonName = null
         navController.navigate(AppRoutes.AUTH) {
             launchSingleTop = true
         }
     }
 
-    fun navigateWithAccess(
-        route: String,
-        navigate: () -> Unit
+    fun requestAuthentication(
+        reason: AuthPromptReason,
+        destination: NavBarDestination? = null,
+        route: String? = null
     ) {
-        if (AppAccessPolicy.canAccess(route, hasAuthenticatedSession())) {
-            navigate()
+        pendingDestinationName = destination?.name
+        pendingRoute = route
+        authPromptReasonName = reason.name
+    }
+
+    fun handleDestinationSelected(destination: NavBarDestination) {
+        val route = AppAccessPolicy.routeFor(destination)
+        if (!AppAccessPolicy.canAccess(route, isAuthenticated)) {
+            requestAuthentication(
+                reason = destination.authPromptReason(),
+                destination = destination
+            )
+            return
+        }
+
+        val targetPage = destination.pageIndex()
+        val currentRoute = navController.currentDestination?.route
+
+        if (currentRoute == AppRoutes.HOME_SEARCH) {
+            navController.popBackStack(AppRoutes.MAIN_TABS, inclusive = false)
+        }
+
+        if (pagerState.currentPage == targetPage) {
+            coroutineScope.launch { tabReselectEvent.emit(destination) }
         } else {
-            requestAuthentication(route)
+            coroutineScope.launch { pagerState.animateScrollToPage(targetPage) }
         }
     }
 
     fun navigateFromBottomBar(destination: NavBarDestination) {
-        val route = AppAccessPolicy.routeFor(destination)
-
-        navigateWithAccess(route) {
-            navController.navigate(route) {
-                popUpTo(AppRoutes.HOME) { saveState = true }
-                launchSingleTop = true
-                restoreState = true
-            }
-        }
-    }
-
-    fun handleDestinationSelected(destination: NavBarDestination) {
-        navigateFromBottomBar(destination)
+        handleDestinationSelected(destination)
     }
 
     fun navigateBackFromRoadmapDetail() {
         if (!navController.popBackStack()) {
             val currentRoute = navController.currentDestination?.route
 
-            navController.navigate(AppRoutes.HOME) {
+            navController.navigate(AppRoutes.MAIN_TABS) {
                 currentRoute?.let { route ->
                     popUpTo(route) { inclusive = true }
                 }
@@ -164,93 +198,371 @@ fun RMapNavHost(navController: NavHostController) {
     LaunchedEffect(Unit) {
         RMapAppGraph.sessionManager.events.collect { event ->
             when (event) {
-                SessionEvent.SessionExpired -> navController.navigate(AppRoutes.AUTH) {
-                    launchSingleTop = true
+                SessionEvent.SessionExpired -> {
+                    navController.navigate(AppRoutes.AUTH_GRAPH) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             }
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
-        val currentBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = currentBackStackEntry?.destination?.route
+    val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
-        NavHost(navController = navController, startDestination = startDestination) {
-            composable(AppRoutes.AUTH) {
-                val viewModel: AuthViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            val isTopLevelRoute = currentRoute == AppRoutes.MAIN_TABS || currentRoute == AppRoutes.HOME_SEARCH
 
-                LaunchedEffect(viewModel) {
-                    viewModel.events.collect { event ->
-                        when (event) {
-                            AuthEvent.NavigateToHome -> {
-                                val targetRoute = pendingRoute ?: AppRoutes.HOME
-                                pendingRoute = null
-                                navController.navigate(targetRoute) {
-                                    popUpTo(AppRoutes.AUTH) { inclusive = true }
-                                    launchSingleTop = true
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isTopLevelRoute,
+                enter = androidx.compose.animation.slideInVertically(initialOffsetY = { it }) + androidx.compose.animation.fadeIn(),
+                exit = androidx.compose.animation.slideOutVertically(targetOffsetY = { it }) + androidx.compose.animation.fadeOut()
+            ) {
+                val selectedDestination = when {
+                    currentRoute == AppRoutes.HOME_SEARCH -> NavBarDestination.Home
+                    else -> when (pagerState.currentPage) {
+                        0 -> NavBarDestination.Home
+                        1 -> NavBarDestination.MyRoadmap
+                        2 -> NavBarDestination.AiAssistant
+                        3 -> NavBarDestination.Explore
+                        4 -> NavBarDestination.More
+                        else -> NavBarDestination.Home
+                    }
+                }
+                com.rmap.mobile.core.ui.components.RMapNavigationBar(
+                    selectedDestination = selectedDestination,
+                    onDestinationSelected = ::handleDestinationSelected
+                )
+            }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier
+            .fillMaxSize()
+            // Removed bottom padding to let content flow under the floating nav bar
+            .padding(top = innerPadding.calculateTopPadding())
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                enterTransition = {
+                    val targetRoute = targetState.destination.route
+                    val initialRoute = initialState.destination.route
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
+                    if (isHomeAndSearch) {
+                        androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
+                        androidx.compose.animation.slideInHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            initialOffsetX = { -it / 4 }
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else {
+                        androidx.compose.animation.slideInHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            initialOffsetX = { it }
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+                    }
+                },
+                exitTransition = {
+                    val targetRoute = targetState.destination.route
+                    val initialRoute = initialState.destination.route
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
+                    if (isHomeAndSearch) {
+                        androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
+                        androidx.compose.animation.slideOutHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            targetOffsetX = { -it / 4 }
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else {
+                        androidx.compose.animation.slideOutHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            targetOffsetX = { -it / 4 }
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                    }
+                },
+                popEnterTransition = {
+                    val targetRoute = targetState.destination.route
+                    val initialRoute = initialState.destination.route
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
+                    if (isHomeAndSearch) {
+                        androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
+                        androidx.compose.animation.slideInHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            initialOffsetX = { -it / 4 }
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else {
+                        androidx.compose.animation.slideInHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            initialOffsetX = { -it / 4 }
+                        ) + androidx.compose.animation.fadeIn(animationSpec = androidx.compose.animation.core.tween(250))
+                    }
+                },
+                popExitTransition = {
+                    val targetRoute = targetState.destination.route
+                    val initialRoute = initialState.destination.route
+                    val isHomeAndSearch = (targetRoute == AppRoutes.HOME_SEARCH && initialRoute == AppRoutes.MAIN_TABS) || (initialRoute == AppRoutes.HOME_SEARCH && targetRoute == AppRoutes.MAIN_TABS)
+                    if (isHomeAndSearch) {
+                        androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else if (targetRoute == AppRoutes.MAIN_TABS) {
+                        androidx.compose.animation.slideOutHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            targetOffsetX = { it }
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                    } else {
+                        androidx.compose.animation.slideOutHorizontally(
+                            animationSpec = androidx.compose.animation.core.tween(250, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                            targetOffsetX = { it }
+                        ) + androidx.compose.animation.fadeOut(animationSpec = androidx.compose.animation.core.tween(250))
+                    }
+                }
+            ) {
+            navigation(startDestination = AppRoutes.AUTH, route = AppRoutes.AUTH_GRAPH) {
+                composable(
+                    route = AppRoutes.AUTH,
+                    deepLinks = listOf(androidx.navigation.navDeepLink { uriPattern = "rmap://oauth/callback?code={code}" })
+                ) { backStackEntry ->
+                    val viewModel: AuthViewModel = viewModel()
+                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                    val code = backStackEntry.arguments?.getString("code")
+
+                    LaunchedEffect(code) {
+                        if (!code.isNullOrBlank()) {
+                            viewModel.onGithubCodeReceived(code)
+                        }
+                    }
+
+                    LaunchedEffect(viewModel) {
+                        viewModel.events.collect { event ->
+                            when (event) {
+                                AuthEvent.NavigateToHome -> {
+                                    val destination = pendingDestinationName
+                                        ?.let { name ->
+                                            runCatching { NavBarDestination.valueOf(name) }.getOrNull()
+                                        }
+                                    val route = pendingRoute
+                                    pendingDestinationName = null
+                                    pendingRoute = null
+                                    authPromptReasonName = null
+
+                                    navController.navigate(route ?: AppRoutes.MAIN_TABS) {
+                                        popUpTo(AppRoutes.AUTH_GRAPH) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                    if (route == null && destination != null) {
+                                        pagerState.scrollToPage(destination.pageIndex())
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                AuthScreen(
-                    uiState = uiState,
-                    onEmailChange = viewModel::onEmailChange,
-                    onPasswordChange = viewModel::onPasswordChange,
-                    onFullNameChange = viewModel::onFullNameChange,
-                    onToggleMode = viewModel::onToggleMode,
-                    onTogglePasswordVisibility = viewModel::onTogglePasswordVisibility,
-                    onSubmit = viewModel::onSubmit,
-                    onBackClick = {
-                        pendingRoute = null
-                        if (!navController.popBackStack()) {
-                            navController.navigate(AppRoutes.HOME) {
-                                launchSingleTop = true
+                    AuthScreen(
+                        uiState = uiState,
+                        onGoogleIdTokenReceived = viewModel::onGoogleIdTokenReceived,
+                        onLoginError = viewModel::onLoginError,
+                        onGithubLoginClick = { viewModel.onGithubLoginClick(context) },
+                        onBackClick = {
+                            pendingDestinationName = null
+                            pendingRoute = null
+                            if (!navController.popBackStack()) {
+                                navController.navigate(AppRoutes.MAIN_TABS) {
+                                    launchSingleTop = true
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
             }
 
-            composable(AppRoutes.HOME) {
-                val viewModel: HomeViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                HomeScreen(
-                    uiState = uiState,
-                    selectedDestination = NavBarDestination.Home,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onHeaderActionClick = {
-                        navigateFromBottomBar(NavBarDestination.More)
-                    },
-                    onSearchClick = {
-                        navController.navigate(AppRoutes.HOME_SEARCH) {
-                            launchSingleTop = true
-                        }
-                    },
-                    onRoadmapClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
-                    onContinueLearningPlanClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
-                    onRecommendedRoadmapClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    },
-                    onCreateRoadmapWithAiClick = {
-                        navigateWithAccess(AppRoutes.AI_ROADMAP) {
-                            navController.navigate(AppRoutes.AI_ROADMAP) {
-                                launchSingleTop = true
-                            }
-                        }
-                    },
-                    onExploreReadyMadeClick = {
-                        navigateFromBottomBar(NavBarDestination.Explore)
+            composable(AppRoutes.MAIN_TABS) {
+                androidx.activity.compose.BackHandler(enabled = pagerState.currentPage != 0) {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(0)
                     }
-                )
+                }
+                androidx.compose.foundation.pager.HorizontalPager(
+                    state = pagerState,
+                    userScrollEnabled = isAuthenticated,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    when (page) {
+                        0 -> {
+                            val viewModel: HomeViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.Home } }
+
+                            HomeScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.Home,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onHeaderActionClick = {
+                                    handleDestinationSelected(NavBarDestination.More)
+                                },
+                                onSearchClick = {
+                                    navController.navigate(AppRoutes.HOME_SEARCH) {
+                                        launchSingleTop = true
+                                    }
+                                },
+                                onRoadmapClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                onContinueLearningPlanClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                onRecommendedRoadmapClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                onCreateRoadmapWithAiClick = {
+                                    handleDestinationSelected(NavBarDestination.AiAssistant)
+                                },
+                                onExploreReadyMadeClick = {
+                                    handleDestinationSelected(NavBarDestination.Explore)
+                                },
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                        1 -> {
+                            val viewModel: MyRoadmapViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.MyRoadmap } }
+
+                            MyRoadmapScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.MyRoadmap,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onFilterSelected = viewModel::onFilterSelected,
+                                onRoadmapClick = { roadmapId ->
+                                    navController.navigate(AppRoutes.roadmapDetail(roadmapId))
+                                },
+                                onCreateWithAiClick = {
+                                    handleDestinationSelected(NavBarDestination.AiAssistant)
+                                },
+                                onExploreRoadmapsClick = {
+                                    handleDestinationSelected(NavBarDestination.Explore)
+                                },
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                        2 -> {
+                            val viewModel: AiRoadmapViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.AiAssistant } }
+
+                            LaunchedEffect(viewModel) {
+                                viewModel.events.collect { event ->
+                                    when (event) {
+                                        is AiRoadmapEvent.NavigateToRoadmapDetail -> {
+                                            navController.navigate(AppRoutes.roadmapDetail(event.roadmapId))
+                                        }
+                                    }
+                                }
+                            }
+
+                            AiRoadmapScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.AiAssistant,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onSearchQueryChange = viewModel::onSearchQueryChange,
+                                onCreateRoadmapClick = viewModel::onCreateRoadmapClick,
+                                onSeeMoreGeneratedRoadmaps = viewModel::onSeeMoreGeneratedRoadmaps,
+                                onSeeAllGeneratedRoadmaps = viewModel::onSeeAllGeneratedRoadmaps,
+                                onSeeLessGeneratedRoadmaps = viewModel::onSeeLessGeneratedRoadmaps,
+                                onBackToLibrary = viewModel::onBackToLibrary,
+                                onTopicChange = viewModel::onTopicChange,
+                                onDeadlineSelected = viewModel::onDeadlineSelected,
+                                onDailyStudyHoursChange = viewModel::onDailyStudyHoursChange,
+                                onSubmitSetup = viewModel::onSubmitSetup,
+                                onOptionSelected = viewModel::onOptionSelected,
+                                onCustomAnswerChange = viewModel::onCustomAnswerChange,
+                                onPreviousQuestion = viewModel::onPreviousQuestion,
+                                onNextQuestion = viewModel::onNextQuestion,
+                                onSubmitAnswers = viewModel::onSubmitAnswers,
+                                onCancelGeneration = viewModel::onCancelGeneration,
+                                onViewGeneratedRoadmap = viewModel::onViewGeneratedRoadmap,
+                                onExploreClick = {
+                                    handleDestinationSelected(NavBarDestination.Home)
+                                },
+                                onExploreRoadmapsClick = {
+                                    handleDestinationSelected(NavBarDestination.Explore)
+                                },
+                                onRoadmapSelected = viewModel::onRoadmapSelected,
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                        3 -> {
+                            val viewModel: ExploreViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.Explore } }
+
+                            ExploreScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.Explore,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onSearchQueryChange = viewModel::onSearchQueryChange,
+                                onCategoryClick = viewModel::onCategorySelected,
+                                onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmaps,
+                                onSeeAllRoadmapsClick = viewModel::onSeeAllRoadmaps,
+                                onSeeLessRoadmapsClick = viewModel::onSeeLessRoadmaps,
+                                onRoadmapClick = { item ->
+                                    navController.navigate(AppRoutes.roadmapDetail(item.id))
+                                },
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                        4 -> {
+                            val viewModel: ProfileViewModel = viewModel()
+                            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                            val profileComingSoonMessage = stringResource(R.string.coming_soon_message)
+                            val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.More } }
+
+                            LaunchedEffect(viewModel) {
+                                viewModel.events.collect { event ->
+                                    when (event) {
+                                        ProfileEvent.NavigateToAuthentication -> {
+                                            openAuthentication(destination = NavBarDestination.More)
+                                        }
+                                        ProfileEvent.NavigateToExplore -> {
+                                            handleDestinationSelected(NavBarDestination.Explore)
+                                        }
+                                        ProfileEvent.NavigateToNotificationSettings -> {
+                                            if (isAuthenticated) {
+                                                navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
+                                            } else {
+                                                requestAuthentication(
+                                                    reason = AuthPromptReason.NotificationSettings,
+                                                    destination = NavBarDestination.More,
+                                                    route = AppRoutes.NOTIFICATION_SETTINGS
+                                                )
+                                            }
+                                        }
+                                        ProfileEvent.ShowComingSoon -> snackbarHostState.showSnackbar(profileComingSoonMessage)
+                                        ProfileEvent.SignedOut -> navController.navigate(AppRoutes.MAIN_TABS) {
+                                            popUpTo(0) { inclusive = true }
+                                        }
+                                    }
+                                }
+                            }
+
+                            ProfileScreen(
+                                uiState = uiState,
+                                selectedDestination = NavBarDestination.More,
+                                onDestinationSelected = ::handleDestinationSelected,
+                                onEditProfile = viewModel::onEditProfile,
+                                onSettingClick = viewModel::onSettingClick,
+                                onAuthenticateClick = viewModel::onAuthenticateClick,
+                                onExploreRoadmapsClick = viewModel::onExploreRoadmapsClick,
+                                reselectEvent = reselectEvent
+                            )
+                        }
+                    }
+                }
             }
 
             composable(AppRoutes.HOME_SEARCH) {
@@ -293,27 +605,28 @@ fun RMapNavHost(navController: NavHostController) {
                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                     },
                     onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmapsClick,
-                    onSkillClick = { item ->
-                        navController.navigate(AppRoutes.skillDetail(item.id))
+                    onSkillClick = {
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
                     },
                     onSeeMoreSkillsClick = viewModel::onSeeMoreSkillsClick,
-                    onCreateWithAiClick = { _ ->
-                        navigateWithAccess(AppRoutes.AI_ROADMAP) {
-                            navController.navigate(AppRoutes.AI_ROADMAP) {
-                                launchSingleTop = true
-                            }
-                        }
-                    }
+                    onCreateWithAiClick = {
+                        handleDestinationSelected(NavBarDestination.AiAssistant)
+                    },
+                    isAuthenticated = isAuthenticated
                 )
             }
 
             composable(
                 route = AppRoutes.SKILL_DETAIL,
-                arguments = listOf(navArgument(AppRoutes.SKILL_ID_ARG) { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument(AppRoutes.SKILL_ID_ARG) { type = NavType.StringType }
+                )
             ) { backStackEntry ->
                 val viewModel: SkillDetailViewModel = viewModel()
                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                val skillId = backStackEntry.arguments?.getString(AppRoutes.SKILL_ID_ARG).orEmpty()
+                val skillId = backStackEntry.arguments
+                    ?.getString(AppRoutes.SKILL_ID_ARG)
+                    .orEmpty()
 
                 LaunchedEffect(skillId) {
                     viewModel.loadSkill(skillId)
@@ -331,144 +644,15 @@ fun RMapNavHost(navController: NavHostController) {
                 )
             }
 
-            composable(AppRoutes.AI_ROADMAP) {
-                if (!hasAuthenticatedSession()) {
-                    LaunchedEffect(Unit) {
-                        requestAuthentication(AppRoutes.AI_ROADMAP)
-                    }
-                    return@composable
-                }
-
-                val viewModel: AiRoadmapViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                LaunchedEffect(viewModel) {
-                    viewModel.events.collect { event ->
-                        when (event) {
-                            is AiRoadmapEvent.NavigateToRoadmapDetail -> {
-                                navController.navigate(AppRoutes.roadmapDetail(event.roadmapId))
-                            }
-                        }
-                    }
-                }
-
-                AiRoadmapScreen(
-                    uiState = uiState,
-                    selectedDestination = NavBarDestination.AiAssistant,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onCreateRoadmapClick = viewModel::onCreateRoadmapClick,
-                    onSeeMoreGeneratedRoadmaps = viewModel::onSeeMoreGeneratedRoadmaps,
-                    onSeeAllGeneratedRoadmaps = viewModel::onSeeAllGeneratedRoadmaps,
-                    onSeeLessGeneratedRoadmaps = viewModel::onSeeLessGeneratedRoadmaps,
-                    onBackToLibrary = viewModel::onBackToLibrary,
-                    onTopicChange = viewModel::onTopicChange,
-                    onDeadlineSelected = viewModel::onDeadlineSelected,
-                    onDailyStudyHoursChange = viewModel::onDailyStudyHoursChange,
-                    onSubmitSetup = viewModel::onSubmitSetup,
-                    onOptionSelected = viewModel::onOptionSelected,
-                    onCustomAnswerChange = viewModel::onCustomAnswerChange,
-                    onPreviousQuestion = viewModel::onPreviousQuestion,
-                    onNextQuestion = viewModel::onNextQuestion,
-                    onSubmitAnswers = viewModel::onSubmitAnswers,
-                    onCancelGeneration = viewModel::onCancelGeneration,
-                    onViewGeneratedRoadmap = viewModel::onViewGeneratedRoadmap,
-                    onExploreClick = {
-                        navController.navigate(AppRoutes.HOME) {
-                            launchSingleTop = true
-                        }
-                    },
-                    onExploreRoadmapsClick = {
-                        navigateFromBottomBar(NavBarDestination.Explore)
-                    },
-                    onRoadmapSelected = viewModel::onRoadmapSelected
-                )
-            }
-
-            composable(AppRoutes.EXPLORE) {
-                val viewModel: ExploreViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                ExploreScreen(
-                    uiState = uiState,
-                    selectedDestination = NavBarDestination.Explore,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onSearchQueryChange = viewModel::onSearchQueryChange,
-                    onCategoryClick = viewModel::onCategorySelected,
-                    onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmaps,
-                    onSeeAllRoadmapsClick = viewModel::onSeeAllRoadmaps,
-                    onSeeLessRoadmapsClick = viewModel::onSeeLessRoadmaps,
-                    onRoadmapClick = { item ->
-                        navController.navigate(AppRoutes.roadmapDetail(item.id))
-                    }
-                )
-            }
-
-            composable(AppRoutes.MY_ROADMAP) {
-                if (!hasAuthenticatedSession()) {
-                    LaunchedEffect(Unit) {
-                        requestAuthentication(AppRoutes.MY_ROADMAP)
-                    }
-                    return@composable
-                }
-
-                val viewModel: MyRoadmapViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-                MyRoadmapScreen(
-                    uiState = uiState,
-                    selectedDestination = NavBarDestination.MyRoadmap,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onFilterSelected = viewModel::onFilterSelected,
-                    onRoadmapClick = { roadmapId ->
-                        navController.navigate(AppRoutes.roadmapDetail(roadmapId))
-                    },
-                    onCreateWithAiClick = {
-                        navController.navigate(AppRoutes.AI_ROADMAP) {
-                            launchSingleTop = true
-                        }
-                    },
-                    onExploreRoadmapsClick = {
-                        navigateFromBottomBar(NavBarDestination.Explore)
-                    }
-                )
-            }
-
-            composable(AppRoutes.PROFILE) {
-                val viewModel: ProfileViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                val profileComingSoonMessage = stringResource(R.string.coming_soon_message)
-
-                LaunchedEffect(viewModel) {
-                    viewModel.events.collect { event ->
-                        when (event) {
-                            ProfileEvent.NavigateToAuthentication -> requestAuthentication(AppRoutes.PROFILE)
-                            ProfileEvent.NavigateToExplore -> navigateFromBottomBar(NavBarDestination.Explore)
-                            ProfileEvent.NavigateToNotificationSettings -> navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
-                            ProfileEvent.ShowComingSoon -> snackbarHostState.showSnackbar(profileComingSoonMessage)
-                            ProfileEvent.SignedOut -> navController.navigate(AppRoutes.HOME) {
-                                popUpTo(AppRoutes.HOME) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                        }
-                    }
-                }
-
-                ProfileScreen(
-                    uiState = uiState,
-                    selectedDestination = NavBarDestination.More,
-                    onDestinationSelected = ::handleDestinationSelected,
-                    onEditProfile = viewModel::onEditProfile,
-                    onSettingClick = viewModel::onSettingClick,
-                    onAuthenticateClick = viewModel::onAuthenticateClick,
-                    onExploreRoadmapsClick = viewModel::onExploreRoadmapsClick
-                )
-            }
-
             composable(AppRoutes.NOTIFICATION_SETTINGS) {
-                if (!hasAuthenticatedSession()) {
+                if (!isAuthenticated) {
                     LaunchedEffect(Unit) {
-                        requestAuthentication(AppRoutes.NOTIFICATION_SETTINGS)
+                        navController.popBackStack()
+                        requestAuthentication(
+                            reason = AuthPromptReason.NotificationSettings,
+                            destination = NavBarDestination.More,
+                            route = AppRoutes.NOTIFICATION_SETTINGS
+                        )
                     }
                     return@composable
                 }
@@ -570,19 +754,30 @@ fun RMapNavHost(navController: NavHostController) {
                                     roadmapId = roadmapId,
                                     milestoneId = event.milestoneId
                                 )
-                                navigateWithAccess(route) {
+                                if (isAuthenticated) {
                                     navController.navigate(route)
+                                } else {
+                                    requestAuthentication(
+                                        reason = AuthPromptReason.Milestone,
+                                        route = route
+                                    )
                                 }
                             }
                             is RoadmapDetailEvent.NavigateToLearning -> {
-                                val route = AppRoutes.roadmapLearning(
-                                    roadmapId = event.roadmapId,
-                                    nodeId = event.nodeId,
-                                    skillId = event.skillId,
-                                    isCompleted = event.isCompleted
-                                )
-                                navigateWithAccess(route) {
-                                    navController.navigate(route)
+                                if (isAuthenticated) {
+                                    navController.navigate(
+                                        AppRoutes.roadmapLearning(
+                                            roadmapId = event.roadmapId,
+                                            nodeId = event.nodeId,
+                                            skillId = event.skillId,
+                                            isCompleted = event.isCompleted,
+                                            groupTitle = event.groupTitle
+                                        )
+                                    )
+                                } else {
+                                    navController.navigate(
+                                        AppRoutes.skillDetail(event.skillId)
+                                    )
                                 }
                             }
                         }
@@ -592,15 +787,19 @@ fun RMapNavHost(navController: NavHostController) {
                 RoadmapDetailScreen(
                     uiState = uiState,
                     onBackClick = ::navigateBackFromRoadmapDetail,
+                    isGuestPreview = !isAuthenticated,
                     scrollTarget = detailScrollTarget,
                     onScrollTargetHandled = {
                         backStackEntry.savedStateHandle[AppRoutes.ROADMAP_DETAIL_SCROLL_REQUEST] = ""
                     },
                     onContinueClick = {
-                        if (hasAuthenticatedSession()) {
+                        if (isAuthenticated) {
                             viewModel.onContinueClick()
                         } else {
-                            requestAuthentication(AppRoutes.roadmapDetail(roadmapId))
+                            requestAuthentication(
+                                reason = AuthPromptReason.StartRoadmap,
+                                route = AppRoutes.roadmapDetail(roadmapId)
+                            )
                         }
                     },
                     onSearchQueryChange = viewModel::onSearchQueryChange,
@@ -618,8 +817,13 @@ fun RMapNavHost(navController: NavHostController) {
                             roadmapId = roadmapId,
                             milestoneId = milestone.id
                         )
-                        navigateWithAccess(route) {
+                        if (isAuthenticated) {
                             navController.navigate(route)
+                        } else {
+                            requestAuthentication(
+                                reason = AuthPromptReason.Milestone,
+                                route = route
+                            )
                         }
                     }
                 )
@@ -635,9 +839,13 @@ fun RMapNavHost(navController: NavHostController) {
                 val roadmapId = backStackEntry.arguments?.getString(AppRoutes.ROADMAP_ID_ARG).orEmpty()
                 val milestoneId = backStackEntry.arguments?.getString(AppRoutes.MILESTONE_ID_ARG).orEmpty()
                 val route = AppRoutes.roadmapMilestone(roadmapId, milestoneId)
-                if (!hasAuthenticatedSession()) {
+                if (!isAuthenticated) {
                     LaunchedEffect(route) {
-                        requestAuthentication(route)
+                        navController.popBackStack()
+                        requestAuthentication(
+                            reason = AuthPromptReason.Milestone,
+                            route = route
+                        )
                     }
                     return@composable
                 }
@@ -688,15 +896,21 @@ fun RMapNavHost(navController: NavHostController) {
                 val nodeId = backStackEntry.arguments?.getString(AppRoutes.NODE_ID_ARG).orEmpty()
                 val skillId = backStackEntry.arguments?.getString(AppRoutes.SKILL_ID_ARG).orEmpty()
                 val isCompleted = backStackEntry.arguments?.getBoolean(AppRoutes.NODE_COMPLETED_ARG) == true
+                val groupTitle = backStackEntry.arguments?.getString(AppRoutes.GROUP_TITLE_ARG)
                 val route = AppRoutes.roadmapLearning(
                     roadmapId = roadmapId,
                     nodeId = nodeId,
                     skillId = skillId,
-                    isCompleted = isCompleted
+                    isCompleted = isCompleted,
+                    groupTitle = groupTitle
                 )
-                if (!hasAuthenticatedSession()) {
+                if (!isAuthenticated) {
                     LaunchedEffect(route) {
-                        requestAuthentication(route)
+                        navController.popBackStack()
+                        requestAuthentication(
+                            reason = AuthPromptReason.StartRoadmap,
+                            route = route
+                        )
                     }
                     return@composable
                 }
@@ -733,12 +947,13 @@ fun RMapNavHost(navController: NavHostController) {
                     }
                 }
 
-                LaunchedEffect(roadmapId, nodeId, skillId, isCompleted) {
+                LaunchedEffect(roadmapId, nodeId, skillId, isCompleted, groupTitle) {
                     viewModel.loadLearningContent(
                         roadmapId = roadmapId,
                         nodeId = nodeId,
                         skillId = skillId,
-                        isCompleted = isCompleted
+                        isCompleted = isCompleted,
+                        groupTitle = groupTitle
                     )
                 }
 
@@ -826,9 +1041,13 @@ fun RMapNavHost(navController: NavHostController) {
                 val roadmapId = backStackEntry.arguments?.getString(AppRoutes.ROADMAP_ID_ARG).orEmpty()
                 val nodeId = backStackEntry.arguments?.getString(AppRoutes.NODE_ID_ARG).orEmpty()
                 val route = AppRoutes.roadmapNodeQuiz(roadmapId, nodeId)
-                if (!hasAuthenticatedSession()) {
+                if (!isAuthenticated) {
                     LaunchedEffect(route) {
-                        requestAuthentication(route)
+                        navController.popBackStack()
+                        requestAuthentication(
+                            reason = AuthPromptReason.StartRoadmap,
+                            route = route
+                        )
                     }
                     return@composable
                 }
@@ -883,10 +1102,48 @@ fun RMapNavHost(navController: NavHostController) {
                     .fillMaxWidth()
             )
         }
+    }
+    }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+    authPromptReasonName
+        ?.let { name -> runCatching { AuthPromptReason.valueOf(name) }.getOrNull() }
+        ?.let { reason ->
+            AuthRequiredDialog(
+                reason = reason,
+                onContinueClick = {
+                    openAuthentication(
+                        destination = pendingDestinationName
+                            ?.let { name ->
+                                runCatching { NavBarDestination.valueOf(name) }.getOrNull()
+                            },
+                        route = pendingRoute
+                    )
+                },
+                onDismissRequest = {
+                    authPromptReasonName = null
+                    pendingDestinationName = null
+                    pendingRoute = null
+                }
+            )
+        }
+}
+
+private fun NavBarDestination.pageIndex(): Int {
+    return when (this) {
+        NavBarDestination.Home -> 0
+        NavBarDestination.MyRoadmap -> 1
+        NavBarDestination.AiAssistant -> 2
+        NavBarDestination.Explore -> 3
+        NavBarDestination.More -> 4
+    }
+}
+
+private fun NavBarDestination.authPromptReason(): AuthPromptReason {
+    return when (this) {
+        NavBarDestination.MyRoadmap -> AuthPromptReason.MyRoadmaps
+        NavBarDestination.AiAssistant -> AuthPromptReason.AiRoadmap
+        NavBarDestination.Home,
+        NavBarDestination.Explore,
+        NavBarDestination.More -> AuthPromptReason.StartRoadmap
     }
 }

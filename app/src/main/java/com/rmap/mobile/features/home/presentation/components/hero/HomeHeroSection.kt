@@ -15,6 +15,7 @@ import com.rmap.mobile.core.ui.theme.RMapTheme
 
 @Composable
 fun HomeHeroSection(
+    isAuthenticated: Boolean,
     modifier: Modifier = Modifier,
     sectionHorizontalPadding: Dp = Dimens.spacingScreenHorizontal,
     sectionTitle: String,
@@ -36,7 +37,8 @@ fun HomeHeroSection(
         onContinueClick = onContinueClick,
         onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
         onExploreReadyMadeClick = onExploreReadyMadeClick,
-        onFocusedPlanChange = onFocusedPlanChange
+        onFocusedPlanChange = onFocusedPlanChange,
+        isAuthenticated = isAuthenticated
     )
 }
 
@@ -51,6 +53,7 @@ private fun LearningPlanSection(
     onCreateRoadmapWithAiClick: () -> Unit,
     onExploreReadyMadeClick: () -> Unit,
     onFocusedPlanChange: (HomeLearningPlanUiModel) -> Unit,
+    isAuthenticated: Boolean,
     modifier: Modifier = Modifier
 ) {
     val inProgressRoadmaps = getInProgressRoadmaps(learningPlans)
@@ -67,6 +70,7 @@ private fun LearningPlanSection(
         when {
             inProgressRoadmaps.isEmpty() -> {
                 HomeHeroEmptyRoadmapCard(
+                    isAuthenticated = isAuthenticated,
                     onCreateRoadmapWithAiClick = onCreateRoadmapWithAiClick,
                     onExploreReadyMadeClick = onExploreReadyMadeClick,
                     modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
@@ -118,6 +122,7 @@ private fun HomeHeroSectionPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
             HomeHeroSection(
+                isAuthenticated = true,
                 sectionTitle = "Today's Learning Plan",
                 continueText = "Continue",
                 nextUnlockPrefix = "Next unlock: ",
@@ -147,6 +152,7 @@ private fun HomeHeroSectionCarouselPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
             HomeHeroSection(
+                isAuthenticated = true,
                 sectionTitle = "Today's Learning Plan",
                 continueText = "Continue",
                 nextUnlockPrefix = "Next unlock: ",
@@ -188,6 +194,7 @@ private fun HomeHeroSectionEmptyPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
             HomeHeroSection(
+                isAuthenticated = false,
                 sectionTitle = "Today's Learning Plan",
                 continueText = "",
                 nextUnlockPrefix = "",

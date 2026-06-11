@@ -198,11 +198,12 @@ private fun ExploreSectionHeaderSkeleton(
 }
 
 @Composable
-private fun ExploreRoadmapRowSkeleton(
-    brush: Brush
+fun ExploreRoadmapRowSkeleton(
+    modifier: Modifier = Modifier,
+    brush: Brush = rememberRMapSkeletonBrush()
 ) {
     RMapSkeletonCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(ExploreSkeletonRoadmapHeight),
         shape = AppShapes.card

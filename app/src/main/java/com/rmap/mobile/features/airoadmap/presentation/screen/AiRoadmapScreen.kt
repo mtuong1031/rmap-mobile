@@ -35,7 +35,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapHeader
-import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.airoadmap.presentation.components.AiRoadmapPreviewData
@@ -44,12 +43,19 @@ import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapStep
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapUiState
 import com.rmap.mobile.navigation.NavBarDestination
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AiRoadmapScreen(
     uiState: AiRoadmapUiState,
     selectedDestination: NavBarDestination,
     onDestinationSelected: (NavBarDestination) -> Unit,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onSearchQueryChange: (String) -> Unit,
     onCreateRoadmapClick: () -> Unit,
     onSeeMoreGeneratedRoadmaps: () -> Unit,
@@ -72,6 +78,13 @@ fun AiRoadmapScreen(
     onRoadmapSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
     val context = LocalContext.current
     var isDatePickerVisible by remember { mutableStateOf(false) }
     var isNotificationPromptVisible by remember { mutableStateOf(false) }
@@ -158,22 +171,16 @@ fun AiRoadmapScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            RMapNavigationBar(
-                selectedDestination = selectedDestination,
-                onDestinationSelected = onDestinationSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = Dimens.spacingScreenHorizontal,
                 top = Dimens.spacingScreenTopCompact,
                 end = Dimens.spacingScreenHorizontal,
-                bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
+                bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
         ) {

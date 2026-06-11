@@ -227,13 +227,20 @@ data class RoadmapMilestoneSubmissionUiModel(
     val passRatePercent: Int?,
     val passedTests: Int?,
     val totalTests: Int?,
-    val attemptNumber: Int
+    val attemptNumber: Int,
+    val testResults: List<RoadmapMilestoneSubmissionTestResultUiModel> = emptyList()
 ) {
     val hasTestExecutionResult: Boolean
         get() = status == RoadmapMilestoneSubmissionStatusUiModel.Passed ||
             status == RoadmapMilestoneSubmissionStatusUiModel.Failed ||
             status == RoadmapMilestoneSubmissionStatusUiModel.Error
 }
+
+data class RoadmapMilestoneSubmissionTestResultUiModel(
+    val name: String,
+    val message: String,
+    val passed: Boolean
+)
 
 enum class RoadmapMilestoneSubmissionStatusUiModel {
     Running,
@@ -297,7 +304,14 @@ private fun MilestoneSubmission.toUiModel(): RoadmapMilestoneSubmissionUiModel {
         passRatePercent = passRatePercent,
         passedTests = passedTests,
         totalTests = totalTests,
-        attemptNumber = attemptNumber
+        attemptNumber = attemptNumber,
+        testResults = testResults.map {
+            RoadmapMilestoneSubmissionTestResultUiModel(
+                name = it.name,
+                message = it.message,
+                passed = it.passed
+            )
+        }
     )
 }
 

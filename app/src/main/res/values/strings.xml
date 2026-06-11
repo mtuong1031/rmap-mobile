@@ -5,8 +5,8 @@
     <string name="auth_heading_continue_account">Continue with an account</string>
     <string name="auth_heading_create_account">Create your account</string>
     <string name="auth_welcome_prefix">Welcome to</string>
-    <string name="auth_brand_name">rmap</string>
-    <string name="auth_welcome_suffix">studio</string>
+    <string name="auth_brand_name">RMap</string>
+    <string name="auth_welcome_suffix">- The platform helps you master any programming topics. 🚀</string>
     <string name="auth_sign_in_title">Start your learning roadmap</string>
     <string name="auth_sign_in_description">Sign in to save your roadmap, progress, and daily streak.</string>
     <string name="auth_sign_up_title">Create your account</string>
@@ -19,6 +19,9 @@
     <string name="auth_sign_in">Sign in</string>
     <string name="auth_create_account">Create account</string>
     <string name="auth_or_divider">or</string>
+    <string name="auth_continue_with_google">Continue with Google</string>
+    <string name="auth_continue_with_github">Continue with Github</string>
+    <string name="auth_sign_in_or_sign_up">Start your learning journey</string>
     <string name="auth_new_to_rmap">New to RMap?</string>
     <string name="auth_create_an_account">Create an account</string>
     <string name="auth_already_have_account">Already have an account?</string>
@@ -30,12 +33,14 @@
     <string name="auth_have_account">Already have an account?</string>
     <string name="auth_toggle_password_visibility">Toggle password visibility</string>
     <string name="auth_sign_in_failed">Unable to sign in. Please try again.</string>
+    <string name="auth_error_no_accounts">No matching accounts found.</string>
+    <string name="auth_error_cancelled">Sign-in was cancelled.</string>
     <string name="coming_soon_message">This action is coming soon.</string>
     <string name="separator_bullet">•</string>
     <string name="action_cancel">Cancel</string>
-    <string name="action_see_all">SEE ALL</string>
-    <string name="action_see_less">SEE LESS</string>
-    <string name="action_see_more">SEE MORE</string>
+    <string name="action_see_all">See all</string>
+    <string name="action_see_less">See less</string>
+    <string name="action_see_more">See more</string>
     <string name="action_explore_roadmaps">Explore roadmaps</string>
     <string name="action_retry">Retry</string>
 
@@ -48,7 +53,7 @@
 
     <!-- Home Screen -->
     <string name="roadmap_trending_title">Trending Roadmaps</string>
-    <string name="roadmap_see_all">SEE ALL</string>
+    <string name="roadmap_see_all">See all</string>
     <string name="roadmap_nodes_count">%1$d nodes</string>
 
     <string name="home_greeting">Good morning, %1$s</string>
@@ -61,14 +66,21 @@
     <string name="home_heading_next_skill">Ready for your next skill?</string>
     <string name="home_search_placeholder">Search roadmap, skill, or role...</string>
     <string name="home_search_screen_placeholder">Search roadmap, lessons...</string>
-    <string name="home_search_recent_title">Recent searches</string>
-    <string name="home_search_clear_all">Clear all</string>
-    <string name="home_search_popular_title">Popular searches</string>
+    <string name="home_search_recent_title">Recent Searches</string>
+    <string name="home_search_clear_all">Clear All</string>
+    <string name="home_search_popular_title">Popular Searches</string>
     <string name="home_search_roadmaps_title">Roadmaps</string>
     <string name="home_search_skills_title">Skills</string>
-    <string name="home_search_roadmaps_found_count">%1$d roadmaps founds</string>
-    <string name="home_search_skills_found_count">%1$d skills founds</string>
+    <plurals name="home_search_roadmaps_found_count">
+        <item quantity="one">%1$d roadmap found</item>
+        <item quantity="other">%1$d roadmaps found</item>
+    </plurals>
+    <plurals name="home_search_skills_found_count">
+        <item quantity="one">%1$d skill found</item>
+        <item quantity="other">%1$d skills found</item>
+    </plurals>
     <string name="home_search_ai_suggestion_title">AI suggestion</string>
+    <string name="home_search_sign_in_required">Sign in required</string>
     <string name="skill_detail_title">Skill detail</string>
 
     <string name="home_streak_label">Streak</string>
@@ -82,6 +94,7 @@
     <string name="home_empty_roadmap_description">You don\'t have an active roadmap yet. Search a
         skill, choose a role, or create one with AI.</string>
     <string name="home_empty_roadmap_create_ai">Create roadmap with AI</string>
+    <string name="home_empty_roadmap_create_ai_guest">Create with AI · Sign in</string>
     <string name="home_empty_roadmap_explore">Explore ready-made</string>
     <string name="home_stat_roadmap_label">Roadmap</string>
     <string name="home_stat_readiness_label">Readiness</string>
@@ -251,7 +264,7 @@
     <string name="explore_roadmap_library_filtered_subtitle">Filtered by %1$s</string>
     <string name="explore_roadmap_library_empty">No roadmaps match the current filters.</string>
     <string name="explore_roadmap_library_see_more">See more %1$d</string>
-    <string name="explore_roadmap_library_see_less">SEE LESS</string>
+    <string name="explore_roadmap_library_see_less">See less</string>
     <string name="explore_category_roadmap_count">%1$d paths</string>
     <string name="explore_category_frontend">Frontend</string>
     <string name="explore_category_backend">Backend</string>
@@ -270,11 +283,24 @@
     <string name="profile_guest_header_title">Guest Profile</string>
     <string name="profile_guest_title">You\'re browsing as a guest</string>
     <string name="profile_guest_description">Explore public roadmap templates and preview every learning node. Sign in when you\'re ready to start learning and save your progress.</string>
+    <string name="profile_guest_benefits_title">Sign in to unlock</string>
     <string name="profile_guest_benefit_progress">Save progress across roadmap nodes</string>
     <string name="profile_guest_benefit_personalized">Create personalized learning roadmaps</string>
     <string name="profile_guest_benefit_sync">Sync activity, streaks, and settings</string>
     <string name="profile_guest_authenticate">Sign in or create account</string>
     <string name="profile_guest_explore">Explore roadmap templates</string>
+    <string name="auth_prompt_ai_title">Create your AI roadmap</string>
+    <string name="auth_prompt_ai_description">Sign in to generate and save a personalized roadmap with AI.</string>
+    <string name="auth_prompt_my_roadmaps_title">Keep your roadmaps in one place</string>
+    <string name="auth_prompt_my_roadmaps_description">Sign in to create, save, and continue your personal roadmaps.</string>
+    <string name="auth_prompt_start_roadmap_title">Ready to start learning?</string>
+    <string name="auth_prompt_start_roadmap_description">Sign in to start this roadmap and save your progress across learning nodes.</string>
+    <string name="auth_prompt_milestone_title">Complete this milestone</string>
+    <string name="auth_prompt_milestone_description">Sign in to submit work and track milestone results.</string>
+    <string name="auth_prompt_notifications_title">Manage learning reminders</string>
+    <string name="auth_prompt_notifications_description">Sign in to configure reminders for your learning activity.</string>
+    <string name="auth_prompt_continue">Continue to sign in</string>
+    <string name="auth_prompt_not_now">Not now</string>
     <string name="profile_avatar_content_description">Profile avatar</string>
     <string name="profile_edit_avatar_content_description">Edit avatar</string>
     <string name="profile_total_experience_label">TOTAL EXPERIENCE</string>
@@ -428,6 +454,10 @@
     <string name="roadmap_detail_start_learning_title">Start Learning: %1$s</string>
     <string name="roadmap_detail_review_title">Review: %1$s</string>
     <string name="roadmap_detail_next_unlock">Next unlock: %1$s</string>
+    <string name="roadmap_detail_preview_mode">Preview mode</string>
+    <string name="roadmap_detail_preview_description">Browse this roadmap before signing in. Progress and quizzes are available after you start.</string>
+    <string name="roadmap_detail_preview_action">Sign in to start</string>
+    <string name="roadmap_detail_preview_action_description">Save progress and unlock learning activities</string>
     <string name="roadmap_detail_completed_recently">Completed 2 days ago</string>
     <string name="roadmap_detail_node_estimated_hours">%1$s estimated hours</string>
     <string name="roadmap_detail_node_resources_available">%1$s resources available</string>
@@ -455,7 +485,7 @@
     <string name="roadmap_detail_ai_tip_suffix"> before moving to %1$s.</string>
 
     <!-- Roadmap Learning Node Screen -->
-    <string name="roadmap_learning_title">Learning node</string>
+    <string name="roadmap_learning_title">Learning lesson</string>
     <string name="roadmap_learning_error_invalid_args">This learning link is invalid.</string>
     <string name="roadmap_learning_error_load_failed">Unable to load this skill. Please try again.</string>
     <string name="roadmap_learning_empty_description">No skill details are available yet.</string>
@@ -476,6 +506,8 @@
     <string name="roadmap_learning_platform_udemy">Udemy</string>
     <string name="roadmap_learning_platform_coursera">Coursera</string>
     <string name="roadmap_learning_platform_youtube">YouTube</string>
+    <string name="roadmap_learning_platform_course">Course</string>
+    <string name="roadmap_learning_platform_article">Article</string>
     <string name="roadmap_learning_platform_other">Other</string>
     <string name="roadmap_learning_level_fresher">Fresher</string>
     <string name="roadmap_learning_level_junior">Junior</string>
@@ -495,7 +527,7 @@
     <string name="roadmap_learning_error_fallback">Unable to load this learning node. Please try again.</string>
 
     <!-- Roadmap Milestone Screen -->
-    <string name="roadmap_milestone_screen_title">Milestone</string>
+    <string name="roadmap_milestone_screen_title">Milestone project</string>
     <string name="roadmap_milestone_error_invalid_args">This milestone link is invalid.</string>
     <string name="roadmap_milestone_error_load_failed">Unable to load this milestone. Please try again.</string>
     <string name="roadmap_milestone_error_submit_failed">Unable to submit this milestone. Please try again.</string>
@@ -508,6 +540,9 @@
     <string name="roadmap_milestone_hide_details">Hide details</string>
     <string name="roadmap_milestone_pass_threshold">%1$d%% pass threshold</string>
     <string name="roadmap_milestone_attempt_format">Attempt %1$d</string>
+    <string name="roadmap_milestone_attempt">Attempt</string>
+    <string name="roadmap_milestone_score">Score</string>
+    <string name="roadmap_milestone_tests_passed">Tests Passed</string>
     <string name="roadmap_milestone_raw_output_log">Raw output log</string>
     <string name="roadmap_milestone_copy_output_log">Copy output log</string>
     <string name="roadmap_milestone_submission_score">%1$d%% pass rate - %2$d/%3$d tests passed</string>

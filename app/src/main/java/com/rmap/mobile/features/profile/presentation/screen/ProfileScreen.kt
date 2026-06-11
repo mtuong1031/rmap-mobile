@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
-import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.profile.domain.model.UserDailyActivity
@@ -34,6 +33,11 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.LaunchedEffect
+
 @Composable
 fun ProfileScreen(
     uiState: ProfileUiState,
@@ -42,23 +46,24 @@ fun ProfileScreen(
     onAuthenticateClick: () -> Unit,
     onExploreRoadmapsClick: () -> Unit,
     onDestinationSelected: (NavBarDestination) -> Unit,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.More
 ) {
     val listState = rememberLazyListState()
+
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
+
     val weeklyActivityDays = uiState.recentActivity.toProfileActivityDays()
     val activeDaysThisWeek = weeklyActivityDays.count { it.isComplete }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            RMapNavigationBar(
-                selectedDestination = selectedDestination,
-                onDestinationSelected = onDestinationSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
@@ -68,7 +73,7 @@ fun ProfileScreen(
                     start = Dimens.spacingLg,
                     end = Dimens.spacingLg,
                     top = Dimens.spacingScreenTopCompact,
-                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingXxxl
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingXxxl + Dimens.floatingNavBarHeight
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
             ) {
@@ -93,6 +98,7 @@ fun ProfileScreen(
                         GuestProfileContent(
                             title = stringResource(id = R.string.profile_guest_title),
                             description = stringResource(id = R.string.profile_guest_description),
+                            benefitsTitle = stringResource(id = R.string.profile_guest_benefits_title),
                             benefits = listOf(
                                 stringResource(id = R.string.profile_guest_benefit_progress),
                                 stringResource(id = R.string.profile_guest_benefit_personalized),

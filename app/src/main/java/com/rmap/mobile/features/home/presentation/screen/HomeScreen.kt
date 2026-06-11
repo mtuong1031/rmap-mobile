@@ -43,10 +43,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapHeader
-import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
-import com.rmap.mobile.core.ui.components.RMapTextInput
-import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
+import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryCardGrid
@@ -78,12 +76,17 @@ import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
 import com.rmap.mobile.navigation.NavBarDestination
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.Home,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onHeaderActionClick: () -> Unit = {},
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
@@ -97,10 +100,16 @@ fun HomeScreen(
     onHomeStatItemClick: ((index: Int, item: HomeStatItemUiModel) -> Unit)? = null,
     onCategoryItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)? = null,
     onRecommendedRoadmapClick: ((HomeRecommendedRoadmapState) -> Unit)? = null,
-    onRoadmapClick: ((TrendingRoadmapCardUiModel) -> Unit)? = null,
+    onRoadmapClick: ((TrendingRoadmapCardUiModel) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val sectionHorizontalPadding = Dimens.spacingScreenHorizontal
+
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
 
     val greetingText = if (uiState.isAuthenticated && uiState.userName.isNotBlank()) {
         stringResource(
@@ -189,22 +198,14 @@ fun HomeScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            RMapNavigationBar(
-                selectedDestination = selectedDestination,
-                onDestinationSelected = onDestinationSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     top = Dimens.spacingScreenTopCompact,
-                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
             ) {
@@ -221,33 +222,14 @@ fun HomeScreen(
                 }
 
                 item {
-                    Box(modifier = Modifier.padding(horizontal = sectionHorizontalPadding)) {
-                        RMapTextInput(
-                            value = searchQuery,
-                            onValueChange = onSearchQueryChange,
-                            placeholder = stringResource(R.string.home_search_placeholder),
-                            readOnly = true,
-                            textStyle = MaterialTheme.typography.bodyLarge,
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Outlined.Search,
-                                    contentDescription = null,
-                                    tint = RMapTextInputDefaults.colors().placeholderColor,
-                                )
-                            }
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    role = Role.Button,
-                                    onClick = onSearchClick
-                                )
-                        )
-                    }
+                    RMapSearchBar(
+                        query = searchQuery,
+                        onQueryChange = onSearchQueryChange,
+                        placeholder = stringResource(R.string.home_search_placeholder),
+                        readOnly = true,
+                        onClick = onSearchClick,
+                        modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                    )
                 }
 
                 if (isLoading) {
@@ -294,6 +276,7 @@ fun HomeScreen(
                 } else {
                     item {
                         HomeHeroSection(
+                            isAuthenticated = uiState.isAuthenticated,
                             sectionTitle = stringResource(R.string.home_learning_plan_title),
                             continueText = stringResource(R.string.home_hero_continue),
                             nextUnlockPrefix = stringResource(R.string.home_hero_next_unlock_prefix),
@@ -423,7 +406,6 @@ fun HomeScreen(
             }
         }
     }
-}
 
 private fun HomeGreetingPeriod.labelResId(): Int {
     return when (this) {

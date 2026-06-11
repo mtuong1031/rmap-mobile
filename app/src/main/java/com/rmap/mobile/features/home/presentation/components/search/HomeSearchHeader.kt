@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
-import com.rmap.mobile.core.ui.components.RMapTextInput
+import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.core.ui.components.RMapTextInputDefaults
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -50,49 +50,23 @@ fun HomeSearchHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         HomeSearchIconButton(icon = Icons.AutoMirrored.Filled.ArrowBack, onClick = onBackClick)
-        HomeSearchTextField(
+        RMapSearchBar(
             query = query,
-            placeholder = placeholder,
             onQueryChange = onQueryChange,
             modifier = Modifier.weight(1f),
-            focusRequester = focusRequester
+            placeholder = placeholder,
+            focusRequester = focusRequester,
+            textStyle = MaterialTheme.typography.labelLarge.copy(
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            ),
+            shape = HomeSearchInputShape,
+            height = HomeSearchInputHeight,
+            colors = RMapTextInputDefaults.colors(
+                borderColor = MaterialTheme.colorScheme.inversePrimary
+            )
         )
     }
-}
-
-@Composable
-private fun HomeSearchTextField(
-    query: String,
-    placeholder: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    focusRequester: FocusRequester? = null
-) {
-    RMapTextInput(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier.then(
-            focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
-        ),
-        placeholder = placeholder,
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(Dimens.iconSmPlus)
-            )
-        },
-        textStyle = MaterialTheme.typography.labelLarge.copy(
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium
-        ),
-        shape = HomeSearchInputShape,
-        height = HomeSearchInputHeight,
-        colors = RMapTextInputDefaults.colors(
-            borderColor = MaterialTheme.colorScheme.inversePrimary
-        )
-    )
 }
 
 @Composable
@@ -156,10 +130,15 @@ private fun HomeSearchHeaderWithQueryPreview() {
 private fun HomeSearchTextFieldPreview() {
     RMapTheme {
         Box(modifier = Modifier.padding(Dimens.spacingMd)) {
-            HomeSearchTextField(
+            RMapSearchBar(
                 query = "",
                 placeholder = "Search skills, roadmaps...",
-                onQueryChange = {}
+                onQueryChange = {},
+                shape = HomeSearchInputShape,
+                height = HomeSearchInputHeight,
+                colors = RMapTextInputDefaults.colors(
+                    borderColor = MaterialTheme.colorScheme.inversePrimary
+                )
             )
         }
     }

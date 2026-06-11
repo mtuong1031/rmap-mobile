@@ -39,6 +39,7 @@ private val HomeHeroEmptyIconTileSize = 72.dp
 
 @Composable
 internal fun HomeHeroEmptyRoadmapCard(
+    isAuthenticated: Boolean,
     onCreateRoadmapWithAiClick: () -> Unit,
     onExploreReadyMadeClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -104,37 +105,58 @@ internal fun HomeHeroEmptyRoadmapCard(
 
             Spacer(modifier = Modifier.height(Dimens.spacingHuge))
 
-            RMapButton(
-                text = stringResource(R.string.home_empty_roadmap_create_ai),
-                onClick = onCreateRoadmapWithAiClick,
-                modifier = Modifier.fillMaxWidth(),
-                variant = RMapButtonVariant.Primary,
-                size = RMapButtonSize.Large,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.AutoAwesome,
-                        contentDescription = null,
-                        modifier = Modifier.size(Dimens.iconSm)
-                    )
-                }
-            )
-
-            Spacer(modifier = Modifier.height(Dimens.spacingMd))
-
-            RMapButton(
-                text = stringResource(R.string.home_empty_roadmap_explore),
-                onClick = onExploreReadyMadeClick,
-                modifier = Modifier.fillMaxWidth(),
-                variant = RMapButtonVariant.Secondary,
-                size = RMapButtonSize.Large,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.Explore,
-                        contentDescription = null,
-                        modifier = Modifier.size(Dimens.iconSm)
-                    )
-                }
-            )
+            if (isAuthenticated) {
+                HomeEmptyRoadmapAction(
+                    text = stringResource(R.string.home_empty_roadmap_create_ai),
+                    icon = Icons.Outlined.AutoAwesome,
+                    variant = RMapButtonVariant.Primary,
+                    onClick = onCreateRoadmapWithAiClick
+                )
+                Spacer(modifier = Modifier.height(Dimens.spacingMd))
+                HomeEmptyRoadmapAction(
+                    text = stringResource(R.string.home_empty_roadmap_explore),
+                    icon = Icons.Outlined.Explore,
+                    variant = RMapButtonVariant.Secondary,
+                    onClick = onExploreReadyMadeClick
+                )
+            } else {
+                HomeEmptyRoadmapAction(
+                    text = stringResource(R.string.home_empty_roadmap_explore),
+                    icon = Icons.Outlined.Explore,
+                    variant = RMapButtonVariant.Primary,
+                    onClick = onExploreReadyMadeClick
+                )
+                Spacer(modifier = Modifier.height(Dimens.spacingMd))
+                HomeEmptyRoadmapAction(
+                    text = stringResource(R.string.home_empty_roadmap_create_ai_guest),
+                    icon = Icons.Outlined.AutoAwesome,
+                    variant = RMapButtonVariant.Secondary,
+                    onClick = onCreateRoadmapWithAiClick
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun HomeEmptyRoadmapAction(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    variant: RMapButtonVariant,
+    onClick: () -> Unit
+) {
+    RMapButton(
+        text = text,
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        variant = variant,
+        size = RMapButtonSize.Large,
+        leadingIcon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(Dimens.iconSm)
+            )
+        }
+    )
 }

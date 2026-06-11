@@ -18,24 +18,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapHeader
-import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.explore.presentation.components.ExploreCategorySection
 import com.rmap.mobile.features.explore.presentation.components.ExploreContentSkeleton
-import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBar
+import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.features.explore.presentation.components.ExploreSearchBarSkeleton
 import com.rmap.mobile.features.explore.presentation.components.RoadmapLibrarySection
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreRoadmapCardUiModel
 import com.rmap.mobile.features.explore.presentation.viewmodel.ExploreUiState
 import com.rmap.mobile.navigation.NavBarDestination
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.collectLatest
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun ExploreScreen(
     uiState: ExploreUiState,
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.Explore,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onHeaderActionClick: () -> Unit = {},
     onSearchQueryChange: (String) -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
@@ -43,25 +47,24 @@ fun ExploreScreen(
     onRoadmapClick: (ExploreRoadmapCardUiModel) -> Unit = {},
     onSeeMoreRoadmapsClick: () -> Unit = {},
     onSeeAllRoadmapsClick: () -> Unit = {},
-    onSeeLessRoadmapsClick: () -> Unit = {},
+    onSeeLessRoadmapsClick: () -> Unit = {}
 ) {
     val listState = rememberLazyListState()
+
+    LaunchedEffect(reselectEvent) {
+        reselectEvent.collectLatest {
+            listState.animateScrollToItem(0)
+        }
+    }
+
     val selectedCategoryName = uiState.categories
         .firstOrNull { it.id == uiState.selectedCategoryId }
         ?.name
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            RMapNavigationBar(
-                selectedDestination = selectedDestination,
-                onDestinationSelected = onDestinationSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
@@ -69,7 +72,7 @@ fun ExploreScreen(
                     start = Dimens.spacingNone,
                     end = Dimens.spacingNone,
                     top = Dimens.spacingScreenTopCompact,
-                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
             ) {
@@ -90,9 +93,15 @@ fun ExploreScreen(
                         if (uiState.isLoading) {
                             ExploreSearchBarSkeleton()
                         } else {
-                            ExploreSearchBar(
+                            RMapSearchBar(
                                 query = uiState.searchQuery,
-                                onQueryChange = onSearchQueryChange
+                                onQueryChange = onSearchQueryChange,
+                                placeholder = stringResource(R.string.explore_search_placeholder),
+                                height = Dimens.exploreSearchBarHeight,
+                                contentPadding = PaddingValues(
+                                    start = Dimens.spacingLg,
+                                    end = Dimens.spacingLg
+                                )
                             )
                         }
                     }
@@ -116,13 +125,13 @@ fun ExploreScreen(
                             roadmaps = uiState.libraryRoadmaps,
                             selectedCategoryName = selectedCategoryName,
                             totalCount = uiState.totalLibraryCount,
+                            isFetchingMore = uiState.isFetchingMoreRoadmaps,
                             onRoadmapClick = onRoadmapClick,
                             onSeeMoreClick = onSeeMoreRoadmapsClick,
                             onSeeAllClick = onSeeAllRoadmapsClick,
                             onSeeLessClick = onSeeLessRoadmapsClick
                         )
                     }
-                }
             }
         }
     }
@@ -164,9 +173,15 @@ private fun ExploreScreenLoadingPreview() {
 private fun SearchBarPreview() {
     RMapTheme {
         Box(modifier = Modifier.padding(Dimens.spacingLg)) {
-            ExploreSearchBar(
+            RMapSearchBar(
                 query = "",
-                onQueryChange = {}
+                onQueryChange = {},
+                placeholder = stringResource(R.string.explore_search_placeholder),
+                height = Dimens.exploreSearchBarHeight,
+                contentPadding = PaddingValues(
+                    start = Dimens.spacingLg,
+                    end = Dimens.spacingLg
+                )
             )
         }
     }

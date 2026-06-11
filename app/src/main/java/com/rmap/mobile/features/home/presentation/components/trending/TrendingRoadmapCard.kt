@@ -190,6 +190,13 @@ private fun TrendingRoadmapRankRail(
                 )
             }
     ) {
+        if (androidx.compose.foundation.isSystemInDarkTheme()) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(Color(0x99000000))
+            )
+        }
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -210,10 +217,16 @@ private fun TrendingRoadmapRankRail(
             )
         }
 
+        val iconColor = if (androidx.compose.foundation.isSystemInDarkTheme()) {
+            Color.White.copy(alpha = style.decorativeIconAlpha)
+        } else {
+            style.decorativeIconColor.copy(alpha = style.decorativeIconAlpha)
+        }
+
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = style.decorativeIconColor.copy(alpha = style.decorativeIconAlpha),
+            tint = iconColor,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .offset(x = Dimens.spacingXxl, y = Dimens.spacingXxl)

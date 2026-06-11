@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapLinearProgress
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapLockedText
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccess
@@ -60,6 +55,7 @@ internal fun RoadmapGroupHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
@@ -71,21 +67,15 @@ internal fun RoadmapGroupHeader(
                 Text(
                     text = group.title,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        color = if (group.state == RoadmapGroupState.Locked) {
-                            roadmapLockedText
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
+                        color = when {
+                            group.state == RoadmapGroupState.Locked -> roadmapLockedText
+                            isDarkTheme -> MaterialTheme.colorScheme.onSurface
+                            else -> MaterialTheme.colorScheme.onSurface
                         },
                         fontWeight = FontWeight.Bold
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
-                )
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = null,
-                    tint = OnSurfacePlaceholderLight,
-                    modifier = Modifier.size(Dimens.iconXs)
                 )
             }
 
@@ -100,18 +90,18 @@ internal fun RoadmapGroupHeader(
                         group.totalRequiredNodes
                     ),
                     style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isDarkTheme) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium
                     )
                 )
                 RoadmapLinearProgress(
                     progress = group.progressFraction,
                     modifier = Modifier.width(GroupProgressWidth),
-                    trackColor = MaterialTheme.colorScheme.outlineVariant,
-                    indicatorColor = if (group.state == RoadmapGroupState.Completed) {
-                        roadmapSuccess
-                    } else {
-                        MaterialTheme.colorScheme.primary
+                    trackColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.outlineVariant,
+                    indicatorColor = when {
+                        group.state == RoadmapGroupState.Completed && isDarkTheme -> androidx.compose.ui.graphics.Color(0xFF34D399)
+                        group.state == RoadmapGroupState.Completed -> roadmapSuccess
+                        else -> MaterialTheme.colorScheme.primary
                     }
                 )
             }

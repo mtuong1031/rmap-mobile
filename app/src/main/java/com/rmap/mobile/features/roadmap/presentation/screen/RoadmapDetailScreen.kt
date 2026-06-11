@@ -68,6 +68,7 @@ import com.rmap.mobile.features.roadmap.presentation.viewmodel.searchResultNodes
 fun RoadmapDetailScreen(
     uiState: RoadmapDetailUiState,
     onBackClick: () -> Unit,
+    isGuestPreview: Boolean = false,
     modifier: Modifier = Modifier,
     scrollTarget: RoadmapDetailScrollTarget? = null,
     onScrollTargetHandled: () -> Unit = {},
@@ -83,7 +84,8 @@ fun RoadmapDetailScreen(
     onMilestoneClick: (RoadmapMilestoneUiModel) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
-    val hasStartedLearning = uiState.primaryAction == RoadmapPrimaryAction.ContinueLearning
+    val hasStartedLearning =
+        !isGuestPreview && uiState.primaryAction == RoadmapPrimaryAction.ContinueLearning
 
     LaunchedEffect(scrollTarget, uiState.isLoading, uiState.isSearchActive, uiState.contentItems) {
         val target = scrollTarget ?: return@LaunchedEffect
@@ -192,7 +194,8 @@ fun RoadmapDetailScreen(
                             nextActionTitle = uiState.nextActionTitle,
                             primaryAction = uiState.primaryAction,
                             nextUnlockTitle = uiState.nextUnlockTitle,
-                            onContinueClick = onContinueClick
+                            onContinueClick = onContinueClick,
+                            isPreviewMode = isGuestPreview
                         )
                     }
 
@@ -238,6 +241,7 @@ fun RoadmapDetailScreen(
                     nextActionTitle = uiState.nextActionTitle,
                     primaryAction = uiState.primaryAction,
                     onContinueClick = onContinueClick,
+                    isPreviewMode = isGuestPreview,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(
