@@ -4,7 +4,6 @@ data class HomeContent(
     val activeRoadmaps: List<HomeActiveRoadmap>,
     val metrics: HomeMetrics,
     val recommendations: List<HomeTemplateRoadmap>,
-    val categories: List<HomeTemplateCategory>,
     val trendings: List<HomeTrendingRoadmap>
 )
 
@@ -129,13 +128,6 @@ data class HomeTemplateRoadmap(
     val durationLabel: String?,
     val nodesTotal: Int,
     val requiredNodesTotal: Int
-)
-
-data class HomeTemplateCategory(
-    val category: String,
-    val label: String,
-    val templatesCount: Int,
-    val shortLabel: String = label
 )
 
 data class HomeTrendingRoadmap(

@@ -111,7 +111,7 @@ fun RoadmapNodeItem(
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)

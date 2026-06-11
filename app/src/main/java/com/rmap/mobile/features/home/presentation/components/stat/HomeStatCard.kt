@@ -151,7 +151,7 @@ fun HomeStatCard(
 
                 Text(
                     text = labelText,
-                    style = MaterialTheme.typography.labelSmall.copy(
+                    style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.secondary
                     ),

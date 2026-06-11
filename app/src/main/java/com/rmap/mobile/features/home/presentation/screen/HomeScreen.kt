@@ -1,10 +1,7 @@
 package com.rmap.mobile.features.home.presentation.screen
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,10 +19,8 @@ import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.NightsStay
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Science
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material.icons.outlined.WbSunny
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
@@ -33,27 +28,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapHeader
-import com.rmap.mobile.core.ui.components.RMapSectionTitle
 import com.rmap.mobile.core.ui.components.RMapSearchBar
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryCardGrid
-import com.rmap.mobile.features.home.presentation.components.category.HomeCategoryItemUiModel
 import com.rmap.mobile.features.home.presentation.components.hero.HomeHeroSection
 import com.rmap.mobile.features.home.presentation.components.hero.HomeLearningPlanUiModel
 import com.rmap.mobile.features.home.presentation.components.insight.HomeGoalQuizCard
 import com.rmap.mobile.features.home.presentation.components.insight.HomePaceAlertCard
-import com.rmap.mobile.features.home.presentation.components.loading.HomeCategoriesSectionSkeleton
 import com.rmap.mobile.features.home.presentation.components.loading.HomeHeroSectionSkeleton
 import com.rmap.mobile.features.home.presentation.components.loading.HomePaceAlertCardSkeleton
 import com.rmap.mobile.features.home.presentation.components.loading.HomeRecommendedRoadmapsSectionSkeleton
@@ -98,7 +87,6 @@ fun HomeScreen(
     onAdjustPlanClick: () -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onHomeStatItemClick: ((index: Int, item: HomeStatItemUiModel) -> Unit)? = null,
-    onCategoryItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)? = null,
     onRecommendedRoadmapClick: ((HomeRecommendedRoadmapState) -> Unit)? = null,
     onRoadmapClick: ((TrendingRoadmapCardUiModel) -> Unit)? = null
 ) {
@@ -142,7 +130,6 @@ fun HomeScreen(
         )
     }
     var focusedLearningPlanId by remember { mutableStateOf<String?>(learningPlans.firstOrNull()?.id) }
-    var showAllCategories by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(learningPlans) {
         if (focusedLearningPlanId !in learningPlans.map { it.id }) {
             focusedLearningPlanId = learningPlans.firstOrNull()?.id
@@ -179,22 +166,6 @@ fun HomeScreen(
     val beginnerRoadmaps = uiState.beginnerRoadmaps.toRoadmapCardPairs(
         actionText = stringResource(R.string.home_roadmap_view_action)
     )
-
-    val categoryItems = uiState.categories.mapIndexed { index, category ->
-        HomeCategoryItemUiModel(
-            id = category.id,
-            label = category.label,
-            countText = category.countText,
-            icon = category.icon.toImageVector(),
-            selected = false
-        )
-    }
-    val visibleCategoryItems = if (showAllCategories) {
-        categoryItems
-    } else {
-        categoryItems.take(HomeInitialCategoryLimit)
-    }
-    val shouldShowCategoryToggleAction = categoryItems.size > HomeInitialCategoryLimit
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -260,14 +231,6 @@ fun HomeScreen(
                     }
 
                     item {
-                        HomeCategoriesSectionSkeleton(
-                            title = stringResource(R.string.home_categories_title),
-                            subtitle = stringResource(R.string.home_categories_subtitle),
-                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
-                        )
-                    }
-
-                    item {
                         HomeTrendingRoadmapsSectionSkeleton(
                             title = stringResource(R.string.home_popular_roadmaps_explore_title),
                             modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
@@ -328,19 +291,6 @@ fun HomeScreen(
                                 )
                             }
                         }
-
-                        item {
-                            HomeCategorySection(
-                                title = stringResource(R.string.home_categories_title),
-                                subtitle = stringResource(R.string.home_categories_subtitle),
-                                items = visibleCategoryItems,
-                                shouldShowToggleAction = shouldShowCategoryToggleAction,
-                                showAllCategories = showAllCategories,
-                                onToggleClick = { showAllCategories = !showAllCategories },
-                                onCategoryItemClick = onCategoryItemClick,
-                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
-                            )
-                        }
                     } else {
                         item {
                             HomeGoalQuizCard(
@@ -348,19 +298,6 @@ fun HomeScreen(
                                 description = stringResource(R.string.home_goal_quiz_description),
                                 actionText = stringResource(R.string.home_goal_quiz_action),
                                 onActionClick = onCreateRoadmapWithAiClick,
-                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
-                            )
-                        }
-
-                        item {
-                            HomeCategorySection(
-                                title = stringResource(R.string.home_popular_subjects_title),
-                                subtitle = null,
-                                items = visibleCategoryItems,
-                                shouldShowToggleAction = shouldShowCategoryToggleAction,
-                                showAllCategories = showAllCategories,
-                                onToggleClick = { showAllCategories = !showAllCategories },
-                                onCategoryItemClick = onCategoryItemClick,
                                 modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                             )
                         }
@@ -421,49 +358,6 @@ private data class HomeGreetingVisual(
 )
 
 @Composable
-private fun HomeCategorySection(
-    title: String,
-    subtitle: String?,
-    items: List<HomeCategoryItemUiModel>,
-    shouldShowToggleAction: Boolean,
-    showAllCategories: Boolean,
-    onToggleClick: () -> Unit,
-    onCategoryItemClick: ((index: Int, item: HomeCategoryItemUiModel) -> Unit)?,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-    ) {
-        RMapSectionTitle(
-            text = title,
-            subtitle = subtitle,
-            actionText = if (shouldShowToggleAction) {
-                stringResource(
-                    if (showAllCategories) {
-                        R.string.action_see_less
-                    } else {
-                        R.string.action_see_all
-                    }
-                )
-            } else {
-                null
-            },
-            onActionClick = if (shouldShowToggleAction) {
-                onToggleClick
-            } else {
-                null
-            }
-        )
-
-        HomeCategoryCardGrid(
-            items = items,
-            onItemClick = onCategoryItemClick
-        )
-    }
-}
-
-@Composable
 private fun HomeUiState.toGreetingVisual(): HomeGreetingVisual {
     if (!isAuthenticated) {
         return HomeGreetingVisual(
@@ -492,16 +386,19 @@ private fun HomeUiState.toGreetingVisual(): HomeGreetingVisual {
     }
 }
 
-private const val HomeInitialCategoryLimit = 6
-
 @Composable
 private fun List<HomeRecommendedRoadmapState>.toRoadmapCardPairs(
     actionText: String
 ): List<Pair<HomeRecommendedRoadmapState, HomeRoadmapCardUiModel>> {
     return map { roadmap ->
+        val displayCategory = if (roadmap.isBeginner && roadmap.categoryLabel.equals("Languages And Platforms", ignoreCase = true)) {
+            "Languages"
+        } else {
+            roadmap.categoryLabel
+        }
         roadmap to HomeRoadmapCardUiModel(
             id = roadmap.id,
-            categoryLabel = roadmap.categoryLabel,
+            categoryLabel = displayCategory,
             title = roadmap.title,
             nodesText = roadmap.nodesText,
             durationText = roadmap.durationText,

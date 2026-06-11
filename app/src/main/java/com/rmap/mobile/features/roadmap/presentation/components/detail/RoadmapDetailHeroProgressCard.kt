@@ -1,6 +1,7 @@
 package com.rmap.mobile.features.roadmap.presentation.components.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,8 +11,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -27,6 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapButton
 import com.rmap.mobile.core.ui.components.RMapButtonSize
@@ -75,23 +83,33 @@ fun RoadmapDetailHeroProgressCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = RoadmapHeroProgressCardHeight)
+            .wrapContentHeight()
     ) {
         RMapHeroSectionBackground(modifier = Modifier.matchParentSize())
-        
-        if (!isDarkTheme) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clip(AppShapes.heroCard)
-                    .background(primary.copy(alpha = 0.96f))
-            )
-        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clip(AppShapes.heroCard)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            primary,
+                            Color(0xFF1E40AF)
+                        )
+                    ),
+                    alpha = 0.88f
+                )
+                .border(
+                    width = 1.dp,
+                    color = onPrimary.copy(alpha = 0.15f),
+                    shape = AppShapes.heroCard
+                )
+        )
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Dimens.spacingLg),
+                .padding(Dimens.spacingLgPlus),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             Column(
@@ -105,9 +123,11 @@ fun RoadmapDetailHeroProgressCard(
                 ) {
                     Text(
                         text = stringResource(R.string.roadmap_detail_label_roadmap).uppercase(),
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            color = contentColorSub,
-                            fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontSize = 13.sp,
+                            color = onPrimary.copy(alpha = 0.8f),
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.2.sp
                         )
                     )
 
@@ -135,14 +155,34 @@ fun RoadmapDetailHeroProgressCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Text(
-                        text = stringResource(
+                    val progressText = buildAnnotatedString {
+                        val text = stringResource(
                             R.string.roadmap_detail_required_nodes_completed,
                             completedRequiredNodes,
                             totalRequiredNodes
-                        ),
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = contentColorSub
+                        )
+                        val completedStr = completedRequiredNodes.toString()
+                        val totalStr = totalRequiredNodes.toString()
+                        val completedIndex = text.indexOf(completedStr)
+                        val totalIndex = text.indexOf(totalStr)
+                        if (completedIndex != -1 && totalIndex != -1) {
+                            append(text.substring(0, completedIndex))
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = onPrimary)) {
+                                append(completedStr)
+                            }
+                            append(text.substring(completedIndex + completedStr.length, totalIndex))
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = onPrimary)) {
+                                append(totalStr)
+                            }
+                            append(text.substring(totalIndex + totalStr.length))
+                        } else {
+                            append(text)
+                        }
+                    }
+                    Text(
+                        text = progressText,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = onPrimary.copy(alpha = 0.85f)
                         )
                     )
                     Text(
@@ -181,7 +221,10 @@ fun RoadmapDetailHeroProgressCard(
                     containerColor = buttonContainerColor,
                     contentColor = buttonContentColor
                 ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = Dimens.cardElevationNone),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 2.dp,
+                    pressedElevation = 4.dp
+                ),
                 border = null,
                 textStyle = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold
@@ -216,24 +259,33 @@ private fun NextUnlockText(
     textColor: androidx.compose.ui.graphics.Color
 ) {
     val prefix = stringResource(R.string.roadmap_detail_next_unlock, "")
-    Text(
-        text = buildAnnotatedString {
-            append(prefix)
-            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                append(nextUnlockTitle)
-            }
-        },
+    Row(
         modifier = Modifier.fillMaxWidth(),
-        style = MaterialTheme.typography.bodySmall.copy(
-            color = textColor
-        ),
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-    )
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm)
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Key,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
+            modifier = Modifier.size(14.dp)
+        )
+        Text(
+            text = buildAnnotatedString {
+                append(prefix)
+                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(nextUnlockTitle)
+                }
+            },
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.82f)
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
-
-private val RoadmapHeroProgressCardHeight =
-    Dimens.recommendedCardHeight + Dimens.profileExperienceIconContainerSize + Dimens.spacingMdPlus
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable

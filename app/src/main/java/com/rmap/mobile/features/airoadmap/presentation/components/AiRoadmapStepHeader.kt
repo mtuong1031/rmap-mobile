@@ -21,8 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
@@ -42,6 +44,7 @@ fun AiRoadmapStepHeader(
     ) {
         if (compact && onBackClick != null) {
             CompactAiRoadmapHeaderBar(
+                title = title,
                 backContentDescription = backContentDescription,
                 onBackClick = onBackClick
             )
@@ -115,6 +118,7 @@ private fun AiRoadmapStepHeaderCompactPreview() {
 
 @Composable
 private fun CompactAiRoadmapHeaderBar(
+    title: String?,
     backContentDescription: String?,
     onBackClick: () -> Unit
 ) {
@@ -122,7 +126,7 @@ private fun CompactAiRoadmapHeaderBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(Dimens.controlXl),
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(
@@ -134,6 +138,18 @@ private fun CompactAiRoadmapHeaderBar(
                 contentDescription = backContentDescription,
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(Dimens.iconLg)
+            )
+        }
+
+        if (title != null) {
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                style = AppTextStyles.titleMediumStrong.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

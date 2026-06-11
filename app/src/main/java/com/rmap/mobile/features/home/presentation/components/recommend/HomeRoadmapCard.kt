@@ -42,6 +42,8 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.core.ui.theme.SuccessContainerLight
+import com.rmap.mobile.core.ui.theme.SuccessLight
 import com.rmap.mobile.core.ui.theme.cardShadow
 
 private val HomeRoadmapCardWidth = 260.dp
@@ -51,8 +53,8 @@ private val HomeRoadmapIconSize = 26.dp
 private val HomeRoadmapMetaIconSize = 14.dp
 private val HomeRoadmapCtaIconSize = 14.dp
 private val HomeRoadmapBeginnerCtaIconSize = 20.dp
-private val HomeRoadmapBadgeShape = RoundedCornerShape(6.dp)
-internal const val HomeRoadmapTitleMaxLines = 2
+private val HomeRoadmapBadgeShape = RoundedCornerShape(8.dp)
+internal const val HomeRoadmapTitleMaxLines = 1
 
 @Immutable
 data class HomeRoadmapCardStyle(
@@ -312,10 +314,7 @@ private fun HomeRoadmapBadge(
         Text(
             text = text.uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 10.sp,
-                lineHeight = 15.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp,
                 color = style.badgeContentColor
             )
         )
@@ -329,20 +328,17 @@ private fun HomeRoadmapStarterBadge(
     Box(
         modifier = Modifier
             .background(
-                color = Color(0xFFEAFBF3),
+                color = SuccessContainerLight,
                 shape = HomeRoadmapBadgeShape
             )
             .padding(horizontal = Dimens.spacingXsPlus, vertical = Dimens.spacingMicro),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = text,
+            text = text.uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 10.sp,
-                lineHeight = 15.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp,
-                color = Color(0xFF00A866)
+                color = SuccessLight
             )
         )
     }

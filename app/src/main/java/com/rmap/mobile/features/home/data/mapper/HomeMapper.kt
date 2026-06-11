@@ -15,8 +15,7 @@ import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapDto
 import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapsPageDto
 import com.rmap.mobile.features.home.data.model.HomeSearchSkillDto
 import com.rmap.mobile.features.home.data.model.HomeSearchSkillsPageDto
-import com.rmap.mobile.features.home.data.model.HomeTemplateCategoriesResponseDto
-import com.rmap.mobile.features.home.data.model.HomeTemplateCategoryDto
+
 import com.rmap.mobile.features.home.data.model.HomeTemplateRecommendationsResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateRoadmapDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateTrendingsResponseDto
@@ -36,21 +35,19 @@ import com.rmap.mobile.features.home.domain.model.HomeSearchRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeSearchRoadmapsPage
 import com.rmap.mobile.features.home.domain.model.HomeSearchSkill
 import com.rmap.mobile.features.home.domain.model.HomeSearchSkillsPage
-import com.rmap.mobile.features.home.domain.model.HomeTemplateCategory
+
 import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 
 fun toHomeContent(
     dashboard: HomeDashboardResponseDto,
     recommendations: HomeTemplateRecommendationsResponseDto,
-    categories: HomeTemplateCategoriesResponseDto,
     trendings: HomeTemplateTrendingsResponseDto
 ): HomeContent {
     return HomeContent(
         activeRoadmaps = dashboard.activeRoadmaps.map { it.toDomain() },
         metrics = dashboard.metrics.toDomain(),
         recommendations = recommendations.relevantRoadmaps.map { it.toDomain() },
-        categories = categories.categories.map { it.toDomain() },
         trendings = trendings.trendings.map { it.toDomain() }
     )
 }
@@ -181,13 +178,6 @@ private fun HomeTemplateRoadmapDto.toDomain(): HomeTemplateRoadmap = HomeTemplat
     durationLabel = durationLabel,
     nodesTotal = nodesTotal,
     requiredNodesTotal = requiredNodesTotal
-)
-
-private fun HomeTemplateCategoryDto.toDomain(): HomeTemplateCategory = HomeTemplateCategory(
-    category = category,
-    label = label,
-    templatesCount = templatesCount,
-    shortLabel = shortLabel
 )
 
 private fun HomeTrendingRoadmapDto.toDomain(): HomeTrendingRoadmap = HomeTrendingRoadmap(

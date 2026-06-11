@@ -6,10 +6,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
@@ -48,6 +51,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.LaunchedEffect
+import com.rmap.mobile.core.ui.components.RMapNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,35 +175,59 @@ fun AiRoadmapScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            if (uiState.step != AiRoadmapStep.Library) {
+                AiRoadmapStepHeader(
+                    eyebrow = stringResource(R.string.ai_roadmap_eyebrow),
+                    title = stringResource(
+                        when (uiState.step) {
+                            AiRoadmapStep.Generating -> R.string.ai_roadmap_generating_title
+                            else -> R.string.ai_roadmap_setup_title
+                        }
+                    ),
+                    description = "",
+                    backContentDescription = stringResource(R.string.content_description_back),
+                    onBackClick = onBackToLibrary,
+                    compact = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                        .padding(horizontal = Dimens.spacingScreenHorizontal)
+                )
+            }
+        },
+        bottomBar = {
+            RMapNavigationBar(
+                selectedDestination = selectedDestination,
+                onDestinationSelected = onDestinationSelected,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     ) { innerPadding ->
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = Dimens.spacingScreenHorizontal,
-                top = Dimens.spacingScreenTopCompact,
+                top = innerPadding.calculateTopPadding() + if (uiState.step == AiRoadmapStep.Library) {
+                    Dimens.spacingScreenTopCompact
+                } else {
+                    Dimens.spacingMd
+                },
                 end = Dimens.spacingScreenHorizontal,
                 bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
             ),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)
         ) {
-            item {
-                if (uiState.step == AiRoadmapStep.Library) {
+            if (uiState.step == AiRoadmapStep.Library) {
+                item {
                     RMapHeader(
                         greetingText = stringResource(R.string.ai_roadmap_library_eyebrow),
                         headingText = stringResource(R.string.ai_roadmap_library_title),
                         greetingIcon = Icons.Outlined.AutoAwesome,
                         actionIcon = Icons.Outlined.Psychology,
-                    )
-                } else {
-                    AiRoadmapStepHeader(
-                        eyebrow = stringResource(R.string.ai_roadmap_eyebrow),
-                        title = stringResource(R.string.ai_roadmap_setup_title),
-                        description = stringResource(R.string.ai_roadmap_setup_description),
-                        backContentDescription = stringResource(R.string.content_description_back),
-                        onBackClick = onBackToLibrary,
-                        compact = true
                     )
                 }
             }

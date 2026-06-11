@@ -31,10 +31,10 @@ internal fun RoadmapPill(
 ) {
     Row(
         modifier = modifier
-            .background(containerColor, AppShapes.chip)
+            .background(containerColor, AppShapes.small)
             .then(
                 if (borderColor != null) {
-                    Modifier.border(Dimens.borderThin, borderColor, AppShapes.chip)
+                    Modifier.border(Dimens.borderThin, borderColor, AppShapes.small)
                 } else {
                     Modifier
                 }

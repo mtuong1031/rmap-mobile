@@ -2,12 +2,9 @@ package com.rmap.mobile.features.home.presentation.components.insight
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -20,24 +17,23 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rmap.mobile.core.ui.components.RMapButton
+import com.rmap.mobile.core.ui.components.RMapButtonSize
+import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.cardShadow
 
 private val HomeGoalQuizCardShape = RoundedCornerShape(Dimens.cardRadiusXl)
 private val HomeGoalQuizDecorativeIconSize = 96.dp
-private val HomeGoalQuizButtonShape = RoundedCornerShape(Dimens.cardRadiusSm)
-private val HomeGoalQuizButtonIconSize = 12.dp
 
 @Composable
 fun HomeGoalQuizCard(
@@ -93,37 +89,19 @@ fun HomeGoalQuizCard(
                 )
             )
 
-            Row(
-                modifier = Modifier
-                    .padding(top = Dimens.spacingSm)
-                    .cardShadow(shape = HomeGoalQuizButtonShape)
-                    .clip(HomeGoalQuizButtonShape)
-                    .background(MaterialTheme.colorScheme.surface)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        role = Role.Button,
-                        onClick = onActionClick
+            RMapButton(
+                text = actionText,
+                onClick = onActionClick,
+                variant = RMapButtonVariant.Primary,
+                size = RMapButtonSize.XSmall,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null
                     )
-                    .padding(horizontal = Dimens.spacingMdPlus, vertical = Dimens.spacingSmPlus),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = actionText,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                )
-
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(HomeGoalQuizButtonIconSize)
-                )
-            }
+                },
+                modifier = Modifier.padding(top = Dimens.spacingSm)
+            )
         }
     }
 }

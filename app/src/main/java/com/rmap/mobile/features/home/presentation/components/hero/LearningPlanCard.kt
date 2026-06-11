@@ -43,12 +43,11 @@ import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
 import com.rmap.mobile.core.ui.theme.AppShapes
-import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
 private val HomeHeroContentPadding = 20.dp
-private val HomeHeroProgressHeight = 10.dp
+private val HomeHeroProgressHeight = 8.dp
 internal const val HomeHeroSkillTitleMaxLines = 2
 
 @Composable
@@ -132,9 +131,7 @@ internal fun LearningPlanCard(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontSize = 12.sp,
-                        lineHeight = 18.sp,
+                    style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.secondary,
                         textAlign = TextAlign.Center
@@ -166,9 +163,10 @@ private fun HomeHeroTitleRow(
             Text(
                 text = roadmapTitle.uppercase(),
                 modifier = Modifier.weight(1f),
-                style = AppTextStyles.tag.copy(
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.25.sp,
                     color = MaterialTheme.colorScheme.primary,
-                    letterSpacing = 0.275.sp
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -221,7 +219,7 @@ private fun HomeHeroSkillMeta(
     Row(
         modifier = modifier
             .background(
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(Dimens.cardRadiusMd)
             )
             .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingSm),
@@ -259,7 +257,7 @@ private fun HomeHeroSkillMeta(
                     fontSize = 13.sp,
                     lineHeight = 19.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.outlineVariant
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f)
                 )
             )
 
@@ -303,7 +301,7 @@ private fun HomeHeroProgress(
                     completedRequiredNodes,
                     totalRequiredNodes
                 ),
-                style = MaterialTheme.typography.labelMedium.copy(
+                style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.secondary
                 ),

@@ -19,18 +19,15 @@ class HomeRepositoryImpl(
         return coroutineScope {
             val dashboard = async { SafeApiCall.execute { homeApi.getDashboardHome() } }
             val recommendations = async { SafeApiCall.execute { homeApi.getTemplateRecommendations() } }
-            val categories = async { SafeApiCall.execute { homeApi.getTemplateCategories() } }
             val trendings = async { SafeApiCall.execute { homeApi.getTemplateTrendings() } }
 
             val dashboardResult = dashboard.await()
             val recommendationsResult = recommendations.await()
-            val categoriesResult = categories.await()
             val trendingsResult = trendings.await()
 
             val error = listOf(
                 dashboardResult,
                 recommendationsResult,
-                categoriesResult,
                 trendingsResult
             ).filterIsInstance<NetworkResult.Error>().firstOrNull()
 
@@ -39,14 +36,12 @@ class HomeRepositoryImpl(
             } else if (
                 dashboardResult is NetworkResult.Success &&
                 recommendationsResult is NetworkResult.Success &&
-                categoriesResult is NetworkResult.Success &&
                 trendingsResult is NetworkResult.Success
             ) {
                 Result.success(
                     toHomeContent(
                         dashboard = dashboardResult.data,
                         recommendations = recommendationsResult.data,
-                        categories = categoriesResult.data,
                         trendings = trendingsResult.data
                     )
                 )

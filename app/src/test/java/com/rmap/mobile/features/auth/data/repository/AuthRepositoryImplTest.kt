@@ -3,8 +3,8 @@ package com.rmap.mobile.features.auth.data.repository
 import com.rmap.mobile.core.network.AppException
 import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.features.auth.data.model.AuthMessageResponseDto
-import com.rmap.mobile.features.auth.data.model.LoginRequestDto
-import com.rmap.mobile.features.auth.data.model.RegisterRequestDto
+import com.rmap.mobile.features.auth.data.model.MobileOAuthRequestDto
+import com.rmap.mobile.features.auth.data.model.GithubMobileOAuthRequestDto
 import com.rmap.mobile.features.auth.data.model.UserDto
 import com.rmap.mobile.features.auth.data.remote.AuthApi
 import com.rmap.mobile.features.auth.domain.model.AuthState
@@ -18,75 +18,31 @@ import retrofit2.Response
 
 class AuthRepositoryImplTest {
     @Test
-    fun `login success calls current user and stores authenticated state`() = runTest {
+    fun `loginWithGoogle success calls current user and stores authenticated state`() = runTest {
         val api = FakeAuthApi()
         val repository = newRepository(api = api)
 
-        val result = repository.login("learner@example.com", "password123")
+        val result = repository.loginWithGoogle("google-token")
 
         assertTrue(result.isSuccess)
         assertEquals("learner@example.com", result.getOrNull()?.email)
-        assertEquals(1, api.loginCallCount)
+        assertEquals(1, api.loginWithGoogleCallCount)
         assertEquals(1, api.getCurrentUserCallCount)
         assertTrue(repository.authState.value is AuthState.Authenticated)
     }
 
     @Test
-    fun `login success but current user unauthorized clears session and sets unauthenticated state`() = runTest {
-        var clearCount = 0
-        val api = FakeAuthApi().apply {
-            getCurrentUserResponse = Response.error(
-                401,
-                """{"code":40100,"message":"Authentication required."}"""
-                    .toResponseBody("application/json".toMediaType())
-            )
-        }
-        val repository = newRepository(
-            api = api,
-            sessionManager = SessionManager { clearCount++ }
-        )
-
-        val result = repository.login("learner@example.com", "password123")
-
-        assertTrue(result.isFailure)
-        assertEquals(1, clearCount)
-        assertEquals(AuthState.Unauthenticated, repository.authState.value)
-    }
-
-    @Test
-    fun `register success logs in and stores authenticated state from current user`() = runTest {
-        val api = FakeAuthApi().apply {
-            registerResponse = Response.success(testUser.copy(id = "registered-user"))
-            getCurrentUserResponse = Response.success(testUser.copy(fullName = "Learner"))
-        }
+    fun `loginWithGithub success calls current user and stores authenticated state`() = runTest {
+        val api = FakeAuthApi()
         val repository = newRepository(api = api)
 
-        val result = repository.register("learner@example.com", "password123", "Learner")
+        val result = repository.loginWithGithub("github-code")
 
         assertTrue(result.isSuccess)
-        assertEquals("Learner", result.getOrNull()?.fullName)
-        assertEquals(1, api.registerCallCount)
-        assertEquals(1, api.loginCallCount)
+        assertEquals("learner@example.com", result.getOrNull()?.email)
+        assertEquals(1, api.loginWithGithubCallCount)
         assertEquals(1, api.getCurrentUserCallCount)
         assertTrue(repository.authState.value is AuthState.Authenticated)
-    }
-
-    @Test
-    fun `register api error returns app exception`() = runTest {
-        val api = FakeAuthApi().apply {
-            registerResponse = Response.error(
-                409,
-                """{"code":40901,"message":"Email already registered"}"""
-                    .toResponseBody("application/json".toMediaType())
-            )
-        }
-        val repository = newRepository(api = api)
-
-        val result = repository.register("learner@example.com", "password123", "Learner")
-
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is AppException)
-        assertEquals(0, api.loginCallCount)
     }
 
     @Test
@@ -129,7 +85,6 @@ class AuthRepositoryImplTest {
             sessionManager = SessionManager { clearCount++ }
         )
 
-        repository.login("learner@example.com", "password123")
         val result = repository.logout()
 
         assertTrue(result.isSuccess)
@@ -138,39 +93,20 @@ class AuthRepositoryImplTest {
     }
 
     @Test
-    fun `api error returns app exception`() = runTest {
+    fun `google sign in API error returns app exception`() = runTest {
         val api = FakeAuthApi().apply {
-            loginResponse = Response.error(
+            loginWithGoogleResponse = Response.error(
                 401,
-                """{"code":40101,"message":"Invalid email or password"}"""
+                """{"code":40101,"message":"Invalid OAuth token"}"""
                     .toResponseBody("application/json".toMediaType())
             )
         }
         val repository = newRepository(api = api)
 
-        val result = repository.login("learner@example.com", "bad-password")
+        val result = repository.loginWithGoogle("bad-token")
 
         assertTrue(result.isFailure)
         assertTrue(result.exceptionOrNull() is AppException)
-        assertEquals("Invalid email or password.", result.exceptionOrNull()?.message)
-    }
-
-    @Test
-    fun `login unauthorized without api code returns invalid credentials message`() = runTest {
-        val api = FakeAuthApi().apply {
-            loginResponse = Response.error(
-                401,
-                """{"message":"Invalid email or password"}"""
-                    .toResponseBody("application/json".toMediaType())
-            )
-        }
-        val repository = newRepository(api = api)
-
-        val result = repository.login("learner@example.com", "bad-password")
-
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is AppException)
-        assertEquals("Invalid email or password.", result.exceptionOrNull()?.message)
     }
 
     private fun newRepository(
@@ -184,26 +120,26 @@ class AuthRepositoryImplTest {
     }
 
     private class FakeAuthApi : AuthApi {
-        var loginRequest: LoginRequestDto? = null
-        var registerRequest: RegisterRequestDto? = null
-        var loginCallCount = 0
-        var registerCallCount = 0
+        var googleRequest: MobileOAuthRequestDto? = null
+        var githubRequest: GithubMobileOAuthRequestDto? = null
+        var loginWithGoogleCallCount = 0
+        var loginWithGithubCallCount = 0
         var getCurrentUserCallCount = 0
-        var loginResponse: Response<AuthMessageResponseDto> = Response.success(AuthMessageResponseDto("Login successful"))
-        var registerResponse: Response<UserDto> = Response.success(testUser.copy(fullName = "Learner"))
+        var loginWithGoogleResponse: Response<AuthMessageResponseDto> = Response.success(AuthMessageResponseDto("Login successful"))
+        var loginWithGithubResponse: Response<AuthMessageResponseDto> = Response.success(AuthMessageResponseDto("Login successful"))
         var logoutResponse: Response<AuthMessageResponseDto> = Response.success(AuthMessageResponseDto("Logged out successfully"))
         var getCurrentUserResponse: Response<UserDto> = Response.success(testUser)
 
-        override suspend fun login(request: LoginRequestDto): Response<AuthMessageResponseDto> {
-            loginCallCount++
-            loginRequest = request
-            return loginResponse
+        override suspend fun loginWithGoogle(request: MobileOAuthRequestDto): Response<AuthMessageResponseDto> {
+            loginWithGoogleCallCount++
+            googleRequest = request
+            return loginWithGoogleResponse
         }
 
-        override suspend fun register(request: RegisterRequestDto): Response<UserDto> {
-            registerCallCount++
-            registerRequest = request
-            return registerResponse
+        override suspend fun loginWithGithub(request: GithubMobileOAuthRequestDto): Response<AuthMessageResponseDto> {
+            loginWithGithubCallCount++
+            githubRequest = request
+            return loginWithGithubResponse
         }
 
         override suspend fun logout(): Response<AuthMessageResponseDto> = logoutResponse

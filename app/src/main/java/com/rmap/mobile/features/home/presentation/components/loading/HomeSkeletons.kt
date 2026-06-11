@@ -30,7 +30,6 @@ private val HomeSkeletonStatHeight = 146.dp
 private val HomeSkeletonWarningHeight = 92.dp
 private val HomeSkeletonRecommendationWidth = 260.dp
 private val HomeSkeletonRecommendationHeight = 286.dp
-private val HomeSkeletonCategoryHeight = 44.dp
 private val HomeSkeletonTrendingHeight = 154.dp
 private val HomeSkeletonRailWidth = 72.dp
 
@@ -269,40 +268,6 @@ fun HomeRecommendedRoadmapsSectionSkeleton(
 }
 
 @Composable
-fun HomeCategoriesSectionSkeleton(
-    title: String,
-    subtitle: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-    ) {
-        RMapSectionTitle(
-            text = title,
-            subtitle = subtitle
-        )
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
-        ) {
-            repeat(3) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    repeat(2) {
-                        HomeCategoryCardSkeleton(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun HomeTrendingRoadmapsSectionSkeleton(
     title: String,
     modifier: Modifier = Modifier
@@ -389,41 +354,6 @@ private fun HomeRecommendationCardSkeleton() {
                     .fillMaxWidth(0.52f)
                     .height(16.dp),
                 shape = AppShapes.pill
-            )
-        }
-    }
-}
-
-@Composable
-private fun HomeCategoryCardSkeleton(
-    modifier: Modifier = Modifier
-) {
-    RMapSkeletonCard(
-        modifier = modifier.height(HomeSkeletonCategoryHeight),
-        shape = AppShapes.iconContainerLarge
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Dimens.spacingLgPlus, vertical = Dimens.spacingSmPlus),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RMapSkeletonBlock(
-                modifier = Modifier.size(16.dp),
-                shape = AppShapes.pill
-            )
-            RMapSkeletonBlock(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(14.dp),
-                shape = AppShapes.pill
-            )
-            RMapSkeletonBlock(
-                modifier = Modifier
-                    .width(24.dp)
-                    .height(16.dp),
-                shape = AppShapes.chip
             )
         }
     }

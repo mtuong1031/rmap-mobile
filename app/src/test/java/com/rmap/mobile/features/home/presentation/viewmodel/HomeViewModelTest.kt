@@ -14,7 +14,7 @@ import com.rmap.mobile.features.home.domain.model.HomeRoadmapChapter
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapGroup
 import com.rmap.mobile.features.home.domain.model.HomeRoadmapProgress
 import com.rmap.mobile.features.home.domain.model.HomeSearchResult
-import com.rmap.mobile.features.home.domain.model.HomeTemplateCategory
+
 import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
@@ -45,7 +45,6 @@ class HomeViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(2, state.learningPlans.size)
         assertEquals(1, state.recommendedRoadmaps.size)
-        assertEquals(1, state.categories.size)
         assertEquals(1, state.trendingRoadmaps.size)
         assertEquals(2, state.streakDays)
         assertEquals(0.5f, state.readinessFraction, 0.0f)
@@ -118,9 +117,9 @@ private class FakeAuthRepository : AuthRepository {
         )
     )
 
-    override suspend fun login(email: String, password: String): Result<User> = error("Not used")
+    override suspend fun loginWithGoogle(idToken: String): Result<User> = error("Not used")
 
-    override suspend fun register(email: String, password: String, fullName: String): Result<User> = error("Not used")
+    override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
 
     override suspend fun logout(): Result<Unit> = error("Not used")
 
@@ -151,7 +150,7 @@ private fun testHomeContent(): HomeContent = HomeContent(
             requiredNodesTotal = 50
         )
     ),
-    categories = listOf(HomeTemplateCategory("WEB_DEVELOPMENT", "Web Development", 9)),
+
     trendings = listOf(
         HomeTrendingRoadmap(
             rank = 1,

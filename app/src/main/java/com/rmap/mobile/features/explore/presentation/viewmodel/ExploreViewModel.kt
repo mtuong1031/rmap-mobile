@@ -109,18 +109,6 @@ class ExploreViewModel(
         fetchLibraryForCurrentFilters()
     }
 
-    fun selectCategoryById(categoryId: String) {
-        if (_uiState.value.selectedCategoryId == categoryId) return
-        if (_uiState.value.categories.isNotEmpty() && _uiState.value.categories.none { it.id == categoryId }) return
-        _uiState.update {
-            it.copy(
-                selectedCategoryId = categoryId,
-                libraryVisibleCount = LibraryPageSize
-            )
-        }
-        fetchLibraryForCurrentFilters()
-    }
-
     private fun fetchLibraryForCurrentFilters() {
         if (isFetchingLibrary) return
         isFetchingLibrary = true

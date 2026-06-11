@@ -3,6 +3,7 @@ package com.rmap.mobile.features.roadmap.presentation.screen
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,12 +11,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -28,10 +29,10 @@ import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -55,11 +56,11 @@ import com.rmap.mobile.core.ui.components.RMapButtonSize
 import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
-import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.cardShadow
 import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
-import androidx.compose.foundation.isSystemInDarkTheme
+import com.rmap.mobile.core.ui.theme.SuccessContainerLight
+import com.rmap.mobile.core.ui.theme.SuccessLight
 import com.rmap.mobile.core.utils.parseMarkdownToAnnotatedString
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapDecoratedCard
 import com.rmap.mobile.features.roadmap.presentation.components.common.RoadmapPill
@@ -67,10 +68,7 @@ import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapLearningUi
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapNodeRequirement
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.SkillLearningDetailUiModel
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.SkillLearningResourceUiModel
-import com.rmap.mobile.core.ui.theme.SuccessContainerDark
-import com.rmap.mobile.core.ui.theme.SuccessContainerLight
-import com.rmap.mobile.core.ui.theme.SuccessDark
-import com.rmap.mobile.core.ui.theme.SuccessLight
+import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapSuccessBorder
 
 @Composable
 fun RoadmapLearningScreen(
@@ -84,29 +82,45 @@ fun RoadmapLearningScreen(
 ) {
     var isStartForQuizDialogVisible by rememberSaveable { mutableStateOf(false) }
     val requiresRoadmapStartForQuiz = !uiState.isCompleted && !uiState.canTakeQuiz && !uiState.isNodeLocked
-    val handleTakeQuizClick = {
-        if (requiresRoadmapStartForQuiz) {
-            isStartForQuizDialogVisible = true
-        } else {
-            onTakeQuizClick()
-        }
-    }
 
-    Column(
+    Scaffold(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .safeDrawingPadding()
-    ) {
-        RoadmapLearningTopBar(
-            onBackClick = onBackClick,
-            modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
-        )
-
+            .safeDrawingPadding(),
+        topBar = {
+            RoadmapLearningTopBar(
+                onBackClick = onBackClick,
+                modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+            )
+        },
+        bottomBar = {
+            if (!uiState.isLoading && uiState.errorMessageResId == null && uiState.skill != null) {
+                RoadmapLearningBottomAction(
+                    isCompleted = uiState.isCompleted,
+                    canTakeQuiz = uiState.canTakeQuiz,
+                    isNodeLocked = uiState.isNodeLocked,
+                    onTakeQuizClick = {
+                        if (requiresRoadmapStartForQuiz) {
+                            isStartForQuizDialogVisible = true
+                        } else {
+                            onTakeQuizClick()
+                        }
+                    },
+                    modifier = Modifier.padding(
+                        start = Dimens.spacingScreenHorizontal,
+                        end = Dimens.spacingScreenHorizontal,
+                        bottom = Dimens.spacingXl,
+                        top = Dimens.spacingMd
+                    )
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             when {
                 uiState.isLoading -> {
@@ -147,8 +161,7 @@ fun RoadmapLearningScreen(
                         isCompleted = uiState.isCompleted,
                         canTakeQuiz = uiState.canTakeQuiz,
                         isNodeLocked = uiState.isNodeLocked,
-                        onResourceClick = onResourceClick,
-                        onTakeQuizClick = handleTakeQuizClick
+                        onResourceClick = onResourceClick
                     )
                 }
             }
@@ -200,82 +213,42 @@ private fun RoadmapLearningContent(
     isCompleted: Boolean,
     canTakeQuiz: Boolean,
     isNodeLocked: Boolean,
-    onResourceClick: (SkillLearningResourceUiModel) -> Unit,
-    onTakeQuizClick: () -> Unit
+    onResourceClick: (SkillLearningResourceUiModel) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = Dimens.spacingScreenHorizontal,
-                top = Dimens.spacingLg,
-                end = Dimens.spacingScreenHorizontal,
-                bottom = RoadmapLearningContentBottomPadding
-            ),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-        ) {
-            item {
-                SkillLearningHeaderCard(
-                    nodeTitle = nodeTitle,
-                    requirement = requirement,
-                    skill = skill,
-                    isCompleted = isCompleted,
-                    canTakeQuiz = canTakeQuiz,
-                    isNodeLocked = isNodeLocked
-                )
-            }
-            
-            item {
-                SkillLearningDetailsSection(
-                    description = skill.description?.takeIf { it.isNotBlank() }
-                        ?: stringResource(R.string.roadmap_learning_no_description)
-                )
-            }
-
-            item {
-                Text(
-                    text = stringResource(R.string.roadmap_learning_resources_title),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-
-            if (resources.isEmpty()) {
-                item {
-                    RoadmapLearningMessageState(
-                        icon = Icons.Outlined.Code,
-                        messageResId = R.string.roadmap_learning_resources_empty,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            } else {
-                items(
-                    items = resources,
-                    key = { resource -> resource.id }
-                ) { resource ->
-                    SkillLearningResourceCard(
-                        resource = resource,
-                        onClick = { onResourceClick(resource) }
-                    )
-                }
-            }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = Dimens.spacingScreenHorizontal,
+            top = Dimens.spacingLg,
+            end = Dimens.spacingScreenHorizontal,
+            bottom = Dimens.spacingXxl
+        ),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
+    ) {
+        item {
+            SkillLearningHeaderCard(
+                nodeTitle = nodeTitle,
+                requirement = requirement,
+                skill = skill,
+                isCompleted = isCompleted,
+                canTakeQuiz = canTakeQuiz,
+                isNodeLocked = isNodeLocked
+            )
+        }
+        
+        item {
+            SkillLearningDetailsSection(
+                description = skill.description?.takeIf { it.isNotBlank() }
+                    ?: stringResource(R.string.roadmap_learning_no_description)
+            )
         }
 
-        RoadmapLearningBottomAction(
-            isCompleted = isCompleted,
-            canTakeQuiz = canTakeQuiz,
-            isNodeLocked = isNodeLocked,
-            onTakeQuizClick = onTakeQuizClick,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(
-                    start = Dimens.spacingScreenHorizontal,
-                    end = Dimens.spacingScreenHorizontal,
-                    bottom = Dimens.spacingXl
-                )
-        )
+        item {
+            SkillLearningResourcesSection(
+                resources = resources,
+                onResourceClick = onResourceClick
+            )
+        }
     }
 }
 
@@ -302,11 +275,11 @@ private fun SkillLearningHeaderCard(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier.weight(1f).padding(end = Dimens.spacingMd),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = nodeTitle,
@@ -317,18 +290,17 @@ private fun SkillLearningHeaderCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Text(
-                        text = skill.name,
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Black
+                    RoadmapPill(
+                        text = stringResource(
+                            if (requirement == RoadmapNodeRequirement.Required) R.string.roadmap_detail_status_required
+                            else R.string.roadmap_detail_status_optional
                         ),
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
+                        containerColor = if (requirement == RoadmapNodeRequirement.Required) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                        contentColor = if (requirement == RoadmapNodeRequirement.Required) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        borderColor = if (requirement == RoadmapNodeRequirement.Required) MaterialTheme.colorScheme.tertiary.copy(alpha = RequirementBadgeBorderAlpha) else MaterialTheme.colorScheme.outlineVariant
                     )
                 }
 
-                val isDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
                 RoadmapPill(
                     text = stringResource(
                         roadmapLearningStatusLabelResId(
@@ -347,49 +319,48 @@ private fun SkillLearningHeaderCard(
                         canTakeQuiz = canTakeQuiz,
                         isNodeLocked = isNodeLocked
                     ),
-                    dotColor = if (!isCompleted && !isNodeLocked && canTakeQuiz) {
-                        if (isDarkTheme) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary
-                    } else null
+                    borderColor = roadmapLearningStatusBorderColor(
+                        isCompleted = isCompleted,
+                        canTakeQuiz = canTakeQuiz,
+                        isNodeLocked = isNodeLocked
+                    )
                 )
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RoadmapPill(
-                    text = stringResource(
-                        if (requirement == RoadmapNodeRequirement.Required) R.string.roadmap_detail_status_required
-                        else R.string.roadmap_detail_status_optional
-                    ),
-                    containerColor = if (requirement == RoadmapNodeRequirement.Required) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-                    contentColor = if (requirement == RoadmapNodeRequirement.Required) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                skill.estimatedHours?.takeIf { it > 0 }?.let { estimatedHours ->
-                    Row(
-                        modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                                shape = AppShapes.pill
-                            )
-                            .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXs),
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Schedule,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(Dimens.iconSm)
+            Text(
+                text = skill.name,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.ExtraBold
+                ),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            skill.estimatedHours?.takeIf { it > 0 }?.let { estimatedHours ->
+                Row(
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceContainerLow,
+                            shape = AppShapes.chip
                         )
-                        Text(
-                            text = stringResource(R.string.roadmap_learning_estimated_hours, estimatedHours),
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                        .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingXs),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Schedule,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(Dimens.iconSm)
+                    )
+                    Text(
+                        text = stringResource(R.string.roadmap_learning_estimated_hours, estimatedHours),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.SemiBold
                         )
-                    }
+                    )
                 }
             }
         }
@@ -401,34 +372,16 @@ private fun SkillLearningDetailsSection(
     description: String,
     modifier: Modifier = Modifier
 ) {
-    val isDark = isSystemInDarkTheme()
-    val containerColor = if (isDark) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-    } else {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-    }
-    val borderColor = if (isDark) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-    }
-
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
     ) {
-        Text(
-            text = "About this skill",
-            style = MaterialTheme.typography.titleMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Bold
-            )
-        )
+        SectionTitle(text = stringResource(R.string.roadmap_learning_about_skill))
         
         RoadmapDecoratedCard(
             shape = AppShapes.button,
-            containerColor = containerColor,
-            borderColor = borderColor,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            borderColor = MaterialTheme.colorScheme.surfaceContainerLow,
             shadow = false
         ) {
             Row(
@@ -459,12 +412,68 @@ private fun SkillLearningDetailsSection(
 }
 
 @Composable
+private fun SkillLearningResourcesSection(
+    resources: List<SkillLearningResourceUiModel>,
+    onResourceClick: (SkillLearningResourceUiModel) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+    ) {
+        SectionTitle(text = stringResource(R.string.roadmap_learning_resources_title))
+
+        if (resources.isEmpty()) {
+            RoadmapDecoratedCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = AppShapes.button,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                borderColor = MaterialTheme.colorScheme.outlineVariant,
+                shadow = false
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimens.spacingXxl, horizontal = Dimens.spacingLg),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Code,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        modifier = Modifier.size(Dimens.iconLg)
+                    )
+                    Text(
+                        text = stringResource(R.string.roadmap_learning_resources_empty),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)) {
+                resources.forEach { resource ->
+                    SkillLearningResourceCard(
+                        resource = resource,
+                        onClick = { onResourceClick(resource) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun SkillLearningResourceCard(
     resource: SkillLearningResourceUiModel,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     RoadmapDecoratedCard(
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier = modifier.clickable(onClick = onClick),
         shape = AppShapes.button,
         containerColor = MaterialTheme.colorScheme.surface,
         borderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -479,7 +488,7 @@ private fun SkillLearningResourceCard(
                 modifier = Modifier
                     .size(Dimens.controlMd)
                     .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         shape = AppShapes.iconContainer
                     ),
                 contentAlignment = Alignment.Center
@@ -493,7 +502,7 @@ private fun SkillLearningResourceCard(
                         else -> Icons.AutoMirrored.Outlined.Article
                     },
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(Dimens.iconMd)
                 )
             }
@@ -504,9 +513,9 @@ private fun SkillLearningResourceCard(
             ) {
                 Text(
                     text = resource.title,
-                    style = MaterialTheme.typography.titleSmall.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.SemiBold
                     ),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -539,10 +548,25 @@ private fun SkillLearningResourceCard(
                             }
                         ),
                         style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (resource.isFree) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         maxLines = 1
                     )
+                    if (resource.levelLabelResId != null) {
+                        Text(
+                            text = stringResource(R.string.separator_bullet),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                        Text(
+                            text = stringResource(resource.levelLabelResId),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            maxLines = 1
+                        )
+                    }
                 }
             }
 
@@ -565,7 +589,6 @@ private fun RoadmapLearningBottomAction(
     modifier: Modifier = Modifier
 ) {
     val isQuizAvailable = canTakeQuiz && !isNodeLocked
-    val isUnavailableQuizAction = !isCompleted && !isQuizAvailable
 
     RoadmapDecoratedCard(
         modifier = modifier.cardShadow(AppShapes.button),
@@ -581,9 +604,25 @@ private fun RoadmapLearningBottomAction(
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isNodeLocked) {
+            if (isCompleted) {
+                Text(
+                    text = stringResource(R.string.roadmap_learning_completed_hint),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    textAlign = TextAlign.Center
+                )
+            } else if (isNodeLocked) {
                 Text(
                     text = stringResource(R.string.roadmap_learning_locked_quiz_hint),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    textAlign = TextAlign.Center
+                )
+            } else if (!isQuizAvailable) {
+                Text(
+                    text = stringResource(R.string.roadmap_learning_quiz_locked_hint),
                     style = MaterialTheme.typography.labelMedium.copy(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     ),
@@ -594,7 +633,7 @@ private fun RoadmapLearningBottomAction(
             RMapButton(
                 text = stringResource(
                     if (isCompleted) {
-                        R.string.roadmap_learning_completed
+                        R.string.roadmap_detail_status_completed
                     } else {
                         R.string.roadmap_learning_take_quiz
                     }
@@ -602,16 +641,8 @@ private fun RoadmapLearningBottomAction(
                 onClick = onTakeQuizClick,
                 modifier = Modifier.fillMaxWidth(),
                 variant = RMapButtonVariant.Primary,
-                size = RMapButtonSize.Large,
-                enabled = !isCompleted,
-                colors = if (isUnavailableQuizAction) {
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.outline,
-                        contentColor = OnSurfacePlaceholderLight
-                    )
-                } else {
-                    null
-                }
+                size = RMapButtonSize.Medium,
+                enabled = isQuizAvailable
             )
         }
     }
@@ -625,25 +656,48 @@ private fun RoadmapLearningTopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = Dimens.spacingSm),
+            .height(Dimens.controlXl)
+            .background(MaterialTheme.colorScheme.background),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onBackClick) {
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier.size(Dimens.controlSm)
+        ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(R.string.content_description_back),
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(Dimens.iconLg)
             )
         }
         Text(
             text = stringResource(R.string.roadmap_learning_title),
+            modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.titleMedium.copy(
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
-            )
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
+}
+
+@Composable
+private fun SectionTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        style = MaterialTheme.typography.titleMedium.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Bold
+        )
+    )
 }
 
 @StringRes
@@ -701,6 +755,13 @@ private fun roadmapLearningStatusContentColor(
 }
 
 @Composable
+private fun roadmapLearningStatusBorderColor(
+    isCompleted: Boolean,
+    canTakeQuiz: Boolean,
+    isNodeLocked: Boolean
+) = if (isCompleted) roadmapSuccessBorder else null
+
+@Composable
 private fun RoadmapLearningMessageState(
     icon: ImageVector,
     @StringRes messageResId: Int,
@@ -740,9 +801,8 @@ private fun RoadmapLearningMessageState(
     }
 }
 
-private val RoadmapLearningContentBottomPadding =
-    Dimens.controlXl + Dimens.spacingScreenBottomCompact + Dimens.spacingXl
 private val RoadmapLearningMessageMaxWidth = 320.dp
+private const val RequirementBadgeBorderAlpha = 0.35f
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable

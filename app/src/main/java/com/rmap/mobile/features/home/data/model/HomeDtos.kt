@@ -143,17 +143,6 @@ data class HomeTemplateRoadmapDto(
     @SerializedName("requiredNodesTotal") val requiredNodesTotal: Int
 )
 
-data class HomeTemplateCategoriesResponseDto(
-    @SerializedName("total") val total: Int,
-    @SerializedName("categories") val categories: List<HomeTemplateCategoryDto>
-)
-
-data class HomeTemplateCategoryDto(
-    @SerializedName("category") val category: String,
-    @SerializedName("label") val label: String,
-    @SerializedName("templatesCount") val templatesCount: Int,
-    @SerializedName("shortLabel") val shortLabel: String = label
-)
 
 data class HomeTemplateTrendingsResponseDto(
     @SerializedName("total") val total: Int,

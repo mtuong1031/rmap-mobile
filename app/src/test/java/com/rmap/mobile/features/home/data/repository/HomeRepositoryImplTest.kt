@@ -17,8 +17,7 @@ import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapDto
 import com.rmap.mobile.features.home.data.model.HomeSearchRoadmapsPageDto
 import com.rmap.mobile.features.home.data.model.HomeSearchSkillDto
 import com.rmap.mobile.features.home.data.model.HomeSearchSkillsPageDto
-import com.rmap.mobile.features.home.data.model.HomeTemplateCategoriesResponseDto
-import com.rmap.mobile.features.home.data.model.HomeTemplateCategoryDto
+
 import com.rmap.mobile.features.home.data.model.HomeTemplateRecommendationsResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateRoadmapDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateTrendingsResponseDto
@@ -44,7 +43,6 @@ class HomeRepositoryImplTest {
         assertEquals("roadmap-1", content.activeRoadmaps.single().roadmapId)
         assertEquals(12.5, content.metrics.roadmapCompletionPct, 0.0)
         assertEquals("template-1", content.recommendations.single().roadmapId)
-        assertEquals("WEB_DEVELOPMENT", content.categories.single().category)
         assertEquals("trend-1", content.trendings.single().roadmapId)
     }
 
@@ -81,7 +79,7 @@ class HomeRepositoryImplTest {
     @Test
     fun `get home content returns failure when an endpoint fails`() = runTest {
         val api = FakeHomeApi().apply {
-            categoriesResponse = Response.error(
+            dashboardResponse = Response.error(
                 500,
                 """{"code":50000,"message":"Internal error"}"""
                     .toResponseBody("application/json".toMediaType())
@@ -158,7 +156,6 @@ private class FakeHomeApi : HomeApi {
     var dashboardResponse: Response<HomeDashboardResponseDto> = Response.success(dashboardDto())
     var recommendationsResponse: Response<HomeTemplateRecommendationsResponseDto> =
         Response.success(recommendationsDto())
-    var categoriesResponse: Response<HomeTemplateCategoriesResponseDto> = Response.success(categoriesDto())
     var trendingsResponse: Response<HomeTemplateTrendingsResponseDto> = Response.success(trendingsDto())
     var searchResponse: Response<HomeDashboardSearchResponseDto> = Response.success(searchDto())
 
@@ -173,7 +170,7 @@ private class FakeHomeApi : HomeApi {
     override suspend fun getTemplateRecommendations(): Response<HomeTemplateRecommendationsResponseDto> =
         recommendationsResponse
 
-    override suspend fun getTemplateCategories(): Response<HomeTemplateCategoriesResponseDto> = categoriesResponse
+
 
     override suspend fun getTemplateTrendings(): Response<HomeTemplateTrendingsResponseDto> = trendingsResponse
 }
@@ -234,10 +231,7 @@ private fun templateRoadmapDto(
     requiredNodesTotal = 50
 )
 
-private fun categoriesDto(): HomeTemplateCategoriesResponseDto = HomeTemplateCategoriesResponseDto(
-    total = 1,
-    categories = listOf(HomeTemplateCategoryDto("WEB_DEVELOPMENT", "Web Development", 9))
-)
+
 
 private fun trendingsDto(
     trending: HomeTrendingRoadmapDto = trendingDto()

@@ -13,7 +13,6 @@ import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.home.domain.model.HomeActiveRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeContent
 import com.rmap.mobile.features.home.domain.model.HomePaceWarning
-import com.rmap.mobile.features.home.domain.model.HomeTemplateCategory
 import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
@@ -107,7 +106,6 @@ private fun HomeContent.toUiState(
         learningPlans = learningPlans,
         recommendedRoadmaps = recommendations.map { it.toRecommendedRoadmapState() },
         beginnerRoadmaps = trendings.map { it.toBeginnerRoadmapState() },
-        categories = categories.map { it.toCategoryState() },
         trendingRoadmaps = trendings.map { it.toTrendingRoadmapCardUiModel() },
         isLoading = false,
         errorMessage = null
@@ -155,15 +153,6 @@ private fun HomeTemplateRoadmap.toRecommendedRoadmapState(): HomeRecommendedRoad
         durationText = duration,
         icon = icon,
         isBeginner = false
-    )
-}
-
-private fun HomeTemplateCategory.toCategoryState(): HomeCategoryState {
-    return HomeCategoryState(
-        id = category,
-        label = shortLabel,
-        countText = templatesCount.toString(),
-        icon = category.toRoadmapCategoryIcon()
     )
 }
 

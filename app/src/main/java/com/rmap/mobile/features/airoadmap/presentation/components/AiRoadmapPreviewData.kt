@@ -96,7 +96,13 @@ internal object AiRoadmapPreviewData {
         roleCategory = "Mobile development",
         deadlineEpochMillis = System.currentTimeMillis() + 84L * 24L * 60L * 60L * 1000L,
         dailyStudyHours = 2.5f,
-        questions = listOf(optionQuestion, customQuestion),
+        questions = listOf(
+            optionQuestion,
+            customQuestion,
+            optionQuestion.copy(id = "q3", skillName = "UI/UX", prompt = "Do you have experience with Compose?"),
+            optionQuestion.copy(id = "q4", skillName = "Architecture", prompt = "What is your favorite architecture?"),
+            optionQuestion.copy(id = "q5", skillName = "Infrastructure", prompt = "How do you handle dependency injection?")
+        ),
         generationStatus = generationStatus
     )
 }

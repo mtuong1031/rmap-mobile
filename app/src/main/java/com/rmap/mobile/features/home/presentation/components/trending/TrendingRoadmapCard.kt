@@ -262,7 +262,9 @@ private fun TrendingRoadmapContent(item: TrendingRoadmapCardUiModel) {
                     lineHeight = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
-                )
+                ),
+                maxLines =  1,
+                overflow = TextOverflow.Ellipsis
             )
 
             Text(
@@ -331,9 +333,8 @@ private fun TrendingRoadmapCategoryBadge(
     ) {
         Text(
             text = text.uppercase(),
-            style = AppTextStyles.tag.copy(
-                fontSize = 10.sp,
-                lineHeight = 14.sp,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Bold,
                 color = style.categoryContentColor
             ),
             maxLines = 1

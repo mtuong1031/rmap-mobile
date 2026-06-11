@@ -4,12 +4,11 @@ import com.rmap.mobile.MainDispatcherRule
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.model.User
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
-import com.rmap.mobile.features.auth.domain.usecase.LoginUseCase
-import com.rmap.mobile.features.auth.domain.usecase.RegisterUseCase
+import com.rmap.mobile.features.auth.domain.usecase.LoginWithGithubUseCase
+import com.rmap.mobile.features.auth.domain.usecase.LoginWithGoogleUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runCurrent
@@ -26,103 +25,76 @@ class AuthViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
+    private val fakeAuthRepository = FakeAuthRepository()
+    private val loginWithGoogleUseCase = LoginWithGoogleUseCase(fakeAuthRepository)
+    private val loginWithGithubUseCase = LoginWithGithubUseCase(fakeAuthRepository)
+
     @Test
-    fun `field updates mutate ui state and clear error`() {
+    fun `login error sets message`() {
         val viewModel = newViewModel()
-
-        viewModel.onEmailChange("learner@example.com")
-        viewModel.onPasswordChange("password123")
-        viewModel.onFullNameChange("Learner")
-
-        assertEquals("learner@example.com", viewModel.uiState.value.email)
-        assertEquals("password123", viewModel.uiState.value.password)
-        assertEquals("Learner", viewModel.uiState.value.fullName)
+        viewModel.onLoginError("Failed to sign in")
+        assertEquals("Failed to sign in", viewModel.uiState.value.errorMessage)
     }
 
     @Test
-    fun `toggle mode switches mode and clears form error`() {
+    fun `google sign in success emits navigate home`() = runTest {
         val viewModel = newViewModel()
+        val events = mutableListOf<AuthEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect { event -> events.add(event) }
+        }
 
-        viewModel.onEmailChange("bad")
-        viewModel.onSubmit()
-        viewModel.onToggleMode()
+        fakeAuthRepository.result = Result.success(testUser)
+        viewModel.onGoogleIdTokenReceived("google-token")
+        runCurrent()
 
-        assertEquals(AuthMode.Register, viewModel.uiState.value.mode)
+        assertEquals(listOf(AuthEvent.NavigateToHome), events)
+        assertFalse(viewModel.uiState.value.isLoading)
         assertNull(viewModel.uiState.value.errorMessage)
     }
 
     @Test
-    fun `login success emits navigate home`() = runTest {
+    fun `google sign in failure sets error message`() = runTest {
+        val viewModel = newViewModel()
+        fakeAuthRepository.result = Result.failure(IllegalArgumentException("Invalid Google token"))
+        viewModel.onGoogleIdTokenReceived("google-token")
+        runCurrent()
+
+        assertTrue(viewModel.uiState.value.errorMessage?.contains("Invalid Google token") == true)
+        assertFalse(viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `github sign in success emits navigate home`() = runTest {
         val viewModel = newViewModel()
         val events = mutableListOf<AuthEvent>()
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
             viewModel.events.collect { event -> events.add(event) }
         }
 
-        viewModel.onEmailChange("learner@example.com")
-        viewModel.onPasswordChange("password123")
-        viewModel.onSubmit()
+        fakeAuthRepository.result = Result.success(testUser)
+        viewModel.onGithubCodeReceived("github-code")
         runCurrent()
 
         assertEquals(listOf(AuthEvent.NavigateToHome), events)
         assertFalse(viewModel.uiState.value.isLoading)
+        assertNull(viewModel.uiState.value.errorMessage)
     }
 
-    @Test
-    fun `register success emits navigate home`() = runTest {
-        val viewModel = newViewModel()
-        val events = mutableListOf<AuthEvent>()
-        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
-            viewModel.events.collect { event -> events.add(event) }
-        }
-
-        viewModel.onToggleMode()
-        viewModel.onFullNameChange("Learner")
-        viewModel.onEmailChange("learner@example.com")
-        viewModel.onPasswordChange("password123")
-        viewModel.onSubmit()
-        runCurrent()
-
-        assertEquals(listOf(AuthEvent.NavigateToHome), events)
-        assertFalse(viewModel.uiState.value.isLoading)
-    }
-
-    @Test
-    fun `failure surfaces user safe error and stops loading`() {
-        val repository = FakeAuthRepository(
-            loginResult = Result.failure(IllegalArgumentException("Invalid email or password."))
-        )
-        val viewModel = newViewModel(repository)
-
-        viewModel.onEmailChange("learner@example.com")
-        viewModel.onPasswordChange("password123")
-        viewModel.onSubmit()
-
-        assertEquals("Invalid email or password.", viewModel.uiState.value.errorMessage)
-        assertFalse(viewModel.uiState.value.isLoading)
-    }
-
-    private fun newViewModel(
-        repository: FakeAuthRepository = FakeAuthRepository()
-    ): AuthViewModel {
+    private fun newViewModel(): AuthViewModel {
         return AuthViewModel(
-            loginUseCase = LoginUseCase(repository),
-            registerUseCase = RegisterUseCase(repository)
+            loginWithGoogleUseCase = loginWithGoogleUseCase,
+            loginWithGithubUseCase = loginWithGithubUseCase
         )
     }
 
-    private class FakeAuthRepository(
-        private val loginResult: Result<User> = Result.success(testUser),
-        private val registerResult: Result<User> = Result.success(testUser)
-    ) : AuthRepository {
+    private class FakeAuthRepository : AuthRepository {
         override val authState: StateFlow<AuthState> = MutableStateFlow(AuthState.Unauthenticated)
+        var result: Result<User> = Result.success(testUser)
 
-        override suspend fun login(email: String, password: String): Result<User> = loginResult
-
-        override suspend fun register(email: String, password: String, fullName: String): Result<User> = registerResult
-
+        override suspend fun loginWithGoogle(idToken: String): Result<User> = result
+        override suspend fun loginWithGithub(code: String): Result<User> = result
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
-
         override suspend fun getCurrentUser(): Result<User> = Result.success(testUser)
     }
 

@@ -459,6 +459,7 @@
     <string name="roadmap_learning_completed">Completed</string>
     <string name="roadmap_learning_mark_completed">Mark completed</string>
     <string name="roadmap_learning_category_general">General</string>
+    <string name="roadmap_learning_about_skill">About this skill</string>
     <string name="roadmap_learning_no_description">No description is available for this skill yet.</string>
     <string name="roadmap_learning_estimated_hours">%1$d hours</string>
     <string name="roadmap_learning_estimated_hours_unknown">Estimated time not available</string>

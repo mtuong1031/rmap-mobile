@@ -198,9 +198,9 @@ class ExploreViewModelTest {
     private class FakeAuthRepository : AuthRepository {
         override val authState: StateFlow<AuthState> = MutableStateFlow(AuthState.Unauthenticated)
 
-        override suspend fun login(email: String, password: String): Result<User> = error("Not used")
+        override suspend fun loginWithGoogle(idToken: String): Result<User> = error("Not used")
 
-        override suspend fun register(email: String, password: String, fullName: String): Result<User> = error("Not used")
+        override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
 
         override suspend fun logout(): Result<Unit> = error("Not used")
 

@@ -19,7 +19,6 @@ data class HomeUiState(
     val learningPlans: List<HomeLearningPlanState> = emptyList(),
     val recommendedRoadmaps: List<HomeRecommendedRoadmapState> = emptyList(),
     val beginnerRoadmaps: List<HomeRecommendedRoadmapState> = emptyList(),
-    val categories: List<HomeCategoryState> = emptyList(),
     val trendingRoadmaps: List<TrendingRoadmapCardUiModel> = emptyList(),
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
@@ -61,11 +60,4 @@ data class HomeRecommendedRoadmapState(
     val durationText: String,
     val icon: LearningTopicIcon,
     val isBeginner: Boolean
-)
-
-data class HomeCategoryState(
-    val id: String,
-    val label: String,
-    val countText: String,
-    val icon: LearningTopicIcon
 )

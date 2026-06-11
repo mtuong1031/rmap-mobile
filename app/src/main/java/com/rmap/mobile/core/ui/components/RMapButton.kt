@@ -133,7 +133,7 @@ object RMapButtonDefaults {
     fun elevation(variant: RMapButtonVariant): ButtonElevation {
         return when (variant) {
             RMapButtonVariant.Primary -> MaterialButtonDefaults.buttonElevation(
-                defaultElevation = Dimens.cardElevationSm,
+                defaultElevation = 2.dp,
                 pressedElevation = Dimens.cardElevationPressed,
                 focusedElevation = Dimens.cardElevationSm,
                 hoveredElevation = Dimens.cardElevationSm,

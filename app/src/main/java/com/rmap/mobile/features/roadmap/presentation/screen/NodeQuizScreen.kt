@@ -24,6 +24,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -46,6 +47,7 @@ import com.rmap.mobile.core.ui.components.quiz.RMapQuestionOptionState
 import com.rmap.mobile.core.ui.components.quiz.RMapQuestionPagerScaffold
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.cardShadow
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.SuccessContainerDark
 import com.rmap.mobile.core.ui.theme.SuccessContainerLight
@@ -79,145 +81,149 @@ fun NodeQuizScreen(
         }
     }
 
-    Box(
+    Scaffold(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .safeDrawingPadding()
-    ) {
-        when {
-            uiState.isLoading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-
-            uiState.errorMessage != null && uiState.questions.isEmpty() -> {
-                QuizErrorState(
-                    message = uiState.errorMessage.ifBlank {
-                        stringResource(R.string.roadmap_quiz_error_fallback)
-                    },
-                    onRetryClick = onRetryClick,
-                    modifier = Modifier.align(Alignment.Center)
+            .safeDrawingPadding(),
+        topBar = {
+            QuizTopBar(onBackClick = onBackClick)
+        },
+        bottomBar = {
+            if (uiState.result != null) {
+                QuizBottomAction(
+                    uiState = uiState,
+                    onSubmitClick = onSubmitClick,
+                    onDoneClick = onDoneClick,
+                    modifier = Modifier.padding(
+                        start = Dimens.spacingScreenHorizontal,
+                        end = Dimens.spacingScreenHorizontal,
+                        bottom = Dimens.spacingXl,
+                        top = Dimens.spacingMd
+                    )
                 )
             }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
 
-            else -> {
-                LazyColumn(
-                    state = lazyListState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = Dimens.spacingScreenHorizontal,
-                        top = Dimens.controlXl + Dimens.spacingLg,
-                        end = Dimens.spacingScreenHorizontal,
-                        bottom = QuizBottomPadding
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-                ) {
-                    uiState.result?.let { result ->
-                        item {
-                            QuizResultSummaryCard(result = result)
-                        }
-                    }
+                uiState.errorMessage != null && uiState.questions.isEmpty() -> {
+                    QuizErrorState(
+                        message = uiState.errorMessage.ifBlank {
+                            stringResource(R.string.roadmap_quiz_error_fallback)
+                        },
+                        onRetryClick = onRetryClick,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
 
-                    if (uiState.result == null) {
-                        uiState.currentQuestion?.let { question ->
+                else -> {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            start = Dimens.spacingScreenHorizontal,
+                            top = Dimens.spacingLg,
+                            end = Dimens.spacingScreenHorizontal,
+                            bottom = Dimens.spacingXxl
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+                    ) {
+                        uiState.result?.let { result ->
                             item {
-                                RMapQuestionPagerScaffold(
-                                    currentQuestionIndex = uiState.currentQuestionIndex,
-                                    questionProgressText = stringResource(
-                                        R.string.roadmap_quiz_question_progress,
-                                        uiState.currentQuestionIndex + 1,
-                                        uiState.questions.size
-                                    ),
-                                    answeredText = stringResource(
-                                        R.string.roadmap_quiz_answered_count,
-                                        uiState.answeredQuestionCount,
-                                        uiState.questions.size
-                                    ),
-                                    progressFraction = uiState.progressFraction,
-                                    errorText = uiState.errorMessage,
-                                    previousText = stringResource(R.string.roadmap_quiz_previous),
-                                    nextText = stringResource(R.string.roadmap_quiz_next),
-                                    finalText = stringResource(R.string.roadmap_quiz_submit),
-                                    isFirst = uiState.isFirstQuestion,
-                                    isLast = uiState.isLastQuestion,
-                                    isNextEnabled = uiState.isCurrentQuestionAnswered,
-                                    isBusy = uiState.isSubmitting,
-                                    onPrevious = onPreviousQuestion,
-                                    onNext = onNextQuestion,
-                                    onFinal = onSubmitClick
-                                ) { questionIndex ->
-                                    val currentQuestion = uiState.questions.getOrNull(questionIndex) ?: question
-                                    QuizQuestionCard(
-                                        questionNumber = questionIndex + 1,
-                                        question = currentQuestion,
-                                        selectedOption = uiState.selectedAnswers[currentQuestion.id],
-                                        result = null,
-                                        isLocked = uiState.isSubmitting,
-                                        onOptionSelected = { optionKey ->
-                                            onOptionSelected(currentQuestion.id, optionKey)
-                                        }
+                                QuizResultSummaryCard(result = result)
+                            }
+                        }
+
+                        if (uiState.result == null) {
+                            uiState.currentQuestion?.let { question ->
+                                item {
+                                    RMapQuestionPagerScaffold(
+                                        currentQuestionIndex = uiState.currentQuestionIndex,
+                                        questionProgressText = stringResource(
+                                            R.string.roadmap_quiz_question_progress,
+                                            uiState.currentQuestionIndex + 1,
+                                            uiState.questions.size
+                                        ),
+                                        answeredText = stringResource(
+                                            R.string.roadmap_quiz_answered_count,
+                                            uiState.answeredQuestionCount,
+                                            uiState.questions.size
+                                        ),
+                                        progressFraction = uiState.progressFraction,
+                                        errorText = uiState.errorMessage,
+                                        previousText = stringResource(R.string.roadmap_quiz_previous),
+                                        nextText = stringResource(R.string.roadmap_quiz_next),
+                                        finalText = stringResource(R.string.roadmap_quiz_submit),
+                                        isFirst = uiState.isFirstQuestion,
+                                        isLast = uiState.isLastQuestion,
+                                        isNextEnabled = uiState.isCurrentQuestionAnswered,
+                                        isBusy = uiState.isSubmitting,
+                                        onPrevious = onPreviousQuestion,
+                                        onNext = onNextQuestion,
+                                        onFinal = onSubmitClick
+                                    ) { questionIndex ->
+                                        val currentQuestion = uiState.questions.getOrNull(questionIndex) ?: question
+                                        QuizQuestionCard(
+                                            questionNumber = questionIndex + 1,
+                                            question = currentQuestion,
+                                            selectedOption = uiState.selectedAnswers[currentQuestion.id],
+                                            result = null,
+                                            isLocked = uiState.isSubmitting,
+                                            onOptionSelected = { optionKey ->
+                                                onOptionSelected(currentQuestion.id, optionKey)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            uiState.result.let { result ->
+                                item {
+                                    QuizReviewHeader(
+                                        correctCount = result.correctCount,
+                                        totalQuestions = result.totalQuestions
                                     )
                                 }
                             }
-                        }
-                    } else {
-                        uiState.result.let { result ->
-                            item {
-                                QuizReviewHeader(
-                                    correctCount = result.correctCount,
-                                    totalQuestions = result.totalQuestions
+
+                            uiState.errorMessage?.let { message ->
+                                item {
+                                    RMapQuestionInlineError(message = message)
+                                }
+                            }
+
+                            itemsIndexed(
+                                items = uiState.questions,
+                                key = { _, question -> question.id }
+                            ) { index, question ->
+                                val questionResult = uiState.result
+                                    .questionResults
+                                    .firstOrNull { result -> result.questionId == question.id }
+                                QuizQuestionCard(
+                                    questionNumber = index + 1,
+                                    question = question,
+                                    selectedOption = uiState.selectedAnswers[question.id],
+                                    result = questionResult,
+                                    isLocked = true,
+                                    onOptionSelected = { optionKey ->
+                                        onOptionSelected(question.id, optionKey)
+                                    }
                                 )
                             }
                         }
-
-                        uiState.errorMessage?.let { message ->
-                            item {
-                                RMapQuestionInlineError(message = message)
-                            }
-                        }
-
-                        itemsIndexed(
-                            items = uiState.questions,
-                            key = { _, question -> question.id }
-                        ) { index, question ->
-                            val questionResult = uiState.result
-                                .questionResults
-                                .firstOrNull { result -> result.questionId == question.id }
-                            QuizQuestionCard(
-                                questionNumber = index + 1,
-                                question = question,
-                                selectedOption = uiState.selectedAnswers[question.id],
-                                result = questionResult,
-                                isLocked = true,
-                                onOptionSelected = { optionKey ->
-                                    onOptionSelected(question.id, optionKey)
-                                }
-                            )
-                        }
                     }
-                }
-
-                if (uiState.result != null) {
-                    QuizBottomAction(
-                        uiState = uiState,
-                        onSubmitClick = onSubmitClick,
-                        onDoneClick = onDoneClick,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(
-                                start = Dimens.spacingScreenHorizontal,
-                                end = Dimens.spacingScreenHorizontal,
-                                bottom = Dimens.spacingXl
-                            )
-                    )
                 }
             }
         }
-
-        QuizTopBar(
-            onBackClick = onBackClick,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
     }
 }
 
@@ -557,10 +563,11 @@ private fun QuizBottomAction(
     modifier: Modifier = Modifier
 ) {
     RoadmapDecoratedCard(
-        modifier = modifier,
+        modifier = modifier.cardShadow(AppShapes.button),
         shape = AppShapes.button,
         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-        borderColor = MaterialTheme.colorScheme.outlineVariant
+        borderColor = MaterialTheme.colorScheme.surface,
+        shadow = false
     ) {
         RMapButton(
             text = if (uiState.result == null) {
@@ -625,8 +632,6 @@ private fun QuizErrorState(
     }
 }
 
-private val QuizBottomPadding =
-    Dimens.controlXl + Dimens.spacingScreenBottomCompact + Dimens.spacingXxl
 private val QuizResultIconContainerSize = Dimens.controlXl
 private const val QuizResultBorderAlpha = 0.35f
 private const val QuizResultContainerAlpha = 0.68f

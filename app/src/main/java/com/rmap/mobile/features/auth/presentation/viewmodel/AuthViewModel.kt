@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.BuildConfig
+import com.rmap.mobile.features.auth.domain.usecase.LoginWithGoogleUseCase
+import com.rmap.mobile.features.auth.domain.usecase.LoginWithGithubUseCase
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,12 +19,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase = RMapAppGraph.loginWithGoogleUseCase,
+    private val loginWithGithubUseCase: LoginWithGithubUseCase = RMapAppGraph.loginWithGithubUseCase
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
-
-    private val loginWithGoogleUseCase = RMapAppGraph.loginWithGoogleUseCase
-    private val loginWithGithubUseCase = RMapAppGraph.loginWithGithubUseCase
 
     private val _events = MutableSharedFlow<AuthEvent>()
     val events: SharedFlow<AuthEvent> = _events.asSharedFlow()

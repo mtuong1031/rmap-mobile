@@ -56,7 +56,7 @@ fun RMapSectionTitle(
                         role = Role.Button,
                         onClick = onActionClick
                     ),
-                    style = MaterialTheme.typography.labelMedium.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     ),

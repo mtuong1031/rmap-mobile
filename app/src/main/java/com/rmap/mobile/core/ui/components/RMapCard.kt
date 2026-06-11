@@ -1,12 +1,15 @@
 package com.rmap.mobile.core.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,6 +60,7 @@ fun RMapCard(
     modifier: Modifier = Modifier,
     shape: Shape = RMapCardDefaults.shape,
     color: Color = RMapCardDefaults.containerColor(),
+    brush: Brush? = null,
     border: BorderStroke? = RMapCardDefaults.themedBorder(),
     shadowElevation: Dp = RMapCardDefaults.shadowElevation,
     content: @Composable () -> Unit
@@ -70,10 +74,20 @@ fun RMapCard(
     Surface(
         modifier = cardModifier,
         shape = shape,
-        color = color,
-        border = border,
-        content = content
-    )
+        color = if (brush == null) color else Color.Transparent,
+        border = border
+    ) {
+        val finalContent: @Composable () -> Unit = {
+            if (brush != null) {
+                Box(modifier = Modifier.background(brush = brush, shape = shape)) {
+                    content()
+                }
+            } else {
+                content()
+            }
+        }
+        finalContent()
+    }
 }
 
 @Deprecated(
