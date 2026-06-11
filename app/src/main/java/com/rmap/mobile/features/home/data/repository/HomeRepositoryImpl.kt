@@ -13,13 +13,13 @@ import com.rmap.mobile.features.home.data.local.mapper.toHomeDto
 import com.rmap.mobile.features.home.data.local.mapper.toTemplateCategoryEntity
 import com.rmap.mobile.features.home.data.mapper.toHomeContent
 import com.rmap.mobile.features.home.data.mapper.toDomain
-import com.rmap.mobile.features.home.data.model.HomeTemplateCategoriesResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateTrendingsResponseDto
 import com.rmap.mobile.features.home.data.remote.HomeApi
 import com.rmap.mobile.features.home.domain.model.HomeContent
 import com.rmap.mobile.features.home.domain.model.HomeSearchResult
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.roadmap.data.local.dao.TemplateCategoryDao
+import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoriesResponseDto
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
@@ -88,7 +88,7 @@ class HomeRepositoryImpl(
 
     private suspend fun getTemplateCategoriesResult(
         serverVersions: SyncVersionDto?
-    ): NetworkResult<HomeTemplateCategoriesResponseDto> {
+    ): NetworkResult<TemplateCategoriesResponseDto> {
         val cachedCategories = templateCategoryDao?.getAll().orEmpty()
         val shouldUseCache = cachedCategories.isNotEmpty() &&
             syncManager?.isStale(SyncDataType.TEMPLATE_CATEGORIES, serverVersions) == false
@@ -157,8 +157,8 @@ class HomeRepositoryImpl(
     }
 
     private fun List<com.rmap.mobile.features.roadmap.data.local.entity.TemplateCategoryEntity>
-        .toHomeCategoriesDto(): HomeTemplateCategoriesResponseDto {
-        return HomeTemplateCategoriesResponseDto(
+        .toHomeCategoriesDto(): TemplateCategoriesResponseDto {
+        return TemplateCategoriesResponseDto(
             total = size,
             categories = map { category -> category.toHomeDto() }
         )

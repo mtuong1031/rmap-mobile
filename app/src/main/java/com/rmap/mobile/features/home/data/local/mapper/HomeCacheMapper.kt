@@ -1,11 +1,11 @@
 package com.rmap.mobile.features.home.data.local.mapper
 
 import com.rmap.mobile.features.home.data.local.entity.HomeTrendingRoadmapEntity
-import com.rmap.mobile.features.home.data.model.HomeTemplateCategoryDto
 import com.rmap.mobile.features.home.data.model.HomeTrendingRoadmapDto
 import com.rmap.mobile.features.roadmap.data.local.entity.TemplateCategoryEntity
+import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoryDto
 
-fun HomeTemplateCategoryDto.toTemplateCategoryEntity(): TemplateCategoryEntity {
+fun TemplateCategoryDto.toTemplateCategoryEntity(): TemplateCategoryEntity {
     return TemplateCategoryEntity(
         id = category,
         name = label,
@@ -14,8 +14,8 @@ fun HomeTemplateCategoryDto.toTemplateCategoryEntity(): TemplateCategoryEntity {
     )
 }
 
-fun TemplateCategoryEntity.toHomeDto(): HomeTemplateCategoryDto {
-    return HomeTemplateCategoryDto(
+fun TemplateCategoryEntity.toHomeDto(): TemplateCategoryDto {
+    return TemplateCategoryDto(
         category = id,
         label = name,
         templatesCount = roadmapCount,
