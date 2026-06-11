@@ -1,6 +1,7 @@
 package com.rmap.mobile.features.roadmap.data.repository
 
 import com.rmap.mobile.core.network.AppException
+import com.google.gson.Gson
 import com.rmap.mobile.core.database.entity.SyncDataType
 import com.rmap.mobile.core.database.sync.SyncManager
 import com.rmap.mobile.core.database.sync.SyncVersionDto
@@ -9,9 +10,12 @@ import com.rmap.mobile.core.network.NetworkResult
 import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.core.session.SessionManager
+import com.rmap.mobile.features.roadmap.data.local.dao.RoadmapDetailCacheDao
 import com.rmap.mobile.features.roadmap.data.local.dao.TemplateCategoryDao
 import com.rmap.mobile.features.roadmap.data.local.dao.TemplateRoadmapDao
 import com.rmap.mobile.features.roadmap.data.local.mapper.toEntity
+import com.rmap.mobile.features.roadmap.data.local.mapper.toRoadmapDetail
+import com.rmap.mobile.features.roadmap.data.local.mapper.toRoadmapDetailCacheEntity
 import com.rmap.mobile.features.roadmap.data.local.mapper.toRoadmapCategory
 import com.rmap.mobile.features.roadmap.data.local.mapper.toRoadmapSummary
 import com.rmap.mobile.features.roadmap.data.mapper.toDomain
@@ -49,13 +53,17 @@ import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class RemoteRoadmapRepository(
     private val roadmapApi: RoadmapApi,
     private val sessionManager: SessionManager,
     private val templateCategoryDao: TemplateCategoryDao? = null,
     private val templateRoadmapDao: TemplateRoadmapDao? = null,
-    private val syncManager: SyncManager? = null
+    private val syncManager: SyncManager? = null,
+    private val roadmapDetailCacheDao: RoadmapDetailCacheDao? = null,
+    private val gson: Gson = Gson()
 ) : RoadmapRepository {
     override suspend fun getLearningProgress(): Result<LearningProgress> {
         return when (val roadmapResult = getRoadmapsResult(page = FIRST_PAGE, perPage = FIRST_ITEM_PAGE_SIZE)) {
@@ -266,6 +274,29 @@ class RemoteRoadmapRepository(
         return Result.success(roadmaps)
     }
 
+    override fun observeRoadmapDetail(roadmapId: String): Flow<Result<RoadmapDetail>> = flow {
+        val normalizedRoadmapId = roadmapId.trim()
+        if (normalizedRoadmapId.isBlank()) {
+            emit(Result.failure(invalidRoadmapId()))
+            return@flow
+        }
+
+        val cached = roadmapDetailCacheDao?.get(normalizedRoadmapId)?.toRoadmapDetail(gson)
+        if (cached != null) {
+            emit(Result.success(cached))
+        }
+
+        val freshResult = getRoadmapDetail(normalizedRoadmapId)
+        freshResult.onSuccess { detail ->
+            roadmapDetailCacheDao?.upsert(detail.toRoadmapDetailCacheEntity(gson))
+            emit(Result.success(detail))
+        }
+
+        if (freshResult.isFailure && cached == null) {
+            emit(freshResult)
+        }
+    }
+
     override suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail> {
         val roadmapId = id.trim()
         if (roadmapId.isBlank()) {
@@ -467,7 +498,10 @@ class RemoteRoadmapRepository(
         }
 
         return when (val result = getStartRoadmapResult(normalizedRoadmapId)) {
-            is NetworkResult.Success -> Result.success(Unit)
+            is NetworkResult.Success -> {
+                roadmapDetailCacheDao?.deleteById(normalizedRoadmapId)
+                Result.success(Unit)
+            }
             is NetworkResult.Error -> Result.failure(result.toAppException())
         }
     }
@@ -492,6 +526,8 @@ class RemoteRoadmapRepository(
             status = status
         ).toDomainResult { response ->
             response.toDomain()
+        }.onSuccess {
+            roadmapDetailCacheDao?.deleteById(normalizedRoadmapId)
         }
     }
 

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class RoadmapDetailViewModel(
@@ -24,6 +25,7 @@ class RoadmapDetailViewModel(
     val events: SharedFlow<RoadmapDetailEvent> = _events.asSharedFlow()
     private var currentDetail: RoadmapDetail? = null
     private var lastRequestedRoadmapId: String = ""
+    private var detailJob: Job? = null
 
     fun loadRoadmap(roadmapId: String) {
         loadRoadmap(roadmapId, forceRefresh = false)
@@ -62,7 +64,8 @@ class RoadmapDetailViewModel(
             return
         }
 
-        viewModelScope.launch {
+        detailJob?.cancel()
+        detailJob = viewModelScope.launch {
             currentDetail = null
             _uiState.update {
                 RoadmapDetailUiState(
@@ -70,24 +73,31 @@ class RoadmapDetailViewModel(
                     isLoading = true
                 )
             }
-            repository.getRoadmapDetail(normalizedRoadmapId)
-                .onSuccess { detail ->
-                    currentDetail = detail
-                    val loadedState = detail.toLoadedUiState()
-                    _uiState.update { loadedState }
-                }
-                .onFailure {
-                    currentDetail = null
-                    _uiState.update {
-                        it.copy(
-                            roadmapId = normalizedRoadmapId,
-                            isLoading = false,
-                            errorMessageResId = R.string.roadmap_detail_error_load_failed
-                        )
+            repository.observeRoadmapDetail(normalizedRoadmapId)
+                .collect { result ->
+                    result
+                        .onSuccess { detail ->
+                            currentDetail = detail
+                            val loadedState = detail.toLoadedUiState()
+                            _uiState.update { loadedState }
+                        }
+                        .onFailure {
+                            if (_uiState.value.isEmpty) {
+                                currentDetail = null
+                                _uiState.update {
+                                    it.copy(
+                                        roadmapId = normalizedRoadmapId,
+                                        isLoading = false,
+                                        errorMessageResId = R.string.roadmap_detail_error_load_failed
+                                    )
+                                }
+                            } else {
+                                _uiState.update { it.copy(isLoading = false) }
+                            }
+                        }
                     }
                 }
         }
-    }
 
     fun onContinueClick() {
         val state = _uiState.value

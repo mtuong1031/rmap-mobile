@@ -13,6 +13,8 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 interface RoadmapRepository {
     suspend fun getLearningProgress(): Result<LearningProgress>
@@ -20,6 +22,9 @@ interface RoadmapRepository {
     suspend fun getExploreCategories(): Result<List<RoadmapCategory>>
     suspend fun getRecommendedRoadmaps(): Result<List<RoadmapSummary>>
     suspend fun searchRoadmaps(query: String, categoryId: String? = null, page: Int = 1, perPage: Int = 20): Result<Pair<List<RoadmapSummary>, Int>>
+    fun observeRoadmapDetail(roadmapId: String): Flow<Result<RoadmapDetail>> = flow {
+        emit(getRoadmapDetail(roadmapId))
+    }
     suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail>
     suspend fun getLearningNode(roadmapId: String, nodeId: String): Result<LearningNodeDetail>
     suspend fun getMilestoneDetail(roadmapId: String, milestoneId: String): Result<MilestoneDetail>

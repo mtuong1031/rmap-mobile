@@ -6,12 +6,16 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.google.gson.Gson
 import com.rmap.mobile.core.network.NetworkResult
 import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.core.network.toDomainResult
 import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.features.airoadmap.data.AiRoadmapGenerationWorker
+import com.rmap.mobile.features.airoadmap.data.local.dao.AiRoadmapCacheDao
+import com.rmap.mobile.features.airoadmap.data.local.mapper.toAiGeneratedRoadmaps
+import com.rmap.mobile.features.airoadmap.data.local.mapper.toAiRoadmapCacheEntity
 import com.rmap.mobile.features.airoadmap.data.mapper.toDomain
 import com.rmap.mobile.features.airoadmap.data.model.OnboardingQuizRequestDto
 import com.rmap.mobile.features.airoadmap.data.model.RoadmapNodesResponseDto
@@ -37,7 +41,9 @@ import kotlinx.coroutines.withContext
 class RemoteAiRoadmapRepository(
     context: Context,
     private val api: AiRoadmapApi,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val aiRoadmapCacheDao: AiRoadmapCacheDao? = null,
+    private val gson: Gson = Gson()
 ) : AiRoadmapRepository {
     private val workManager = WorkManager.getInstance(context.applicationContext)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -59,6 +65,7 @@ class RemoteAiRoadmapRepository(
     }
 
     override suspend fun getGeneratedRoadmaps(): Result<List<AiGeneratedRoadmap>> {
+        val cachedRoadmaps = aiRoadmapCacheDao?.get()?.toAiGeneratedRoadmaps(gson)
         val networkResult = SafeApiCall.execute(
             onUnauthorized = sessionManager::handleUnauthorized
         ) {
@@ -69,13 +76,19 @@ class RemoteAiRoadmapRepository(
         }
 
         return when (networkResult) {
-            is NetworkResult.Success -> Result.success(
-                networkResult.data.data.map { roadmap ->
+            is NetworkResult.Success -> {
+                val roadmaps = networkResult.data.data.map { roadmap ->
                     roadmap.toDomain(lessonsCount = getNodeCountOrZero(roadmap.id))
                 }
-            )
+                aiRoadmapCacheDao?.upsert(roadmaps.toAiRoadmapCacheEntity(gson))
+                Result.success(roadmaps)
+            }
 
-            is NetworkResult.Error -> Result.failure(networkResult.toAppException())
+            is NetworkResult.Error -> {
+                cachedRoadmaps
+                    ?.let { roadmaps -> Result.success(roadmaps) }
+                    ?: Result.failure(networkResult.toAppException())
+            }
         }
     }
 
@@ -124,6 +137,10 @@ class RemoteAiRoadmapRepository(
 
     override fun startGeneration(request: AiRoadmapGenerationRequest) {
         if (_generationStatus.value.isActive) return
+
+        scope.launch {
+            aiRoadmapCacheDao?.clear()
+        }
 
         val workRequest = OneTimeWorkRequestBuilder<AiRoadmapGenerationWorker>()
             .setInputData(

@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import com.rmap.mobile.core.database.DatabaseProvider
 import com.rmap.mobile.core.database.RMapDatabase
+import com.rmap.mobile.core.database.sync.ClearDynamicDataUseCase
 import com.rmap.mobile.core.database.sync.SyncApi
 import com.rmap.mobile.core.database.sync.SyncManager
 import com.rmap.mobile.core.network.ApiClient
@@ -78,6 +79,8 @@ object RMapAppGraph {
         private set
     lateinit var syncManager: SyncManager
         private set
+    lateinit var clearDynamicDataUseCase: ClearDynamicDataUseCase
+        private set
     lateinit var authRepository: AuthRepository
         private set
     lateinit var homeRepository: HomeRepository
@@ -120,6 +123,7 @@ object RMapAppGraph {
             syncApi = apiClient.createService(SyncApi::class.java),
             syncMetadataDao = database.syncMetadataDao()
         )
+        clearDynamicDataUseCase = ClearDynamicDataUseCase(database)
         authRepository = AuthRepositoryImpl(
             authApi = apiClient.createService(AuthApi::class.java),
             sessionManager = sessionManager
@@ -137,7 +141,8 @@ object RMapAppGraph {
         )
         dashboardRepository = DashboardRepositoryImpl(
             dashboardApi = apiClient.createService(DashboardApi::class.java),
-            sessionManager = sessionManager
+            sessionManager = sessionManager,
+            dashboardCacheDao = database.dashboardCacheDao()
         )
 //        roadmapRepository = RoadmapRepositoryImpl(
 //            roadmapApi = apiClient.createService(RoadmapApi::class.java),
@@ -146,14 +151,18 @@ object RMapAppGraph {
 
         loginWithGoogleUseCase = LoginWithGoogleUseCase(authRepository)
         loginWithGithubUseCase = LoginWithGithubUseCase(authRepository)
-        logoutUseCase = LogoutUseCase(authRepository)
+        logoutUseCase = LogoutUseCase(
+            authRepository = authRepository,
+            clearDynamicDataUseCase = clearDynamicDataUseCase
+        )
         getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
         roadmapRepository = RemoteRoadmapRepository(
             roadmapApi = apiClient.createService(RoadmapApi::class.java),
             sessionManager = sessionManager,
             templateCategoryDao = database.templateCategoryDao(),
             templateRoadmapDao = database.templateRoadmapDao(),
-            syncManager = syncManager
+            syncManager = syncManager,
+            roadmapDetailCacheDao = database.roadmapDetailCacheDao()
         )
         skillLearningRepository = RemoteSkillLearningRepository(
             skillApi = apiClient.createService(SkillApi::class.java),
@@ -166,7 +175,8 @@ object RMapAppGraph {
         aiRoadmapRepository = RemoteAiRoadmapRepository(
             context = applicationContext,
             api = apiClient.createService(AiRoadmapApi::class.java),
-            sessionManager = sessionManager
+            sessionManager = sessionManager,
+            aiRoadmapCacheDao = database.aiRoadmapCacheDao()
         )
         learningNotificationNotifier = LearningNotificationNotifier(application)
         learningNotificationNotifier.ensureNotificationChannel()
