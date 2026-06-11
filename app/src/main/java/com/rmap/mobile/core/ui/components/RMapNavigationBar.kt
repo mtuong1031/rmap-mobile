@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +76,7 @@ fun RMapNavigationBar(
             val selectedLayoutInfo = itemLayoutInfo[selectedDestination]
             val indicatorOffset = selectedLayoutInfo?.first ?: 0f
             val indicatorWidth = selectedLayoutInfo?.second ?: 0f
+            var hasInitializedIndicator by remember { mutableStateOf(false) }
 
             val animatedOffset by animateFloatAsState(
                 targetValue = indicatorOffset,
@@ -86,13 +88,21 @@ fun RMapNavigationBar(
                 animationSpec = tween(250, easing = FastOutSlowInEasing),
                 label = "indicatorWidth"
             )
+            val displayedOffset = if (hasInitializedIndicator) animatedOffset else indicatorOffset
+            val displayedWidth = if (hasInitializedIndicator) animatedWidth else indicatorWidth
+
+            LaunchedEffect(selectedLayoutInfo) {
+                if (selectedLayoutInfo != null && !hasInitializedIndicator) {
+                    hasInitializedIndicator = true
+                }
+            }
 
             Box(modifier = Modifier.padding(Dimens.spacingXsPlus).height(IntrinsicSize.Min)) {
                 if (indicatorWidth > 0f) {
                     Box(
                         modifier = Modifier
-                            .offset { IntOffset(animatedOffset.roundToInt(), 0) }
-                            .width(with(LocalDensity.current) { animatedWidth.toDp() })
+                            .offset { IntOffset(displayedOffset.roundToInt(), 0) }
+                            .width(with(LocalDensity.current) { displayedWidth.toDp() })
                             .fillMaxHeight()
                             .clip(AppShapes.pill)
                             .background(MaterialTheme.colorScheme.primary)

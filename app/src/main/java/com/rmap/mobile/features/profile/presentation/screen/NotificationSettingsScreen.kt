@@ -19,10 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
@@ -61,6 +58,7 @@ import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.profile.presentation.components.ProfileSettingsTopBar
 import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsUiState
 import com.rmap.mobile.features.profile.presentation.viewmodel.ReminderFrequency
 import com.rmap.mobile.navigation.NavBarDestination
@@ -116,7 +114,10 @@ fun NotificationSettingsScreen(
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
-            NotificationSettingsHeader(onBackClick = onBackClick)
+            ProfileSettingsTopBar(
+                titleResId = R.string.notification_settings_title,
+                onBackClick = onBackClick
+            )
 
             NotificationSettingsContent(
                 uiState = uiState,
@@ -135,59 +136,11 @@ fun NotificationSettingsScreen(
                 onSendTestNotificationClick = onSendTestNotificationClick,
                 modifier = Modifier.padding(
                     start = Dimens.spacingXl,
-                    top = 49.dp,
+                    top = Dimens.spacingXxl,
                     end = Dimens.spacingXl
                 )
             )
         }
-    }
-}
-
-@Composable
-private fun NotificationSettingsHeader(
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .statusBarsPadding()
-            .padding(
-                start = Dimens.spacingXl,
-                top = Dimens.spacingXxl,
-                end = Dimens.spacingXl,
-                bottom = Dimens.spacingXlPlus
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(Dimens.controlSm)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .border(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant, CircleShape)
-                .clickable(onClick = onBackClick),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
-                contentDescription = stringResource(id = R.string.content_description_back),
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(Dimens.iconMd)
-            )
-        }
-
-        Text(
-            text = stringResource(id = R.string.notification_settings_title),
-            style = MaterialTheme.typography.headlineSmall.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                lineHeight = 30.sp
-            )
-        )
     }
 }
 
@@ -515,5 +468,3 @@ private fun NotificationSettingsScreenPreview() {
         )
     }
 }
-
-

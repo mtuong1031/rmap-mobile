@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +39,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
@@ -55,6 +58,18 @@ fun ProfileCard(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val context = LocalContext.current
+        val avatarRequest = remember(avatarUrl, context) {
+            val builder = ImageRequest.Builder(context)
+                .data(avatarUrl)
+                .crossfade(true)
+
+            if (avatarUrl.needsSvgDecoder()) {
+                builder.decoderFactory(SvgDecoder.Factory())
+            }
+
+            builder.build()
+        }
         val interactionSource = remember { MutableInteractionSource() }
         val isPressed by interactionSource.collectIsPressedAsState()
         val scale by animateFloatAsState(
@@ -99,10 +114,10 @@ fun ProfileCard(
             ) {
                 AvatarPlaceholder()
                 AsyncImage(
-                    model = avatarUrl,
+                    model = avatarRequest,
                     contentDescription = stringResource(id = R.string.profile_avatar_content_description),
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Fit
                 )
             }
         }
@@ -133,6 +148,10 @@ fun ProfileCard(
             textAlign = TextAlign.Center
         )
     }
+}
+
+private fun String.needsSvgDecoder(): Boolean {
+    return contains("/svg", ignoreCase = true) || substringBefore("?").endsWith(".svg", ignoreCase = true)
 }
 
 @Composable

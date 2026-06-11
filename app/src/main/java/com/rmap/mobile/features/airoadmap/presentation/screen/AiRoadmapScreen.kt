@@ -217,10 +217,10 @@ fun AiRoadmapScreen(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = Dimens.spacingScreenHorizontal,
-                top = innerPadding.calculateTopPadding() + if (uiState.step == AiRoadmapStep.Library) {
+                top = if (uiState.step == AiRoadmapStep.Library) {
                     Dimens.spacingScreenTopCompact
                 } else {
-                    Dimens.spacingMd
+                    innerPadding.calculateTopPadding() + Dimens.spacingMd
                 },
                 end = Dimens.spacingScreenHorizontal,
                 bottom = innerPadding.calculateBottomPadding() +

@@ -7,10 +7,13 @@ import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
 import com.rmap.mobile.features.profile.domain.model.UserActivitySummary
 import com.rmap.mobile.features.profile.domain.model.UserDailyActivity
+import com.rmap.mobile.features.profile.domain.model.UserProfileIdentity
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -71,6 +74,18 @@ class ProfileViewModelTest {
         assertEquals("No activity", viewModel.uiState.value.errorMessage)
     }
 
+    @Test
+    fun `privacy setting navigates to privacy security screen`() = runTest {
+        val viewModel = newViewModel()
+        val event = async { viewModel.events.first() }
+        runCurrent()
+
+        viewModel.onSettingClick(ProfileSettingAction.Privacy)
+        runCurrent()
+
+        assertEquals(ProfileEvent.NavigateToPrivacySecurity, event.await())
+    }
+
     private fun newViewModel(
         repository: FakeProfileRepository = FakeProfileRepository(),
         authRepository: FakeAuthRepository = FakeAuthRepository()
@@ -97,6 +112,22 @@ class ProfileViewModelTest {
             getActivityCalls += 1
             return error?.let { Result.failure(it) } ?: Result.success(activity)
         }
+
+        override suspend fun updateProfile(
+            fullName: String,
+            avatarUrl: String
+        ): Result<UserProfileIdentity> {
+            return Result.success(
+                UserProfileIdentity(
+                    id = "learner",
+                    email = "learner@example.com",
+                    fullName = fullName,
+                    avatarUrl = avatarUrl,
+                    role = "user",
+                    createdAt = "2026-05-28T00:00:00Z"
+                )
+            )
+        }
     }
 
     private class FakeAuthRepository(
@@ -109,6 +140,11 @@ class ProfileViewModelTest {
         override suspend fun loginWithGithub(code: String): Result<User> = Result.success(testUser)
 
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
+
+        override suspend fun changePassword(
+            currentPassword: String,
+            newPassword: String
+        ): Result<Unit> = Result.success(Unit)
 
         override suspend fun getCurrentUser(): Result<User> = Result.success(testUser)
     }

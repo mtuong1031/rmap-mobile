@@ -74,13 +74,18 @@ class ProfileViewModel(
     }
 
     fun onEditProfile() {
-        emitComingSoon()
+        viewModelScope.launch {
+            _events.emit(ProfileEvent.NavigateToPersonalInformation)
+        }
     }
 
     fun onSettingClick(action: ProfileSettingAction) {
         viewModelScope.launch {
             when (action) {
+                ProfileSettingAction.PersonalInfo -> _events.emit(ProfileEvent.NavigateToPersonalInformation)
                 ProfileSettingAction.Notifications -> _events.emit(ProfileEvent.NavigateToNotificationSettings)
+                ProfileSettingAction.Privacy -> _events.emit(ProfileEvent.NavigateToPrivacySecurity)
+                ProfileSettingAction.ConnectedAccounts -> _events.emit(ProfileEvent.NavigateToConnectedAccounts)
                 ProfileSettingAction.SignOut -> {
                     logoutUseCase()
                         .onSuccess { _events.emit(ProfileEvent.SignedOut) }
