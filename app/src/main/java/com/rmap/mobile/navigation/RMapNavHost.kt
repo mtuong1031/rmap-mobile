@@ -106,7 +106,7 @@ fun RMapNavHost(navController: NavHostController) {
     val passwordChangedMessage = stringResource(R.string.privacy_security_password_changed)
     val startDestination = if (authState is AuthState.Authenticated) AppRoutes.MAIN_TABS else AppRoutes.AUTH_GRAPH
     val pagerState = rememberPagerState(pageCount = { 5 })
-    var isAiRoadmapQuestionsStep by remember { mutableStateOf(false) }
+    var isAiRoadmapSubScreen by remember { mutableStateOf(false) }
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
     }
@@ -206,15 +206,15 @@ fun RMapNavHost(navController: NavHostController) {
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             val isCurrentTopLevelRoute = isTopLevelRoute(currentRoute)
-            val shouldHideBottomBarForAiQuiz =
+            val shouldHideBottomBarForAiSubScreen =
                 currentRoute == AppRoutes.MAIN_TABS &&
                     pagerState.currentPage == 2 &&
-                    isAiRoadmapQuestionsStep
+                    isAiRoadmapSubScreen
             val shouldSkipBottomBarEnterAnimation =
                 isCurrentTopLevelRoute && isChildRoute(previousRoute)
 
             androidx.compose.animation.AnimatedVisibility(
-                visible = isCurrentTopLevelRoute && !shouldHideBottomBarForAiQuiz,
+                visible = isCurrentTopLevelRoute && !shouldHideBottomBarForAiSubScreen,
                 enter = if (shouldSkipBottomBarEnterAnimation) {
                     androidx.compose.animation.EnterTransition.None
                 } else {
@@ -424,7 +424,7 @@ fun RMapNavHost(navController: NavHostController) {
                             val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.AiAssistant } }
 
                             LaunchedEffect(uiState.step) {
-                                isAiRoadmapQuestionsStep = uiState.step == AiRoadmapStep.Questions
+                                isAiRoadmapSubScreen = uiState.step != AiRoadmapStep.Library
                             }
         
                             LaunchedEffect(viewModel) {
