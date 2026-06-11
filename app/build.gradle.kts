@@ -87,6 +87,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
