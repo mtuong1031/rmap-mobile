@@ -12,53 +12,63 @@ import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
 
 @OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
-private val FigtreeFontFamily = FontFamily(
+private val NunitoFontFamily = FontFamily(
     Font(
-        resId = R.font.figtree_variable,
+        resId = R.font.nunito_variablefont_wght,
+        weight = FontWeight.Light,
+        variationSettings = FontVariation.Settings(FontVariation.weight(300))
+    ),
+    Font(
+        resId = R.font.nunito_variablefont_wght,
         weight = FontWeight.Normal,
         variationSettings = FontVariation.Settings(FontVariation.weight(400))
     ),
     Font(
-        resId = R.font.figtree_variable,
+        resId = R.font.nunito_variablefont_wght,
         weight = FontWeight.Medium,
         variationSettings = FontVariation.Settings(FontVariation.weight(500))
     ),
     Font(
-        resId = R.font.figtree_variable,
+        resId = R.font.nunito_variablefont_wght,
         weight = FontWeight.SemiBold,
         variationSettings = FontVariation.Settings(FontVariation.weight(600))
     ),
     Font(
-        resId = R.font.figtree_variable,
+        resId = R.font.nunito_variablefont_wght,
         weight = FontWeight.Bold,
         variationSettings = FontVariation.Settings(FontVariation.weight(700))
+    ),
+    Font(
+        resId = R.font.nunito_variablefont_wght,
+        weight = FontWeight.ExtraBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(800))
     )
 )
 
-private fun TextStyle.withFigtree(): TextStyle = copy(fontFamily = FigtreeFontFamily)
+private fun TextStyle.withNunito(): TextStyle = copy(fontFamily = NunitoFontFamily)
 
 private val BaseTypography = Typography()
 
 val Typography = Typography(
-    displayLarge = BaseTypography.displayLarge.withFigtree(), // 57sp, 64sp, Regular
-    displayMedium = BaseTypography.displayMedium.withFigtree(), // 45sp, 52sp, Regular
-    displaySmall = BaseTypography.displaySmall.withFigtree(), // 36sp, 44sp, Regular
+    displayLarge = BaseTypography.displayLarge.withNunito(), // 57sp, 64sp, Regular
+    displayMedium = BaseTypography.displayMedium.withNunito(), // 45sp, 52sp, Regular
+    displaySmall = BaseTypography.displaySmall.withNunito(), // 36sp, 44sp, Regular
 
-    headlineLarge = BaseTypography.headlineLarge.withFigtree(), // 32sp, 40sp, Regular
-    headlineMedium = BaseTypography.headlineMedium.withFigtree(), // 28sp, 36sp, Regular
-    headlineSmall = BaseTypography.headlineSmall.withFigtree(), // 24sp, 32sp, Regular
+    headlineLarge = BaseTypography.headlineLarge.withNunito(), // 32sp, 40sp, Regular
+    headlineMedium = BaseTypography.headlineMedium.withNunito(), // 28sp, 36sp, Regular
+    headlineSmall = BaseTypography.headlineSmall.withNunito(), // 24sp, 32sp, Regular
 
-    titleLarge = BaseTypography.titleLarge.withFigtree(), // 22sp, 28sp, Regular
-    titleMedium = BaseTypography.titleMedium.withFigtree(), // 16sp, 24sp, Medium
-    titleSmall = BaseTypography.titleSmall.withFigtree(), // 14sp, 20sp, Medium
+    titleLarge = BaseTypography.titleLarge.withNunito(), // 22sp, 28sp, Regular
+    titleMedium = BaseTypography.titleMedium.withNunito(), // 16sp, 24sp, Medium
+    titleSmall = BaseTypography.titleSmall.withNunito(), // 14sp, 20sp, Medium
 
-    bodyLarge = BaseTypography.bodyLarge.withFigtree(), // 16sp, 24sp, Regular
-    bodyMedium = BaseTypography.bodyMedium.withFigtree(), // 14sp, 20sp, Regular
-    bodySmall = BaseTypography.bodySmall.withFigtree(), // 12sp, 16sp, Regular
+    bodyLarge = BaseTypography.bodyLarge.withNunito(), // 16sp, 24sp, Regular
+    bodyMedium = BaseTypography.bodyMedium.withNunito(), // 14sp, 20sp, Regular
+    bodySmall = BaseTypography.bodySmall.withNunito(), // 12sp, 16sp, Regular
 
-    labelLarge = BaseTypography.labelLarge.withFigtree(), // 14sp, 20sp, Medium
-    labelMedium = BaseTypography.labelMedium.withFigtree(), // 12sp, 16sp, Medium
-    labelSmall = BaseTypography.labelSmall.withFigtree() // 11sp, 16sp, Medium
+    labelLarge = BaseTypography.labelLarge.withNunito(), // 14sp, 20sp, Medium
+    labelMedium = BaseTypography.labelMedium.withNunito(), // 12sp, 16sp, Medium
+    labelSmall = BaseTypography.labelSmall.withNunito() // 11sp, 16sp, Medium
 )
 
 object AppTextStyles {
