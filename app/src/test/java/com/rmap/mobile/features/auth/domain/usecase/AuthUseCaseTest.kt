@@ -50,6 +50,11 @@ class AuthUseCaseTest {
 
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
 
+        override suspend fun changePassword(
+            currentPassword: String,
+            newPassword: String
+        ): Result<Unit> = Result.success(Unit)
+
         override suspend fun getCurrentUser(): Result<User> = Result.success(testUser)
     }
 

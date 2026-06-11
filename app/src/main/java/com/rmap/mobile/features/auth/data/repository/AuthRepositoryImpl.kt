@@ -8,6 +8,7 @@ import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.core.network.toDomainResult
 import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.features.auth.data.mapper.toDomain
+import com.rmap.mobile.features.auth.data.model.ChangePasswordRequestDto
 import com.rmap.mobile.features.auth.data.model.MobileOAuthRequestDto
 import com.rmap.mobile.features.auth.data.model.GithubMobileOAuthRequestDto
 import com.rmap.mobile.features.auth.data.model.UserDto
@@ -54,6 +55,30 @@ class AuthRepositoryImpl(
         }
     }
 
+    override suspend fun linkWithGoogle(idToken: String): Result<Unit> {
+        val networkResult = SafeApiCall.execute(
+            onUnauthorized = ::handleUnauthorized
+        ) {
+            authApi.linkWithGoogle(
+                MobileOAuthRequestDto(idToken = idToken)
+            )
+        }
+
+        return networkResult.toDomainResult { Unit }
+    }
+
+    override suspend fun linkWithGithub(code: String): Result<Unit> {
+        val networkResult = SafeApiCall.execute(
+            onUnauthorized = ::handleUnauthorized
+        ) {
+            authApi.linkWithGithub(
+                GithubMobileOAuthRequestDto(code = code)
+            )
+        }
+
+        return networkResult.toDomainResult { Unit }
+    }
+
     override suspend fun logout(): Result<Unit> {
         val networkResult = SafeApiCall.execute(
             onUnauthorized = ::handleUnauthorized
@@ -64,6 +89,29 @@ class AuthRepositoryImpl(
         val result = networkResult.toDomainResult { Unit }
         sessionManager.clearSession()
         _authState.value = AuthState.Unauthenticated
+        return result
+    }
+
+    override suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String
+    ): Result<Unit> {
+        val networkResult = SafeApiCall.execute(
+            onUnauthorized = ::handleUnauthorized
+        ) {
+            authApi.changePassword(
+                ChangePasswordRequestDto(
+                    currentPassword = currentPassword,
+                    newPassword = newPassword
+                )
+            )
+        }
+
+        val result = networkResult.toDomainResult { Unit }
+        if (result.isSuccess) {
+            sessionManager.clearSession()
+            _authState.value = AuthState.Unauthenticated
+        }
         return result
     }
 

@@ -9,6 +9,15 @@ data class UserProfile(
     val certificates: Int
 )
 
+data class UserProfileIdentity(
+    val id: String,
+    val email: String,
+    val fullName: String,
+    val avatarUrl: String?,
+    val role: String,
+    val createdAt: String
+)
+
 data class UserActivitySummary(
     val streakDays: Int,
     val longestStreak: Int,
