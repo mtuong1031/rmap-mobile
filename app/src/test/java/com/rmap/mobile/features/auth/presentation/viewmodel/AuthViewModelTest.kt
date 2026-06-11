@@ -95,6 +95,10 @@ class AuthViewModelTest {
         override suspend fun loginWithGoogle(idToken: String): Result<User> = result
         override suspend fun loginWithGithub(code: String): Result<User> = result
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
+        override suspend fun changePassword(
+            currentPassword: String,
+            newPassword: String
+        ): Result<Unit> = Result.success(Unit)
         override suspend fun getCurrentUser(): Result<User> = Result.success(testUser)
     }
 
