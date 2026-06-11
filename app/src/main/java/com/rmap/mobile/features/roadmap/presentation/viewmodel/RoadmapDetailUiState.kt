@@ -2,6 +2,8 @@ package com.rmap.mobile.features.roadmap.presentation.viewmodel
 
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
+import java.text.Normalizer
+import java.util.Locale
 
 data class RoadmapDetailUiState(
     val roadmapId: String = "",
@@ -123,45 +125,219 @@ internal fun RoadmapDetailUiState.recentSearchMilestones(): List<RoadmapMileston
 }
 
 internal fun RoadmapDetailUiState.searchResultNodes(): List<RoadmapNodeUiModel> {
-    val query = searchQuery.trim()
-    if (query.isEmpty()) return emptyList()
-    val nodes = allSearchNodes()
+    val query = searchQuery.toRoadmapSearchQuery() ?: return emptyList()
 
-    return nodes
-        .filter { node ->
-            node.title.contains(query, ignoreCase = true) ||
-                node.descriptionArgs.any { it.contains(query, ignoreCase = true) }
+    return groups.flatMap { group ->
+        group.nodes.filter { node ->
+            node.matchesSearchQuery(query, groupTitle = group.title)
         }
-        .ifEmpty { nodes.take(SearchPreviewResultNodeFallbackLimit) }
+    }
 }
 
 internal fun RoadmapDetailUiState.searchResultGroups(): List<RoadmapGroupUiModel> {
-    val query = searchQuery.trim()
-    if (query.isEmpty()) return emptyList()
+    val query = searchQuery.toRoadmapSearchQuery() ?: return emptyList()
 
     return groups
-        .filter { group ->
-            group.title.contains(query, ignoreCase = true) ||
-                group.nodes.any { it.title.contains(query, ignoreCase = true) }
-        }
-        .ifEmpty { groups.take(SearchPreviewResultGroupFallbackLimit) }
+        .filter { group -> group.matchesSearchQuery(query) }
 }
 
 internal fun RoadmapDetailUiState.searchResultMilestones(): List<RoadmapMilestoneUiModel> {
-    val query = searchQuery.trim()
-    if (query.isEmpty()) return emptyList()
+    val query = searchQuery.toRoadmapSearchQuery() ?: return emptyList()
 
     return milestones
-        .filter { it.id.contains(query, ignoreCase = true) }
-        .ifEmpty { milestones.take(SearchPreviewResultMilestoneFallbackLimit) }
+        .filter { milestone -> milestone.matchesSearchQuery(query) }
 }
 
 private fun RoadmapDetailUiState.allSearchNodes(): List<RoadmapNodeUiModel> {
     return groups.flatMap { it.nodes }
 }
 
+private data class RoadmapSearchQuery(
+    val normalizedText: String,
+    val tokens: List<String>,
+    val semanticFilter: RoadmapSearchSemanticFilter?
+)
+
+private enum class RoadmapSearchSemanticFilter {
+    Required,
+    Optional,
+    Completed,
+    InProgress,
+    NotStarted,
+    Locked,
+    Milestone,
+    Chapter
+}
+
+private fun String.toRoadmapSearchQuery(): RoadmapSearchQuery? {
+    val normalizedText = toSearchText()
+    if (normalizedText.isBlank()) return null
+
+    return RoadmapSearchQuery(
+        normalizedText = normalizedText,
+        tokens = normalizedText.split(SearchTokenSeparator).filter { it.isNotBlank() },
+        semanticFilter = normalizedText.toSemanticFilter()
+    )
+}
+
+private fun RoadmapNodeUiModel.matchesSearchQuery(
+    query: RoadmapSearchQuery,
+    groupTitle: String
+): Boolean {
+    query.semanticFilter?.let { filter ->
+        return when (filter) {
+            RoadmapSearchSemanticFilter.Required -> requirement == RoadmapNodeRequirement.Required
+            RoadmapSearchSemanticFilter.Optional -> requirement == RoadmapNodeRequirement.Optional
+            RoadmapSearchSemanticFilter.Completed -> status == RoadmapNodeStatus.Completed
+            RoadmapSearchSemanticFilter.InProgress -> status == RoadmapNodeStatus.InProgress
+            RoadmapSearchSemanticFilter.NotStarted -> status == RoadmapNodeStatus.NotStarted
+            RoadmapSearchSemanticFilter.Locked -> status == RoadmapNodeStatus.Locked
+            RoadmapSearchSemanticFilter.Milestone,
+            RoadmapSearchSemanticFilter.Chapter -> false
+        }
+    }
+
+    return searchText(
+        id,
+        skillId,
+        title,
+        groupTitle,
+        requirement.searchLabel,
+        status.searchLabel,
+        action?.searchLabel.orEmpty(),
+        descriptionArgs.joinToString(separator = SearchTextSeparator)
+    ).matchesTokens(query)
+}
+
+private fun RoadmapGroupUiModel.matchesSearchQuery(query: RoadmapSearchQuery): Boolean {
+    query.semanticFilter?.let { filter ->
+        return when (filter) {
+            RoadmapSearchSemanticFilter.Chapter -> true
+            RoadmapSearchSemanticFilter.Completed -> state == RoadmapGroupState.Completed
+            RoadmapSearchSemanticFilter.Locked -> state == RoadmapGroupState.Locked ||
+                nodes.any { it.status == RoadmapNodeStatus.Locked }
+            RoadmapSearchSemanticFilter.Required -> nodes.any { it.requirement == RoadmapNodeRequirement.Required }
+            RoadmapSearchSemanticFilter.Optional -> nodes.any { it.requirement == RoadmapNodeRequirement.Optional }
+            RoadmapSearchSemanticFilter.InProgress -> nodes.any { it.status == RoadmapNodeStatus.InProgress }
+            RoadmapSearchSemanticFilter.NotStarted -> nodes.any { it.status == RoadmapNodeStatus.NotStarted }
+            RoadmapSearchSemanticFilter.Milestone -> false
+        }
+    }
+
+    return searchText(
+        id,
+        title,
+        state.searchLabel,
+        nodes.joinToString(separator = SearchTextSeparator) { node ->
+            searchText(
+                node.id,
+                node.skillId,
+                node.title,
+                node.requirement.searchLabel,
+                node.status.searchLabel,
+                node.descriptionArgs.joinToString(separator = SearchTextSeparator)
+            )
+        }
+    ).matchesTokens(query)
+}
+
+private fun RoadmapMilestoneUiModel.matchesSearchQuery(query: RoadmapSearchQuery): Boolean {
+    query.semanticFilter?.let { filter ->
+        return when (filter) {
+            RoadmapSearchSemanticFilter.Milestone -> true
+            RoadmapSearchSemanticFilter.Locked -> state == RoadmapMilestoneState.Locked
+            RoadmapSearchSemanticFilter.InProgress -> state == RoadmapMilestoneState.Available
+            RoadmapSearchSemanticFilter.Completed,
+            RoadmapSearchSemanticFilter.Required,
+            RoadmapSearchSemanticFilter.Optional,
+            RoadmapSearchSemanticFilter.NotStarted,
+            RoadmapSearchSemanticFilter.Chapter -> false
+        }
+    }
+
+    return searchText(
+        id,
+        title,
+        description,
+        state.searchLabel,
+        RoadmapSearchSemanticFilter.Milestone.name
+    ).matchesTokens(query)
+}
+
+private fun String.matchesTokens(query: RoadmapSearchQuery): Boolean {
+    return contains(query.normalizedText) || query.tokens.all(::contains)
+}
+
+private fun searchText(vararg values: String): String {
+    return values
+        .filter { it.isNotBlank() }
+        .joinToString(separator = SearchTextSeparator)
+        .toSearchText()
+}
+
+private fun String.toSearchText(): String {
+    val withoutDiacritics = Normalizer
+        .normalize(this, Normalizer.Form.NFD)
+        .replace(SearchDiacriticRegex, "")
+
+    return SearchWordRegex
+        .replace(withoutDiacritics.lowercase(Locale.ROOT), SearchTextSeparator)
+        .trim()
+        .replace(SearchWhitespaceRegex, SearchTextSeparator)
+}
+
+private fun String.toSemanticFilter(): RoadmapSearchSemanticFilter? {
+    return when (this) {
+        "required" -> RoadmapSearchSemanticFilter.Required
+        "optional" -> RoadmapSearchSemanticFilter.Optional
+        "completed", "complete", "done" -> RoadmapSearchSemanticFilter.Completed
+        "in progress", "progress", "continue" -> RoadmapSearchSemanticFilter.InProgress
+        "not started", "start" -> RoadmapSearchSemanticFilter.NotStarted
+        "locked", "lock" -> RoadmapSearchSemanticFilter.Locked
+        "milestone", "project" -> RoadmapSearchSemanticFilter.Milestone
+        "chapter", "group", "section" -> RoadmapSearchSemanticFilter.Chapter
+        else -> null
+    }
+}
+
+private val RoadmapNodeRequirement.searchLabel: String
+    get() = when (this) {
+        RoadmapNodeRequirement.Required -> "required"
+        RoadmapNodeRequirement.Optional -> "optional"
+    }
+
+private val RoadmapNodeStatus.searchLabel: String
+    get() = when (this) {
+        RoadmapNodeStatus.Completed -> "completed"
+        RoadmapNodeStatus.InProgress -> "in progress"
+        RoadmapNodeStatus.NotStarted -> "not started"
+        RoadmapNodeStatus.Locked -> "locked"
+    }
+
+private val RoadmapNodeAction.searchLabel: String
+    get() = when (this) {
+        RoadmapNodeAction.Start -> "start"
+        RoadmapNodeAction.Review -> "review"
+        RoadmapNodeAction.Continue -> "continue"
+    }
+
+private val RoadmapGroupState.searchLabel: String
+    get() = when (this) {
+        RoadmapGroupState.Expanded -> "in progress"
+        RoadmapGroupState.Completed -> "completed"
+        RoadmapGroupState.Locked -> "locked"
+    }
+
+private val RoadmapMilestoneState.searchLabel: String
+    get() = when (this) {
+        RoadmapMilestoneState.Available -> "available"
+        RoadmapMilestoneState.Locked -> "locked"
+    }
+
 private const val SearchPreviewRecentNodeLimit = 2
 private const val SearchPreviewRecentMilestoneLimit = 1
-private const val SearchPreviewResultNodeFallbackLimit = 2
-private const val SearchPreviewResultGroupFallbackLimit = 1
-private const val SearchPreviewResultMilestoneFallbackLimit = 1
+private const val SearchTextSeparator = " "
+private val SearchTokenSeparator = Regex("\\s+")
+private val SearchDiacriticRegex = Regex("\\p{Mn}+")
+private val SearchWordRegex = Regex("[^\\p{Alnum}]+")
+private val SearchWhitespaceRegex = Regex("\\s+")

@@ -65,11 +65,19 @@ class RoadmapDetailViewModel(
         }
 
         detailJob?.cancel()
+        val searchState = if (currentState.roadmapId == normalizedRoadmapId) {
+            currentState.toSearchState()
+        } else {
+            RoadmapDetailSearchState()
+        }
         detailJob = viewModelScope.launch {
             currentDetail = null
             _uiState.update {
                 RoadmapDetailUiState(
                     roadmapId = normalizedRoadmapId,
+                    searchQuery = searchState.query,
+                    isSearchActive = searchState.isActive,
+                    isSearchInputFocused = searchState.isInputFocused,
                     isLoading = true
                 )
             }
@@ -79,7 +87,13 @@ class RoadmapDetailViewModel(
                         .onSuccess { detail ->
                             currentDetail = detail
                             val loadedState = detail.toLoadedUiState()
-                            _uiState.update { loadedState }
+                            _uiState.update { state ->
+                                loadedState.copy(
+                                    searchQuery = state.searchQuery,
+                                    isSearchActive = state.isSearchActive,
+                                    isSearchInputFocused = state.isSearchInputFocused
+                                )
+                            }
                         }
                         .onFailure {
                             if (_uiState.value.isEmpty) {
@@ -302,4 +316,18 @@ sealed class RoadmapDetailEvent {
 
 private fun Throwable.toUserMessage(): String? {
     return message?.takeIf { it.isNotBlank() }
+}
+
+private data class RoadmapDetailSearchState(
+    val query: String = "",
+    val isActive: Boolean = false,
+    val isInputFocused: Boolean = false
+)
+
+private fun RoadmapDetailUiState.toSearchState(): RoadmapDetailSearchState {
+    return RoadmapDetailSearchState(
+        query = searchQuery,
+        isActive = isSearchActive,
+        isInputFocused = isSearchInputFocused
+    )
 }

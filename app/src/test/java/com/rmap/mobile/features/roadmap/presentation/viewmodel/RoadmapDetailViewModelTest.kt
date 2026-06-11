@@ -319,6 +319,80 @@ class RoadmapDetailViewModelTest {
     }
 
     @Test
+    fun `search returns no results when query does not match roadmap content`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(orderedMilestoneDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+        viewModel.onSearchQueryChange("no matching content")
+
+        val state = viewModel.uiState.value
+        assertTrue(state.searchResultNodes().isEmpty())
+        assertTrue(state.searchResultGroups().isEmpty())
+        assertTrue(state.searchResultMilestones().isEmpty())
+    }
+
+    @Test
+    fun `search matches milestone title and description`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(orderedMilestoneDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+        viewModel.onSearchQueryChange("secure api")
+
+        val milestones = viewModel.uiState.value.searchResultMilestones()
+        assertEquals(listOf("milestone-secure"), milestones.map { it.id })
+    }
+
+    @Test
+    fun `search quick filter locked returns locked roadmap items only`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(orderedMilestoneDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+        viewModel.onSearchQueryChange("locked")
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf("data", "security"), state.searchResultNodes().map { it.id })
+        assertEquals(listOf("Data Management", "Web Security"), state.searchResultGroups().map { it.title })
+        assertEquals(listOf("milestone-secure"), state.searchResultMilestones().map { it.id })
+    }
+
+    @Test
+    fun `refreshRoadmap preserves active search state for same roadmap`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(orderedMilestoneDetail)
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+        viewModel.onSearchFocus()
+        viewModel.onSearchQueryChange("secure api")
+        viewModel.refreshRoadmap()
+
+        val state = viewModel.uiState.value
+        assertEquals(listOf("roadmap-1", "roadmap-1"), repository.requestedIds)
+        assertEquals("secure api", state.searchQuery)
+        assertTrue(state.isSearchActive)
+        assertTrue(state.isSearchInputFocused)
+        assertEquals(listOf("milestone-secure"), state.searchResultMilestones().map { it.id })
+    }
+
+    @Test
     fun `onContinueClick with milestone next action selects milestone instead of locked node`() = runTest {
         val repository = FakeRoadmapRepository(
             detailResult = Result.success(orderedMilestoneDetail)

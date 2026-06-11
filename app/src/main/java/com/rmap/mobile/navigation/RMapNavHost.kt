@@ -13,8 +13,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -42,6 +44,7 @@ import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.airoadmap.presentation.components.AiRoadmapProgressBanner
 import com.rmap.mobile.features.airoadmap.presentation.screen.AiRoadmapScreen
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapEvent
+import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapStep
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapViewModel
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.presentation.screen.AuthScreen
@@ -95,6 +98,7 @@ fun RMapNavHost(navController: NavHostController) {
     val milestoneSubmissionFailedMessage = stringResource(R.string.roadmap_milestone_error_submit_failed)
     val startDestination = if (authState is AuthState.Authenticated) AppRoutes.MAIN_TABS else AppRoutes.AUTH_GRAPH
     val pagerState = rememberPagerState(pageCount = { 5 })
+    var isAiRoadmapQuestionsStep by remember { mutableStateOf(false) }
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
     }
@@ -178,9 +182,13 @@ fun RMapNavHost(navController: NavHostController) {
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             val isTopLevelRoute = currentRoute == AppRoutes.MAIN_TABS || currentRoute == AppRoutes.HOME_SEARCH
+            val shouldHideBottomBarForAiQuiz =
+                currentRoute == AppRoutes.MAIN_TABS &&
+                    pagerState.currentPage == 2 &&
+                    isAiRoadmapQuestionsStep
 
             androidx.compose.animation.AnimatedVisibility(
-                visible = isTopLevelRoute,
+                visible = isTopLevelRoute && !shouldHideBottomBarForAiQuiz,
                 enter = androidx.compose.animation.slideInVertically(initialOffsetY = { it }) + androidx.compose.animation.fadeIn(),
                 exit = androidx.compose.animation.slideOutVertically(targetOffsetY = { it }) + androidx.compose.animation.fadeOut()
             ) {
@@ -384,6 +392,10 @@ fun RMapNavHost(navController: NavHostController) {
                             val viewModel: AiRoadmapViewModel = viewModel()
                             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                             val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.AiAssistant } }
+
+                            LaunchedEffect(uiState.step) {
+                                isAiRoadmapQuestionsStep = uiState.step == AiRoadmapStep.Questions
+                            }
         
                             LaunchedEffect(viewModel) {
                                 viewModel.events.collect { event ->
