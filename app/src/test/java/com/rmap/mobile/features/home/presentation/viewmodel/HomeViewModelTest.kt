@@ -123,6 +123,11 @@ private class FakeAuthRepository : AuthRepository {
 
     override suspend fun logout(): Result<Unit> = error("Not used")
 
+    override suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String
+    ): Result<Unit> = error("Not used")
+
     override suspend fun getCurrentUser(): Result<User> = error("Not used")
 }
 

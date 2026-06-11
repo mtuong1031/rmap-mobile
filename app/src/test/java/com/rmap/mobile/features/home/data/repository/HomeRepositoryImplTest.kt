@@ -21,6 +21,7 @@ import com.rmap.mobile.features.home.data.model.HomeSearchSkillsPageDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateRecommendationsResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateRoadmapDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateTrendingsResponseDto
+import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoriesResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTrendingRoadmapDto
 import com.rmap.mobile.features.home.data.remote.HomeApi
 import kotlinx.coroutines.test.runTest
@@ -156,6 +157,8 @@ private class FakeHomeApi : HomeApi {
     var dashboardResponse: Response<HomeDashboardResponseDto> = Response.success(dashboardDto())
     var recommendationsResponse: Response<HomeTemplateRecommendationsResponseDto> =
         Response.success(recommendationsDto())
+    var categoriesResponse: Response<TemplateCategoriesResponseDto> =
+        Response.success(TemplateCategoriesResponseDto(total = 0, categories = emptyList()))
     var trendingsResponse: Response<HomeTemplateTrendingsResponseDto> = Response.success(trendingsDto())
     var searchResponse: Response<HomeDashboardSearchResponseDto> = Response.success(searchDto())
 
@@ -170,7 +173,7 @@ private class FakeHomeApi : HomeApi {
     override suspend fun getTemplateRecommendations(): Response<HomeTemplateRecommendationsResponseDto> =
         recommendationsResponse
 
-
+    override suspend fun getTemplateCategories(): Response<TemplateCategoriesResponseDto> = categoriesResponse
 
     override suspend fun getTemplateTrendings(): Response<HomeTemplateTrendingsResponseDto> = trendingsResponse
 }
