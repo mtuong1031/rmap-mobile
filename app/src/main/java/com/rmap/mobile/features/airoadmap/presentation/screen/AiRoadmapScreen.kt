@@ -206,6 +206,12 @@ fun AiRoadmapScreen(
             )
         }
     ) { innerPadding ->
+        val bottomNavigationPadding = if (uiState.step == AiRoadmapStep.Questions) {
+            Dimens.spacingNone
+        } else {
+            Dimens.floatingNavBarHeight
+        }
+
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
@@ -217,7 +223,9 @@ fun AiRoadmapScreen(
                     Dimens.spacingMd
                 },
                 end = Dimens.spacingScreenHorizontal,
-                bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
+                bottom = innerPadding.calculateBottomPadding() +
+                    Dimens.spacingScreenBottomCompact +
+                    bottomNavigationPadding
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXl)
         ) {
