@@ -32,13 +32,22 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapSectionTitle
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.cardShadow
 import com.rmap.mobile.features.explore.presentation.viewmodel.CategoryUiModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.Smartphone
+import androidx.compose.material.icons.outlined.CloudQueue
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.ui.graphics.Color
 
 private const val CategoryCarouselPageSize = 8
 private const val CategoryCarouselColumnCount = 4
@@ -210,28 +219,33 @@ private fun CategoryItem(
             )
         }
 
-        Text(
-            text = category.name,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.labelMedium.copy(
-                fontWeight = FontWeight.Bold,
-                color = titleColor
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
+        ) {
+            Text(
+                text = category.name,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = titleColor
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
-        Text(
-            text = stringResource(R.string.explore_category_roadmap_count, category.roadmapCount),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.labelSmall.copy(
-                color = subtitleColor
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
+            Text(
+                text = stringResource(R.string.explore_category_roadmap_count, category.roadmapCount),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = subtitleColor
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
@@ -268,5 +282,83 @@ private fun CategoryCarouselDots(
                     .background(dotColor)
             )
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Composable
+private fun ExploreCategorySectionPreview() {
+    val categories = listOf(
+        CategoryUiModel(
+            id = "frontend",
+            name = "Frontend",
+            icon = Icons.Outlined.Code,
+            backgroundColor = Color(0xFFE0F2F1),
+            roadmapCount = 42
+        ),
+        CategoryUiModel(
+            id = "backend",
+            name = "Backend",
+            icon = Icons.Outlined.Storage,
+            backgroundColor = Color(0xFFFFF3E0),
+            roadmapCount = 35
+        ),
+        CategoryUiModel(
+            id = "mobile",
+            name = "Mobile",
+            icon = Icons.Outlined.Smartphone,
+            backgroundColor = Color(0xFFE3F2FD),
+            roadmapCount = 28
+        ),
+        CategoryUiModel(
+            id = "devops",
+            name = "DevOps",
+            icon = Icons.Outlined.CloudQueue,
+            backgroundColor = Color(0xFFF3E5F5),
+            roadmapCount = 15
+        ),
+        CategoryUiModel(
+            id = "ai",
+            name = "AI",
+            icon = Icons.Outlined.AutoAwesome,
+            backgroundColor = Color(0xFFE8F5E9),
+            roadmapCount = 20
+        ),
+        CategoryUiModel(
+            id = "frontend2",
+            name = "Frontend",
+            icon = Icons.Outlined.Code,
+            backgroundColor = Color(0xFFE0F2F1),
+            roadmapCount = 42
+        ),
+        CategoryUiModel(
+            id = "backend2",
+            name = "Backend",
+            icon = Icons.Outlined.Storage,
+            backgroundColor = Color(0xFFFFF3E0),
+            roadmapCount = 35
+        ),
+        CategoryUiModel(
+            id = "mobile2",
+            name = "Mobile",
+            icon = Icons.Outlined.Smartphone,
+            backgroundColor = Color(0xFFE3F2FD),
+            roadmapCount = 28
+        ),
+        CategoryUiModel(
+            id = "devops2",
+            name = "DevOps",
+            icon = Icons.Outlined.CloudQueue,
+            backgroundColor = Color(0xFFF3E5F5),
+            roadmapCount = 15
+        )
+    )
+
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        ExploreCategorySection(
+            categories = categories,
+            selectedCategoryId = "frontend",
+            onCategoryClick = {}
+        )
     }
 }
