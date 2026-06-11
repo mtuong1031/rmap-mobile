@@ -44,6 +44,8 @@ tags:
     description: Per-node learning progress tracking
   - name: Resources
     description: Learning resources linked to skills
+  - name: Sync
+    description: Static data version endpoints for offline-first clients
   - name: Bookmarks
     description: Save and manage bookmarked roadmaps
   - name: Admin
@@ -602,6 +604,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TemplateCategory'
+
+    SyncVersionResponse:
+      type: object
+      description: Max server timestamps used by offline-first clients to decide what static cache groups are stale.
+      properties:
+        roadmaps:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          example: "2026-06-11T10:00:00.000Z"
+        skills:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          example: "2026-06-01T08:00:00.000Z"
+        resources:
+          allOf:
+            - $ref: '#/components/schemas/Timestamp'
+          nullable: true
+          example: "2026-05-20T12:00:00.000Z"
 
     RoadmapNode:
       type: object
@@ -1196,6 +1218,21 @@ components:
 # PATHS
 # =============================================================================
 paths:
+
+  /sync/version:
+    get:
+      tags: [Sync]
+      summary: Get static data sync timestamps
+      description: Returns max `updated_at` timestamps for static data groups. Clients compare these values with local sync metadata before refetching static caches.
+      operationId: getSyncVersions
+      security: []
+      responses:
+        '200':
+          description: Static data timestamps for offline-first sync.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncVersionResponse'
 
   # ============================================================
   # DASHBOARD
