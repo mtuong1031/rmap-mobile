@@ -1,5 +1,6 @@
 package com.rmap.mobile.features.profile.presentation.viewmodel
 
+import com.rmap.mobile.features.profile.domain.model.AppLanguage
 import com.rmap.mobile.features.profile.domain.model.UserDailyActivity
 
 data class ProfileUiState(
@@ -12,5 +13,7 @@ data class ProfileUiState(
     val certificates: Int = 0,
     val recentActivity: List<UserDailyActivity> = emptyList(),
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val showLanguageSheet: Boolean = false,
+    val currentLanguage: AppLanguage = AppLanguage.ENGLISH
 )

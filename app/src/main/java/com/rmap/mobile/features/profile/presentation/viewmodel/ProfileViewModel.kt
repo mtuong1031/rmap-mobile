@@ -1,9 +1,12 @@
 package com.rmap.mobile.features.profile.presentation.viewmodel
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.profile.domain.model.AppLanguage
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import com.rmap.mobile.features.auth.domain.usecase.LogoutUseCase
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
@@ -28,8 +31,15 @@ class ProfileViewModel(
     val events: SharedFlow<ProfileEvent> = _events.asSharedFlow()
 
     init {
+        loadCurrentLanguage()
         loadProfile()
         observeAuthState()
+    }
+
+    private fun loadCurrentLanguage() {
+        val locales = AppCompatDelegate.getApplicationLocales()
+        val tag = if (locales.isEmpty) null else locales.get(0)?.language
+        _uiState.update { it.copy(currentLanguage = AppLanguage.fromTag(tag)) }
     }
 
     fun loadProfile() {
@@ -86,14 +96,24 @@ class ProfileViewModel(
                 ProfileSettingAction.Notifications -> _events.emit(ProfileEvent.NavigateToNotificationSettings)
                 ProfileSettingAction.Privacy -> _events.emit(ProfileEvent.NavigateToPrivacySecurity)
                 ProfileSettingAction.ConnectedAccounts -> _events.emit(ProfileEvent.NavigateToConnectedAccounts)
+                ProfileSettingAction.Language -> _uiState.update { it.copy(showLanguageSheet = true) }
                 ProfileSettingAction.SignOut -> {
                     logoutUseCase()
                         .onSuccess { _events.emit(ProfileEvent.SignedOut) }
                         .onFailure { _events.emit(ProfileEvent.SignedOut) }
                 }
-                else -> _events.emit(ProfileEvent.ShowComingSoon)
             }
         }
+    }
+
+    fun onLanguageSelected(language: AppLanguage) {
+        _uiState.update { it.copy(showLanguageSheet = false, currentLanguage = language) }
+        val localeList = LocaleListCompat.forLanguageTags(language.tag)
+        AppCompatDelegate.setApplicationLocales(localeList)
+    }
+
+    fun onDismissLanguageSheet() {
+        _uiState.update { it.copy(showLanguageSheet = false) }
     }
 
     private fun emitComingSoon() {

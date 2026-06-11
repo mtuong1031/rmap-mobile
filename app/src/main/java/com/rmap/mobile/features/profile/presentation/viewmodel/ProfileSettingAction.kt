@@ -5,5 +5,6 @@ enum class ProfileSettingAction {
     Notifications,
     Privacy,
     ConnectedAccounts,
+    Language,
     SignOut
 }

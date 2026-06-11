@@ -16,12 +16,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
+import com.rmap.mobile.features.profile.domain.model.AppLanguage
 import com.rmap.mobile.features.profile.domain.model.UserDailyActivity
 import com.rmap.mobile.features.profile.presentation.components.achievement.ProfileActivityDayUiModel
 import com.rmap.mobile.features.profile.presentation.components.achievement.WeeklyActivityCard
 import com.rmap.mobile.features.profile.presentation.components.header.ProfileCard
 import com.rmap.mobile.features.profile.presentation.components.header.ProfileHeader
 import com.rmap.mobile.features.profile.presentation.components.loading.ProfileContentSkeleton
+import com.rmap.mobile.features.profile.presentation.components.settings.LanguageBottomSheet
 import com.rmap.mobile.features.profile.presentation.components.settings.SettingsSection
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileSettingAction
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileUiState
@@ -43,6 +45,8 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onSettingClick: (ProfileSettingAction) -> Unit,
     onDestinationSelected: (NavBarDestination) -> Unit,
+    onLanguageSelected: (AppLanguage) -> Unit = {},
+    onDismissLanguageSheet: () -> Unit = {},
     reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     modifier: Modifier = Modifier,
     selectedDestination: NavBarDestination = NavBarDestination.More
@@ -104,9 +108,20 @@ fun ProfileScreen(
                     }
 
                     item {
-                        SettingsSection(onItemClick = onSettingClick)
+                        SettingsSection(
+                            onItemClick = onSettingClick,
+                            currentLanguageDisplayName = uiState.currentLanguage.displayName
+                        )
                     }
                 }
+            }
+
+            if (uiState.showLanguageSheet) {
+                LanguageBottomSheet(
+                    currentLanguage = uiState.currentLanguage,
+                    onLanguageSelected = onLanguageSelected,
+                    onDismiss = onDismissLanguageSheet
+                )
             }
         }
     }

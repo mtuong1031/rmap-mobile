@@ -515,6 +515,8 @@ fun RMapNavHost(navController: NavHostController) {
                                 onDestinationSelected = ::handleDestinationSelected,
                                 onEditProfile = viewModel::onEditProfile,
                                 onSettingClick = viewModel::onSettingClick,
+                                onLanguageSelected = viewModel::onLanguageSelected,
+                                onDismissLanguageSheet = viewModel::onDismissLanguageSheet,
                                 reselectEvent = reselectEvent
                             )
                         }

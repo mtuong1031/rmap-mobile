@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.PersonOutline
@@ -42,7 +43,8 @@ import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileSettingAct
 @Composable
 fun SettingsSection(
     onItemClick: (ProfileSettingAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currentLanguageDisplayName: String = "English"
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -87,8 +89,16 @@ fun SettingsSection(
                     title = stringResource(id = R.string.profile_setting_connected_accounts),
                     isDestructive = false,
                     showArrow = true,
-                    showDivider = false,
                     onClick = { onItemClick(ProfileSettingAction.ConnectedAccounts) }
+                )
+                SettingsItem(
+                    icon = Icons.Outlined.Language,
+                    title = stringResource(id = R.string.profile_setting_language),
+                    subtitle = currentLanguageDisplayName,
+                    isDestructive = false,
+                    showArrow = true,
+                    showDivider = false,
+                    onClick = { onItemClick(ProfileSettingAction.Language) }
                 )
             }
         }

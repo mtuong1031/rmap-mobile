@@ -659,4 +659,10 @@
     <string name="connected_accounts_status_connected">Connected</string>
     <string name="connected_accounts_action_connect">Connect</string>
     <string name="connected_accounts_action_disconnect">Disconnect</string>
+
+    <!-- Language Settings -->
+    <string name="profile_setting_language">Language</string>
+    <string name="profile_setting_language_subtitle">App display language</string>
+    <string name="language_sheet_title">Choose Language</string>
+    <string name="language_changed_message">Language changed to %1$s</string>
 </resources>
