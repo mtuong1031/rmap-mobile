@@ -29,6 +29,7 @@ object Dimens {
     val spacingScreenBottomCompact = spacingMassive
     val spacingScreenTop = 72.dp
     val spacingScreenBottom = 72.dp
+    val floatingNavBarHeight = 88.dp
 
     // Icon and control sizes
     val iconXxs = 12.dp

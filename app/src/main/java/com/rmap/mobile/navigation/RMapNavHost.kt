@@ -208,8 +208,8 @@ fun RMapNavHost(navController: NavHostController) {
     ) { innerPadding ->
         Box(modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = innerPadding.calculateBottomPadding())
-            .consumeWindowInsets(androidx.compose.foundation.layout.PaddingValues(bottom = innerPadding.calculateBottomPadding()))
+            // Removed bottom padding to let content flow under the floating nav bar
+            .padding(top = innerPadding.calculateTopPadding())
         ) {
             NavHost(
                 navController = navController, 

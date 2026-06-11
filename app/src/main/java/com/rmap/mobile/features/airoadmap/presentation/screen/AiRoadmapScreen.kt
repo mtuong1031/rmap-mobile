@@ -180,7 +180,7 @@ fun AiRoadmapScreen(
                 start = Dimens.spacingScreenHorizontal,
                 top = Dimens.spacingScreenTopCompact,
                 end = Dimens.spacingScreenHorizontal,
-                bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
+                bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
             ),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
         ) {

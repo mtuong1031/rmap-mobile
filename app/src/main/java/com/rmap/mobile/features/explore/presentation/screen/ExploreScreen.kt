@@ -72,7 +72,7 @@ fun ExploreScreen(
                     start = Dimens.spacingNone,
                     end = Dimens.spacingNone,
                     top = Dimens.spacingScreenTopCompact,
-                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
             ) {

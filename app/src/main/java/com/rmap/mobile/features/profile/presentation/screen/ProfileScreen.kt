@@ -70,7 +70,7 @@ fun ProfileScreen(
                     start = Dimens.spacingLg,
                     end = Dimens.spacingLg,
                     top = Dimens.spacingScreenTopCompact,
-                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingXxxl
+                    bottom = innerPadding.calculateBottomPadding() + Dimens.spacingXxxl + Dimens.floatingNavBarHeight
                 ),
                 verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
             ) {
