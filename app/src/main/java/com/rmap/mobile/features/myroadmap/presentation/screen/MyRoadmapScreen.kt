@@ -190,12 +190,17 @@ private fun MyRoadmapFilterChip(
         isBehind -> Color(0xFFEA580C)
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val borderColor = when {
+        isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
+        isBehind -> MaterialTheme.colorScheme.error.copy(alpha = 0.24f)
+        else -> MaterialTheme.colorScheme.outline
+    }
 
     Row(
         modifier = Modifier
             .clip(AppShapes.pill)
             .background(containerColor)
-            .border(Dimens.borderThin, MaterialTheme.colorScheme.outlineVariant, AppShapes.pill)
+            .border(Dimens.borderThin, borderColor, AppShapes.pill)
             .clickable(onClick = onClick)
             .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingSm),
         horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
