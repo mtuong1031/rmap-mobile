@@ -1,11 +1,19 @@
 package com.rmap.mobile.features.roadmap.data.repository
 
 import com.rmap.mobile.core.network.AppException
+import com.rmap.mobile.core.database.entity.SyncDataType
+import com.rmap.mobile.core.database.sync.SyncManager
+import com.rmap.mobile.core.database.sync.SyncVersionDto
 import com.rmap.mobile.core.network.NetworkErrorType
 import com.rmap.mobile.core.network.NetworkResult
 import com.rmap.mobile.core.network.SafeApiCall
 import com.rmap.mobile.core.network.toAppException
 import com.rmap.mobile.core.session.SessionManager
+import com.rmap.mobile.features.roadmap.data.local.dao.TemplateCategoryDao
+import com.rmap.mobile.features.roadmap.data.local.dao.TemplateRoadmapDao
+import com.rmap.mobile.features.roadmap.data.local.mapper.toEntity
+import com.rmap.mobile.features.roadmap.data.local.mapper.toRoadmapCategory
+import com.rmap.mobile.features.roadmap.data.local.mapper.toRoadmapSummary
 import com.rmap.mobile.features.roadmap.data.mapper.toDomain
 import com.rmap.mobile.features.roadmap.data.mapper.toLearningNodeDetail
 import com.rmap.mobile.features.roadmap.data.mapper.toLearningProgress
@@ -37,13 +45,17 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapCategory
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
+import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
 class RemoteRoadmapRepository(
     private val roadmapApi: RoadmapApi,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val templateCategoryDao: TemplateCategoryDao? = null,
+    private val templateRoadmapDao: TemplateRoadmapDao? = null,
+    private val syncManager: SyncManager? = null
 ) : RoadmapRepository {
     override suspend fun getLearningProgress(): Result<LearningProgress> {
         return when (val roadmapResult = getRoadmapsResult(page = FIRST_PAGE, perPage = FIRST_ITEM_PAGE_SIZE)) {
@@ -69,25 +81,65 @@ class RemoteRoadmapRepository(
     }
 
     override suspend fun getTrendingRoadmaps(): Result<List<RoadmapSummary>> {
+        val serverVersions = syncManager?.getServerVersions()
+        cachedTemplateRoadmapsIfFresh(serverVersions)?.let { cachedRoadmaps ->
+            return Result.success(cachedRoadmaps.take(RECOMMENDED_ROADMAP_LIMIT))
+        }
         return loadTemplates(hydrateNodes = true)
     }
 
     override suspend fun getExploreCategories(): Result<List<RoadmapCategory>> {
+        val serverVersions = syncManager?.getServerVersions()
+        cachedCategoriesIfFresh(serverVersions)?.let { cachedCategories ->
+            return Result.success(cachedCategories)
+        }
+
         return SafeApiCall.execute(
             onUnauthorized = sessionManager::handleUnauthorized
         ) {
             roadmapApi.listTemplateCategories()
         }.toDomainResult { response ->
+            templateCategoryDao?.replaceAll(response.categories.map { category -> category.toEntity() })
+            syncManager?.markSynced(SyncDataType.TEMPLATE_CATEGORIES, serverVersions)
             response.categories.map { it.toDomain() }
         }
     }
 
     override suspend fun getRecommendedRoadmaps(): Result<List<RoadmapSummary>> {
+        val serverVersions = syncManager?.getServerVersions()
+        cachedTemplateRoadmapsIfFresh(serverVersions)?.let { cachedRoadmaps ->
+            return Result.success(cachedRoadmaps.take(RECOMMENDED_ROADMAP_LIMIT))
+        }
         return loadTemplates(hydrateNodes = true).map { roadmaps -> roadmaps.take(RECOMMENDED_ROADMAP_LIMIT) }
     }
 
     override suspend fun searchRoadmaps(query: String, categoryId: String?, page: Int, perPage: Int): Result<Pair<List<RoadmapSummary>, Int>> {
         val normalizedQuery = query.trim()
+        val serverVersions = syncManager?.getServerVersions()
+        cachedTemplateSearchResult(
+            query = normalizedQuery,
+            categoryId = categoryId,
+            page = page,
+            perPage = perPage,
+            serverVersions = serverVersions
+        )?.let { cachedResult ->
+            return Result.success(cachedResult)
+        }
+
+        syncTemplateRoadmapsIfNeeded(serverVersions)
+            .onSuccess {
+                cachedTemplateSearchResult(
+                    query = normalizedQuery,
+                    categoryId = categoryId,
+                    page = page,
+                    perPage = perPage,
+                    serverVersions = serverVersions,
+                    allowStale = true
+                )?.let { cachedResult ->
+                    return Result.success(cachedResult)
+                }
+            }
+
         val result = getTemplatesResult(categoryId = categoryId, page = page, perPage = perPage)
         return when (result) {
             is NetworkResult.Success -> {
@@ -106,11 +158,112 @@ class RemoteRoadmapRepository(
                                 roadmap.categoryId.contains(normalizedQuery, ignoreCase = true)
                         }
                     }
+                    templateRoadmapDao?.insertAll(filteredRoadmaps.map { roadmap -> roadmap.toEntity() })
                     Pair(filteredRoadmaps, totalCount)
                 }
             }
             is NetworkResult.Error -> Result.failure(result.toAppException())
         }
+    }
+
+    private suspend fun cachedCategoriesIfFresh(
+        serverVersions: SyncVersionDto?
+    ): List<RoadmapCategory>? {
+        val categoryDao = templateCategoryDao ?: return null
+        val cachedCategories = categoryDao.getAll()
+        if (cachedCategories.isEmpty()) return null
+        val stale = syncManager?.isStale(SyncDataType.TEMPLATE_CATEGORIES, serverVersions) ?: true
+        if (stale) return null
+        return cachedCategories.map { category -> category.toRoadmapCategory() }
+    }
+
+    private suspend fun cachedTemplateRoadmapsIfFresh(
+        serverVersions: SyncVersionDto?
+    ): List<RoadmapSummary>? {
+        val roadmapDao = templateRoadmapDao ?: return null
+        val cachedRoadmaps = roadmapDao.getAll()
+        if (cachedRoadmaps.isEmpty()) return null
+        val stale = syncManager?.isStale(SyncDataType.TEMPLATE_ROADMAPS, serverVersions) ?: true
+        if (stale) return null
+        return cachedRoadmaps.map { roadmap -> roadmap.toRoadmapSummary() }
+    }
+
+    private suspend fun cachedTemplateSearchResult(
+        query: String,
+        categoryId: String?,
+        page: Int,
+        perPage: Int,
+        serverVersions: SyncVersionDto?,
+        allowStale: Boolean = false
+    ): Pair<List<RoadmapSummary>, Int>? {
+        val roadmapDao = templateRoadmapDao ?: return null
+        val cachedRoadmaps = roadmapDao.getAll()
+        if (cachedRoadmaps.isEmpty()) return null
+        val stale = syncManager?.isStale(SyncDataType.TEMPLATE_ROADMAPS, serverVersions) ?: true
+        if (stale && !allowStale) return null
+
+        val filtered = cachedRoadmaps
+            .map { roadmap -> roadmap.toRoadmapSummary() }
+            .filter { roadmap ->
+                query.isBlank() || roadmap.title.contains(query, ignoreCase = true) ||
+                    roadmap.durationLabel.contains(query, ignoreCase = true) ||
+                    roadmap.categoryId.contains(query, ignoreCase = true)
+            }
+            .filter { roadmap ->
+                categoryId == null ||
+                    roadmap.categoryId == categoryId ||
+                    roadmap.categoryId == categoryId.toStableLearningId()
+            }
+        val safePage = page.coerceAtLeast(FIRST_PAGE)
+        val safePerPage = perPage.coerceAtLeast(1)
+        val startIndex = (safePage - 1) * safePerPage
+        val pageItems = filtered.drop(startIndex).take(safePerPage)
+        return pageItems to filtered.size
+    }
+
+    private suspend fun syncTemplateRoadmapsIfNeeded(
+        serverVersions: SyncVersionDto?
+    ): Result<Unit> {
+        val roadmapDao = templateRoadmapDao ?: return Result.success(Unit)
+        val manager = syncManager ?: return Result.success(Unit)
+        val hasCache = roadmapDao.countAll() > 0
+        val stale = manager.isStale(SyncDataType.TEMPLATE_ROADMAPS, serverVersions)
+        if (hasCache && !stale) return Result.success(Unit)
+
+        return fetchAllTemplateRoadmaps().mapCatching { roadmaps ->
+            roadmapDao.replaceAll(roadmaps.map { roadmap -> roadmap.toEntity() })
+            manager.markSynced(SyncDataType.TEMPLATE_ROADMAPS, serverVersions)
+        }
+    }
+
+    private suspend fun fetchAllTemplateRoadmaps(): Result<List<RoadmapSummary>> {
+        val roadmaps = mutableListOf<RoadmapSummary>()
+        var page = FIRST_PAGE
+        var totalPages = FIRST_PAGE
+
+        do {
+            when (val result = getTemplatesResult(page = page, perPage = TEMPLATE_SYNC_PAGE_SIZE)) {
+                is NetworkResult.Success -> {
+                    val pageRoadmaps = result.data.data.orEmpty()
+                    loadTemplateSummaries(
+                        templates = pageRoadmaps,
+                        hydrateNodes = false,
+                        statusCode = result.code
+                    ).onSuccess { summaries ->
+                        roadmaps += summaries
+                    }.onFailure { error ->
+                        return Result.failure(error)
+                    }
+                    totalPages = result.data.meta?.totalPages
+                        ?: if (pageRoadmaps.size < TEMPLATE_SYNC_PAGE_SIZE) page else page + 1
+                }
+
+                is NetworkResult.Error -> return Result.failure(result.toAppException())
+            }
+            page += 1
+        } while (page <= totalPages)
+
+        return Result.success(roadmaps)
     }
 
     override suspend fun getRoadmapDetail(id: String): Result<RoadmapDetail> {
@@ -629,6 +782,7 @@ class RemoteRoadmapRepository(
         const val FIRST_PAGE = 1
         const val FIRST_ITEM_PAGE_SIZE = 1
         const val ROADMAP_PAGE_SIZE = 20
+        const val TEMPLATE_SYNC_PAGE_SIZE = 100
         const val RECOMMENDED_ROADMAP_LIMIT = 5
     }
 }
