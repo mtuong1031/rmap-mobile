@@ -6,6 +6,7 @@ import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.dashboard.domain.model.Dashboard
 import com.rmap.mobile.features.dashboard.domain.model.DashboardRoadmap
 import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,30 +19,39 @@ class MyRoadmapViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MyRoadmapUiState())
     val uiState: StateFlow<MyRoadmapUiState> = _uiState.asStateFlow()
+    private var dashboardJob: Job? = null
 
     init {
         loadDashboard()
     }
 
     fun loadDashboard() {
-        viewModelScope.launch {
+        dashboardJob?.cancel()
+        dashboardJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            dashboardRepository.getDashboard()
-                .onSuccess { dashboard ->
-                    _uiState.update {
-                        dashboard.toUiState(selectedFilter = it.selectedFilter)
-                    }
-                }
-                .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message ?: MY_ROADMAP_LOAD_ERROR
-                        )
+            dashboardRepository.observeDashboard()
+                .collect { result ->
+                    result
+                        .onSuccess { dashboard ->
+                            _uiState.update {
+                                dashboard.toUiState(selectedFilter = it.selectedFilter)
+                            }
+                        }
+                        .onFailure { error ->
+                            _uiState.update {
+                                if (it.roadmaps.isNotEmpty()) {
+                                    it.copy(isLoading = false)
+                                } else {
+                                    it.copy(
+                                        isLoading = false,
+                                        errorMessage = error.message ?: MY_ROADMAP_LOAD_ERROR
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
         }
-    }
 
     fun onFilterSelected(filter: MyRoadmapFilter) {
         _uiState.update { it.copy(selectedFilter = filter) }

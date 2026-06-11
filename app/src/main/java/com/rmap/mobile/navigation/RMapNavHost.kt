@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -205,11 +204,9 @@ fun RMapNavHost(navController: NavHostController) {
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         }
-    ) { innerPadding ->
+    ) {
         Box(modifier = Modifier
             .fillMaxSize()
-            // Removed bottom padding to let content flow under the floating nav bar
-            .padding(top = innerPadding.calculateTopPadding())
         ) {
             NavHost(
                 navController = navController, 
