@@ -3,6 +3,10 @@ package com.rmap.mobile.core.utils
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import com.rmap.mobile.core.database.DatabaseProvider
+import com.rmap.mobile.core.database.RMapDatabase
+import com.rmap.mobile.core.database.sync.SyncApi
+import com.rmap.mobile.core.database.sync.SyncManager
 import com.rmap.mobile.core.network.ApiClient
 import com.rmap.mobile.core.network.SessionCookieJar
 import com.rmap.mobile.core.session.SessionManager
@@ -70,6 +74,10 @@ object RMapAppGraph {
         private set
     lateinit var apiClient: ApiClient
         private set
+    lateinit var database: RMapDatabase
+        private set
+    lateinit var syncManager: SyncManager
+        private set
     lateinit var authRepository: AuthRepository
         private set
     lateinit var homeRepository: HomeRepository
@@ -107,12 +115,20 @@ object RMapAppGraph {
             clearSessionStorage = sessionCookieJar::clear
         )
         apiClient = ApiClient.fromBuildConfig(sessionCookieJar, sessionManager)
+        database = DatabaseProvider.getDatabase(applicationContext)
+        syncManager = SyncManager(
+            syncApi = apiClient.createService(SyncApi::class.java),
+            syncMetadataDao = database.syncMetadataDao()
+        )
         authRepository = AuthRepositoryImpl(
             authApi = apiClient.createService(AuthApi::class.java),
             sessionManager = sessionManager
         )
         homeRepository = HomeRepositoryImpl(
-            homeApi = apiClient.createService(HomeApi::class.java)
+            homeApi = apiClient.createService(HomeApi::class.java),
+            templateCategoryDao = database.templateCategoryDao(),
+            trendingRoadmapDao = database.homeTrendingRoadmapDao(),
+            syncManager = syncManager
         )
         recentSearchRepository = SharedPreferencesRecentSearchRepository(applicationContext)
         profileRepository = ProfileRepositoryImpl(
@@ -134,11 +150,16 @@ object RMapAppGraph {
         getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
         roadmapRepository = RemoteRoadmapRepository(
             roadmapApi = apiClient.createService(RoadmapApi::class.java),
-            sessionManager = sessionManager
+            sessionManager = sessionManager,
+            templateCategoryDao = database.templateCategoryDao(),
+            templateRoadmapDao = database.templateRoadmapDao(),
+            syncManager = syncManager
         )
         skillLearningRepository = RemoteSkillLearningRepository(
             skillApi = apiClient.createService(SkillApi::class.java),
-            sessionManager = sessionManager
+            sessionManager = sessionManager,
+            skillDao = database.skillDao(),
+            syncManager = syncManager
         )
 
         val scheduler = LearningReminderScheduler(applicationContext)
