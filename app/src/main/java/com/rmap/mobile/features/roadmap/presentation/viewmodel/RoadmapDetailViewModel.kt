@@ -96,7 +96,7 @@ class RoadmapDetailViewModel(
                             }
                         }
                         .onFailure {
-                            if (_uiState.value.isEmpty) {
+                            if (currentDetail == null) {
                                 currentDetail = null
                                 _uiState.update {
                                     it.copy(

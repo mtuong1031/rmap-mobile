@@ -353,6 +353,50 @@
     <string name="profile_setting_connected_accounts">Connected Accounts</string>
     <string name="profile_setting_sign_out">Sign Out</string>
 
+    <string name="personal_information_title">Personal Information</string>
+    <string name="personal_information_public_profile_title">Public profile</string>
+    <string name="personal_information_public_profile_subtitle">Control the profile details shown across your RMap workspace.</string>
+    <string name="personal_information_avatar_title">Avatar</string>
+    <string name="personal_information_avatar_subtitle">Choose a pre-designed avatar for your profile.</string>
+    <string name="personal_information_current_avatar">Current avatar</string>
+    <string name="personal_information_change_avatar">Change avatar</string>
+    <string name="personal_information_pick_avatar">PICK AN AVATAR</string>
+    <string name="personal_information_generate_avatars">Generate new collection</string>
+    <string name="personal_information_deselect_avatar">Deselect avatar</string>
+    <string name="personal_information_avatar_option_content_description">Avatar option</string>
+    <string name="personal_information_details_title">Personal details</string>
+    <string name="personal_information_details_subtitle">Keep your name and public identity up to date.</string>
+    <string name="personal_information_full_name_label">Full name</string>
+    <string name="personal_information_full_name_placeholder">Enter your full name</string>
+    <string name="personal_information_edit">Edit</string>
+    <string name="personal_information_save_changes">Save changes</string>
+    <string name="personal_information_name_too_short">Full name must be at least 2 characters.</string>
+    <string name="personal_information_name_too_long">Full name must be 100 characters or fewer.</string>
+    <string name="personal_information_profile_updated">Profile updated.</string>
+
+    <string name="privacy_security_title">Privacy &amp; Security</string>
+    <string name="privacy_security_card_title">Security</string>
+    <string name="privacy_security_card_subtitle">Change your password and sign out of active RMap sessions.</string>
+    <string name="privacy_security_password_title">Password</string>
+    <string name="privacy_security_password_subtitle">Use at least 8 characters. You will sign in again after the change.</string>
+    <string name="privacy_security_current_password_label">Current password</string>
+    <string name="privacy_security_current_password_placeholder">Enter your current password</string>
+    <string name="privacy_security_new_password_label">New password</string>
+    <string name="privacy_security_new_password_placeholder">Enter your new password</string>
+    <string name="privacy_security_confirm_password_label">Confirm new password</string>
+    <string name="privacy_security_confirm_password_placeholder">Confirm your new password</string>
+    <string name="privacy_security_minimum_password_helper">Minimum 8 characters.</string>
+    <string name="privacy_security_password_match_helper">Must match the new password.</string>
+    <string name="privacy_security_change_password">Change password</string>
+    <string name="privacy_security_changing_password">Changing password...</string>
+    <string name="privacy_security_current_password_required">Current password is required.</string>
+    <string name="privacy_security_new_password_too_short">New password must be at least 8 characters.</string>
+    <string name="privacy_security_confirm_password_required">Please confirm your new password.</string>
+    <string name="privacy_security_passwords_do_not_match">Passwords do not match.</string>
+    <string name="privacy_security_password_changed">Password changed. Please sign in again.</string>
+    <string name="privacy_security_show_password">Show password</string>
+    <string name="privacy_security_hide_password">Hide password</string>
+
     <string name="content_description_filter">Filter results</string>
     <string name="content_description_clear_search">Clear search</string>
     <string name="content_description_header_action">Open profile</string>
@@ -603,4 +647,16 @@
         <item>Nice check-in</item>
         <item>Today counts</item>
     </string-array>
+    
+    <!-- Connected Accounts Screen -->
+    <string name="connected_accounts_title">Integrations</string>
+    <string name="connected_accounts_subtitle">Connect external accounts used for sign-in and future roadmap validation.</string>
+    <string name="connected_accounts_github_title">GitHub</string>
+    <string name="connected_accounts_github_subtitle">No GitHub account connected.</string>
+    <string name="connected_accounts_google_title">Google</string>
+    <string name="connected_accounts_google_subtitle">No Google account connected.</string>
+    <string name="connected_accounts_status_not_connected">Not connected</string>
+    <string name="connected_accounts_status_connected">Connected</string>
+    <string name="connected_accounts_action_connect">Connect</string>
+    <string name="connected_accounts_action_disconnect">Disconnect</string>
 </resources>

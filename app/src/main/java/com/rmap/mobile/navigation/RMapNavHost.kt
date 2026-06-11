@@ -60,8 +60,14 @@ import com.rmap.mobile.features.home.presentation.viewmodel.HomeViewModel
 import com.rmap.mobile.features.myroadmap.presentation.screen.MyRoadmapScreen
 import com.rmap.mobile.features.myroadmap.presentation.viewmodel.MyRoadmapViewModel
 import com.rmap.mobile.features.profile.presentation.screen.NotificationSettingsScreen
+import com.rmap.mobile.features.profile.presentation.screen.PersonalInformationScreen
+import com.rmap.mobile.features.profile.presentation.screen.PrivacySecurityScreen
 import com.rmap.mobile.features.profile.presentation.screen.ProfileScreen
 import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsEvent
+import com.rmap.mobile.features.profile.presentation.viewmodel.PersonalInformationEvent
+import com.rmap.mobile.features.profile.presentation.viewmodel.PersonalInformationViewModel
+import com.rmap.mobile.features.profile.presentation.viewmodel.PrivacySecurityEvent
+import com.rmap.mobile.features.profile.presentation.viewmodel.PrivacySecurityViewModel
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileEvent
 import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsViewModel
 import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileViewModel
@@ -96,6 +102,8 @@ fun RMapNavHost(navController: NavHostController) {
     val resourceOpenFailedMessage = stringResource(R.string.roadmap_learning_resource_open_failed)
     val milestoneSubmissionQueuedMessage = stringResource(R.string.roadmap_milestone_submission_queued)
     val milestoneSubmissionFailedMessage = stringResource(R.string.roadmap_milestone_error_submit_failed)
+    val profileUpdatedMessage = stringResource(R.string.personal_information_profile_updated)
+    val passwordChangedMessage = stringResource(R.string.privacy_security_password_changed)
     val startDestination = if (authState is AuthState.Authenticated) AppRoutes.MAIN_TABS else AppRoutes.AUTH_GRAPH
     val pagerState = rememberPagerState(pageCount = { 5 })
     var isAiRoadmapQuestionsStep by remember { mutableStateOf(false) }
@@ -177,19 +185,41 @@ fun RMapNavHost(navController: NavHostController) {
     val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    var previousRoute by remember { mutableStateOf<String?>(null) }
+
+    fun isTopLevelRoute(route: String?): Boolean {
+        return route == AppRoutes.MAIN_TABS || route == AppRoutes.HOME_SEARCH
+    }
+
+    fun isChildRoute(route: String?): Boolean {
+        return route != null &&
+            !isTopLevelRoute(route) &&
+            route != AppRoutes.AUTH &&
+            route != AppRoutes.AUTH_GRAPH
+    }
+
+    LaunchedEffect(currentRoute) {
+        previousRoute = currentRoute
+    }
     
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            val isTopLevelRoute = currentRoute == AppRoutes.MAIN_TABS || currentRoute == AppRoutes.HOME_SEARCH
+            val isCurrentTopLevelRoute = isTopLevelRoute(currentRoute)
             val shouldHideBottomBarForAiQuiz =
                 currentRoute == AppRoutes.MAIN_TABS &&
                     pagerState.currentPage == 2 &&
                     isAiRoadmapQuestionsStep
+            val shouldSkipBottomBarEnterAnimation =
+                isCurrentTopLevelRoute && isChildRoute(previousRoute)
 
             androidx.compose.animation.AnimatedVisibility(
-                visible = isTopLevelRoute && !shouldHideBottomBarForAiQuiz,
-                enter = androidx.compose.animation.slideInVertically(initialOffsetY = { it }) + androidx.compose.animation.fadeIn(),
+                visible = isCurrentTopLevelRoute && !shouldHideBottomBarForAiQuiz,
+                enter = if (shouldSkipBottomBarEnterAnimation) {
+                    androidx.compose.animation.EnterTransition.None
+                } else {
+                    androidx.compose.animation.slideInVertically(initialOffsetY = { it }) + androidx.compose.animation.fadeIn()
+                },
                 exit = androidx.compose.animation.slideOutVertically(targetOffsetY = { it }) + androidx.compose.animation.fadeOut()
             ) {
                 val selectedDestination = when {
@@ -467,7 +497,10 @@ fun RMapNavHost(navController: NavHostController) {
                             LaunchedEffect(viewModel) {
                                 viewModel.events.collect { event ->
                                     when (event) {
+                                        ProfileEvent.NavigateToPersonalInformation -> navController.navigate(AppRoutes.PERSONAL_INFORMATION)
                                         ProfileEvent.NavigateToNotificationSettings -> navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
+                                        ProfileEvent.NavigateToPrivacySecurity -> navController.navigate(AppRoutes.PRIVACY_SECURITY)
+                                        ProfileEvent.NavigateToConnectedAccounts -> navController.navigate(AppRoutes.CONNECTED_ACCOUNTS)
                                         ProfileEvent.ShowComingSoon -> snackbarHostState.showSnackbar(profileComingSoonMessage)
                                         ProfileEvent.SignedOut -> navController.navigate(AppRoutes.AUTH) {
                                             popUpTo(0) { inclusive = true }
@@ -536,6 +569,94 @@ fun RMapNavHost(navController: NavHostController) {
                     onCreateWithAiClick = {
                         handleDestinationSelected(NavBarDestination.AiAssistant)
                     }
+                )
+            }
+
+            composable(AppRoutes.PERSONAL_INFORMATION) {
+                val viewModel: PersonalInformationViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(viewModel) {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            PersonalInformationEvent.ProfileUpdated -> {
+                                snackbarHostState.showSnackbar(profileUpdatedMessage)
+                            }
+                        }
+                    }
+                }
+
+                PersonalInformationScreen(
+                    uiState = uiState,
+                    onBackClick = { navController.popBackStack() },
+                    onFullNameChanged = viewModel::onFullNameChanged,
+                    onStartEditingDetails = viewModel::onStartEditingDetails,
+                    onCancelEditDetails = viewModel::onCancelEditDetails,
+                    onOpenAvatarPicker = viewModel::onOpenAvatarPicker,
+                    onCancelAvatarPicker = viewModel::onCancelAvatarPicker,
+                    onAvatarSelected = viewModel::onAvatarSelected,
+                    onResetSelectedAvatar = viewModel::onResetSelectedAvatar,
+                    onRegenerateAvatars = viewModel::onRegenerateAvatars,
+                    onSaveClick = viewModel::onSaveClick
+                )
+            }
+
+            composable(AppRoutes.PRIVACY_SECURITY) {
+                val viewModel: PrivacySecurityViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                LaunchedEffect(viewModel) {
+                    viewModel.events.collect { event ->
+                        when (event) {
+                            PrivacySecurityEvent.PasswordChanged -> {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(passwordChangedMessage)
+                                }
+                                navController.navigate(AppRoutes.AUTH) {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                PrivacySecurityScreen(
+                    uiState = uiState,
+                    onBackClick = { navController.popBackStack() },
+                    onCurrentPasswordChanged = viewModel::onCurrentPasswordChanged,
+                    onNewPasswordChanged = viewModel::onNewPasswordChanged,
+                    onConfirmNewPasswordChanged = viewModel::onConfirmNewPasswordChanged,
+                    onToggleCurrentPasswordVisibility = viewModel::onToggleCurrentPasswordVisibility,
+                    onToggleNewPasswordVisibility = viewModel::onToggleNewPasswordVisibility,
+                    onToggleConfirmPasswordVisibility = viewModel::onToggleConfirmPasswordVisibility,
+                    onChangePasswordClick = viewModel::onChangePasswordClick
+                )
+            }
+
+            composable(AppRoutes.CONNECTED_ACCOUNTS) {
+                val viewModel: com.rmap.mobile.features.profile.presentation.viewmodel.ConnectedAccountsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+                androidx.compose.runtime.LaunchedEffect(viewModel) {
+                    viewModel.eventFlow.collect { event ->
+                        when (event) {
+                            is com.rmap.mobile.features.profile.presentation.viewmodel.ConnectedAccountsEvent.NavigateBack -> navController.popBackStack()
+                            is com.rmap.mobile.features.profile.presentation.viewmodel.ConnectedAccountsEvent.ShowSnackbar -> {
+                                snackbarHostState.showSnackbar(event.message)
+                            }
+                        }
+                    }
+                }
+
+                com.rmap.mobile.features.profile.presentation.screen.ConnectedAccountsScreen(
+                    uiState = uiState,
+                    onBackClick = viewModel::onBackClick,
+                    onConnectClick = { provider ->
+                        // Placeholder cho luồng Google Sign-In / GitHub Custom Tabs
+                        // Khi có code/idToken từ Google/GitHub, sẽ gọi viewModel.linkGoogleAccount(idToken) hoặc viewModel.linkGithubAccount(code)
+                        coroutineScope.launch { snackbarHostState.showSnackbar(comingSoonMessage) }
+                    },
+                    onDisconnectClick = viewModel::disconnectIntegration
                 )
             }
 
