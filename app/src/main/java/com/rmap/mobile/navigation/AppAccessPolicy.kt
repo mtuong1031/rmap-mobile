@@ -23,6 +23,7 @@ object AppAccessPolicy {
             route == AppRoutes.NOTIFICATION_SETTINGS -> AppAccessLevel.Authenticated
             route.startsWith("roadmap_learning/") -> AppAccessLevel.Authenticated
             route.startsWith("roadmap_milestone/") -> AppAccessLevel.Authenticated
+            route.startsWith("skill/") -> AppAccessLevel.Authenticated
             else -> AppAccessLevel.Public
         }
     }

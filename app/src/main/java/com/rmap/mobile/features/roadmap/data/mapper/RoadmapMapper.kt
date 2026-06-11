@@ -335,14 +335,22 @@ fun List<RoadmapSummary>.toCategories(): List<RoadmapCategory> {
         .groupBy { it.categoryId }
         .map { (categoryId, roadmaps) ->
             val summary = roadmaps.first()
+            val categoryLabel = summary.durationLabel.ifBlank { categoryId }
             RoadmapCategory(
-                id = categoryId,
-                name = summary.durationLabel.ifBlank { categoryId },
+                id = categoryLabel.toRoleCategoryValue(),
+                name = categoryLabel,
                 icon = summary.icon,
-                shortName = summary.durationLabel.ifBlank { categoryId },
+                shortName = categoryLabel,
                 roadmapCount = roadmaps.size
             )
         }
+}
+
+private fun String.toRoleCategoryValue(): String {
+    return trim()
+        .uppercase()
+        .replace(Regex("[^A-Z0-9]+"), "_")
+        .trim('_')
 }
 
 

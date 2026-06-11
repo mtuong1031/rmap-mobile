@@ -40,8 +40,8 @@ class RoadmapMapperTest {
         ).toCategories()
 
         assertEquals(2, categories.size)
-        assertEquals(2, categories.first { it.id == "web-development" }.roadmapCount)
-        assertEquals(1, categories.first { it.id == "devops" }.roadmapCount)
+        assertEquals(2, categories.first { it.id == "WEB_DEVELOPMENT" }.roadmapCount)
+        assertEquals(1, categories.first { it.id == "DEVOPS" }.roadmapCount)
     }
 
     @Test

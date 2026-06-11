@@ -12,7 +12,6 @@ class AppAccessPolicyTest {
         assertTrue(AppAccessPolicy.canAccess(AppRoutes.HOME_SEARCH, isAuthenticated = false))
         assertTrue(AppAccessPolicy.canAccess(AppRoutes.EXPLORE, isAuthenticated = false))
         assertTrue(AppAccessPolicy.canAccess(AppRoutes.PROFILE, isAuthenticated = false))
-        assertTrue(AppAccessPolicy.canAccess("skill/skill-1", isAuthenticated = false))
         assertTrue(
             AppAccessPolicy.canAccess(
                 AppRoutes.roadmapDetail("template-1"),
@@ -25,6 +24,7 @@ class AppAccessPolicyTest {
     fun `guest cannot access personalized routes`() {
         assertFalse(AppAccessPolicy.canAccess(AppRoutes.MY_ROADMAP, isAuthenticated = false))
         assertFalse(AppAccessPolicy.canAccess(AppRoutes.AI_ROADMAP, isAuthenticated = false))
+        assertFalse(AppAccessPolicy.canAccess("skill/skill-1", isAuthenticated = false))
         assertFalse(
             AppAccessPolicy.canAccess(
                 "roadmap_learning/roadmap-1/node-1/skill-1/false",

@@ -622,11 +622,23 @@ fun RMapNavHost(navController: NavHostController) {
                     navArgument(AppRoutes.SKILL_ID_ARG) { type = NavType.StringType }
                 )
             ) { backStackEntry ->
-                val viewModel: SkillDetailViewModel = viewModel()
-                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                 val skillId = backStackEntry.arguments
                     ?.getString(AppRoutes.SKILL_ID_ARG)
                     .orEmpty()
+                val route = AppRoutes.skillDetail(skillId)
+                if (!isAuthenticated) {
+                    LaunchedEffect(route) {
+                        navController.popBackStack()
+                        requestAuthentication(
+                            reason = AuthPromptReason.SkillDetails,
+                            route = route
+                        )
+                    }
+                    return@composable
+                }
+
+                val viewModel: SkillDetailViewModel = viewModel()
+                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
                 LaunchedEffect(skillId) {
                     viewModel.loadSkill(skillId)
@@ -764,19 +776,19 @@ fun RMapNavHost(navController: NavHostController) {
                                 }
                             }
                             is RoadmapDetailEvent.NavigateToLearning -> {
+                                val route = AppRoutes.roadmapLearning(
+                                    roadmapId = event.roadmapId,
+                                    nodeId = event.nodeId,
+                                    skillId = event.skillId,
+                                    isCompleted = event.isCompleted,
+                                    groupTitle = event.groupTitle
+                                )
                                 if (isAuthenticated) {
-                                    navController.navigate(
-                                        AppRoutes.roadmapLearning(
-                                            roadmapId = event.roadmapId,
-                                            nodeId = event.nodeId,
-                                            skillId = event.skillId,
-                                            isCompleted = event.isCompleted,
-                                            groupTitle = event.groupTitle
-                                        )
-                                    )
+                                    navController.navigate(route)
                                 } else {
-                                    navController.navigate(
-                                        AppRoutes.skillDetail(event.skillId)
+                                    requestAuthentication(
+                                        reason = AuthPromptReason.SkillDetails,
+                                        route = route
                                     )
                                 }
                             }

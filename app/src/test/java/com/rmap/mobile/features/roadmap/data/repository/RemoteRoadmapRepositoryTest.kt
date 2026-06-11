@@ -7,6 +7,7 @@ import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneSubmissionEnv
 import com.rmap.mobile.features.roadmap.data.remote.model.MilestoneTestSuiteDto
 import com.rmap.mobile.features.roadmap.data.remote.api.RoadmapApi
 import com.rmap.mobile.features.roadmap.data.remote.model.NodeProgressDto
+import com.rmap.mobile.features.roadmap.data.remote.model.PaginationMetaDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDetailDto
 import com.rmap.mobile.features.roadmap.data.remote.model.RoadmapNodeDetailResponseDto
@@ -341,7 +342,11 @@ class RemoteRoadmapRepositoryTest {
                 404,
                 "{}".toResponseBody("application/json".toMediaType())
             )
-            templatesResponse = Response.success(
+            templatesResponse = Response.error(
+                401,
+                "{}".toResponseBody("application/json".toMediaType())
+            )
+            legacyTemplatesResponse = Response.success(
                 RoadmapsResponseDto(
                     data = listOf(
                         RoadmapDto(
@@ -359,11 +364,54 @@ class RemoteRoadmapRepositoryTest {
 
         assertTrue(result.isSuccess)
         val category = result.getOrThrow().single()
-        assertEquals("web-development", category.id)
+        assertEquals("WEB_DEVELOPMENT", category.id)
         assertEquals("Web Development", category.name)
         assertEquals(1, category.roadmapCount)
         assertEquals(1, api.listTemplateCategoriesCallCount)
         assertEquals(1, api.listTemplatesCallCount)
+        assertEquals(1, api.listLegacyTemplatesCallCount)
+    }
+
+    @Test
+    fun `searchRoadmaps falls back to public templates for guest`() = runTest {
+        val api = FakeRoadmapApi().apply {
+            templatesResponse = Response.error(
+                401,
+                "{}".toResponseBody("application/json".toMediaType())
+            )
+            legacyTemplatesResponse = Response.success(
+                RoadmapsResponseDto(
+                    data = listOf(
+                        RoadmapDto(
+                            id = "template-1",
+                            roleCategory = "DESIGN",
+                            title = "UI UX Designer Foundations"
+                        )
+                    ),
+                    meta = PaginationMetaDto(
+                        total = 1,
+                        page = 1,
+                        perPage = 10,
+                        totalPages = 1
+                    )
+                )
+            )
+        }
+        val repository = newRepository(api)
+
+        val result = repository.searchRoadmaps(
+            query = "",
+            categoryId = null,
+            page = 1,
+            perPage = 10
+        )
+
+        assertTrue(result.isSuccess)
+        val (roadmaps, totalCount) = result.getOrThrow()
+        assertEquals(1, totalCount)
+        assertEquals("UI UX Designer Foundations", roadmaps.single().title)
+        assertEquals(1, api.listTemplatesCallCount)
+        assertEquals(1, api.listLegacyTemplatesCallCount)
     }
 
 
@@ -384,6 +432,7 @@ class RemoteRoadmapRepositoryTest {
         var submitMilestoneCallCount = 0
         var listRoadmapsCallCount = 0
         var listTemplatesCallCount = 0
+        var listLegacyTemplatesCallCount = 0
         var getTemplateCallCount = 0
         var getTemplateNodesCallCount = 0
         var listTemplateCategoriesCallCount = 0
@@ -410,6 +459,8 @@ class RemoteRoadmapRepositoryTest {
         var roadmapsResponse: Response<RoadmapsResponseDto> =
             Response.success(RoadmapsResponseDto(data = emptyList()))
         var templatesResponse: Response<RoadmapsResponseDto> =
+            Response.success(RoadmapsResponseDto(data = listOf(testRoadmap)))
+        var legacyTemplatesResponse: Response<RoadmapsResponseDto> =
             Response.success(RoadmapsResponseDto(data = listOf(testRoadmap)))
         var templateResponse: Response<RoadmapDto> = Response.success(testRoadmap.copy(isTemplate = true))
         var templateNodesResponse: Response<RoadmapNodesResponseDto> = Response.success(testNodes)
@@ -509,8 +560,8 @@ class RemoteRoadmapRepositoryTest {
             page: Int?,
             perPage: Int?
         ): Response<RoadmapsResponseDto> {
-            listTemplatesCallCount++
-            return templatesResponse
+            listLegacyTemplatesCallCount++
+            return legacyTemplatesResponse
         }
 
         override suspend fun getTemplate(templateId: String): Response<RoadmapDto> {

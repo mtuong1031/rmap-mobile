@@ -545,7 +545,14 @@ class RemoteRoadmapRepository(
             )
         }
 
-        return if (officialResult is NetworkResult.Error && officialResult.type == NetworkErrorType.NotFound) {
+        val shouldUsePublicTemplates = officialResult is NetworkResult.Error &&
+            officialResult.type in setOf(
+                NetworkErrorType.Unauthorized,
+                NetworkErrorType.Forbidden,
+                NetworkErrorType.NotFound
+            )
+
+        return if (shouldUsePublicTemplates) {
             SafeApiCall.execute {
                 roadmapApi.listLegacyTemplates(
                     roleCategory = categoryId,
