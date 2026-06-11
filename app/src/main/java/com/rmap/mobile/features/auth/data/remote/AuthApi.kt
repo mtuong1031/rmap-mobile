@@ -1,11 +1,13 @@
 package com.rmap.mobile.features.auth.data.remote
 
 import com.rmap.mobile.features.auth.data.model.AuthMessageResponseDto
+import com.rmap.mobile.features.auth.data.model.ChangePasswordRequestDto
 import com.rmap.mobile.features.auth.data.model.MobileOAuthRequestDto
 import com.rmap.mobile.features.auth.data.model.UserDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 
 interface AuthApi {
@@ -19,8 +21,23 @@ interface AuthApi {
         @Body request: com.rmap.mobile.features.auth.data.model.GithubMobileOAuthRequestDto
     ): Response<AuthMessageResponseDto>
 
+    @POST("auth/google/mobile/link")
+    suspend fun linkWithGoogle(
+        @Body request: MobileOAuthRequestDto
+    ): Response<AuthMessageResponseDto>
+
+    @POST("auth/github/mobile/link")
+    suspend fun linkWithGithub(
+        @Body request: com.rmap.mobile.features.auth.data.model.GithubMobileOAuthRequestDto
+    ): Response<AuthMessageResponseDto>
+
     @POST("auth/logout")
     suspend fun logout(): Response<AuthMessageResponseDto>
+
+    @PATCH("auth/password")
+    suspend fun changePassword(
+        @Body request: ChangePasswordRequestDto
+    ): Response<AuthMessageResponseDto>
 
     @GET("users/me")
     suspend fun getCurrentUser(): Response<UserDto>

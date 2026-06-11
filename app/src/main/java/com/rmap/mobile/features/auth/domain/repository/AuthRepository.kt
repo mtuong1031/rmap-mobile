@@ -11,7 +11,16 @@ interface AuthRepository {
 
     suspend fun loginWithGithub(code: String): Result<User>
 
+    suspend fun linkWithGoogle(idToken: String): Result<Unit>
+
+    suspend fun linkWithGithub(code: String): Result<Unit>
+
     suspend fun logout(): Result<Unit>
+
+    suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String
+    ): Result<Unit>
 
     suspend fun getCurrentUser(): Result<User>
 }

@@ -3,6 +3,7 @@ package com.rmap.mobile.features.auth.data.repository
 import com.rmap.mobile.core.network.AppException
 import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.features.auth.data.model.AuthMessageResponseDto
+import com.rmap.mobile.features.auth.data.model.ChangePasswordRequestDto
 import com.rmap.mobile.features.auth.data.model.MobileOAuthRequestDto
 import com.rmap.mobile.features.auth.data.model.GithubMobileOAuthRequestDto
 import com.rmap.mobile.features.auth.data.model.UserDto
@@ -93,6 +94,51 @@ class AuthRepositoryImplTest {
     }
 
     @Test
+    fun `changePassword success clears session and sets unauthenticated state`() = runTest {
+        var clearCount = 0
+        val api = FakeAuthApi()
+        val repository = newRepository(
+            api = api,
+            sessionManager = SessionManager { clearCount++ }
+        )
+
+        val result = repository.changePassword(
+            currentPassword = "old-password",
+            newPassword = "new-password"
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals("old-password", api.changePasswordRequest?.currentPassword)
+        assertEquals("new-password", api.changePasswordRequest?.newPassword)
+        assertEquals(1, clearCount)
+        assertEquals(AuthState.Unauthenticated, repository.authState.value)
+    }
+
+    @Test
+    fun `changePassword API error returns failure without clearing session`() = runTest {
+        var clearCount = 0
+        val api = FakeAuthApi().apply {
+            changePasswordResponse = Response.error(
+                400,
+                """{"code":40000,"message":"Current password is incorrect."}"""
+                    .toResponseBody("application/json".toMediaType())
+            )
+        }
+        val repository = newRepository(
+            api = api,
+            sessionManager = SessionManager { clearCount++ }
+        )
+
+        val result = repository.changePassword(
+            currentPassword = "bad-password",
+            newPassword = "new-password"
+        )
+
+        assertTrue(result.isFailure)
+        assertEquals(0, clearCount)
+    }
+
+    @Test
     fun `google sign in API error returns app exception`() = runTest {
         val api = FakeAuthApi().apply {
             loginWithGoogleResponse = Response.error(
@@ -122,12 +168,16 @@ class AuthRepositoryImplTest {
     private class FakeAuthApi : AuthApi {
         var googleRequest: MobileOAuthRequestDto? = null
         var githubRequest: GithubMobileOAuthRequestDto? = null
+        var changePasswordRequest: ChangePasswordRequestDto? = null
         var loginWithGoogleCallCount = 0
         var loginWithGithubCallCount = 0
         var getCurrentUserCallCount = 0
         var loginWithGoogleResponse: Response<AuthMessageResponseDto> = Response.success(AuthMessageResponseDto("Login successful"))
         var loginWithGithubResponse: Response<AuthMessageResponseDto> = Response.success(AuthMessageResponseDto("Login successful"))
         var logoutResponse: Response<AuthMessageResponseDto> = Response.success(AuthMessageResponseDto("Logged out successfully"))
+        var changePasswordResponse: Response<AuthMessageResponseDto> = Response.success(
+            AuthMessageResponseDto("Password changed successfully")
+        )
         var getCurrentUserResponse: Response<UserDto> = Response.success(testUser)
 
         override suspend fun loginWithGoogle(request: MobileOAuthRequestDto): Response<AuthMessageResponseDto> {
@@ -143,6 +193,11 @@ class AuthRepositoryImplTest {
         }
 
         override suspend fun logout(): Response<AuthMessageResponseDto> = logoutResponse
+
+        override suspend fun changePassword(request: ChangePasswordRequestDto): Response<AuthMessageResponseDto> {
+            changePasswordRequest = request
+            return changePasswordResponse
+        }
 
         override suspend fun getCurrentUser(): Response<UserDto> {
             getCurrentUserCallCount++

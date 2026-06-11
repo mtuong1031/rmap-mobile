@@ -28,6 +28,24 @@ class AuthDtoTest {
     }
 
     @Test
+    fun `change password request serializes password fields as camel case`() {
+        val json = gson.toJson(
+            ChangePasswordRequestDto(
+                currentPassword = "old-password",
+                newPassword = "new-password"
+            )
+        )
+
+        val jsonObject = JsonParser.parseString(json).asJsonObject
+        assertTrue(jsonObject.has("currentPassword"))
+        assertTrue(jsonObject.has("newPassword"))
+        assertFalse(jsonObject.has("current_password"))
+        assertFalse(jsonObject.has("new_password"))
+        assertEquals("old-password", jsonObject.get("currentPassword").asString)
+        assertEquals("new-password", jsonObject.get("newPassword").asString)
+    }
+
+    @Test
     fun `camel case user response maps to domain user`() {
         val dto = gson.fromJson(
             """
