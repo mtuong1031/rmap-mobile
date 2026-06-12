@@ -55,33 +55,13 @@ private fun AiRoadmapLibrarySkeletonPreview() {
 private fun AiRoadmapSearchSkeleton(
     brush: Brush
 ) {
-    RMapSkeletonCard(
+    RMapSkeletonBlock(
         modifier = Modifier
             .fillMaxWidth()
             .height(AiRoadmapSkeletonSearchHeight),
-        shape = AppShapes.heroCard
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Dimens.spacingXl, vertical = Dimens.spacingLg),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RMapSkeletonBlock(
-                modifier = Modifier.size(28.dp),
-                shape = AppShapes.pill,
-                brush = brush
-            )
-            RMapSkeletonBlock(
-                modifier = Modifier
-                    .fillMaxWidth(0.78f)
-                    .height(22.dp),
-                shape = AppShapes.pill,
-                brush = brush
-            )
-        }
-    }
+        shape = AppShapes.button,
+        brush = brush
+    )
 }
 
 @Composable

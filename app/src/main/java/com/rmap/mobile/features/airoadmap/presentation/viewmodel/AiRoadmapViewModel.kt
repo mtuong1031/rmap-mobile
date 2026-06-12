@@ -2,6 +2,8 @@ package com.rmap.mobile.features.airoadmap.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rmap.mobile.core.auth.PendingProtectedAction
+import com.rmap.mobile.core.auth.ProtectedActionGate
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.airoadmap.domain.model.AiGeneratedRoadmap
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
@@ -9,18 +11,21 @@ import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapDraft
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationPhase
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestion
 import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
+import com.rmap.mobile.features.auth.domain.model.AuthState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class AiRoadmapViewModel(
     private val repository: AiRoadmapRepository = RMapAppGraph.aiRoadmapRepository,
+    private val protectedActionGate: ProtectedActionGate = RMapAppGraph.authGuard,
     private val currentTimeMillis: () -> Long = { System.currentTimeMillis() }
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AiRoadmapUiState())
@@ -78,6 +83,22 @@ class AiRoadmapViewModel(
                 }
             }
         }
+
+        viewModelScope.launch {
+            combine(
+                protectedActionGate.authState,
+                protectedActionGate.pendingAction
+            ) { authState, pendingAction -> authState to pendingAction }
+                .collect { (authState, pendingAction) ->
+                    if (
+                        authState is AuthState.Authenticated &&
+                        pendingAction == PendingProtectedAction.GenerateAiRoadmap &&
+                        protectedActionGate.consumePendingAction(PendingProtectedAction.GenerateAiRoadmap)
+                    ) {
+                        executeGenerateRoadmap()
+                    }
+                }
+        }
     }
 
     fun onSearchQueryChange(query: String) {
@@ -127,6 +148,7 @@ class AiRoadmapViewModel(
     }
 
     fun onBackToLibrary() {
+        protectedActionGate.clearPendingAction(PendingProtectedAction.GenerateAiRoadmap)
         _uiState.update {
             it.copy(
                 step = AiRoadmapStep.Library,
@@ -263,46 +285,17 @@ class AiRoadmapViewModel(
     }
 
     fun onSubmitAnswers() {
-        val state = _uiState.value
-        val draft = buildDraftOrSetError(requireRoleCategory = true) ?: return
-
-        val hasBlankCustomAnswer = state.questions.any {
-            it.isCustomAnswerSelected && it.customAnswer.isBlank()
-        }
-        if (hasBlankCustomAnswer) {
-            _uiState.update { it.copy(formError = AiRoadmapFormError.CustomAnswerRequired) }
-            return
-        }
-
-        if (!state.isReadyToGenerate) {
-            _uiState.update { it.copy(formError = AiRoadmapFormError.AnswerAllQuestions) }
-            return
-        }
+        if (!validateAnswersForGeneration()) return
 
         viewModelScope.launch {
-            repository.prepareGeneration(
-                draft = draft,
-                answers = state.questions.map { question ->
-                    AiRoadmapAnswer(
-                        question = question.prompt,
-                        answer = question.answerText
-                    )
-                }
-            ).onSuccess { request ->
-                _uiState.update {
-                    it.copy(
-                        step = AiRoadmapStep.Generating,
-                        formError = null
-                    )
-                }
-                repository.startGeneration(request)
-            }.onFailure {
-                _uiState.update { it.copy(formError = AiRoadmapFormError.AnswerAllQuestions) }
+            protectedActionGate.runOrRequestAuth(PendingProtectedAction.GenerateAiRoadmap) {
+                executeGenerateRoadmap()
             }
         }
     }
 
     fun onCancelGeneration() {
+        protectedActionGate.clearPendingAction(PendingProtectedAction.GenerateAiRoadmap)
         repository.cancelGeneration()
         _uiState.update {
             it.copy(
@@ -315,6 +308,54 @@ class AiRoadmapViewModel(
                 currentQuestionIndex = 0,
                 formError = null
             )
+        }
+    }
+
+    private fun validateAnswersForGeneration(): Boolean {
+        val state = _uiState.value
+        buildDraftOrSetError(requireRoleCategory = true) ?: return false
+
+        val hasBlankCustomAnswer = state.questions.any {
+            it.isCustomAnswerSelected && it.customAnswer.isBlank()
+        }
+        if (hasBlankCustomAnswer) {
+            _uiState.update { it.copy(formError = AiRoadmapFormError.CustomAnswerRequired) }
+            return false
+        }
+
+        if (!state.isReadyToGenerate) {
+            _uiState.update { it.copy(formError = AiRoadmapFormError.AnswerAllQuestions) }
+            return false
+        }
+
+        return true
+    }
+
+    private suspend fun executeGenerateRoadmap() {
+        if (_uiState.value.step == AiRoadmapStep.Generating) return
+        if (!validateAnswersForGeneration()) return
+
+        val state = _uiState.value
+        val draft = buildDraftOrSetError(requireRoleCategory = true) ?: return
+
+        repository.prepareGeneration(
+            draft = draft,
+            answers = state.questions.map { question ->
+                AiRoadmapAnswer(
+                    question = question.prompt,
+                    answer = question.answerText
+                )
+            }
+        ).onSuccess { request ->
+            _uiState.update {
+                it.copy(
+                    step = AiRoadmapStep.Generating,
+                    formError = null
+                )
+            }
+            repository.startGeneration(request)
+        }.onFailure {
+            _uiState.update { it.copy(formError = AiRoadmapFormError.AnswerAllQuestions) }
         }
     }
 

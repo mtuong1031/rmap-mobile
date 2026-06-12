@@ -6,6 +6,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,11 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
@@ -181,24 +181,14 @@ fun AiRoadmapScreen(
     AnimatedContent(
         targetState = uiState.step,
         transitionSpec = {
-            val initialIndex = when (initialState) {
-                AiRoadmapStep.Library -> 0
-                AiRoadmapStep.Setup -> 1
-                AiRoadmapStep.Questions -> 2
-                AiRoadmapStep.Generating -> 3
-            }
-            val targetIndex = when (targetState) {
-                AiRoadmapStep.Library -> 0
-                AiRoadmapStep.Setup -> 1
-                AiRoadmapStep.Questions -> 2
-                AiRoadmapStep.Generating -> 3
-            }
+            val initialIndex = initialState.ordinal
+            val targetIndex = targetState.ordinal
             if (targetIndex > initialIndex) {
                 slideInHorizontally(animationSpec = tween(250), initialOffsetX = { it }) togetherWith
-                slideOutHorizontally(animationSpec = tween(250), targetOffsetX = { -it / 4 })
+                    slideOutHorizontally(animationSpec = tween(250), targetOffsetX = { -it / 4 })
             } else {
                 slideInHorizontally(animationSpec = tween(250), initialOffsetX = { -it / 4 }) togetherWith
-                slideOutHorizontally(animationSpec = tween(250), targetOffsetX = { it })
+                    slideOutHorizontally(animationSpec = tween(250), targetOffsetX = { it })
             }
         },
         label = "AiRoadmapStepTransition",
@@ -209,31 +199,37 @@ fun AiRoadmapScreen(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
                 if (currentStep != AiRoadmapStep.Library) {
-                    AiRoadmapStepHeader(
-                        eyebrow = stringResource(R.string.ai_roadmap_eyebrow),
-                        title = stringResource(
-                            when (currentStep) {
-                                AiRoadmapStep.Generating -> R.string.ai_roadmap_generating_title
-                                else -> R.string.ai_roadmap_setup_title
-                            }
-                        ),
-                        description = "",
-                        backContentDescription = stringResource(R.string.content_description_back),
-                        onBackClick = onBackToLibrary,
-                        compact = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.background)
-                            .statusBarsPadding()
-                            .padding(horizontal = Dimens.spacingScreenHorizontal)
-                    )
+                AiRoadmapStepHeader(
+                    eyebrow = stringResource(R.string.ai_roadmap_eyebrow),
+                    title = stringResource(
+                        when (currentStep) {
+                            AiRoadmapStep.Generating -> R.string.ai_roadmap_generating_title
+                            else -> R.string.ai_roadmap_setup_title
+                        }
+                    ),
+                    description = "",
+                    backContentDescription = stringResource(R.string.content_description_back),
+                    onBackClick = onBackToLibrary,
+                    compact = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                        .padding(horizontal = Dimens.spacingScreenHorizontal)
+                )
                 }
             }
         ) { innerPadding ->
-            val bottomNavigationPadding = if (currentStep != AiRoadmapStep.Library) {
+            val bottomNavigationPadding = if (currentStep == AiRoadmapStep.Questions) {
                 Dimens.spacingNone
             } else {
                 Dimens.floatingNavBarHeight
+            }
+
+            val topPadding = if (currentStep == AiRoadmapStep.Library) {
+                Dimens.spacingScreenTopCompact
+            } else {
+                innerPadding.calculateTopPadding() + Dimens.spacingLg
             }
 
             LazyColumn(
@@ -241,11 +237,7 @@ fun AiRoadmapScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = Dimens.spacingScreenHorizontal,
-                    top = if (currentStep == AiRoadmapStep.Library) {
-                        Dimens.spacingScreenTopCompact
-                    } else {
-                        innerPadding.calculateTopPadding() + Dimens.spacingMd
-                    },
+                    top = topPadding,
                     end = Dimens.spacingScreenHorizontal,
                     bottom = innerPadding.calculateBottomPadding() +
                         Dimens.spacingScreenBottomCompact +
@@ -266,40 +258,40 @@ fun AiRoadmapScreen(
 
                 item {
                     when (currentStep) {
-                        AiRoadmapStep.Library -> AiRoadmapLibraryScreen(
-                            uiState = uiState,
-                            onSearchQueryChange = onSearchQueryChange,
-                            onCreateRoadmapClick = onCreateRoadmapClick,
-                            onSeeMoreGeneratedRoadmaps = onSeeMoreGeneratedRoadmaps,
-                            onSeeAllGeneratedRoadmaps = onSeeAllGeneratedRoadmaps,
-                            onSeeLessGeneratedRoadmaps = onSeeLessGeneratedRoadmaps,
-                            onExploreRoadmapsClick = onExploreRoadmapsClick,
-                            onRoadmapSelected = onRoadmapSelected
-                        )
+                    AiRoadmapStep.Library -> AiRoadmapLibraryScreen(
+                        uiState = uiState,
+                        onSearchQueryChange = onSearchQueryChange,
+                        onCreateRoadmapClick = onCreateRoadmapClick,
+                        onSeeMoreGeneratedRoadmaps = onSeeMoreGeneratedRoadmaps,
+                        onSeeAllGeneratedRoadmaps = onSeeAllGeneratedRoadmaps,
+                        onSeeLessGeneratedRoadmaps = onSeeLessGeneratedRoadmaps,
+                        onExploreRoadmapsClick = onExploreRoadmapsClick,
+                        onRoadmapSelected = onRoadmapSelected
+                    )
 
-                        AiRoadmapStep.Setup -> AiRoadmapSetupScreen(
-                            uiState = uiState,
-                            onTopicChange = onTopicChange,
-                            onDeadlineClick = { isDatePickerVisible = true },
-                            onDailyStudyHoursChange = onDailyStudyHoursChange,
-                            onSubmitSetup = onSubmitSetup
-                        )
+                    AiRoadmapStep.Setup -> AiRoadmapSetupScreen(
+                        uiState = uiState,
+                        onTopicChange = onTopicChange,
+                        onDeadlineClick = { isDatePickerVisible = true },
+                        onDailyStudyHoursChange = onDailyStudyHoursChange,
+                        onSubmitSetup = onSubmitSetup
+                    )
 
-                        AiRoadmapStep.Questions -> AiRoadmapQuestionsScreen(
-                            uiState = uiState,
-                            onOptionSelected = onOptionSelected,
-                            onCustomAnswerChange = onCustomAnswerChange,
-                            onPreviousQuestion = onPreviousQuestion,
-                            onNextQuestion = onNextQuestion,
-                            onGenerateClick = ::requestPermissionThenGenerate
-                        )
+                    AiRoadmapStep.Questions -> AiRoadmapQuestionsScreen(
+                        uiState = uiState,
+                        onOptionSelected = onOptionSelected,
+                        onCustomAnswerChange = onCustomAnswerChange,
+                        onPreviousQuestion = onPreviousQuestion,
+                        onNextQuestion = onNextQuestion,
+                        onGenerateClick = ::requestPermissionThenGenerate
+                    )
 
-                        AiRoadmapStep.Generating -> AiRoadmapGeneratingScreen(
-                            uiState = uiState,
-                            onExploreClick = onExploreClick,
-                            onViewRoadmapClick = onViewGeneratedRoadmap,
-                            onCancelGeneration = onCancelGeneration
-                        )
+                    AiRoadmapStep.Generating -> AiRoadmapGeneratingScreen(
+                        uiState = uiState,
+                        onExploreClick = onExploreClick,
+                        onViewRoadmapClick = onViewGeneratedRoadmap,
+                        onCancelGeneration = onCancelGeneration
+                    )
                     }
                 }
             }

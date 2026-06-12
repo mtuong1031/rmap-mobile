@@ -1,6 +1,8 @@
 package com.rmap.mobile.features.airoadmap.presentation.viewmodel
 
 import com.rmap.mobile.MainDispatcherRule
+import com.rmap.mobile.core.auth.PendingProtectedAction
+import com.rmap.mobile.core.auth.ProtectedActionGate
 import com.rmap.mobile.features.airoadmap.domain.model.AiGeneratedRoadmap
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapDraft
@@ -11,6 +13,8 @@ import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestion
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuestionOption
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapQuizResult
 import com.rmap.mobile.features.airoadmap.domain.repository.AiRoadmapRepository
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.model.User
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +36,7 @@ class AiRoadmapViewModelTest {
     fun onSubmitSetup_setsTopicRequiredError_whenTopicIsBlank() = runTest {
         val viewModel = AiRoadmapViewModel(
             repository = FakeAiRoadmapRepository(),
+            protectedActionGate = FakeProtectedActionGate.authenticated(),
             currentTimeMillis = { now }
         )
 
@@ -44,6 +49,7 @@ class AiRoadmapViewModelTest {
     fun onSubmitSetup_loadsQuestions_whenSetupIsValid() = runTest {
         val viewModel = AiRoadmapViewModel(
             repository = FakeAiRoadmapRepository(),
+            protectedActionGate = FakeProtectedActionGate.authenticated(),
             currentTimeMillis = { now }
         )
 
@@ -129,10 +135,46 @@ class AiRoadmapViewModelTest {
     }
 
     @Test
+    fun onSubmitAnswers_requestsLoginAndKeepsQuestionnaire_whenGuestGenerates() = runTest {
+        val repository = FakeAiRoadmapRepository()
+        val protectedActionGate = FakeProtectedActionGate.guest()
+        val viewModel = preparedViewModel(
+            repository = repository,
+            protectedActionGate = protectedActionGate
+        )
+
+        answerAllQuestions(viewModel)
+        viewModel.onSubmitAnswers()
+
+        assertEquals(PendingProtectedAction.GenerateAiRoadmap, protectedActionGate.pendingAction.value)
+        assertEquals(AiRoadmapStep.Questions, viewModel.uiState.value.step)
+        assertEquals(7, viewModel.uiState.value.questions.size)
+        assertTrue(!repository.wasGenerationStarted)
+    }
+
+    @Test
+    fun pendingGenerateRoadmap_resumesGenerationAfterLogin() = runTest {
+        val repository = FakeAiRoadmapRepository()
+        val protectedActionGate = FakeProtectedActionGate.guest()
+        val viewModel = preparedViewModel(
+            repository = repository,
+            protectedActionGate = protectedActionGate
+        )
+
+        answerAllQuestions(viewModel)
+        viewModel.onSubmitAnswers()
+        protectedActionGate.authenticate()
+
+        assertTrue(repository.wasGenerationStarted)
+        assertEquals(null, protectedActionGate.pendingAction.value)
+    }
+
+    @Test
     fun generationSuccess_movesScreenToLibraryAndAddsGeneratedRoadmap() = runTest {
         val repository = FakeAiRoadmapRepository()
         val viewModel = AiRoadmapViewModel(
             repository = repository,
+            protectedActionGate = FakeProtectedActionGate.authenticated(),
             currentTimeMillis = { now }
         )
 
@@ -150,16 +192,84 @@ class AiRoadmapViewModelTest {
     }
 
     private fun preparedViewModel(
-        repository: FakeAiRoadmapRepository = FakeAiRoadmapRepository()
+        repository: FakeAiRoadmapRepository = FakeAiRoadmapRepository(),
+        protectedActionGate: FakeProtectedActionGate = FakeProtectedActionGate.authenticated()
     ): AiRoadmapViewModel {
         return AiRoadmapViewModel(
             repository = repository,
+            protectedActionGate = protectedActionGate,
             currentTimeMillis = { now }
         ).apply {
             onTopicChange("Android Developer")
             onDeadlineSelected(futureDeadline)
             onSubmitSetup()
         }
+    }
+
+    private fun answerAllQuestions(viewModel: AiRoadmapViewModel) {
+        viewModel.onOptionSelected("level", "level-1")
+        (2..6).forEach { index ->
+            viewModel.onOptionSelected("question-$index", "question-$index-option-1")
+        }
+        viewModel.onCustomAnswerChange("question-7", "I can ship small Android apps")
+    }
+}
+
+private class FakeProtectedActionGate(
+    initialAuthState: AuthState
+) : ProtectedActionGate {
+    override val authState = MutableStateFlow(initialAuthState)
+    override val pendingAction = MutableStateFlow<PendingProtectedAction?>(null)
+
+    override suspend fun runOrRequestAuth(
+        action: PendingProtectedAction,
+        onAuthenticated: suspend () -> Unit
+    ): Boolean {
+        return if (authState.value is AuthState.Authenticated) {
+            onAuthenticated()
+            true
+        } else {
+            pendingAction.value = action
+            false
+        }
+    }
+
+    override fun consumePendingAction(action: PendingProtectedAction): Boolean {
+        return if (pendingAction.value == action) {
+            pendingAction.value = null
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun clearPendingAction(action: PendingProtectedAction) {
+        if (pendingAction.value == action) {
+            pendingAction.value = null
+        }
+    }
+
+    fun authenticate() {
+        authState.value = AuthState.Authenticated(testUser)
+    }
+
+    companion object {
+        fun authenticated(): FakeProtectedActionGate {
+            return FakeProtectedActionGate(AuthState.Authenticated(testUser))
+        }
+
+        fun guest(): FakeProtectedActionGate {
+            return FakeProtectedActionGate(AuthState.Unauthenticated)
+        }
+
+        private val testUser = User(
+            id = "learner",
+            email = "learner@example.com",
+            fullName = "RMap Learner",
+            avatarUrl = null,
+            role = "user",
+            createdAt = "2026-05-28T00:00:00Z"
+        )
     }
 }
 
