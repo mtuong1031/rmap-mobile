@@ -22,8 +22,19 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapMilestone
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
+import com.rmap.mobile.core.notification.AppNotification
+import com.rmap.mobile.core.notification.AppNotificationManager
+import com.rmap.mobile.core.notification.AppNotificationVariant
+import com.rmap.mobile.core.network.AppException
+import com.rmap.mobile.core.network.NetworkErrorType
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.model.User
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -212,6 +223,83 @@ class RoadmapDetailViewModelTest {
         assertTrue(repository.progressUpdates.isEmpty())
         assertEquals(RoadmapNodeStatus.NotStarted, viewModel.uiState.value.groups.first().nodes.first().status)
         assertEquals(null, viewModel.uiState.value.updatingNodeId)
+    }
+
+    @Test
+    fun `onContinueClick does not emit failure event when backend start fails with Unauthorized`() = runTest {
+        val failureMessage = "Unauthorized"
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(notStartedDetail),
+            startResult = Result.failure(
+                AppException(
+                    message = failureMessage,
+                    type = NetworkErrorType.Unauthorized
+                )
+            )
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository
+        )
+        viewModel.loadRoadmap("roadmap-1")
+
+        var didEmitEvent = false
+        val job = launch {
+            viewModel.events.collect {
+                didEmitEvent = true
+            }
+        }
+
+        viewModel.onContinueClick()
+
+        assertFalse(didEmitEvent)
+        assertEquals(listOf("roadmap-1"), repository.startedRoadmapIds)
+        job.cancel()
+    }
+
+    @Test
+    fun `onContinueClick as guest enqueues sign in required notification`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(notStartedDetail)
+        )
+        val authRepository = FakeAuthRepository(AuthState.Unauthenticated)
+        val appNotificationManager = AppNotificationManager()
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            authRepository = authRepository,
+            appNotificationManager = appNotificationManager
+        )
+        viewModel.loadRoadmap("roadmap-1")
+        val notification = async(start = CoroutineStart.UNDISPATCHED) { appNotificationManager.notifications.first() }
+
+        viewModel.onContinueClick()
+
+        assertTrue(repository.startedRoadmapIds.isEmpty())
+        assertEquals(R.string.auth_required_title, notification.await().titleResId)
+        assertEquals(R.string.auth_required_start_roadmap_message, notification.await().messageResId)
+        assertEquals(AppNotificationVariant.Warning, notification.await().variant)
+    }
+
+    @Test
+    fun `onNodeActionClick as guest enqueues sign in required notification`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(notStartedDetail)
+        )
+        val authRepository = FakeAuthRepository(AuthState.Unauthenticated)
+        val appNotificationManager = AppNotificationManager()
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            authRepository = authRepository,
+            appNotificationManager = appNotificationManager
+        )
+        viewModel.loadRoadmap("roadmap-1")
+        val notification = async(start = CoroutineStart.UNDISPATCHED) { appNotificationManager.notifications.first() }
+
+        val targetNode = viewModel.uiState.value.groups.first().nodes.first()
+        viewModel.onNodeActionClick(targetNode)
+
+        assertEquals(R.string.auth_required_title, notification.await().titleResId)
+        assertEquals(R.string.auth_required_view_lesson_message, notification.await().messageResId)
+        assertEquals(AppNotificationVariant.Warning, notification.await().variant)
     }
 
     @Test
@@ -817,5 +905,18 @@ class RoadmapDetailViewModelTest {
                 skillId = "skill-$id"
             )
         }
+    }
+
+    private class FakeAuthRepository(
+        initialState: AuthState = AuthState.Unauthenticated
+    ) : AuthRepository {
+        override val authState = MutableStateFlow(initialState)
+        override suspend fun loginWithGoogle(idToken: String): Result<User> = Result.failure(UnsupportedOperationException())
+        override suspend fun loginWithGithub(code: String): Result<User> = Result.failure(UnsupportedOperationException())
+        override suspend fun linkWithGoogle(idToken: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+        override suspend fun linkWithGithub(code: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+        override suspend fun logout(): Result<Unit> = Result.success(Unit)
+        override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+        override suspend fun getCurrentUser(): Result<User> = Result.failure(UnsupportedOperationException())
     }
 }

@@ -68,7 +68,7 @@ object ErrorMapper {
 
     private fun Int.toUserMessage(apiMessage: String?): String {
         return when (this) {
-            401 -> "Your session has expired. Please sign in again."
+            401 -> "Please sign in to continue."
             403 -> "You do not have permission to access this."
             404 -> "No data was found."
             in 500..599 -> "The server is having trouble. Please try again later."

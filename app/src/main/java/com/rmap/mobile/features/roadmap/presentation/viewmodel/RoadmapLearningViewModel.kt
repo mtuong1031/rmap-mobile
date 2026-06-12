@@ -21,10 +21,47 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+import com.rmap.mobile.core.notification.AppNotification
+import com.rmap.mobile.core.notification.AppNotificationAction
+import com.rmap.mobile.core.notification.AppNotificationManager
+import com.rmap.mobile.core.notification.AppNotificationVariant
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+
 class RoadmapLearningViewModel(
     private val skillLearningRepository: SkillLearningRepository = RMapAppGraph.skillLearningRepository,
-    private val roadmapRepository: RoadmapRepository = RMapAppGraph.roadmapRepository
+    private val roadmapRepository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val authRepository: AuthRepository? = null,
+    private val appNotificationManager: AppNotificationManager? = null
 ) : ViewModel() {
+    private val activeAuthRepository: AuthRepository
+        get() = authRepository ?: run {
+            try {
+                RMapAppGraph.authRepository
+            } catch (e: Exception) {
+                object : AuthRepository {
+                    override val authState = kotlinx.coroutines.flow.MutableStateFlow<AuthState>(
+                        AuthState.Authenticated(com.rmap.mobile.features.auth.domain.model.User("test-id", "test-email", "test-name", null, "user", ""))
+                    )
+                    override suspend fun loginWithGoogle(idToken: String): Result<com.rmap.mobile.features.auth.domain.model.User> = Result.failure(UnsupportedOperationException())
+                    override suspend fun loginWithGithub(code: String): Result<com.rmap.mobile.features.auth.domain.model.User> = Result.failure(UnsupportedOperationException())
+                    override suspend fun linkWithGoogle(idToken: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+                    override suspend fun linkWithGithub(code: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+                    override suspend fun logout(): Result<Unit> = Result.success(Unit)
+                    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+                    override suspend fun getCurrentUser(): Result<com.rmap.mobile.features.auth.domain.model.User> = Result.failure(UnsupportedOperationException())
+                }
+            }
+        }
+
+    private val activeAppNotificationManager: AppNotificationManager
+        get() = appNotificationManager ?: run {
+            try {
+                RMapAppGraph.appNotificationManager
+            } catch (e: Exception) {
+                AppNotificationManager()
+            }
+        }
     private val _uiState = MutableStateFlow(RoadmapLearningUiState())
     val uiState: StateFlow<RoadmapLearningUiState> = _uiState.asStateFlow()
 
@@ -112,8 +149,11 @@ class RoadmapLearningViewModel(
                     }
                     _events.emit(RoadmapLearningEvent.NodeCompleted)
                 }
-                .onFailure {
+                .onFailure { error ->
                     _uiState.update { it.copy(isCompleting = false) }
+                    if (error is AppException && error.type == NetworkErrorType.Unauthorized) {
+                        return@onFailure
+                    }
                     _events.emit(RoadmapLearningEvent.NodeCompletionFailed)
                 }
         }
@@ -125,6 +165,22 @@ class RoadmapLearningViewModel(
 
         val roadmapId = state.roadmapId.takeIf { it.isNotBlank() } ?: return
         val nodeId = state.nodeId.takeIf { it.isNotBlank() } ?: return
+
+        val isGuest = activeAuthRepository.authState.value == AuthState.Unauthenticated
+        if (isGuest) {
+            viewModelScope.launch {
+                activeAppNotificationManager.enqueue(
+                    AppNotification(
+                        titleResId = R.string.auth_required_title,
+                        messageResId = R.string.auth_required_start_roadmap_message,
+                        variant = AppNotificationVariant.Warning,
+                        actionLabelResId = R.string.action_login,
+                        action = AppNotificationAction.Login
+                    )
+                )
+            }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update {
@@ -146,8 +202,11 @@ class RoadmapLearningViewModel(
                     }
                     _events.emit(RoadmapLearningEvent.NavigateToQuiz(roadmapId = roadmapId, nodeId = nodeId))
                 }
-                .onFailure {
+                .onFailure { error ->
                     _uiState.update { it.copy(isStartingRoadmapForQuiz = false) }
+                    if (error is AppException && error.type == NetworkErrorType.Unauthorized) {
+                        return@onFailure
+                    }
                     _events.emit(RoadmapLearningEvent.NodeCompletionFailed)
                 }
         }

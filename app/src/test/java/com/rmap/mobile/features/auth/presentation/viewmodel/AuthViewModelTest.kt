@@ -19,6 +19,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import com.rmap.mobile.core.notification.AppNotificationManager
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthViewModelTest {
@@ -84,7 +85,8 @@ class AuthViewModelTest {
     private fun newViewModel(): AuthViewModel {
         return AuthViewModel(
             loginWithGoogleUseCase = loginWithGoogleUseCase,
-            loginWithGithubUseCase = loginWithGithubUseCase
+            loginWithGithubUseCase = loginWithGithubUseCase,
+            notificationManager = AppNotificationManager()
         )
     }
 
@@ -94,6 +96,8 @@ class AuthViewModelTest {
 
         override suspend fun loginWithGoogle(idToken: String): Result<User> = result
         override suspend fun loginWithGithub(code: String): Result<User> = result
+        override suspend fun linkWithGoogle(idToken: String): Result<Unit> = Result.success(Unit)
+        override suspend fun linkWithGithub(code: String): Result<Unit> = Result.success(Unit)
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
         override suspend fun changePassword(
             currentPassword: String,

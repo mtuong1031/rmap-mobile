@@ -51,6 +51,8 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.model.toStableLearningId
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -59,6 +61,7 @@ import kotlinx.coroutines.flow.flow
 class RemoteRoadmapRepository(
     private val roadmapApi: RoadmapApi,
     private val sessionManager: SessionManager,
+    private val authRepository: AuthRepository? = null,
     private val templateCategoryDao: TemplateCategoryDao? = null,
     private val templateRoadmapDao: TemplateRoadmapDao? = null,
     private val syncManager: SyncManager? = null,
@@ -301,6 +304,18 @@ class RemoteRoadmapRepository(
         val roadmapId = id.trim()
         if (roadmapId.isBlank()) {
             return Result.failure(invalidRoadmapId())
+        }
+
+        val isGuest = authRepository?.authState?.value == AuthState.Unauthenticated
+        if (isGuest) {
+            return when (val templateResult = getTemplateResult(roadmapId)) {
+                is NetworkResult.Success -> loadTemplateRoadmapDetail(
+                    templateResult = templateResult,
+                    roadmapId = roadmapId,
+                )
+
+                is NetworkResult.Error -> Result.failure(templateResult.toAppException())
+            }
         }
 
         val (roadmapResult, nodesResult, progressResult) = coroutineScope {

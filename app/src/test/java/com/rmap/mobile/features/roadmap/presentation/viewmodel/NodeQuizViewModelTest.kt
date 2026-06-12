@@ -18,6 +18,7 @@ import com.rmap.mobile.features.roadmap.domain.model.RoadmapDetail
 import com.rmap.mobile.features.roadmap.domain.model.RoadmapSummary
 import com.rmap.mobile.features.roadmap.domain.model.SkillLearningContent
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
+import com.rmap.mobile.core.notification.AppNotificationManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
@@ -36,7 +37,7 @@ class NodeQuizViewModelTest {
 
     @Test
     fun `loadQuiz starts on first question with answered progress`() = runTest {
-        val viewModel = NodeQuizViewModel(FakeRoadmapRepository())
+        val viewModel = newViewModel(FakeRoadmapRepository())
 
         viewModel.loadQuiz(roadmapId = "roadmap-1", nodeId = "node-1")
         runCurrent()
@@ -51,7 +52,7 @@ class NodeQuizViewModelTest {
 
     @Test
     fun `selecting option does not auto advance to next question`() = runTest {
-        val viewModel = NodeQuizViewModel(FakeRoadmapRepository())
+        val viewModel = newViewModel(FakeRoadmapRepository())
         viewModel.loadQuiz(roadmapId = "roadmap-1", nodeId = "node-1")
         runCurrent()
 
@@ -67,7 +68,7 @@ class NodeQuizViewModelTest {
 
     @Test
     fun `next question requires current question answer`() = runTest {
-        val viewModel = NodeQuizViewModel(FakeRoadmapRepository())
+        val viewModel = newViewModel(FakeRoadmapRepository())
         viewModel.loadQuiz(roadmapId = "roadmap-1", nodeId = "node-1")
         runCurrent()
 
@@ -80,7 +81,7 @@ class NodeQuizViewModelTest {
     @Test
     fun `submit sends answers after all questions are answered`() = runTest {
         val repository = FakeRoadmapRepository()
-        val viewModel = NodeQuizViewModel(repository)
+        val viewModel = newViewModel(repository)
         viewModel.loadQuiz(roadmapId = "roadmap-1", nodeId = "node-1")
         runCurrent()
 
@@ -101,7 +102,14 @@ class NodeQuizViewModelTest {
             repository.submittedAnswers
         )
         assertNotNull(viewModel.uiState.value.result)
-        assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
+        assertEquals(2, viewModel.uiState.value.currentQuestionIndex)
+    }
+
+    private fun newViewModel(repository: RoadmapRepository): NodeQuizViewModel {
+        return NodeQuizViewModel(
+            repository = repository,
+            notificationManager = AppNotificationManager()
+        )
     }
 
     private class FakeRoadmapRepository : RoadmapRepository {

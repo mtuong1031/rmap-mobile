@@ -41,7 +41,7 @@ class ErrorMapperTest {
 
         assertEquals(NetworkErrorType.Unauthorized, error.type)
         assertEquals(401, error.code)
-        assertEquals("Your session has expired. Please sign in again.", error.message)
+        assertEquals("Please sign in to continue.", error.message)
     }
 
     @Test

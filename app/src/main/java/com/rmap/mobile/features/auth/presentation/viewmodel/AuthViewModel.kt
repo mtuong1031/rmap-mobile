@@ -5,8 +5,12 @@ import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rmap.mobile.core.notification.AppNotification
+import com.rmap.mobile.core.notification.AppNotificationManager
+import com.rmap.mobile.core.notification.AppNotificationVariant
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.BuildConfig
+import com.rmap.mobile.R
 import com.rmap.mobile.features.auth.domain.usecase.LoginWithGoogleUseCase
 import com.rmap.mobile.features.auth.domain.usecase.LoginWithGithubUseCase
 
@@ -21,7 +25,8 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel(
     private val loginWithGoogleUseCase: LoginWithGoogleUseCase = RMapAppGraph.loginWithGoogleUseCase,
-    private val loginWithGithubUseCase: LoginWithGithubUseCase = RMapAppGraph.loginWithGithubUseCase
+    private val loginWithGithubUseCase: LoginWithGithubUseCase = RMapAppGraph.loginWithGithubUseCase,
+    private val notificationManager: AppNotificationManager = RMapAppGraph.appNotificationManager
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -43,12 +48,32 @@ class AuthViewModel(
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = error.message) }
+                    notificationManager.enqueue(
+                        AppNotification(
+                            titleResId = R.string.snackbar_title_error,
+                            message = error.message ?: "Login failed",
+                            variant = AppNotificationVariant.Error
+                        )
+                    )
                 }
         }
     }
 
     fun onLoginError(message: String) {
         _uiState.update { it.copy(errorMessage = message) }
+        notificationManager.enqueue(
+            AppNotification(
+                titleResId = R.string.snackbar_title_error,
+                message = message,
+                variant = AppNotificationVariant.Error
+            )
+        )
+    }
+
+    fun onBackClick() {
+        viewModelScope.launch {
+            _events.emit(AuthEvent.NavigateBack)
+        }
     }
 
     fun onGithubLoginClick(context: Context) {
@@ -77,6 +102,13 @@ class AuthViewModel(
                 }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = error.message) }
+                    notificationManager.enqueue(
+                        AppNotification(
+                            titleResId = R.string.snackbar_title_error,
+                            message = error.message ?: "Login failed",
+                            variant = AppNotificationVariant.Error
+                        )
+                    )
                 }
         }
     }

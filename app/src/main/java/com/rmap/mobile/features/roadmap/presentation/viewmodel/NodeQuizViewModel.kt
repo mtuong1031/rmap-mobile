@@ -2,7 +2,11 @@ package com.rmap.mobile.features.roadmap.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rmap.mobile.core.notification.AppNotification
+import com.rmap.mobile.core.notification.AppNotificationManager
+import com.rmap.mobile.core.notification.AppNotificationVariant
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.R
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
@@ -10,7 +14,6 @@ import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +21,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class NodeQuizViewModel(
-    private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository
+    private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val notificationManager: AppNotificationManager = RMapAppGraph.appNotificationManager
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NodeQuizUiState())
     val uiState: StateFlow<NodeQuizUiState> = _uiState.asStateFlow()
@@ -63,6 +67,13 @@ class NodeQuizViewModel(
                             errorMessage = error.message
                         )
                     }
+                    notificationManager.enqueue(
+                        AppNotification(
+                            titleResId = R.string.snackbar_title_error,
+                            message = error.message ?: "Unable to load quiz",
+                            variant = AppNotificationVariant.Error
+                        )
+                    )
                 }
         }
     }
@@ -72,23 +83,12 @@ class NodeQuizViewModel(
         optionKey: String
     ) {
         _uiState.update { state ->
-            val questionIndex = state.questions.indexOfFirst { it.id == questionId }
-            val question = state.questions.getOrNull(questionIndex)
-
-            if (
-                state.result != null ||
-                state.isSubmitting ||
-                questionIndex == -1 ||
-                question == null ||
-                question.options.none { option -> option.key == optionKey }
-            ) {
-                state
-            } else {
-                state.copy(
-                    selectedAnswers = state.selectedAnswers + (questionId to optionKey),
-                    errorMessage = null
-                )
-            }
+            val updatedAnswers = state.selectedAnswers.toMutableMap()
+            updatedAnswers[questionId] = optionKey
+            state.copy(
+                selectedAnswers = updatedAnswers,
+                errorMessage = null
+            )
         }
     }
 
@@ -107,7 +107,7 @@ class NodeQuizViewModel(
                 state.copy(errorMessage = QUIZ_ANSWER_CURRENT_QUESTION_ERROR)
             } else {
                 state.copy(
-                    currentQuestionIndex = (state.currentQuestionIndex + 1).coerceAtMost(state.questions.lastIndex),
+                    currentQuestionIndex = (state.currentQuestionIndex + 1).coerceAtMost(state.questions.size - 1),
                     errorMessage = null
                 )
             }
@@ -128,37 +128,39 @@ class NodeQuizViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
 
-            val answers = state.questions.mapNotNull { question ->
-                state.selectedAnswers[question.id]?.let { selectedOption ->
-                    NodeQuizAnswer(
-                        questionId = question.id,
-                        selectedOption = selectedOption
-                    )
-                }
+            val answers = state.questions.map { question ->
+                NodeQuizAnswer(
+                    questionId = question.id,
+                    selectedOption = state.selectedAnswers[question.id].orEmpty()
+                )
             }
 
             repository.submitNodeQuiz(
                 roadmapId = state.roadmapId,
                 nodeId = state.nodeId,
                 answers = answers
-            )
-                .onSuccess { result ->
-                    _uiState.update {
-                        it.copy(
-                            isSubmitting = false,
-                            result = result.toNodeQuizResultUiModel(),
-                            currentQuestionIndex = 0
-                        )
-                    }
+            ).onSuccess { result ->
+                _uiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        result = result.toNodeQuizResultUiModel()
+                    )
                 }
-                .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
-                            isSubmitting = false,
-                            errorMessage = error.message
-                        )
-                    }
+            }.onFailure { error ->
+                _uiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = error.message
+                    )
                 }
+                notificationManager.enqueue(
+                    AppNotification(
+                        titleResId = R.string.snackbar_title_error,
+                        message = error.message ?: "Unable to submit quiz",
+                        variant = AppNotificationVariant.Error
+                    )
+                )
+            }
         }
     }
 }
@@ -170,7 +172,7 @@ data class NodeQuizUiState(
     val currentQuestionIndex: Int = 0,
     val selectedAnswers: Map<String, String> = emptyMap(),
     val result: NodeQuizResultUiModel? = null,
-    val isLoading: Boolean = true,
+    val isLoading: Boolean = false,
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null
 ) {
@@ -178,29 +180,22 @@ data class NodeQuizUiState(
         get() = questions.getOrNull(currentQuestionIndex)
 
     val answeredQuestionCount: Int
-        get() = questions.count { question -> selectedAnswers.containsKey(question.id) }
+        get() = selectedAnswers.size
 
     val isCurrentQuestionAnswered: Boolean
-        get() = currentQuestion?.let { question -> selectedAnswers.containsKey(question.id) } == true
+        get() = currentQuestion?.let { selectedAnswers.containsKey(it.id) } ?: false
 
     val isFirstQuestion: Boolean
         get() = currentQuestionIndex == 0
 
     val isLastQuestion: Boolean
-        get() = currentQuestionIndex == questions.lastIndex
+        get() = questions.isNotEmpty() && currentQuestionIndex == questions.size - 1
 
     val progressFraction: Float
-        get() = if (questions.isEmpty()) {
-            0f
-        } else {
-            ((currentQuestionIndex + 1).toFloat() / questions.size.toFloat()).coerceIn(0f, 1f)
-        }
+        get() = if (questions.isEmpty()) 0f else (currentQuestionIndex + 1).toFloat() / questions.size
 
     val canSubmit: Boolean
-        get() = questions.isNotEmpty() &&
-            selectedAnswers.size == questions.size &&
-            !isSubmitting &&
-            result == null
+        get() = questions.isNotEmpty() && selectedAnswers.size == questions.size
 }
 
 data class NodeQuizQuestionUiModel(
@@ -237,32 +232,28 @@ private fun NodeQuiz.toNodeQuizUiState(
     return NodeQuizUiState(
         roadmapId = roadmapId,
         nodeId = nodeId,
-        questions = questions.map { question -> question.toNodeQuizQuestionUiModel() },
-        currentQuestionIndex = 0,
-        selectedAnswers = emptyMap(),
-        result = null,
+        questions = questions.map { it.toNodeQuizQuestionUiModel() },
         isLoading = false,
-        isSubmitting = false,
         errorMessage = null
     )
 }
 
-private fun NodeQuizQuestion.toNodeQuizQuestionUiModel(): NodeQuizQuestionUiModel {
+private fun com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion.toNodeQuizQuestionUiModel(): NodeQuizQuestionUiModel {
     return NodeQuizQuestionUiModel(
         id = id,
         text = text,
-        options = options.map { option -> option.toNodeQuizOptionUiModel() }
+        options = options.map { it.toNodeQuizOptionUiModel() }
     )
 }
 
-private fun NodeQuizOption.toNodeQuizOptionUiModel(): NodeQuizOptionUiModel {
+private fun com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption.toNodeQuizOptionUiModel(): NodeQuizOptionUiModel {
     return NodeQuizOptionUiModel(
         key = key,
         text = text
     )
 }
 
-private fun NodeQuizSubmissionResult.toNodeQuizResultUiModel(): NodeQuizResultUiModel {
+private fun com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult.toNodeQuizResultUiModel(): NodeQuizResultUiModel {
     return NodeQuizResultUiModel(
         scorePercent = scorePercent,
         passed = passed,
@@ -280,5 +271,5 @@ private fun NodeQuizSubmissionResult.toNodeQuizResultUiModel(): NodeQuizResultUi
     )
 }
 
-private const val QUIZ_ANSWER_CURRENT_QUESTION_ERROR = "Answer this question before continuing."
-private const val QUIZ_ANSWER_ALL_QUESTIONS_ERROR = "Answer every question before submitting."
+const val QUIZ_ANSWER_CURRENT_QUESTION_ERROR = "Please select an option before continuing"
+const val QUIZ_ANSWER_ALL_QUESTIONS_ERROR = "Please answer all questions before submitting"

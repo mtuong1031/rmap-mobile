@@ -26,8 +26,16 @@ import com.rmap.mobile.features.roadmap.domain.model.SkillResource
 import com.rmap.mobile.features.roadmap.domain.model.SkillResourcePlatform
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import com.rmap.mobile.features.roadmap.domain.repository.SkillLearningRepository
+import com.rmap.mobile.core.notification.AppNotification
+import com.rmap.mobile.core.notification.AppNotificationManager
+import com.rmap.mobile.core.notification.AppNotificationVariant
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.model.User
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -296,6 +304,73 @@ class RoadmapLearningViewModelTest {
     }
 
     @Test
+    fun `onStartRoadmapForQuizClick does not emit failure event when backend start fails with Unauthorized`() = runTest {
+        val roadmapRepository = FakeRoadmapRepository(
+            nodeContentResult = Result.success(testContent.copy(status = LearningStatus.NotStarted, quizPassed = false)),
+            startResult = Result.failure(
+                AppException(
+                    message = "Unauthorized",
+                    type = NetworkErrorType.Unauthorized
+                )
+            )
+        )
+        val viewModel = RoadmapLearningViewModel(
+            roadmapRepository = roadmapRepository,
+            skillLearningRepository = FakeSkillLearningRepository()
+        )
+        viewModel.loadLearningContent(
+            roadmapId = "roadmap-1",
+            nodeId = "node-api",
+            skillId = "skill-api",
+            isCompleted = false
+        )
+        
+        var didEmitEvent = false
+        val job = launch {
+            viewModel.events.collect {
+                didEmitEvent = true
+            }
+        }
+
+        viewModel.onStartRoadmapForQuizClick()
+
+        assertEquals(listOf("roadmap-1"), roadmapRepository.startedRoadmapIds)
+        assertFalse(didEmitEvent)
+        assertFalse(viewModel.uiState.value.canTakeQuiz)
+        assertFalse(viewModel.uiState.value.isStartingRoadmapForQuiz)
+        job.cancel()
+    }
+
+    @Test
+    fun `onStartRoadmapForQuizClick as guest enqueues sign in required notification`() = runTest {
+        val roadmapRepository = FakeRoadmapRepository(
+            nodeContentResult = Result.success(testContent.copy(status = LearningStatus.NotStarted, quizPassed = false))
+        )
+        val authRepository = FakeAuthRepository(AuthState.Unauthenticated)
+        val appNotificationManager = AppNotificationManager()
+        val viewModel = RoadmapLearningViewModel(
+            skillLearningRepository = FakeSkillLearningRepository(),
+            roadmapRepository = roadmapRepository,
+            authRepository = authRepository,
+            appNotificationManager = appNotificationManager
+        )
+        viewModel.loadLearningContent(
+            roadmapId = "roadmap-1",
+            nodeId = "node-api",
+            skillId = "skill-api",
+            isCompleted = false
+        )
+        val notification = async(start = CoroutineStart.UNDISPATCHED) { appNotificationManager.notifications.first() }
+
+        viewModel.onStartRoadmapForQuizClick()
+
+        assertTrue(roadmapRepository.startedRoadmapIds.isEmpty())
+        assertEquals(R.string.auth_required_title, notification.await().titleResId)
+        assertEquals(R.string.auth_required_start_roadmap_message, notification.await().messageResId)
+        assertEquals(AppNotificationVariant.Warning, notification.await().variant)
+    }
+
+    @Test
     fun `onMarkCompletedClick with template roadmap emits failure when backend update fails`() = runTest {
         val roadmapRepository = FakeRoadmapRepository(
             detailResult = Result.success(fallbackDetail.copy(isTemplate = true)),
@@ -552,5 +627,18 @@ class RoadmapLearningViewModelTest {
             roleId = "role-backend",
             roleName = "Backend"
         )
+    }
+
+    private class FakeAuthRepository(
+        initialState: AuthState = AuthState.Unauthenticated
+    ) : AuthRepository {
+        override val authState = MutableStateFlow(initialState)
+        override suspend fun loginWithGoogle(idToken: String): Result<User> = Result.failure(UnsupportedOperationException())
+        override suspend fun loginWithGithub(code: String): Result<User> = Result.failure(UnsupportedOperationException())
+        override suspend fun linkWithGoogle(idToken: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+        override suspend fun linkWithGithub(code: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+        override suspend fun logout(): Result<Unit> = Result.success(Unit)
+        override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = Result.failure(UnsupportedOperationException())
+        override suspend fun getCurrentUser(): Result<User> = Result.failure(UnsupportedOperationException())
     }
 }

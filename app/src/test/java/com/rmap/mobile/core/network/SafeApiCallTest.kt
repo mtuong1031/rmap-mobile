@@ -63,7 +63,7 @@ class SafeApiCallTest {
         assertEquals(NetworkErrorType.Unauthorized, error.type)
         assertEquals(401, error.code)
         assertEquals(40101, error.apiCode)
-        assertEquals("Your session has expired. Please sign in again.", error.message)
+        assertEquals("Please sign in to continue.", error.message)
         assertTrue(resultWithCallback is NetworkResult.Error)
         assertEquals(1, unauthorizedCallCount)
     }

@@ -66,6 +66,7 @@ fun AuthScreen(
     onGoogleIdTokenReceived: (String) -> Unit,
     onLoginError: (String) -> Unit,
     onGithubLoginClick: () -> Unit,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     heroPainter: Painter? = null
 ) {
@@ -141,7 +142,7 @@ fun AuthScreen(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.45f)
+                .fillMaxHeight(0.52f)
                 .align(Alignment.BottomCenter),
             shape = AppShapes.bottomSheet,
             color = MaterialTheme.colorScheme.background,
@@ -151,6 +152,7 @@ fun AuthScreen(
                 uiState = uiState,
                 onGoogleLoginClick = handleGoogleLogin,
                 onGithubLoginClick = onGithubLoginClick,
+                onBackClick = onBackClick,
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding()
@@ -198,6 +200,7 @@ private fun AuthFormSection(
     uiState: AuthUiState,
     onGoogleLoginClick: () -> Unit,
     onGithubLoginClick: () -> Unit,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -266,28 +269,17 @@ private fun AuthFormSection(
                     )
                 }
             )
+
+            RMapButton(
+                text = stringResource(R.string.auth_explore_as_guest),
+                onClick = onBackClick,
+                enabled = !uiState.isLoading,
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Neutral,
+                size = RMapButtonSize.Large
+            )
         }
 
-        uiState.errorMessage?.let { errorMessage ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.ErrorOutline,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(Dimens.iconSm)
-                )
-                Text(
-                    text = errorMessage,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-            }
-        }
     }
 }
 
@@ -343,6 +335,7 @@ private fun AuthScreenPreview() {
             onGoogleIdTokenReceived = {},
             onLoginError = {},
             onGithubLoginClick = {},
+            onBackClick = {},
             heroPainter = ColorPainter(Color(0xFFE8DDFF))
         )
     }

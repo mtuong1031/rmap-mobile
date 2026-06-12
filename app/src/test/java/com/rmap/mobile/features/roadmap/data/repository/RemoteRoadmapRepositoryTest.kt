@@ -32,6 +32,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.Response
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+import com.rmap.mobile.features.auth.domain.model.User
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class RemoteRoadmapRepositoryTest {
     @Test
@@ -131,6 +135,32 @@ class RemoteRoadmapRepositoryTest {
         assertEquals(1, api.getRoadmapNodesCallCount)
         assertEquals(1, api.getRoadmapProgressCallCount)
         assertEquals(1, api.getTemplateCallCount)
+    }
+
+    @Test
+    fun `getRoadmapDetail for guest user loads template directly`() = runTest {
+        val api = FakeRoadmapApi()
+        val authRepository = object : AuthRepository {
+            override val authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
+            override suspend fun loginWithGoogle(idToken: String): Result<User> = error("Not used")
+            override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
+            override suspend fun linkWithGoogle(idToken: String): Result<Unit> = error("Not used")
+            override suspend fun linkWithGithub(code: String): Result<Unit> = error("Not used")
+            override suspend fun logout(): Result<Unit> = error("Not used")
+            override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = error("Not used")
+            override suspend fun getCurrentUser(): Result<User> = error("Not used")
+        }
+        val repository = newRepository(api, authRepository)
+
+        val result = repository.getRoadmapDetail("roadmap-1")
+
+        assertTrue(result.isSuccess)
+        assertEquals("roadmap-1", result.getOrThrow().id)
+        assertEquals(0, api.getRoadmapCallCount)
+        assertEquals(0, api.getRoadmapNodesCallCount)
+        assertEquals(0, api.getRoadmapProgressCallCount)
+        assertEquals(1, api.getTemplateCallCount)
+        assertEquals(1, api.getTemplateNodesCallCount)
     }
 
     @Test
@@ -330,10 +360,14 @@ class RemoteRoadmapRepositoryTest {
     }
 
 
-    private fun newRepository(api: FakeRoadmapApi): RemoteRoadmapRepository {
+    private fun newRepository(
+        api: FakeRoadmapApi,
+        authRepository: AuthRepository? = null
+    ): RemoteRoadmapRepository {
         return RemoteRoadmapRepository(
             roadmapApi = api,
-            sessionManager = SessionManager {}
+            sessionManager = SessionManager {},
+            authRepository = authRepository
         )
     }
 

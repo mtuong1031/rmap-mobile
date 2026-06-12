@@ -115,16 +115,6 @@ fun NodeQuizScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
 
-                uiState.errorMessage != null && uiState.questions.isEmpty() -> {
-                    QuizErrorState(
-                        message = uiState.errorMessage.ifBlank {
-                            stringResource(R.string.roadmap_quiz_error_fallback)
-                        },
-                        onRetryClick = onRetryClick,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-
                 else -> {
                     LazyColumn(
                         state = lazyListState,

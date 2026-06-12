@@ -25,7 +25,7 @@ data class RoadmapDetailUiState(
     val milestones: List<RoadmapMilestoneUiModel> = emptyList(),
     val contentItems: List<RoadmapDetailContentUiItem> = emptyList(),
     val updatingNodeId: String? = null,
-    val isEmpty: Boolean = false,
+    val isEmpty: Boolean = true,
     val isLoading: Boolean = true,
     @param:StringRes val errorMessageResId: Int? = null,
 )
