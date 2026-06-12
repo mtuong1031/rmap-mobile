@@ -708,4 +708,23 @@
     <string name="my_roadmap_search_empty_body">Không có Roadmap phù hợp với “%1$s”. Hãy thử từ khóa khác hoặc xóa tìm kiếm.</string>
     <string name="my_roadmap_search_clear">Xóa tìm kiếm</string>
     <string name="my_roadmap_refresh_failed">Không thể làm mới Roadmap. Đang hiển thị dữ liệu đã lưu.</string>
+
+    <string name="ai_roadmap_notification_failed_title">Roadmap generation failed</string>
+    <string name="ai_roadmap_notification_failed_body">RMap could not finish your %1$s roadmap. Please try again later or explore available roadmaps meanwhile.</string>
+    <string name="notification_learning_reminders_title">Learning reminders</string>
+    <string name="notification_learning_reminders_subtitle">Remind me to continue my roadmap.</string>
+    <string name="notification_streak_protection_title">Streak protection</string>
+    <string name="notification_streak_protection_subtitle">Use streak-aware reminder copy when I am building momentum.</string>
+    <string name="notification_ai_roadmap_updates_title">AI roadmap updates</string>
+    <string name="notification_ai_roadmap_updates_subtitle">Notify me when an AI roadmap is ready or fails.</string>
+    <string name="notification_reminder_days_title">Reminder days</string>
+    <string name="notification_reminder_days_selected">Đã chọn: %1$s</string>
+    <string name="notification_day_monday_short">Mon</string>
+    <string name="notification_day_tuesday_short">Tue</string>
+    <string name="notification_day_wednesday_short">Wed</string>
+    <string name="notification_day_thursday_short">Thu</string>
+    <string name="notification_day_friday_short">Fri</string>
+    <string name="notification_day_saturday_short">Sat</string>
+    <string name="notification_day_sunday_short">Sun</string>
+    <string name="notification_action_snooze_tonight">Snooze tonight</string>
 </resources>

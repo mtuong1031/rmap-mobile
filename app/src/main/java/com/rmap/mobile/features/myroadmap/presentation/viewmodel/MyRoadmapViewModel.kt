@@ -7,6 +7,7 @@ import com.rmap.mobile.features.dashboard.domain.model.Dashboard
 import com.rmap.mobile.features.dashboard.domain.model.DashboardRoadmap
 import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepository
+import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -20,7 +21,8 @@ import kotlin.math.roundToInt
 
 class MyRoadmapViewModel(
     private val dashboardRepository: DashboardRepository = RMapAppGraph.dashboardRepository,
-    private val completedSkillsRepository: CompletedSkillsRepository = RMapAppGraph.completedSkillsRepository
+    private val completedSkillsRepository: CompletedSkillsRepository = RMapAppGraph.completedSkillsRepository,
+    private val learningReminderContextRepository: LearningReminderContextRepository = RMapAppGraph.learningReminderContextRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MyRoadmapUiState())
     val uiState: StateFlow<MyRoadmapUiState> = _uiState.asStateFlow()
@@ -40,6 +42,9 @@ class MyRoadmapViewModel(
                 .collect { result ->
                     result
                         .onSuccess { dashboard ->
+                            learningReminderContextRepository.setActiveRoadmap(
+                                title = dashboard.firstActiveRoadmapTitle()
+                            )
                             _uiState.update {
                                 dashboard.toUiState(
                                     selectedFilter = it.selectedFilter,
@@ -78,6 +83,12 @@ class MyRoadmapViewModel(
     fun onFilterSelected(filter: MyRoadmapFilter) {
         _uiState.update { it.copy(selectedFilter = filter) }
     }
+}
+
+private fun Dashboard.firstActiveRoadmapTitle(): String? {
+    return roadmaps.firstOrNull { roadmap ->
+        roadmap.startedAt != null && roadmap.completionPct < 100.0
+    }?.title
 }
 
 private fun Dashboard.toUiState(

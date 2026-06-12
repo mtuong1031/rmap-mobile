@@ -7,6 +7,7 @@ import com.rmap.mobile.core.notification.AppNotificationManager
 import com.rmap.mobile.core.notification.AppNotificationVariant
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.R
+import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuiz
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizAnswer
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 
 class NodeQuizViewModel(
     private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val dashboardRepository: DashboardRepository? = null,
     private val notificationManager: AppNotificationManager = RMapAppGraph.appNotificationManager
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NodeQuizUiState())
@@ -140,10 +142,14 @@ class NodeQuizViewModel(
                 nodeId = state.nodeId,
                 answers = answers
             ).onSuccess { result ->
+                if (result.passed) {
+                    refreshProgressAfterPassedQuiz(state.roadmapId)
+                }
                 _uiState.update {
                     it.copy(
                         isSubmitting = false,
-                        result = result.toNodeQuizResultUiModel()
+                        result = result.toNodeQuizResultUiModel(),
+                        currentQuestionIndex = 0
                     )
                 }
             }.onFailure { error ->
@@ -161,6 +167,22 @@ class NodeQuizViewModel(
                     )
                 )
             }
+        }
+    }
+
+    private fun refreshProgressAfterPassedQuiz(roadmapId: String) {
+        refreshDashboardInBackground()
+        viewModelScope.launch {
+            repository.getRoadmapDetail(roadmapId)
+        }
+    }
+
+    private fun refreshDashboardInBackground() {
+        val repository = dashboardRepository ?: runCatching { RMapAppGraph.dashboardRepository }.getOrNull()
+        repository ?: return
+
+        viewModelScope.launch {
+            repository.refreshDashboard()
         }
     }
 }

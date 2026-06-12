@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.profile.domain.model.NotificationPreferences
+import com.rmap.mobile.features.profile.domain.model.NotificationReminderDay
 import com.rmap.mobile.features.profile.domain.model.NotificationReminderFrequency
 import com.rmap.mobile.features.profile.domain.repository.NotificationSettingsRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -61,6 +62,24 @@ class NotificationSettingsViewModel(
         }
     }
 
+    fun onLearningRemindersEnabledChange(isEnabled: Boolean) {
+        viewModelScope.launch {
+            notificationSettingsRepository.setLearningRemindersEnabled(isEnabled)
+        }
+    }
+
+    fun onStreakProtectionEnabledChange(isEnabled: Boolean) {
+        viewModelScope.launch {
+            notificationSettingsRepository.setStreakProtectionEnabled(isEnabled)
+        }
+    }
+
+    fun onAiRoadmapUpdatesEnabledChange(isEnabled: Boolean) {
+        viewModelScope.launch {
+            notificationSettingsRepository.setAiRoadmapUpdatesEnabled(isEnabled)
+        }
+    }
+
     fun onReminderTimeSelected(reminderTime: String) {
         val (hour, minute) = reminderTime.toHourMinute() ?: return
         viewModelScope.launch {
@@ -74,13 +93,32 @@ class NotificationSettingsViewModel(
         }
     }
 
+    fun onReminderDayToggled(reminderDay: ReminderDay) {
+        viewModelScope.launch {
+            val currentDays = _uiState.value.reminderDays
+            val updatedDays = if (reminderDay in currentDays) {
+                currentDays - reminderDay
+            } else {
+                currentDays + reminderDay
+            }.ifEmpty {
+                setOf(reminderDay)
+            }
+
+            notificationSettingsRepository.setReminderDays(updatedDays.map { it.toDomain() }.toSet())
+        }
+    }
+
     private fun NotificationPreferences.toUiState(
         isNotificationPermissionGranted: Boolean
     ): NotificationSettingsUiState {
         return NotificationSettingsUiState(
             allowNotifications = areNotificationsEnabled,
+            learningRemindersEnabled = learningRemindersEnabled,
+            streakProtectionEnabled = streakProtectionEnabled,
+            aiRoadmapUpdatesEnabled = aiRoadmapUpdatesEnabled,
             reminderTime = "%02d:%02d".format(reminderHour, reminderMinute),
             reminderFrequency = reminderFrequency.toPresentation(),
+            reminderDays = reminderDays.map { it.toPresentation() }.toSet(),
             isNotificationPermissionGranted = isNotificationPermissionGranted
         )
     }
@@ -89,6 +127,30 @@ class NotificationSettingsViewModel(
         return when (this) {
             ReminderFrequency.Daily -> NotificationReminderFrequency.Daily
             ReminderFrequency.Weekly -> NotificationReminderFrequency.Weekly
+        }
+    }
+
+    private fun ReminderDay.toDomain(): NotificationReminderDay {
+        return when (this) {
+            ReminderDay.Monday -> NotificationReminderDay.Monday
+            ReminderDay.Tuesday -> NotificationReminderDay.Tuesday
+            ReminderDay.Wednesday -> NotificationReminderDay.Wednesday
+            ReminderDay.Thursday -> NotificationReminderDay.Thursday
+            ReminderDay.Friday -> NotificationReminderDay.Friday
+            ReminderDay.Saturday -> NotificationReminderDay.Saturday
+            ReminderDay.Sunday -> NotificationReminderDay.Sunday
+        }
+    }
+
+    private fun NotificationReminderDay.toPresentation(): ReminderDay {
+        return when (this) {
+            NotificationReminderDay.Monday -> ReminderDay.Monday
+            NotificationReminderDay.Tuesday -> ReminderDay.Tuesday
+            NotificationReminderDay.Wednesday -> ReminderDay.Wednesday
+            NotificationReminderDay.Thursday -> ReminderDay.Thursday
+            NotificationReminderDay.Friday -> ReminderDay.Friday
+            NotificationReminderDay.Saturday -> ReminderDay.Saturday
+            NotificationReminderDay.Sunday -> ReminderDay.Sunday
         }
     }
 

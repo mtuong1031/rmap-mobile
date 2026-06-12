@@ -1,6 +1,6 @@
 package com.rmap.mobile.features.roadmap.presentation.viewmodel
-
 import com.rmap.mobile.MainDispatcherRule
+import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
 import com.rmap.mobile.features.roadmap.domain.model.LearningProgress
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
@@ -102,14 +102,32 @@ class NodeQuizViewModelTest {
             repository.submittedAnswers
         )
         assertNotNull(viewModel.uiState.value.result)
-        assertEquals(2, viewModel.uiState.value.currentQuestionIndex)
+        assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
     }
 
-    private fun newViewModel(repository: RoadmapRepository): NodeQuizViewModel {
+    private fun newViewModel(
+        repository: RoadmapRepository,
+        dashboardRepository: DashboardRepository = FakeDashboardRepository()
+    ): NodeQuizViewModel {
         return NodeQuizViewModel(
             repository = repository,
+            dashboardRepository = dashboardRepository,
             notificationManager = AppNotificationManager()
         )
+    }
+
+    private class FakeDashboardRepository : DashboardRepository {
+        override fun observeDashboard(): kotlinx.coroutines.flow.Flow<Result<com.rmap.mobile.features.dashboard.domain.model.Dashboard>> {
+            return kotlinx.coroutines.flow.flowOf()
+        }
+
+        override suspend fun getDashboard(): Result<com.rmap.mobile.features.dashboard.domain.model.Dashboard> {
+            return Result.failure(NotImplementedError())
+        }
+
+        override suspend fun refreshDashboard(): Result<com.rmap.mobile.features.dashboard.domain.model.Dashboard> {
+            return Result.failure(NotImplementedError())
+        }
     }
 
     private class FakeRoadmapRepository : RoadmapRepository {

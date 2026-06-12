@@ -18,6 +18,8 @@ import com.rmap.mobile.features.home.domain.model.HomeSearchResult
 import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
+import com.rmap.mobile.features.profile.domain.model.LearningReminderContext
+import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -37,7 +39,8 @@ class HomeViewModelTest {
     fun `initial load populates home sections`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            authRepository = FakeAuthRepository()
+            authRepository = FakeAuthRepository(),
+            learningReminderContextRepository = FakeLearningReminderContextRepository()
         )
 
         advanceUntilIdle()
@@ -55,7 +58,8 @@ class HomeViewModelTest {
     fun `warning is only available on roadmap with pace warning`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            authRepository = FakeAuthRepository()
+            authRepository = FakeAuthRepository(),
+            learningReminderContextRepository = FakeLearningReminderContextRepository()
         )
 
         advanceUntilIdle()
@@ -69,7 +73,8 @@ class HomeViewModelTest {
     fun `authenticated greeting uses first name from full name`() = runTest {
         val viewModel = HomeViewModel(
             homeRepository = FakeHomeRepository(),
-            authRepository = FakeAuthRepository()
+            authRepository = FakeAuthRepository(),
+            learningReminderContextRepository = FakeLearningReminderContextRepository()
         )
 
         advanceUntilIdle()
@@ -87,9 +92,42 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `initial load updates learning reminder context with active roadmap`() = runTest {
+        val contextRepository = FakeLearningReminderContextRepository()
+        HomeViewModel(
+            homeRepository = FakeHomeRepository(),
+            authRepository = FakeAuthRepository(),
+            learningReminderContextRepository = contextRepository
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(
+            LearningReminderContext(
+                hasActiveRoadmap = true,
+                activeRoadmapTitle = "Backend Roadmap"
+            ),
+            contextRepository.getContext()
+        )
+    }
+
+    @Test
     fun `extracts first name safely`() {
         assertEquals("Thinh", " Thinh Hoang Duy ".toFirstName())
         assertEquals("", "   ".toFirstName())
+    }
+}
+
+private class FakeLearningReminderContextRepository : LearningReminderContextRepository {
+    private var context = LearningReminderContext()
+
+    override fun getContext(): LearningReminderContext = context
+
+    override suspend fun setActiveRoadmap(title: String?) {
+        context = LearningReminderContext(
+            hasActiveRoadmap = !title.isNullOrBlank(),
+            activeRoadmapTitle = title?.trim()?.takeIf { it.isNotBlank() }
+        )
     }
 }
 

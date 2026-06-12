@@ -4,6 +4,8 @@ import com.rmap.mobile.MainDispatcherRule
 import com.rmap.mobile.R
 import com.rmap.mobile.core.network.AppException
 import com.rmap.mobile.core.network.NetworkErrorType
+import com.rmap.mobile.features.dashboard.domain.model.Dashboard
+import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
 import com.rmap.mobile.features.roadmap.domain.model.LearningNodeDetail
@@ -170,6 +172,14 @@ class RoadmapLearningViewModelTest {
             roadmapRepository.progressUpdates
         )
         assertEquals(RoadmapLearningEvent.NodeCompleted, event.await())
+
+        assertTrue(roadmapRepository.requestedDetailIds.isEmpty())
+        assertEquals(
+            listOf(
+                NodeContentRequest("roadmap-1", "node-api", "skill-api")
+            ),
+            roadmapRepository.nodeContentRequests
+        )
         assertTrue(viewModel.uiState.value.isCompleted)
         assertFalse(viewModel.uiState.value.isCompleting)
     }
@@ -266,6 +276,8 @@ class RoadmapLearningViewModelTest {
         viewModel.onStartRoadmapForQuizClick()
 
         assertEquals(listOf("roadmap-1"), roadmapRepository.startedRoadmapIds)
+
+        assertTrue(roadmapRepository.requestedDetailIds.isEmpty())
         assertEquals(
             RoadmapLearningEvent.NavigateToQuiz(
                 roadmapId = "roadmap-1",
@@ -443,6 +455,20 @@ class RoadmapLearningViewModelTest {
         override suspend fun getSkillLearningContent(skillId: String): Result<SkillLearningContent> {
             requestedSkillIds += skillId
             return result
+        }
+    }
+
+    private class FakeDashboardRepository : DashboardRepository {
+        var refreshCount = 0
+            private set
+
+        override suspend fun getDashboard(): Result<Dashboard> {
+            return Result.failure(UnsupportedOperationException())
+        }
+
+        override suspend fun refreshDashboard(): Result<Dashboard> {
+            refreshCount += 1
+            return Result.failure(UnsupportedOperationException())
         }
     }
 

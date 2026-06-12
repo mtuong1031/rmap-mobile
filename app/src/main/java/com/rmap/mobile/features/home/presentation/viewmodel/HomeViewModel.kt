@@ -16,6 +16,7 @@ import com.rmap.mobile.features.home.domain.model.HomePaceWarning
 import com.rmap.mobile.features.home.domain.model.HomeTemplateRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
+import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardDefaults
 import com.rmap.mobile.features.home.presentation.components.trending.TrendingRoadmapCardUiModel
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
@@ -31,7 +32,9 @@ import java.util.TimeZone
 
 class HomeViewModel(
     private val homeRepository: HomeRepository = RMapAppGraph.homeRepository,
-    private val authRepository: AuthRepository = RMapAppGraph.authRepository
+    private val authRepository: AuthRepository = RMapAppGraph.authRepository,
+    private val learningReminderContextRepository: LearningReminderContextRepository =
+        RMapAppGraph.learningReminderContextRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
@@ -47,6 +50,9 @@ class HomeViewModel(
 
             homeRepository.getHomeContent()
                 .onSuccess { content ->
+                    learningReminderContextRepository.setActiveRoadmap(
+                        title = content.activeRoadmaps.firstOrNull()?.title
+                    )
                     _uiState.update {
                         content.toUiState(
                             userName = it.userName,

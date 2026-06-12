@@ -9,6 +9,8 @@ import com.rmap.mobile.features.dashboard.domain.model.DashboardUserProfile
 import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.myroadmap.domain.model.CompletedSkillPage
 import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepository
+import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
+import com.rmap.mobile.features.profile.domain.model.LearningReminderContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
@@ -26,7 +28,8 @@ class MyRoadmapViewModelTest {
     fun `loadDashboard successfully updates roadmaps state`() = runTest {
         val viewModel = MyRoadmapViewModel(
             dashboardRepository = FakeDashboardRepository(),
-            completedSkillsRepository = FakeCompletedSkillsRepository()
+            completedSkillsRepository = FakeCompletedSkillsRepository(),
+            learningReminderContextRepository = FakeLearningReminderContextRepository()
         )
 
         runCurrent()
@@ -39,7 +42,8 @@ class MyRoadmapViewModelTest {
     fun `onSearchQueryChange updates query and clearSearch resets it`() = runTest {
         val viewModel = MyRoadmapViewModel(
             dashboardRepository = FakeDashboardRepository(),
-            completedSkillsRepository = FakeCompletedSkillsRepository()
+            completedSkillsRepository = FakeCompletedSkillsRepository(),
+            learningReminderContextRepository = FakeLearningReminderContextRepository()
         )
         runCurrent()
 
@@ -63,6 +67,11 @@ private class FakeCompletedSkillsRepository : CompletedSkillsRepository {
     ): Result<CompletedSkillPage> {
         return Result.failure(IllegalStateException("Not implemented"))
     }
+}
+
+private class FakeLearningReminderContextRepository : LearningReminderContextRepository {
+    override fun getContext(): LearningReminderContext = LearningReminderContext(activeRoadmapTitle = null)
+    override suspend fun setActiveRoadmap(title: String?) {}
 }
 
 private fun dashboard(): Dashboard = Dashboard(

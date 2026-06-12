@@ -40,10 +40,12 @@ import com.rmap.mobile.features.myroadmap.data.repository.RemoteCompletedSkillsR
 import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepository
 import com.rmap.mobile.features.profile.data.notification.LearningNotificationNotifier
 import com.rmap.mobile.features.profile.data.notification.LearningReminderScheduler
+import com.rmap.mobile.features.profile.data.notification.SharedPreferencesLearningReminderContextRepository
 import com.rmap.mobile.features.profile.data.notification.SharedPreferencesNotificationSettingsRepository
 import com.rmap.mobile.features.profile.data.remote.ProfileApi
 import com.rmap.mobile.features.profile.data.repository.ProfileRepositoryImpl
 import com.rmap.mobile.features.profile.domain.repository.NotificationSettingsRepository
+import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
 import com.rmap.mobile.features.profile.domain.repository.ProfileRepository
 import com.rmap.mobile.features.roadmap.data.remote.api.RoadmapApi
 import com.rmap.mobile.features.roadmap.data.remote.api.SkillApi
@@ -72,6 +74,8 @@ object RMapAppGraph {
     lateinit var aiRoadmapRepository: AiRoadmapRepository
         private set
     lateinit var notificationSettingsRepository: NotificationSettingsRepository
+        private set
+    lateinit var learningReminderContextRepository: LearningReminderContextRepository
         private set
     @get:SuppressLint("StaticFieldLeak")
     lateinit var learningNotificationNotifier: LearningNotificationNotifier
@@ -200,6 +204,7 @@ object RMapAppGraph {
         )
 
         val scheduler = LearningReminderScheduler(applicationContext)
+        learningReminderContextRepository = SharedPreferencesLearningReminderContextRepository(applicationContext)
         aiRoadmapRepository = RemoteAiRoadmapRepository(
             context = applicationContext,
             api = apiClient.createService(AiRoadmapApi::class.java),

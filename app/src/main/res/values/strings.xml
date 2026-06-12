@@ -226,6 +226,8 @@
     <string name="ai_roadmap_notification_action_cancel">Cancel</string>
     <string name="ai_roadmap_notification_ready_title">Roadmap ready</string>
     <string name="ai_roadmap_notification_ready_body">Your %1$s roadmap is ready to view.</string>
+    <string name="ai_roadmap_notification_failed_title">Roadmap generation failed</string>
+    <string name="ai_roadmap_notification_failed_body">RMap could not finish your %1$s roadmap. Please try again later or explore available roadmaps meanwhile.</string>
 
     <!-- My Roadmap Screen -->
     <string name="my_roadmap_header_eyebrow">My learning paths</string>
@@ -652,26 +654,49 @@
     <!-- Notification Settings Screen -->
     <string name="notification_settings_title">Notifications</string>
     <string name="notification_allow_title">Allow notifications</string>
+    <string name="notification_learning_reminders_title">Learning reminders</string>
+    <string name="notification_learning_reminders_subtitle">Remind me to continue my roadmap.</string>
+    <string name="notification_streak_protection_title">Streak protection</string>
+    <string name="notification_streak_protection_subtitle">Use streak-aware reminder copy when I am building momentum.</string>
+    <string name="notification_ai_roadmap_updates_title">AI roadmap updates</string>
+    <string name="notification_ai_roadmap_updates_subtitle">Notify me when an AI roadmap is ready or fails.</string>
     <string name="notification_reminder_time_title">Reminder time</string>
     <string name="notification_reminder_frequency_title">Reminder frequency</string>
     <string name="notification_reminder_frequency_subtitle">Daily / Weekly</string>
+    <string name="notification_reminder_days_title">Reminder days</string>
+    <string name="notification_reminder_days_selected">Selected: %1$s</string>
     <string name="notification_frequency_daily">Daily</string>
     <string name="notification_frequency_weekly">Weekly</string>
+    <string name="notification_day_monday_short">Mon</string>
+    <string name="notification_day_tuesday_short">Tue</string>
+    <string name="notification_day_wednesday_short">Wed</string>
+    <string name="notification_day_thursday_short">Thu</string>
+    <string name="notification_day_friday_short">Fri</string>
+    <string name="notification_day_saturday_short">Sat</string>
+    <string name="notification_day_sunday_short">Sun</string>
     <string name="notification_time_dialog_title">Reminder time</string>
+    <string name="notification_time_hour_suffix">H</string>
+    <string name="notification_time_minute_suffix">M</string>
+    <string name="notification_time_input_label">Time</string>
+    <string name="notification_time_input_placeholder">20:30</string>
+    <string name="notification_time_input_helper">Use 24-hour format, for example 08:15 or 21:45.</string>
+    <string name="notification_time_input_error">Enter a valid time from 00:00 to 23:59.</string>
     <string name="notification_permission_required_title">Notification permission needed</string>
     <string name="notification_permission_required_body">Turn on notification permission so RMap can
         remind you to learn and keep your streak.</string>
     <string name="notification_permission_required_snackbar">Please allow notifications to enable
         learning reminders.</string>
+    <string name="notification_exact_alarm_required_title">Alarm permission needed</string>
+    <string name="notification_exact_alarm_required_body">Allow alarms and reminders so RMap can notify you close to the reminder time you choose.</string>
+    <string name="notification_exact_alarm_open_settings">Open alarm settings</string>
     <string name="notification_channel_learning_name">Learning reminders</string>
     <string name="notification_channel_learning_description">Cheerful reminders to learn and protect
         your streak.</string>
     <string name="notification_action_start_learning">Start learning</string>
-    <string name="notification_action_mark_streak">Mark streak</string>
-    <string name="notification_debug_send_test">Send test notification</string>
-    <string name="notification_debug_sent_snackbar">Test notification requested.</string>
+    <string name="notification_action_snooze_tonight">Snooze tonight</string>
     <string name="notification_learning_body_with_streak">You are on a %1$d-day streak. Open RMap
         for a quick lesson and keep the momentum bright.</string>
+    <string name="notification_learning_body_with_roadmap">Your %1$s roadmap has a next step waiting. Open RMap for a focused lesson.</string>
     <string name="notification_streak_marked_body">%1$d-day streak marked. Small steps, real
         progress.</string>
     <string name="notification_streak_already_marked_title">Streak already glowing</string>
@@ -684,11 +709,22 @@
         <item>Ready for a quick win?</item>
     </string-array>
     <string-array name="notification_learning_bodies">
-        <item>A short learning session is enough to build momentum. Open RMap and mark today\'s
-            streak.</item>
+        <item>A short learning session is enough to build momentum. Open RMap and complete a focused step.</item>
         <item>Your future developer self will thank you. Learn a little and keep your streak alive.</item>
         <item>Five focused minutes can move your roadmap forward. Let\'s keep the streak warm.</item>
         <item>Pick up where you left off and turn today into another active learning day.</item>
+    </string-array>
+    <string-array name="notification_no_roadmap_titles">
+        <item>Ready to choose a roadmap?</item>
+        <item>Start your learning path</item>
+        <item>Your first roadmap is waiting</item>
+        <item>Find a goal for today</item>
+    </string-array>
+    <string-array name="notification_no_roadmap_bodies">
+        <item>Explore beginner-friendly roadmaps and pick one that matches your next developer goal.</item>
+        <item>A clear path makes learning easier. Open RMap and start your first roadmap today.</item>
+        <item>Not sure what to learn next? Browse roadmaps and choose a path you can begin in minutes.</item>
+        <item>Set a learning direction today so tomorrow\'s progress has somewhere to land.</item>
     </string-array>
     <string-array name="notification_streak_titles">
         <item>Streak marked</item>

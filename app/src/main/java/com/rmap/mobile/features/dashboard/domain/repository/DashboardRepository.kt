@@ -10,4 +10,6 @@ interface DashboardRepository {
     }
 
     suspend fun getDashboard(): Result<Dashboard>
+
+    suspend fun refreshDashboard(): Result<Dashboard> = getDashboard()
 }

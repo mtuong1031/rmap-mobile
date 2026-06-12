@@ -2,6 +2,8 @@ package com.rmap.mobile.features.roadmap.presentation.viewmodel
 
 import com.rmap.mobile.MainDispatcherRule
 import com.rmap.mobile.R
+import com.rmap.mobile.features.dashboard.domain.model.Dashboard
+import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.roadmap.domain.model.AiScholarTip
 import com.rmap.mobile.features.roadmap.domain.model.LearningModule
 import com.rmap.mobile.features.roadmap.domain.model.LearningModuleSection
@@ -155,6 +157,7 @@ class RoadmapDetailViewModelTest {
             listOf("roadmap-1"),
             repository.startedRoadmapIds
         )
+
         assertTrue(repository.progressUpdates.isEmpty())
         assertEquals(
             RoadmapDetailEvent.NavigateToLearning(
@@ -588,6 +591,20 @@ class RoadmapDetailViewModelTest {
             event.await()
         )
         assertTrue(repository.progressUpdates.isEmpty())
+    }
+
+    private class FakeDashboardRepository : DashboardRepository {
+        var refreshCount = 0
+            private set
+
+        override suspend fun getDashboard(): Result<Dashboard> {
+            return Result.failure(UnsupportedOperationException())
+        }
+
+        override suspend fun refreshDashboard(): Result<Dashboard> {
+            refreshCount += 1
+            return Result.failure(UnsupportedOperationException())
+        }
     }
 
     private class FakeRoadmapRepository(

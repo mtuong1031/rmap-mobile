@@ -38,6 +38,9 @@ import com.rmap.mobile.features.airoadmap.data.remote.AiRoadmapApi
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapDraft
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapGenerationRequest
+import com.rmap.mobile.features.profile.data.notification.LearningReminderScheduler
+import com.rmap.mobile.features.profile.data.notification.SharedPreferencesNotificationSettingsRepository
+import kotlinx.coroutines.flow.first
 
 class AiRoadmapGenerationWorker(
     private val context: Context,
@@ -66,7 +69,7 @@ class AiRoadmapGenerationWorker(
             return Result.failure(workDataOf(KEY_ERROR_MESSAGE to ERROR_MISSING_QUIZ_ANSWERS))
         }
 
-        ensureNotificationChannel()
+        ensureNotificationChannels()
         updateProgress(goal = goal, progress = 5, stage = "")
 
         if (isStopped) {
@@ -113,7 +116,7 @@ class AiRoadmapGenerationWorker(
         return when (result) {
             is NetworkResult.Success -> {
                 updateProgress(goal = goal, progress = 100, stage = STAGE_READY)
-                showCompletionNotification(goal)
+                showCompletionNotification(goal, result.data.roadmap.id)
 
                 Result.success(
                     workDataOf(
@@ -126,6 +129,8 @@ class AiRoadmapGenerationWorker(
             }
 
             is NetworkResult.Error -> {
+                showFailureNotification(goal)
+
                 Result.failure(
                     workDataOf(
                         KEY_ERROR_MESSAGE to result.message,
@@ -167,7 +172,7 @@ class AiRoadmapGenerationWorker(
     }
 
     private fun createForegroundInfo(goal: String, progress: Int, stage: String): ForegroundInfo {
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(context, PROGRESS_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_rmap)
             .setContentTitle(context.getString(R.string.ai_roadmap_notification_title))
             .setContentText(context.getString(R.string.ai_roadmap_notification_body, goal, stage))
@@ -207,10 +212,10 @@ class AiRoadmapGenerationWorker(
     }
 
     @SuppressLint("MissingPermission")
-    private fun showCompletionNotification(goal: String) {
-        if (!canPostNotifications()) return
+    private suspend fun showCompletionNotification(goal: String, roadmapId: String) {
+        if (!canPostNotifications() || !canSendAiRoadmapUpdates()) return
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(context, UPDATES_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification_rmap)
             .setContentTitle(context.getString(R.string.ai_roadmap_notification_ready_title))
             .setContentText(context.getString(R.string.ai_roadmap_notification_ready_body, goal))
@@ -223,17 +228,37 @@ class AiRoadmapGenerationWorker(
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(openAppPendingIntent())
+            .setContentIntent(openRoadmapPendingIntent(roadmapId))
             .build()
 
         NotificationManagerCompat.from(context).notify(COMPLETION_NOTIFICATION_ID, notification)
     }
 
-    private fun ensureNotificationChannel() {
+    @SuppressLint("MissingPermission")
+    private suspend fun showFailureNotification(goal: String) {
+        if (!canPostNotifications() || !canSendAiRoadmapUpdates()) return
+
+        val body = context.getString(R.string.ai_roadmap_notification_failed_body, goal)
+        val notification = NotificationCompat.Builder(context, UPDATES_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification_rmap)
+            .setContentTitle(context.getString(R.string.ai_roadmap_notification_failed_title))
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setColor(NOTIFICATION_COLOR)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_ERROR)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(openAppPendingIntent())
+            .build()
+
+        NotificationManagerCompat.from(context).notify(FAILURE_NOTIFICATION_ID, notification)
+    }
+
+    private fun ensureNotificationChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
-        val channel = NotificationChannel(
-            CHANNEL_ID,
+        val progressChannel = NotificationChannel(
+            PROGRESS_CHANNEL_ID,
             context.getString(R.string.ai_roadmap_notification_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
@@ -241,7 +266,19 @@ class AiRoadmapGenerationWorker(
             setShowBadge(false)
         }
 
-        context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        val updatesChannel = NotificationChannel(
+            UPDATES_CHANNEL_ID,
+            context.getString(R.string.ai_roadmap_notification_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = context.getString(R.string.ai_roadmap_notification_channel_description)
+            setShowBadge(true)
+        }
+
+        context.getSystemService(NotificationManager::class.java).apply {
+            createNotificationChannel(progressChannel)
+            createNotificationChannel(updatesChannel)
+        }
     }
 
     private fun canPostNotifications(): Boolean {
@@ -253,6 +290,14 @@ class AiRoadmapGenerationWorker(
         return notificationsEnabled && runtimePermissionGranted
     }
 
+    private suspend fun canSendAiRoadmapUpdates(): Boolean {
+        val repository = SharedPreferencesNotificationSettingsRepository(
+            context = context.applicationContext,
+            scheduler = LearningReminderScheduler(context.applicationContext)
+        )
+        return repository.preferences.first().canSendAiRoadmapUpdates
+    }
+
     private fun openAppPendingIntent(): PendingIntent {
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -261,6 +306,21 @@ class AiRoadmapGenerationWorker(
         return PendingIntent.getActivity(
             context,
             REQUEST_CODE_OPEN_APP,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+
+    private fun openRoadmapPendingIntent(roadmapId: String): PendingIntent {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(MainActivity.EXTRA_NOTIFICATION_DESTINATION, MainActivity.DESTINATION_ROADMAP_DETAIL)
+            putExtra(MainActivity.EXTRA_ROADMAP_ID, roadmapId)
+        }
+
+        return PendingIntent.getActivity(
+            context,
+            REQUEST_CODE_OPEN_ROADMAP,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -278,11 +338,14 @@ class AiRoadmapGenerationWorker(
         const val KEY_STAGE = "stage"
         const val KEY_ROADMAP_ID = "roadmap_id"
         const val KEY_ERROR_MESSAGE = "error_message"
-        const val CHANNEL_ID = "roadmap_generation"
+        const val PROGRESS_CHANNEL_ID = "roadmap_generation"
+        const val UPDATES_CHANNEL_ID = "roadmap_generation_updates"
 
         private const val REQUEST_CODE_OPEN_APP = 4401
+        private const val REQUEST_CODE_OPEN_ROADMAP = 4402
         private const val ONGOING_NOTIFICATION_ID = 4501
         private const val COMPLETION_NOTIFICATION_ID = 4502
+        private const val FAILURE_NOTIFICATION_ID = 4503
         private const val ERROR_MISSING_GOAL = "Missing roadmap goal"
         private const val ERROR_MISSING_ROLE_CATEGORY = "Missing roadmap role category"
         private const val ERROR_MISSING_DEADLINE = "Missing roadmap deadline"

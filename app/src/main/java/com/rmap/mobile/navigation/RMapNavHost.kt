@@ -92,14 +92,17 @@ import com.rmap.mobile.features.roadmap.presentation.viewmodel.RoadmapMilestoneV
 import kotlinx.coroutines.launch
 
 @Composable
-fun RMapNavHost(navController: NavHostController) {
+fun RMapNavHost(
+    navController: NavHostController,
+    initialNotificationRoute: String? = null
+) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val authState by RMapAppGraph.authRepository.authState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val comingSoonMessage = stringResource(R.string.coming_soon_message)
-    val debugNotificationSentMessage = stringResource(R.string.notification_debug_sent_snackbar)
+
     val nodeProgressUpdatedMessage = stringResource(R.string.roadmap_detail_progress_updated)
     val nodeProgressUpdateFailedMessage = stringResource(R.string.roadmap_detail_progress_update_failed)
     val learningCompletedMessage = stringResource(R.string.roadmap_learning_completed_snackbar)
@@ -117,7 +120,8 @@ fun RMapNavHost(navController: NavHostController) {
     val snackbarInfoTitle = stringResource(R.string.snackbar_title_info)
     val startDestination = AppRoutes.MAIN_TABS
     val pagerState = rememberPagerState(pageCount = { 5 })
-    var isAiRoadmapQuestionsStep by remember { mutableStateOf(false) }
+    var isAiRoadmapSubScreen by remember { mutableStateOf(false) }
+    var handledNotificationRoute by remember { mutableStateOf<String?>(null) }
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
     }
@@ -224,6 +228,22 @@ fun RMapNavHost(navController: NavHostController) {
                 navController.navigate(AppRoutes.AUTH) {
                     launchSingleTop = true
                 }
+            }
+        }
+    }
+
+    LaunchedEffect(authState, initialNotificationRoute) {
+        val route = initialNotificationRoute?.takeIf { it != handledNotificationRoute } ?: return@LaunchedEffect
+        when (authState) {
+            is AuthState.Authenticated -> {
+                handledNotificationRoute = route
+                navController.navigate(route) {
+                    launchSingleTop = true
+                }
+            }
+            AuthState.Checking -> Unit
+            else -> {
+                handledNotificationRoute = route
             }
         }
     }
@@ -452,7 +472,7 @@ fun RMapNavHost(navController: NavHostController) {
                                 val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.AiAssistant } }
 
                                 LaunchedEffect(uiState.step) {
-                                    isAiRoadmapQuestionsStep = uiState.step == AiRoadmapStep.Questions
+                                    isAiRoadmapSubScreen = uiState.step != AiRoadmapStep.Library
                                 }
 
                                 LaunchedEffect(viewModel) {
@@ -737,27 +757,14 @@ fun RMapNavHost(navController: NavHostController) {
 
                     NotificationSettingsScreen(
                         uiState = uiState,
-                        selectedDestination = NavBarDestination.More,
                         onBackClick = { navController.popBackStack() },
                         onNotificationPermissionStateChanged = viewModel::onNotificationPermissionStateChanged,
                         onNotificationPermissionDenied = viewModel::onNotificationPermissionDenied,
                         onAllowNotificationsChange = viewModel::onAllowNotificationsChange,
-                        onReminderTimeSelected = viewModel::onReminderTimeSelected,
-                        onReminderFrequencySelected = viewModel::onReminderFrequencySelected,
-                        isDebugNotificationTestVisible = isDebugBuild,
-                        onSendTestNotificationClick = {
-                            RMapAppGraph.learningNotificationNotifier.showLearningReminder()
-                            coroutineScope.launch {
-                                snackbarHostState.showRMapSnackbar(
-                                    title = snackbarSuccessTitle,
-                                    message = debugNotificationSentMessage,
-                                    variant = AppNotificationVariant.Success
-                                )
-                            }
-                        },
-                        onDestinationSelected = { destination ->
-                            navigateFromBottomBar(destination)
-                        }
+                        onLearningRemindersEnabledChange = viewModel::onLearningRemindersEnabledChange,
+                        onStreakProtectionEnabledChange = viewModel::onStreakProtectionEnabledChange,
+                        onAiRoadmapUpdatesEnabledChange = viewModel::onAiRoadmapUpdatesEnabledChange,
+                        onReminderTimeSelected = viewModel::onReminderTimeSelected
                     )
                 }
 
@@ -1133,7 +1140,7 @@ fun RMapNavHost(navController: NavHostController) {
             val shouldHideBottomBarForAiQuiz =
                 currentRoute == AppRoutes.MAIN_TABS &&
                         pagerState.currentPage == 2 &&
-                        isAiRoadmapQuestionsStep
+                        isAiRoadmapSubScreen
 
             androidx.compose.animation.AnimatedVisibility(
                 visible = isTopLevelRoute && !shouldHideBottomBarForAiQuiz,

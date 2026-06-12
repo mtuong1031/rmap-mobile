@@ -1,32 +1,41 @@
 package com.rmap.mobile.features.profile.presentation.screen
 
 import android.Manifest
+import android.app.AlarmManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -34,18 +43,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,15 +66,14 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.components.RMapCard
-import com.rmap.mobile.core.ui.components.RMapNavigationBar
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.OnSurfacePlaceholderLight
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.features.profile.presentation.components.ProfileSettingsTopBar
 import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsUiState
-import com.rmap.mobile.features.profile.presentation.viewmodel.ReminderFrequency
-import com.rmap.mobile.navigation.NavBarDestination
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 @Composable
 fun NotificationSettingsScreen(
@@ -70,18 +82,19 @@ fun NotificationSettingsScreen(
     onNotificationPermissionStateChanged: (Boolean) -> Unit,
     onNotificationPermissionDenied: () -> Unit,
     onAllowNotificationsChange: (Boolean) -> Unit,
+    onLearningRemindersEnabledChange: (Boolean) -> Unit,
+    onStreakProtectionEnabledChange: (Boolean) -> Unit,
+    onAiRoadmapUpdatesEnabledChange: (Boolean) -> Unit,
     onReminderTimeSelected: (String) -> Unit,
-    onReminderFrequencySelected: (ReminderFrequency) -> Unit,
-    onDestinationSelected: (NavBarDestination) -> Unit,
-    modifier: Modifier = Modifier,
-    selectedDestination: NavBarDestination = NavBarDestination.More,
-    isDebugNotificationTestVisible: Boolean = false,
-    onSendTestNotificationClick: () -> Unit = {}
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val isInspectionMode = LocalInspectionMode.current
     var hasNotificationPermission by remember {
         mutableStateOf(if (isInspectionMode) uiState.isNotificationPermissionGranted else context.hasNotificationPermission())
+    }
+    var hasExactAlarmPermission by remember {
+        mutableStateOf(if (isInspectionMode) true else context.hasExactAlarmPermission())
     }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -100,19 +113,10 @@ fun NotificationSettingsScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            RMapNavigationBar(
-                selectedDestination = selectedDestination,
-                onDestinationSelected = onDestinationSelected,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    ) { innerPadding ->
+        containerColor = MaterialTheme.colorScheme.background
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding())
+            modifier = Modifier.fillMaxSize()
         ) {
             ProfileSettingsTopBar(
                 titleResId = R.string.notification_settings_title,
@@ -122,6 +126,9 @@ fun NotificationSettingsScreen(
             NotificationSettingsContent(
                 uiState = uiState,
                 onAllowNotificationsChange = onAllowNotificationsChange,
+                onLearningRemindersEnabledChange = onLearningRemindersEnabledChange,
+                onStreakProtectionEnabledChange = onStreakProtectionEnabledChange,
+                onAiRoadmapUpdatesEnabledChange = onAiRoadmapUpdatesEnabledChange,
                 onRequestNotificationPermission = {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -131,9 +138,11 @@ fun NotificationSettingsScreen(
                     }
                 },
                 onReminderTimeSelected = onReminderTimeSelected,
-                onReminderFrequencySelected = onReminderFrequencySelected,
-                isDebugNotificationTestVisible = isDebugNotificationTestVisible,
-                onSendTestNotificationClick = onSendTestNotificationClick,
+                isExactAlarmPermissionGranted = hasExactAlarmPermission,
+                onOpenExactAlarmSettingsClick = {
+                    context.openExactAlarmSettings()
+                    hasExactAlarmPermission = context.hasExactAlarmPermission()
+                },
                 modifier = Modifier.padding(
                     start = Dimens.spacingXl,
                     top = Dimens.spacingXxl,
@@ -148,18 +157,23 @@ fun NotificationSettingsScreen(
 private fun NotificationSettingsContent(
     uiState: NotificationSettingsUiState,
     onAllowNotificationsChange: (Boolean) -> Unit,
+    onLearningRemindersEnabledChange: (Boolean) -> Unit,
+    onStreakProtectionEnabledChange: (Boolean) -> Unit,
+    onAiRoadmapUpdatesEnabledChange: (Boolean) -> Unit,
     onRequestNotificationPermission: () -> Unit,
     onReminderTimeSelected: (String) -> Unit,
-    onReminderFrequencySelected: (ReminderFrequency) -> Unit,
-    isDebugNotificationTestVisible: Boolean,
-    onSendTestNotificationClick: () -> Unit,
+    isExactAlarmPermissionGranted: Boolean,
+    onOpenExactAlarmSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isTimeDialogVisible by remember { mutableStateOf(false) }
-    var isFrequencyMenuVisible by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
 
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(scrollState)
+            .padding(bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
     ) {
         RMapCard(
@@ -180,12 +194,7 @@ private fun NotificationSettingsContent(
                                     onAllowNotificationsChange(isAllowed)
                                 }
                             },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = MaterialTheme.colorScheme.surface,
-                                checkedTrackColor = MaterialTheme.colorScheme.primary,
-                                uncheckedThumbColor = MaterialTheme.colorScheme.surface,
-                                uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant
-                            )
+                            colors = notificationSwitchColors()
                         )
                     }
                 )
@@ -194,8 +203,59 @@ private fun NotificationSettingsContent(
                     NotificationPermissionNotice()
                 }
 
+                if (
+                    uiState.allowNotifications &&
+                    uiState.learningRemindersEnabled &&
+                    !isExactAlarmPermissionGranted
+                ) {
+                    ExactAlarmPermissionNotice(onOpenSettingsClick = onOpenExactAlarmSettingsClick)
+                }
+
+                NotificationSettingRow(
+                    title = stringResource(id = R.string.notification_learning_reminders_title),
+                    subtitle = stringResource(id = R.string.notification_learning_reminders_subtitle),
+                    enabled = uiState.allowNotifications,
+                    trailingContent = {
+                        Switch(
+                            checked = uiState.learningRemindersEnabled,
+                            enabled = uiState.allowNotifications,
+                            onCheckedChange = onLearningRemindersEnabledChange,
+                            colors = notificationSwitchColors()
+                        )
+                    }
+                )
+
+                NotificationSettingRow(
+                    title = stringResource(id = R.string.notification_streak_protection_title),
+                    subtitle = stringResource(id = R.string.notification_streak_protection_subtitle),
+                    enabled = uiState.allowNotifications,
+                    trailingContent = {
+                        Switch(
+                            checked = uiState.streakProtectionEnabled,
+                            enabled = uiState.allowNotifications,
+                            onCheckedChange = onStreakProtectionEnabledChange,
+                            colors = notificationSwitchColors()
+                        )
+                    }
+                )
+
+                NotificationSettingRow(
+                    title = stringResource(id = R.string.notification_ai_roadmap_updates_title),
+                    subtitle = stringResource(id = R.string.notification_ai_roadmap_updates_subtitle),
+                    enabled = uiState.allowNotifications,
+                    trailingContent = {
+                        Switch(
+                            checked = uiState.aiRoadmapUpdatesEnabled,
+                            enabled = uiState.allowNotifications,
+                            onCheckedChange = onAiRoadmapUpdatesEnabledChange,
+                            colors = notificationSwitchColors()
+                        )
+                    }
+                )
+
                 NotificationSettingRow(
                     title = stringResource(id = R.string.notification_reminder_time_title),
+                    enabled = uiState.areReminderControlsEnabled,
                     onClick = { isTimeDialogVisible = true },
                     trailingContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -215,56 +275,9 @@ private fun NotificationSettingsContent(
                     }
                 )
 
-                Box {
-                    NotificationSettingRow(
-                        title = stringResource(id = R.string.notification_reminder_frequency_title),
-                        subtitle = stringResource(id = R.string.notification_reminder_frequency_subtitle),
-                        showDivider = false,
-                        onClick = { isFrequencyMenuVisible = true },
-                        trailingContent = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = uiState.reminderFrequency.label(),
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontWeight = FontWeight.Medium,
-                                        fontSize = 15.sp
-                                    )
-                                )
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.outline,
-                                    modifier = Modifier.size(Dimens.iconSm)
-                                )
-                            }
-                        }
-                    )
-
-                    DropdownMenu(
-                        expanded = isFrequencyMenuVisible,
-                        onDismissRequest = { isFrequencyMenuVisible = false }
-                    ) {
-                        ReminderFrequency.entries.forEach { frequency ->
-                            DropdownMenuItem(
-                                text = { Text(text = frequency.label()) },
-                                onClick = {
-                                    onReminderFrequencySelected(frequency)
-                                    isFrequencyMenuVisible = false
-                                }
-                            )
-                        }
-                    }
-                }
             }
         }
 
-        if (isDebugNotificationTestVisible) {
-            DebugNotificationTestButton(
-                isEnabled = uiState.isNotificationPermissionGranted,
-                onClick = onSendTestNotificationClick
-            )
-        }
     }
 
     if (isTimeDialogVisible) {
@@ -280,24 +293,15 @@ private fun NotificationSettingsContent(
 }
 
 @Composable
-private fun DebugNotificationTestButton(
-    isEnabled: Boolean,
-    onClick: () -> Unit
-) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = isEnabled,
-        modifier = Modifier.fillMaxWidth(),
-        shape = AppShapes.button
-    ) {
-        Text(
-            text = stringResource(id = R.string.notification_debug_send_test),
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontWeight = FontWeight.Bold
-            )
-        )
-    }
-}
+private fun notificationSwitchColors() = SwitchDefaults.colors(
+    checkedThumbColor = MaterialTheme.colorScheme.surface,
+    checkedTrackColor = MaterialTheme.colorScheme.primary,
+    uncheckedThumbColor = MaterialTheme.colorScheme.surface,
+    uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant
+)
+
+private const val HOUR_MAX_VALUE = 23
+private const val MINUTE_MAX_VALUE = 59
 
 @Composable
 private fun NotificationPermissionNotice() {
@@ -329,21 +333,60 @@ private fun NotificationPermissionNotice() {
 }
 
 @Composable
+private fun ExactAlarmPermissionNotice(
+    onOpenSettingsClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingSm)
+            .clip(AppShapes.button)
+            .background(MaterialTheme.colorScheme.tertiaryContainer)
+            .padding(Dimens.spacingMd),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
+    ) {
+        Text(
+            text = stringResource(id = R.string.notification_exact_alarm_required_title),
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Text(
+            text = stringResource(id = R.string.notification_exact_alarm_required_body),
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                fontWeight = FontWeight.Medium,
+                lineHeight = 18.sp
+            )
+        )
+        TextButton(onClick = onOpenSettingsClick) {
+            Text(text = stringResource(id = R.string.notification_exact_alarm_open_settings))
+        }
+    }
+}
+
+@Composable
 private fun NotificationSettingRow(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    enabled: Boolean = true,
     showDivider: Boolean = true,
     onClick: (() -> Unit)? = null,
     trailingContent: @Composable () -> Unit
 ) {
     val rowModifier = if (onClick != null) {
-        modifier.clickable(onClick = onClick)
+        modifier.clickable(enabled = enabled, onClick = onClick)
     } else {
         modifier
     }
 
-    Column(modifier = rowModifier.fillMaxWidth()) {
+    Column(
+        modifier = rowModifier
+            .fillMaxWidth()
+            .alpha(if (enabled) 1f else 0.55f)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -394,42 +437,48 @@ private fun ReminderTimeDialog(
     onDismiss: () -> Unit,
     onTimeSelected: (String) -> Unit
 ) {
-    val reminderTimes = listOf("08:00", "12:30", "20:30", "22:00")
+    val (initialHour, initialMinute) = remember(selectedTime) {
+        selectedTime.toHourMinuteOrDefault()
+    }
+    var selectedHour by remember(selectedTime) { mutableStateOf(initialHour) }
+    var selectedMinute by remember(selectedTime) { mutableStateOf(initialMinute) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = stringResource(id = R.string.notification_time_dialog_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingSm)) {
-                reminderTimes.forEach { reminderTime ->
-                    Text(
-                        text = reminderTime,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(AppShapes.chip)
-                            .background(
-                                if (reminderTime == selectedTime) {
-                                    MaterialTheme.colorScheme.primaryContainer
-                                } else {
-                                    Color.Transparent
-                                }
-                            )
-                            .clickable { onTimeSelected(reminderTime) }
-                            .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingSm),
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = if (reminderTime == selectedTime) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    )
-                }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(TimeWheelHeight),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TimeWheelColumn(
+                    selectedValue = initialHour,
+                    maxValue = HOUR_MAX_VALUE,
+                    selectedSuffix = stringResource(id = R.string.notification_time_hour_suffix),
+                    onValueChanged = { selectedHour = it }
+                )
+                TimeWheelColumn(
+                    selectedValue = initialMinute,
+                    maxValue = MINUTE_MAX_VALUE,
+                    selectedSuffix = stringResource(id = R.string.notification_time_minute_suffix),
+                    onValueChanged = { selectedMinute = it }
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(id = R.string.action_cancel))
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = {
+                    onTimeSelected("%02d:%02d".format(selectedHour, selectedMinute))
+                }
+            ) {
                 Text(text = stringResource(id = R.string.action_done))
             }
         }
@@ -437,12 +486,130 @@ private fun ReminderTimeDialog(
 }
 
 @Composable
-private fun ReminderFrequency.label(): String {
-    return when (this) {
-        ReminderFrequency.Daily -> stringResource(id = R.string.notification_frequency_daily)
-        ReminderFrequency.Weekly -> stringResource(id = R.string.notification_frequency_weekly)
+private fun TimeWheelColumn(
+    selectedValue: Int,
+    maxValue: Int,
+    selectedSuffix: String,
+    onValueChanged: (Int) -> Unit
+) {
+    val itemCount = maxValue + 1
+    val initialIndex = remember(selectedValue, itemCount) {
+        TimeWheelLoopCenterIndex - (TimeWheelLoopCenterIndex % itemCount) + selectedValue
+    }
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+    val coroutineScope = rememberCoroutineScope()
+    val itemHeightPx = with(LocalDensity.current) { TimeWheelItemHeight.toPx() }
+    val currentIndex by remember(listState, itemHeightPx) {
+        derivedStateOf {
+            listState.selectedTimeWheelIndex(itemHeightPx)
+        }
+    }
+    val currentValue = currentIndex.toTimeWheelValue(itemCount)
+
+    LaunchedEffect(listState, itemHeightPx, itemCount) {
+        snapshotFlowValue(listState, itemHeightPx, itemCount)
+            .distinctUntilChanged()
+            .collect(onValueChanged)
+    }
+
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .width(TimeWheelColumnWidth)
+            .fillMaxHeight(),
+        contentPadding = PaddingValues(vertical = TimeWheelItemHeight * 2),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        items(TimeWheelLoopItemCount) { index ->
+            val value = index.toTimeWheelValue(itemCount)
+            val isSelected = value == currentValue
+            Box(
+                modifier = Modifier
+                    .height(TimeWheelItemHeight)
+                    .fillMaxWidth()
+                    .clickable {
+                        onValueChanged(value)
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(
+                                currentIndex.closestTimeWheelIndex(
+                                    targetValue = value,
+                                    itemCount = itemCount
+                                )
+                            )
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isSelected) {
+                        "%02d%s".format(value, selectedSuffix)
+                    } else {
+                        "%02d".format(value)
+                    },
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        color = if (isSelected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
+                        },
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                        lineHeight = TimeWheelItemTextLineHeight
+                    )
+                )
+            }
+        }
     }
 }
+
+private fun snapshotFlowValue(
+    listState: LazyListState,
+    itemHeightPx: Float,
+    itemCount: Int
+) = androidx.compose.runtime.snapshotFlow {
+    listState.selectedTimeWheelIndex(itemHeightPx).toTimeWheelValue(itemCount)
+}
+
+private fun LazyListState.selectedTimeWheelIndex(itemHeightPx: Float): Int {
+    return firstVisibleItemIndex + if (firstVisibleItemScrollOffset > itemHeightPx / 2f) 1 else 0
+}
+
+private fun Int.toTimeWheelValue(itemCount: Int): Int {
+    return ((this % itemCount) + itemCount) % itemCount
+}
+
+private fun Int.closestTimeWheelIndex(
+    targetValue: Int,
+    itemCount: Int
+): Int {
+    val currentValue = toTimeWheelValue(itemCount)
+    var delta = targetValue - currentValue
+    if (delta > itemCount / 2) delta -= itemCount
+    if (delta < -itemCount / 2) delta += itemCount
+    return (this + delta).coerceIn(0, TimeWheelLoopItemCount - 1)
+}
+
+private fun String.toHourMinuteOrDefault(): Pair<Int, Int> {
+    val parts = split(":")
+    if (parts.size != 2) return DEFAULT_REMINDER_HOUR to DEFAULT_REMINDER_MINUTE
+
+    val hour = parts[0].toIntOrNull() ?: return DEFAULT_REMINDER_HOUR to DEFAULT_REMINDER_MINUTE
+    val minute = parts[1].toIntOrNull() ?: return DEFAULT_REMINDER_HOUR to DEFAULT_REMINDER_MINUTE
+    if (hour !in 0..HOUR_MAX_VALUE || minute !in 0..MINUTE_MAX_VALUE) {
+        return DEFAULT_REMINDER_HOUR to DEFAULT_REMINDER_MINUTE
+    }
+
+    return hour to minute
+}
+
+private val TimeWheelItemHeight = 44.dp
+private val TimeWheelHeight = TimeWheelItemHeight * 5
+private val TimeWheelColumnWidth = 96.dp
+private val TimeWheelItemTextLineHeight = 32.sp
+private const val TimeWheelLoopItemCount = 10_000
+private const val TimeWheelLoopCenterIndex = TimeWheelLoopItemCount / 2
+private const val DEFAULT_REMINDER_HOUR = 20
+private const val DEFAULT_REMINDER_MINUTE = 30
 
 private fun Context.hasNotificationPermission(): Boolean {
     val runtimePermissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
@@ -450,6 +617,24 @@ private fun Context.hasNotificationPermission(): Boolean {
         PackageManager.PERMISSION_GRANTED
 
     return runtimePermissionGranted && NotificationManagerCompat.from(this).areNotificationsEnabled()
+}
+
+private fun Context.hasExactAlarmPermission(): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
+    val alarmManager = getSystemService(AlarmManager::class.java)
+    return alarmManager.canScheduleExactAlarms()
+}
+
+private fun Context.openExactAlarmSettings() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+
+    val intent = Intent(
+        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+        Uri.parse("package:$packageName")
+    ).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    }
+    runCatching { startActivity(intent) }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 844)
@@ -462,9 +647,10 @@ private fun NotificationSettingsScreenPreview() {
             onNotificationPermissionStateChanged = {},
             onNotificationPermissionDenied = {},
             onAllowNotificationsChange = {},
-            onReminderTimeSelected = {},
-            onReminderFrequencySelected = {},
-            onDestinationSelected = {}
+            onLearningRemindersEnabledChange = {},
+            onStreakProtectionEnabledChange = {},
+            onAiRoadmapUpdatesEnabledChange = {},
+            onReminderTimeSelected = {}
         )
     }
 }
