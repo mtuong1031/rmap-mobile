@@ -118,7 +118,7 @@ private fun HomeActiveRoadmap.toLearningPlanState(): HomeLearningPlanState {
         roadmapTitle = title,
         skillTitle = planNode?.name ?: currentGroup?.name ?: title,
         chapterText = chapter?.label,
-        timeLeftText = planNode?.estimatedHours?.let { "${it}h left" },
+        timeLeftText = planNode?.estimatedHours?.let { "${it.toDisplayHours()}h left" },
         completedRequiredNodes = progress.requiredNodesCompleted,
         totalRequiredNodes = progress.requiredNodesTotal,
         progressPercentage = progress.requiredCompletionPct.toInt().coerceIn(0, 100),
@@ -214,6 +214,10 @@ private fun HomeTrendingRoadmap.toDurationText(): String {
     return durationLabel?.takeIf { it.isNotBlank() }
         ?: estimatedWeeks?.let { "$it weeks" }
         ?: "Self-paced"
+}
+
+private fun Double.toDisplayHours(): String {
+    return if (this % 1.0 == 0.0) toInt().toString() else toString()
 }
 
 internal fun String.toFirstName(): String {

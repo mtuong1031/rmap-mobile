@@ -10,7 +10,7 @@ data class HomeDashboardResponseDto(
 data class HomeActiveRoadmapDto(
     @SerializedName("roadmapId") val roadmapId: String,
     @SerializedName("title") val title: String,
-    @SerializedName("goalName") val goalName: String,
+    @SerializedName("goalName") val goalName: String?,
     @SerializedName("isTemplate") val isTemplate: Boolean,
     @SerializedName("roleCategory") val roleCategory: String,
     @SerializedName("startedAt") val startedAt: String,
@@ -32,7 +32,7 @@ data class HomePlanNodeDto(
     @SerializedName("name") val name: String,
     @SerializedName("description") val description: String?,
     @SerializedName("nodeType") val nodeType: String,
-    @SerializedName("estimatedHours") val estimatedHours: Int?
+    @SerializedName("estimatedHours") val estimatedHours: Double?
 )
 
 data class HomeRoadmapChapterDto(
@@ -88,7 +88,7 @@ data class HomeSearchRoadmapDto(
     @SerializedName("roadmapId") val roadmapId: String,
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String?,
-    @SerializedName("goalName") val goalName: String,
+    @SerializedName("goalName") val goalName: String?,
     @SerializedName("isTemplate") val isTemplate: Boolean,
     @SerializedName("roadmapType") val roadmapType: String,
     @SerializedName("roleCategory") val roleCategory: String,
@@ -134,7 +134,7 @@ data class HomeTemplateRoadmapDto(
     @SerializedName("roadmapId") val roadmapId: String,
     @SerializedName("title") val title: String,
     @SerializedName("description") val description: String?,
-    @SerializedName("goalName") val goalName: String,
+    @SerializedName("goalName") val goalName: String?,
     @SerializedName("roleCategory") val roleCategory: String,
     @SerializedName("categoryLabel") val categoryLabel: String,
     @SerializedName("estimatedWeeks") val estimatedWeeks: Int?,

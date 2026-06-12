@@ -13,6 +13,9 @@ import com.rmap.mobile.features.home.data.local.mapper.toHomeDto
 import com.rmap.mobile.features.home.data.local.mapper.toTemplateCategoryEntity
 import com.rmap.mobile.features.home.data.mapper.toHomeContent
 import com.rmap.mobile.features.home.data.mapper.toDomain
+import com.rmap.mobile.features.home.data.model.HomeDashboardResponseDto
+import com.rmap.mobile.features.home.data.model.HomeMetricsDto
+import com.rmap.mobile.features.home.data.model.HomeTemplateRecommendationsResponseDto
 import com.rmap.mobile.features.home.data.model.HomeTemplateTrendingsResponseDto
 import com.rmap.mobile.features.home.data.remote.HomeApi
 import com.rmap.mobile.features.home.domain.model.HomeContent
@@ -41,29 +44,56 @@ class HomeRepositoryImpl(
             val recommendationsResult = recommendations.await()
             val trendingsResult = trendings.await()
 
-            val error = listOf(
-                dashboardResult,
-                recommendationsResult,
-                trendingsResult
-            ).filterIsInstance<NetworkResult.Error>().firstOrNull()
-
-            if (error != null) {
-                Result.failure(error.toAppException())
-            } else if (
-                dashboardResult is NetworkResult.Success &&
-                recommendationsResult is NetworkResult.Success &&
-                trendingsResult is NetworkResult.Success
-            ) {
-                Result.success(
-                    toHomeContent(
-                        dashboard = dashboardResult.data,
-                        recommendations = recommendationsResult.data,
-                        trendings = trendingsResult.data
-                    )
-                )
-            } else {
-                Result.failure(IllegalStateException("Unable to load home"))
+            val dashboardData = when (dashboardResult) {
+                is NetworkResult.Success -> dashboardResult.data
+                is NetworkResult.Error -> {
+                    if (dashboardResult.code == 401) {
+                        HomeDashboardResponseDto(
+                            activeRoadmaps = emptyList(),
+                            metrics = HomeMetricsDto(0.0, 0, 0.0)
+                        )
+                    } else {
+                        return@coroutineScope Result.failure(dashboardResult.toAppException())
+                    }
+                }
             }
+
+            val recommendationsData = when (recommendationsResult) {
+                is NetworkResult.Success -> recommendationsResult.data
+                is NetworkResult.Error -> {
+                    if (recommendationsResult.code == 401) {
+                        HomeTemplateRecommendationsResponseDto(
+                            roleCategories = emptyList(),
+                            total = 0,
+                            relevantRoadmaps = emptyList()
+                        )
+                    } else {
+                        return@coroutineScope Result.failure(recommendationsResult.toAppException())
+                    }
+                }
+            }
+
+            val trendingsData = when (trendingsResult) {
+                is NetworkResult.Success -> trendingsResult.data
+                is NetworkResult.Error -> {
+                    if (trendingsResult.code == 401) {
+                        HomeTemplateTrendingsResponseDto(
+                            total = 0,
+                            trendings = emptyList()
+                        )
+                    } else {
+                        return@coroutineScope Result.failure(trendingsResult.toAppException())
+                    }
+                }
+            }
+
+            Result.success(
+                toHomeContent(
+                    dashboard = dashboardData,
+                    recommendations = recommendationsData,
+                    trendings = trendingsData
+                )
+            )
         }
     }
 

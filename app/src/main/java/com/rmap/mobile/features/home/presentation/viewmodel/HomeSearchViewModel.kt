@@ -7,7 +7,11 @@ import com.rmap.mobile.core.ui.theme.OnSecondaryContainerLight
 import com.rmap.mobile.core.ui.theme.PrimaryContainerLight
 import com.rmap.mobile.core.ui.theme.PrimaryLight
 import com.rmap.mobile.core.ui.theme.SecondaryContainerLight
+import com.rmap.mobile.core.notification.AppNotification
+import com.rmap.mobile.core.notification.AppNotificationManager
+import com.rmap.mobile.core.notification.AppNotificationVariant
 import com.rmap.mobile.core.utils.RMapAppGraph
+import com.rmap.mobile.R
 import com.rmap.mobile.features.home.domain.model.HomeSearchResult
 import com.rmap.mobile.features.home.domain.model.HomeSearchRoadmap
 import com.rmap.mobile.features.home.domain.model.HomeSearchSkill
@@ -30,7 +34,8 @@ import kotlinx.coroutines.launch
 
 class HomeSearchViewModel(
     private val homeRepository: HomeRepository = RMapAppGraph.homeRepository,
-    private val recentSearchRepository: RecentSearchRepository = RMapAppGraph.recentSearchRepository
+    private val recentSearchRepository: RecentSearchRepository = RMapAppGraph.recentSearchRepository,
+    private val notificationManager: AppNotificationManager = RMapAppGraph.appNotificationManager
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeSearchUiState())
     val uiState: StateFlow<HomeSearchUiState> = _uiState.asStateFlow()
@@ -100,6 +105,13 @@ class HomeSearchViewModel(
                             errorMessage = error.message ?: HOME_SEARCH_LOAD_ERROR_MESSAGE
                         )
                     }
+                    notificationManager.enqueue(
+                        AppNotification(
+                            titleResId = R.string.snackbar_title_error,
+                            message = error.message ?: HOME_SEARCH_LOAD_ERROR_MESSAGE,
+                            variant = AppNotificationVariant.Error
+                        )
+                    )
                 }
         }
     }
@@ -148,6 +160,13 @@ class HomeSearchViewModel(
                             errorMessage = error.message ?: HOME_SEARCH_LOAD_ERROR_MESSAGE
                         )
                     }
+                    notificationManager.enqueue(
+                        AppNotification(
+                            titleResId = R.string.snackbar_title_error,
+                            message = error.message ?: HOME_SEARCH_LOAD_ERROR_MESSAGE,
+                            variant = AppNotificationVariant.Error
+                        )
+                    )
                 }
         }
     }
@@ -182,6 +201,13 @@ class HomeSearchViewModel(
                         errorMessage = error.message ?: HOME_SEARCH_LOAD_ERROR_MESSAGE
                     )
                 }
+                notificationManager.enqueue(
+                    AppNotification(
+                        titleResId = R.string.snackbar_title_error,
+                        message = error.message ?: HOME_SEARCH_LOAD_ERROR_MESSAGE,
+                        variant = AppNotificationVariant.Error
+                    )
+                )
             }
     }
 

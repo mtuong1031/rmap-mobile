@@ -10,7 +10,7 @@ data class HomeContent(
 data class HomeActiveRoadmap(
     val roadmapId: String,
     val title: String,
-    val goalName: String,
+    val goalName: String?,
     val roleCategory: String,
     val startedAt: String,
     val currentGroup: HomeRoadmapGroup?,
@@ -31,7 +31,7 @@ data class HomePlanNode(
     val name: String,
     val description: String?,
     val nodeType: String,
-    val estimatedHours: Int?
+    val estimatedHours: Double?
 )
 
 data class HomeRoadmapChapter(
@@ -89,7 +89,7 @@ data class HomeSearchRoadmap(
     val roadmapId: String,
     val title: String,
     val description: String?,
-    val goalName: String,
+    val goalName: String?,
     val isTemplate: Boolean,
     val roadmapType: String,
     val roleCategory: String,
@@ -121,7 +121,7 @@ data class HomeTemplateRoadmap(
     val roadmapId: String,
     val title: String,
     val description: String?,
-    val goalName: String,
+    val goalName: String?,
     val roleCategory: String,
     val categoryLabel: String,
     val estimatedWeeks: Int?,

@@ -38,7 +38,7 @@ private val HomeHeroEmptyCardHorizontalPadding = 32.dp
 private val HomeHeroEmptyIconTileSize = 72.dp
 
 @Composable
-internal fun HomeHeroEmptyRoadmapCard(
+internal fun    HomeHeroEmptyRoadmapCard(
     onCreateRoadmapWithAiClick: () -> Unit,
     onExploreReadyMadeClick: () -> Unit,
     modifier: Modifier = Modifier

@@ -15,7 +15,7 @@ data class HomeUiState(
     val todayGoalCompleted: Int = 0,
     val todayGoalTotal: Int = 0,
     val completedRoadmaps: Int = 0,
-    val hasInProgressRoadmap: Boolean = true,
+    val hasInProgressRoadmap: Boolean = false,
     val learningPlans: List<HomeLearningPlanState> = emptyList(),
     val recommendedRoadmaps: List<HomeRecommendedRoadmapState> = emptyList(),
     val beginnerRoadmaps: List<HomeRecommendedRoadmapState> = emptyList(),

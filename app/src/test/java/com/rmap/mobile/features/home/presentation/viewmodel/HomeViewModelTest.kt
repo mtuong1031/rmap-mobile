@@ -121,6 +121,10 @@ private class FakeAuthRepository : AuthRepository {
 
     override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
 
+    override suspend fun linkWithGoogle(idToken: String): Result<Unit> = error("Not used")
+
+    override suspend fun linkWithGithub(code: String): Result<Unit> = error("Not used")
+
     override suspend fun logout(): Result<Unit> = error("Not used")
 
     override suspend fun changePassword(
@@ -181,7 +185,7 @@ private fun activeRoadmap(
     roleCategory = "WEB_DEVELOPMENT",
     startedAt = "2026-06-01T03:22:18.055Z",
     currentGroup = HomeRoadmapGroup("group-1", "Internet"),
-    planNode = HomePlanNode("node-1", "HTTP", null, "REQUIRED", 3),
+    planNode = HomePlanNode("node-1", "HTTP", null, "REQUIRED", 3.0),
     chapter = HomeRoadmapChapter(1, 14, "Chapter 1/14"),
     progress = HomeRoadmapProgress(1, 49, 2.0),
     nextUnlock = HomeNextUnlock("unlock-1", "Frontend Core"),

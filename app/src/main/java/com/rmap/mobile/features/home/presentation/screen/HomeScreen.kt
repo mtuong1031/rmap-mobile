@@ -292,16 +292,6 @@ fun HomeScreen(
                             }
                         }
                     } else {
-                        item {
-                            HomeGoalQuizCard(
-                                title = stringResource(R.string.home_goal_quiz_title),
-                                description = stringResource(R.string.home_goal_quiz_description),
-                                actionText = stringResource(R.string.home_goal_quiz_action),
-                                onActionClick = onCreateRoadmapWithAiClick,
-                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
-                            )
-                        }
-
                         if (beginnerRoadmaps.isNotEmpty()) {
                             item {
                                 HomeRecommendedRoadmapsSection(
@@ -318,23 +308,35 @@ fun HomeScreen(
                                 )
                             }
                         }
+
+                        item {
+                            HomeGoalQuizCard(
+                                title = stringResource(R.string.home_goal_quiz_title),
+                                description = stringResource(R.string.home_goal_quiz_description),
+                                actionText = stringResource(R.string.home_goal_quiz_action),
+                                onActionClick = onCreateRoadmapWithAiClick,
+                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
+                            )
+                        }
                     }
 
-                    item {
-                        Column(
-                            modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
-                            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
-                        ) {
-                            TrendingRoadmapsHeader(
-                                title = stringResource(R.string.home_popular_roadmaps_explore_title)
-                            )
-                            uiState.trendingRoadmaps.forEach { item ->
-                                TrendingRoadmapCard(
-                                    item = item,
-                                    onClick = onRoadmapClick?.let { callback ->
-                                        { callback(item) }
-                                    }
+                    if (uiState.trendingRoadmaps.isNotEmpty()) {
+                        item {
+                            Column(
+                                modifier = Modifier.padding(horizontal = sectionHorizontalPadding),
+                                verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
+                            ) {
+                                TrendingRoadmapsHeader(
+                                    title = stringResource(R.string.home_popular_roadmaps_explore_title)
                                 )
+                                uiState.trendingRoadmaps.forEach { item ->
+                                    TrendingRoadmapCard(
+                                        item = item,
+                                        onClick = onRoadmapClick?.let { callback ->
+                                            { callback(item) }
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -391,10 +393,18 @@ private fun List<HomeRecommendedRoadmapState>.toRoadmapCardPairs(
     actionText: String
 ): List<Pair<HomeRecommendedRoadmapState, HomeRoadmapCardUiModel>> {
     return map { roadmap ->
-        val displayCategory = if (roadmap.isBeginner && roadmap.categoryLabel.equals("Languages And Platforms", ignoreCase = true)) {
-            "Languages"
-        } else {
-            roadmap.categoryLabel
+        val displayCategory = when {
+            roadmap.isBeginner &&
+                    roadmap.categoryLabel.equals("Languages And Platforms", ignoreCase = true) -> {
+                stringResource(R.string.home_category_languages)
+            }
+
+            roadmap.isBeginner &&
+                    roadmap.categoryLabel.equals("Ai and Machine learning", ignoreCase = true) -> {
+                "AI"
+            }
+
+            else -> roadmap.categoryLabel
         }
         roadmap to HomeRoadmapCardUiModel(
             id = roadmap.id,
