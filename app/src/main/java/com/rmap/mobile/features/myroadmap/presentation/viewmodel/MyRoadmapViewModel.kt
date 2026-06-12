@@ -6,19 +6,26 @@ import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.dashboard.domain.model.Dashboard
 import com.rmap.mobile.features.dashboard.domain.model.DashboardRoadmap
 import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
+import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepository
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class MyRoadmapViewModel(
-    private val dashboardRepository: DashboardRepository = RMapAppGraph.dashboardRepository
+    private val dashboardRepository: DashboardRepository = RMapAppGraph.dashboardRepository,
+    private val completedSkillsRepository: CompletedSkillsRepository = RMapAppGraph.completedSkillsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MyRoadmapUiState())
     val uiState: StateFlow<MyRoadmapUiState> = _uiState.asStateFlow()
+    private val _events = MutableSharedFlow<MyRoadmapEvent>(extraBufferCapacity = 1)
+    val events: SharedFlow<MyRoadmapEvent> = _events.asSharedFlow()
     private var dashboardJob: Job? = null
 
     init {
@@ -34,12 +41,19 @@ class MyRoadmapViewModel(
                     result
                         .onSuccess { dashboard ->
                             _uiState.update {
-                                dashboard.toUiState(selectedFilter = it.selectedFilter)
+                                dashboard.toUiState(
+                                    selectedFilter = it.selectedFilter,
+                                    searchQuery = it.searchQuery
+                                )
                             }
                         }
                         .onFailure { error ->
+                            val hasCachedRoadmaps = _uiState.value.roadmaps.isNotEmpty()
+                            if (hasCachedRoadmaps) {
+                                _events.tryEmit(MyRoadmapEvent.DashboardRefreshFailed)
+                            }
                             _uiState.update {
-                                if (it.roadmaps.isNotEmpty()) {
+                                if (hasCachedRoadmaps) {
                                     it.copy(isLoading = false)
                                 } else {
                                     it.copy(
@@ -50,39 +64,37 @@ class MyRoadmapViewModel(
                             }
                         }
                     }
-                }
         }
+    }
+
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+    }
+
+    fun clearSearch() {
+        _uiState.update { it.copy(searchQuery = "") }
+    }
 
     fun onFilterSelected(filter: MyRoadmapFilter) {
         _uiState.update { it.copy(selectedFilter = filter) }
     }
 }
 
-private fun Dashboard.toUiState(selectedFilter: MyRoadmapFilter): MyRoadmapUiState {
+private fun Dashboard.toUiState(
+    selectedFilter: MyRoadmapFilter,
+    searchQuery: String
+): MyRoadmapUiState {
     val categoryLabels = skillCategories.associate { category ->
         category.category to category.label
     }
 
     return MyRoadmapUiState(
         userName = userProfile.fullName.toFirstName(),
-        filters = listOf(
-            MyRoadmapFilterUiModel(MyRoadmapFilter.Active, summary.activeRoadmaps),
-            MyRoadmapFilterUiModel(MyRoadmapFilter.All, summary.totalRoadmaps),
-            MyRoadmapFilterUiModel(MyRoadmapFilter.Completed, summary.completedRoadmaps),
-            MyRoadmapFilterUiModel(MyRoadmapFilter.Behind, roadmapStatus.behindPace)
-        ),
         selectedFilter = selectedFilter,
+        searchQuery = searchQuery,
         roadmaps = roadmaps.map { roadmap ->
             roadmap.toUiModel(categoryLabels[roadmap.roleCategory])
         },
-        achievements = skillCategories.map { category ->
-            MyRoadmapAchievementUiModel(
-                categoryKey = category.category,
-                label = category.label,
-                totalSkills = category.totalSkills
-            )
-        },
-        completedSkills = summary.completedSkills,
         isLoading = false,
         errorMessage = null
     )

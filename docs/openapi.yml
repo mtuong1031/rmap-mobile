@@ -297,6 +297,36 @@ components:
         totalSkills:
           type: integer
           example: 24
+        completedSkills:
+          type: integer
+          example: 8
+
+    CompletedUserSkill:
+      type: object
+      required: [skillId, skillName, category, completedAt]
+      properties:
+        skillId:
+          $ref: '#/components/schemas/UUID'
+        skillName:
+          type: string
+          example: "REST API Design"
+        category:
+          type: string
+          example: "WEB_DEVELOPMENT"
+        completedAt:
+          $ref: '#/components/schemas/Timestamp'
+
+    CompletedUserSkillsResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          description: Skills are deduplicated by skillId across the user's roadmaps.
+          items:
+            $ref: '#/components/schemas/CompletedUserSkill'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
 
     DashboardRoadmapStatus:
       type: object
@@ -1488,6 +1518,33 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/UserSkill'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/skills/completed:
+    get:
+      tags: [Users]
+      summary: List the current user's completed skills
+      description: Returns skills completed by the current user, deduplicated by skill ID across roadmaps.
+      operationId: getCompletedUserSkills
+      security:
+        - CookieAuth: []
+      parameters:
+        - name: category
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Skill category key, for example WEB_DEVELOPMENT.
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+      responses:
+        '200':
+          description: Paginated completed skills in the requested category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletedUserSkillsResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
 

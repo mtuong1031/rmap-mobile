@@ -62,7 +62,8 @@ data class DashboardSummary(
 data class DashboardSkillCategory(
     val category: String,
     val label: String,
-    val totalSkills: Int
+    val totalSkills: Int,
+    val completedSkills: Int
 )
 
 data class DashboardRoadmapStatus(

@@ -80,7 +80,8 @@ data class DashboardSummaryDto(
 data class DashboardSkillCategoryDto(
     @SerializedName("category") val category: String,
     @SerializedName("label") val label: String,
-    @SerializedName("totalSkills") val totalSkills: Int
+    @SerializedName("totalSkills") val totalSkills: Int,
+    @SerializedName("completedSkills") val completedSkills: Int = 0
 )
 
 data class DashboardRoadmapStatusDto(

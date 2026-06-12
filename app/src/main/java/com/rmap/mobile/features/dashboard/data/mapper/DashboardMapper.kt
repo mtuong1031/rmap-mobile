@@ -92,7 +92,8 @@ private fun DashboardSkillCategoryDto.toDomain(): DashboardSkillCategory {
     return DashboardSkillCategory(
         category = category,
         label = label,
-        totalSkills = totalSkills
+        totalSkills = totalSkills,
+        completedSkills = completedSkills
     )
 }
 

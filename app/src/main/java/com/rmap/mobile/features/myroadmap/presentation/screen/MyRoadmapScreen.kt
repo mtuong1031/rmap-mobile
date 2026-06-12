@@ -1,55 +1,84 @@
 package com.rmap.mobile.features.myroadmap.presentation.screen
 
+import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Route
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.rmap.mobile.R
+import com.rmap.mobile.core.ui.components.RMapButton
+import com.rmap.mobile.core.ui.components.RMapButtonSize
+import com.rmap.mobile.core.ui.components.RMapButtonVariant
 import com.rmap.mobile.core.ui.components.RMapCard
 import com.rmap.mobile.core.ui.components.RMapHeader
+import com.rmap.mobile.core.ui.components.RMapHeroSectionBackground
+import com.rmap.mobile.core.ui.components.RMapSearchBar
+import com.rmap.mobile.core.ui.components.RMapSkeletonBlock
+import com.rmap.mobile.core.ui.components.RMapSkeletonCard
+import com.rmap.mobile.core.ui.components.rememberRMapSkeletonBrush
 import com.rmap.mobile.core.ui.theme.AppShapes
+import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.LocalRMapSemanticColors
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.features.myroadmap.presentation.viewmodel.MyRoadmapAchievementUiModel
 import com.rmap.mobile.features.myroadmap.presentation.viewmodel.MyRoadmapCardUiModel
 import com.rmap.mobile.features.myroadmap.presentation.viewmodel.MyRoadmapFilter
 import com.rmap.mobile.features.myroadmap.presentation.viewmodel.MyRoadmapFilterUiModel
@@ -62,23 +91,27 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
-
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.collectLatest
-import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.flow.emptyFlow
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyRoadmapScreen(
     uiState: MyRoadmapUiState,
+    isAuthenticated: Boolean,
     selectedDestination: NavBarDestination,
     onDestinationSelected: (NavBarDestination) -> Unit,
-    reselectEvent: Flow<NavBarDestination> = emptyFlow(),
+    onSearchQueryChange: (String) -> Unit,
+    onClearSearchClick: () -> Unit,
     onFilterSelected: (MyRoadmapFilter) -> Unit,
     onRoadmapClick: (String) -> Unit,
+    onRoadmapCtaClick: (String) -> Unit,
+    onRetryClick: () -> Unit,
     onCreateWithAiClick: () -> Unit,
     onExploreRoadmapsClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    reselectEvent: Flow<NavBarDestination> = emptyFlow()
 ) {
     val listState = rememberLazyListState()
 
@@ -99,7 +132,7 @@ fun MyRoadmapScreen(
                 top = Dimens.spacingScreenTopCompact,
                 bottom = innerPadding.calculateBottomPadding() + Dimens.spacingScreenBottomCompact + Dimens.floatingNavBarHeight
             ),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxl)
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
             item {
                 RMapHeader(
@@ -111,9 +144,34 @@ fun MyRoadmapScreen(
                 )
             }
 
+            item {
+                RMapSearchBar(
+                    query = uiState.searchQuery,
+                    onQueryChange = onSearchQueryChange,
+                    placeholder = stringResource(R.string.my_roadmap_search_placeholder),
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.spacingScreenHorizontal)
+                )
+            }
+
             when {
+                !isAuthenticated -> item {
+                    MyRoadmapFullEmptyState(
+                        onCreateWithAiClick = onCreateWithAiClick,
+                        onExploreRoadmapsClick = onExploreRoadmapsClick,
+                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+                    )
+                }
                 uiState.isLoading -> item { MyRoadmapLoading() }
-                uiState.errorMessage != null -> item { MyRoadmapError(message = uiState.errorMessage) }
+                uiState.errorMessage != null -> item {
+                    MyRoadmapError(
+                        message = uiState.errorMessage,
+                        onRetryClick = onRetryClick,
+                        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+                    )
+                }
                 uiState.roadmaps.isEmpty() -> item {
                     MyRoadmapFullEmptyState(
                         onCreateWithAiClick = onCreateWithAiClick,
@@ -130,22 +188,34 @@ fun MyRoadmapScreen(
                         )
                     }
 
-                    item {
-                        MyRoadmapListSection(
-                            selectedFilter = uiState.selectedFilter,
-                            roadmaps = uiState.visibleRoadmaps,
-                            onRoadmapClick = onRoadmapClick,
-                            onShowAllClick = { onFilterSelected(MyRoadmapFilter.All) },
-                            modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
-                        )
-                    }
-
-                    item {
-                        MyRoadmapAchievementsSection(
-                            completedSkills = uiState.completedSkills,
-                            achievements = uiState.achievements,
-                            modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
-                        )
+                    if (uiState.visibleRoadmaps.isEmpty()) {
+                        item {
+                            if (uiState.isSearching) {
+                                SearchEmptyState(
+                                    query = uiState.searchQuery,
+                                    onClearSearchClick = onClearSearchClick,
+                                    modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+                                )
+                            } else {
+                                FilterEmptyState(
+                                    selectedFilter = uiState.selectedFilter,
+                                    onShowAllClick = { onFilterSelected(MyRoadmapFilter.All) },
+                                    modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+                                )
+                            }
+                        }
+                    } else {
+                        items(
+                            items = uiState.visibleRoadmaps,
+                            key = { roadmap -> "roadmap-${roadmap.id}" }
+                        ) { roadmap ->
+                            MyRoadmapCompactCard(
+                                roadmap = roadmap,
+                                onClick = { onRoadmapClick(roadmap.id) },
+                                onCtaClick = { onRoadmapCtaClick(roadmap.id) },
+                                modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
+                            )
+                        }
                     }
                 }
             }
@@ -180,19 +250,20 @@ private fun MyRoadmapFilterChip(
     onClick: () -> Unit
 ) {
     val isBehind = item.filter == MyRoadmapFilter.Behind && item.count > 0
+    val semanticColors = LocalRMapSemanticColors.current
     val containerColor = when {
         isSelected -> MaterialTheme.colorScheme.primaryContainer
-        isBehind -> Color(0xFFFFF7ED)
+        isBehind -> semanticColors.warning.container
         else -> MaterialTheme.colorScheme.surface
     }
     val contentColor = when {
         isSelected -> MaterialTheme.colorScheme.primary
-        isBehind -> Color(0xFFEA580C)
+        isBehind -> semanticColors.warning.content
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
     val borderColor = when {
         isSelected -> MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
-        isBehind -> MaterialTheme.colorScheme.error.copy(alpha = 0.24f)
+        isBehind -> semanticColors.warning.border
         else -> MaterialTheme.colorScheme.outline
     }
 
@@ -201,7 +272,12 @@ private fun MyRoadmapFilterChip(
             .clip(AppShapes.pill)
             .background(containerColor)
             .border(Dimens.borderThin, borderColor, AppShapes.pill)
-            .clickable(onClick = onClick)
+            .selectable(
+                selected = isSelected,
+                role = Role.Tab,
+                onClick = onClick
+            )
+            .semantics { selected = isSelected }
             .padding(horizontal = Dimens.spacingMd, vertical = Dimens.spacingSm),
         horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
         verticalAlignment = Alignment.CenterVertically
@@ -224,147 +300,156 @@ private fun MyRoadmapFilterChip(
 }
 
 @Composable
-private fun MyRoadmapListSection(
-    selectedFilter: MyRoadmapFilter,
-    roadmaps: List<MyRoadmapCardUiModel>,
-    onRoadmapClick: (String) -> Unit,
-    onShowAllClick: () -> Unit,
+private fun MyRoadmapCompactCard(
+    roadmap: MyRoadmapCardUiModel,
+    onClick: () -> Unit,
+    onCtaClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
-    ) {
-        SectionHeader(
-            title = stringResource(R.string.my_roadmap_list_title),
-            subtitle = selectedFilter.subtitle()
-        )
-
-        if (roadmaps.isEmpty()) {
-            FilterEmptyState(
-                selectedFilter = selectedFilter,
-                onShowAllClick = onShowAllClick
-            )
-        } else {
-            roadmaps.forEach { roadmap ->
-                MyRoadmapCard(
-                    roadmap = roadmap,
-                    onClick = { onRoadmapClick(roadmap.id) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MyRoadmapCard(
-    roadmap: MyRoadmapCardUiModel,
-    onClick: () -> Unit
-) {
+    val cardDescription = stringResource(R.string.my_roadmap_card_content_description, roadmap.title)
     RMapCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clip(AppShapes.largeCard)
-            .clickable(onClick = onClick)
+            .clip(AppShapes.heroCard)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = cardDescription },
+        shape = AppShapes.heroCard,
+        border = BorderStroke(
+            width = Dimens.borderThin,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        shadowElevation = Dimens.cardElevationXs
     ) {
         Column(
-            modifier = Modifier.padding(Dimens.spacingLg),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimens.spacingXl),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingLg)
         ) {
+            // Upper Row: Icon + (Title & Metadata Column) + Trailing Chevron
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spacingLg),
                 verticalAlignment = Alignment.Top
             ) {
-                CategoryIconTile(
-                    icon = roadmap.categoryKey.toRoadmapCategoryIcon().toImageVector()
-                )
+                // Circular Progress around Category Icon
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    CircularProgressIndicator(
+                        progress = { 1f },
+                        modifier = Modifier.size(52.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        strokeWidth = 3.dp
+                    )
+                    CircularProgressIndicator(
+                        progress = { roadmap.completionPercent / 100f },
+                        modifier = Modifier.size(52.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 3.dp
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = roadmap.categoryKey.toRoadmapCategoryIcon().toImageVector(),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                // Title & Metadata Column
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
                 ) {
                     Text(
                         text = roadmap.title,
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium.copy(
+                        style = AppTextStyles.compactCardTitle.copy(
                             color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 18.sp,
+                            lineHeight = 22.sp
                         )
                     )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = roadmap.categoryLabel,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        )
-                        TypeBadge(isTemplate = roadmap.isTemplate)
-                    }
+
+                    Text(
+                        text = "${roadmap.categoryLabel} • ${roadmap.deadlineLabel()}",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Medium
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
+
+                // Trailing Chevron
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(Dimens.iconMd)
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .padding(top = Dimens.spacingXs)
                 )
             }
 
-            LinearRoadmapProgress(progress = roadmap.completionPercent / 100f)
-
+            // Lower Row: Status + Badge (left) and Progress % (right)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    StatusTextWithDot(roadmap = roadmap)
+                    TypeBadge(isTemplate = roadmap.isTemplate)
+                }
+
                 Text(
-                    text = stringResource(
-                        R.string.my_roadmap_progress_meta,
-                        roadmap.completionPercent,
-                        roadmap.nodesCompleted,
-                        roadmap.nodesTotal
-                    ),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                )
-                Text(
-                    text = roadmap.deadlineLabel(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.SemiBold
+                    text = stringResource(R.string.my_roadmap_progress_percent, roadmap.completionPercent),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
                 )
             }
-
-            StatusPill(roadmap = roadmap)
         }
     }
 }
 
 @Composable
-private fun CategoryIconTile(icon: ImageVector) {
-    Box(
-        modifier = Modifier
-            .size(Dimens.controlLg)
-            .clip(AppShapes.iconContainerLarge)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center
+private fun StatusTextWithDot(roadmap: MyRoadmapCardUiModel) {
+    val status = roadmap.statusLabel()
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(Dimens.iconMd)
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(AppShapes.pill)
+                .background(status.contentColor)
+        )
+        Text(
+            text = status.label,
+            style = MaterialTheme.typography.bodySmall.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.SemiBold
+            )
         )
     }
 }
@@ -400,171 +485,110 @@ private fun TypeBadge(isTemplate: Boolean) {
     )
 }
 
-@Composable
-private fun LinearRoadmapProgress(progress: Float) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(6.dp)
-            .clip(AppShapes.pill)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(progress.coerceIn(0f, 1f))
-                .height(6.dp)
-                .clip(AppShapes.pill)
-                .background(MaterialTheme.colorScheme.primary)
-        )
-    }
-}
+private val MyRoadmapEmptyContentMaxWidth = 282.dp
+private val MyRoadmapEmptyIconContainerShape = RoundedCornerShape(24.dp)
+private val MyRoadmapEmptyMinHeight = 420.dp
+private val MyRoadmapEmptyMaxHeight = 520.dp
+private const val MyRoadmapEmptyHeightRatio = 1.42f
 
-@Composable
-private fun StatusPill(roadmap: MyRoadmapCardUiModel) {
-    val status = roadmap.statusLabel()
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXs),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(AppShapes.pill)
-            .background(status.containerColor)
-            .padding(horizontal = Dimens.spacingSm, vertical = Dimens.spacingXs)
-    ) {
-        Icon(
-            imageVector = status.icon,
-            contentDescription = null,
-            tint = status.contentColor,
-            modifier = Modifier.size(Dimens.iconXs)
-        )
-        Text(
-            text = status.label,
-            style = MaterialTheme.typography.labelMedium.copy(
-                color = status.contentColor,
-                fontWeight = FontWeight.Bold
-            )
-        )
-    }
-}
-
-@Composable
-private fun MyRoadmapAchievementsSection(
-    completedSkills: Int,
-    achievements: List<MyRoadmapAchievementUiModel>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
-    ) {
-        SectionHeader(
-            title = stringResource(R.string.my_roadmap_achievements_title),
-            subtitle = stringResource(R.string.my_roadmap_achievements_subtitle, completedSkills)
-        )
-        achievements.forEach { item ->
-            AchievementCategoryRow(item = item)
-        }
-    }
-}
-
-@Composable
-private fun AchievementCategoryRow(item: MyRoadmapAchievementUiModel) {
-    RMapCard(
-        modifier = Modifier.fillMaxWidth(),
-        shadowElevation = Dimens.cardElevationXs
-    ) {
-        Row(
-            modifier = Modifier.padding(Dimens.spacingLg),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMd),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CategoryIconTile(icon = item.categoryKey.toRoadmapCategoryIcon().toImageVector())
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(Dimens.spacingXxs)
-            ) {
-                Text(
-                    text = item.label,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleSmall.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Text(
-                    text = stringResource(R.string.my_roadmap_achievement_category_skills, item.totalSkills),
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-            }
-            Icon(
-                imageVector = Icons.Outlined.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(Dimens.iconMd)
-            )
-        }
-    }
-}
-
-@Composable
-private fun SectionHeader(
-    title: String,
-    subtitle: String
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Bold
-            )
-        )
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Medium
-            )
-        )
-    }
-}
-
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MyRoadmapFullEmptyState(
     onCreateWithAiClick: () -> Unit,
     onExploreRoadmapsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    RMapCard(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(Dimens.spacingXl),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val horizontalPadding = if (maxWidth < 320.dp) {
+            Dimens.spacingXxl
+        } else {
+            Dimens.spacingHuge
+        }
+        val cardMinHeight = (maxWidth * MyRoadmapEmptyHeightRatio).coerceIn(
+            minimumValue = MyRoadmapEmptyMinHeight,
+            maximumValue = MyRoadmapEmptyMaxHeight
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = cardMinHeight)
         ) {
-            CategoryIconTile(icon = Icons.Outlined.Map)
-            Text(
-                text = stringResource(R.string.my_roadmap_empty_title),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-            )
-            Text(
-                text = stringResource(R.string.my_roadmap_empty_body),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
+            RMapHeroSectionBackground(modifier = Modifier.matchParentSize())
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(horizontal = horizontalPadding, vertical = Dimens.spacingHuge)
+                    .widthIn(max = MyRoadmapEmptyContentMaxWidth)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .sizeIn(
+                            minWidth = Dimens.controlXl + Dimens.spacingLg,
+                            minHeight = Dimens.controlXl + Dimens.spacingLg
+                        )
+                        .clip(MyRoadmapEmptyIconContainerShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Map,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(Dimens.iconXxl)
+                    )
+                }
+
+                Text(
+                    text = stringResource(R.string.my_roadmap_empty_title),
+                    modifier = Modifier
+                        .padding(top = Dimens.spacingXxl)
+                        .fillMaxWidth(),
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center
                 )
-            )
-            Button(onClick = onCreateWithAiClick, modifier = Modifier.fillMaxWidth()) {
-                Icon(imageVector = Icons.Outlined.AutoAwesome, contentDescription = null)
-                Spacer(modifier = Modifier.size(Dimens.spacingSm))
-                Text(text = stringResource(R.string.my_roadmap_empty_create_ai))
-            }
-            OutlinedButton(onClick = onExploreRoadmapsClick, modifier = Modifier.fillMaxWidth()) {
-                Icon(imageVector = Icons.Outlined.Explore, contentDescription = null)
-                Spacer(modifier = Modifier.size(Dimens.spacingSm))
-                Text(text = stringResource(R.string.my_roadmap_empty_explore))
+                Text(
+                    text = stringResource(R.string.my_roadmap_empty_body),
+                    modifier = Modifier
+                        .padding(top = Dimens.spacingSm)
+                        .fillMaxWidth(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.secondary,
+                    textAlign = TextAlign.Center
+                )
+
+                Column(
+                    modifier = Modifier
+                        .padding(top = Dimens.spacingHuge)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+                ) {
+                    RMapButton(
+                        text = stringResource(R.string.my_roadmap_empty_create_ai),
+                        onClick = onCreateWithAiClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        variant = RMapButtonVariant.Primary,
+                        size = RMapButtonSize.Large,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.AutoAwesome,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    RMapButton(
+                        text = stringResource(R.string.my_roadmap_empty_explore),
+                        onClick = onExploreRoadmapsClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        variant = RMapButtonVariant.Secondary,
+                        size = RMapButtonSize.Large
+                    )
+                }
             }
         }
     }
@@ -573,10 +597,11 @@ private fun MyRoadmapFullEmptyState(
 @Composable
 private fun FilterEmptyState(
     selectedFilter: MyRoadmapFilter,
-    onShowAllClick: () -> Unit
+    onShowAllClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     RMapCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shadowElevation = Dimens.cardElevationXs
     ) {
         Column(
@@ -590,35 +615,142 @@ private fun FilterEmptyState(
                     fontWeight = FontWeight.Bold
                 )
             )
-            OutlinedButton(onClick = onShowAllClick) {
-                Text(text = stringResource(R.string.my_roadmap_filter_empty_show_all))
-            }
+            RMapButton(
+                text = stringResource(R.string.my_roadmap_filter_empty_show_all),
+                onClick = onShowAllClick,
+                variant = RMapButtonVariant.Secondary,
+                size = RMapButtonSize.Medium
+            )
         }
     }
 }
 
 @Composable
 private fun MyRoadmapLoading() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(Dimens.spacingXxl),
-        contentAlignment = Alignment.Center
+    val brush = rememberRMapSkeletonBrush()
+    Column(
+        modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal),
+        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
     ) {
-        CircularProgressIndicator()
+        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spacingSm)) {
+            repeat(4) {
+                RMapSkeletonBlock(
+                    modifier = Modifier.size(width = 76.dp, height = 40.dp),
+                    shape = AppShapes.pill,
+                    brush = brush
+                )
+            }
+        }
+        repeat(2) {
+            RMapSkeletonCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(260.dp),
+                shape = AppShapes.largeCard
+            ) {
+                Column(
+                    modifier = Modifier.padding(Dimens.spacingLg),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+                ) {
+                    RMapSkeletonBlock(
+                        modifier = Modifier
+                            .fillMaxWidth(0.72f)
+                            .height(Dimens.spacingXxl),
+                        brush = brush
+                    )
+                    RMapSkeletonBlock(
+                        modifier = Modifier
+                            .fillMaxWidth(0.42f)
+                            .height(Dimens.spacingLg),
+                        brush = brush
+                    )
+                    Spacer(modifier = Modifier.height(Dimens.spacingMassive))
+                    RMapSkeletonBlock(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Dimens.spacingSm),
+                        brush = brush
+                    )
+                    RMapSkeletonBlock(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(Dimens.controlMd),
+                        shape = AppShapes.button,
+                        brush = brush
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun MyRoadmapError(message: String) {
-    Text(
-        text = message,
-        modifier = Modifier.padding(Dimens.spacingScreenHorizontal),
-        style = MaterialTheme.typography.bodyMedium.copy(
-            color = MaterialTheme.colorScheme.error,
-            fontWeight = FontWeight.Medium
-        )
-    )
+private fun MyRoadmapError(
+    message: String,
+    onRetryClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    RMapCard(modifier = modifier.fillMaxWidth(), shadowElevation = Dimens.cardElevationXs) {
+        Column(
+            modifier = Modifier.padding(Dimens.spacingXl),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ErrorOutline,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(Dimens.iconXl)
+            )
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium
+                ),
+                textAlign = TextAlign.Center
+            )
+            RMapButton(
+                text = stringResource(R.string.action_retry),
+                onClick = onRetryClick,
+                variant = RMapButtonVariant.Secondary,
+                size = RMapButtonSize.Medium
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchEmptyState(
+    query: String,
+    onClearSearchClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    RMapCard(modifier = modifier.fillMaxWidth(), shadowElevation = Dimens.cardElevationXs) {
+        Column(
+            modifier = Modifier.padding(Dimens.spacingXl),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+        ) {
+            Text(
+                text = stringResource(R.string.my_roadmap_search_empty_title),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
+            Text(
+                text = stringResource(R.string.my_roadmap_search_empty_body, query),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                textAlign = TextAlign.Center
+            )
+            RMapButton(
+                text = stringResource(R.string.my_roadmap_search_clear),
+                onClick = onClearSearchClick,
+                variant = RMapButtonVariant.Secondary,
+                size = RMapButtonSize.Medium
+            )
+        }
+    }
 }
 
 @Composable
@@ -628,17 +760,6 @@ private fun MyRoadmapFilter.label(): String {
         MyRoadmapFilter.All -> R.string.my_roadmap_filter_all
         MyRoadmapFilter.Completed -> R.string.my_roadmap_filter_completed
         MyRoadmapFilter.Behind -> R.string.my_roadmap_filter_behind
-    }
-    return stringResource(resId)
-}
-
-@Composable
-private fun MyRoadmapFilter.subtitle(): String {
-    val resId = when (this) {
-        MyRoadmapFilter.Active -> R.string.my_roadmap_list_subtitle_active
-        MyRoadmapFilter.All -> R.string.my_roadmap_list_subtitle_all
-        MyRoadmapFilter.Completed -> R.string.my_roadmap_list_subtitle_completed
-        MyRoadmapFilter.Behind -> R.string.my_roadmap_list_subtitle_behind
     }
     return stringResource(resId)
 }
@@ -676,17 +797,18 @@ private fun MyRoadmapCardUiModel.deadlineLabel(): String {
 
 @Composable
 private fun MyRoadmapCardUiModel.statusLabel(): RoadmapStatusVisual {
+    val semanticColors = LocalRMapSemanticColors.current
     return when {
         completionPercent >= 100 -> RoadmapStatusVisual(
             label = stringResource(R.string.my_roadmap_status_completed),
-            containerColor = Color(0xFFECFDF5),
-            contentColor = Color(0xFF059669),
+            containerColor = semanticColors.success.container,
+            contentColor = semanticColors.success.content,
             icon = Icons.Outlined.CheckCircle
         )
         isBehind -> RoadmapStatusVisual(
             label = stringResource(R.string.my_roadmap_status_behind),
-            containerColor = Color(0xFFFFF7ED),
-            contentColor = Color(0xFFEA580C),
+            containerColor = semanticColors.warning.container,
+            contentColor = semanticColors.warning.content,
             icon = Icons.Outlined.Route
         )
         startedAt == null -> RoadmapStatusVisual(
@@ -697,10 +819,19 @@ private fun MyRoadmapCardUiModel.statusLabel(): RoadmapStatusVisual {
         )
         else -> RoadmapStatusVisual(
             label = stringResource(R.string.my_roadmap_status_on_track),
-            containerColor = Color(0xFFEFF6FF),
-            contentColor = MaterialTheme.colorScheme.primary,
+            containerColor = semanticColors.info.container,
+            contentColor = semanticColors.info.content,
             icon = Icons.Outlined.CheckCircle
         )
+    }
+}
+
+@Composable
+private fun MyRoadmapCardUiModel.ctaLabel(): String {
+    return when {
+        completionPercent >= 100 -> stringResource(R.string.my_roadmap_cta_view_completed)
+        startedAt == null -> stringResource(R.string.my_roadmap_cta_review)
+        else -> stringResource(R.string.my_roadmap_cta_continue)
     }
 }
 
@@ -746,12 +877,6 @@ private fun MyRoadmapScreenPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         MyRoadmapScreen(
             uiState = MyRoadmapUiState(
-                filters = listOf(
-                    MyRoadmapFilterUiModel(MyRoadmapFilter.Active, 2),
-                    MyRoadmapFilterUiModel(MyRoadmapFilter.All, 3),
-                    MyRoadmapFilterUiModel(MyRoadmapFilter.Completed, 0),
-                    MyRoadmapFilterUiModel(MyRoadmapFilter.Behind, 0)
-                ),
                 roadmaps = listOf(
                     MyRoadmapCardUiModel(
                         id = "backend",
@@ -768,19 +893,46 @@ private fun MyRoadmapScreenPreview() {
                         isBehind = false
                     )
                 ),
-                achievements = listOf(
-                    MyRoadmapAchievementUiModel("WEB_DEVELOPMENT", "Web Development", 432),
-                    MyRoadmapAchievementUiModel("DESIGN", "Design", 187)
-                ),
-                completedSkills = 21,
                 isLoading = false
             ),
+            isAuthenticated = true,
             selectedDestination = NavBarDestination.MyRoadmap,
             onDestinationSelected = {},
+            onSearchQueryChange = {},
+            onClearSearchClick = {},
             onFilterSelected = {},
             onRoadmapClick = {},
+            onRoadmapCtaClick = {},
+            onRetryClick = {},
             onCreateWithAiClick = {},
             onExploreRoadmapsClick = {}
         )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF)
+@Composable
+private fun MyRoadmapCompactCardPreview() {
+    RMapTheme(darkTheme = false, dynamicColor = false) {
+        Box(modifier = Modifier.padding(Dimens.spacingLg)) {
+            MyRoadmapCompactCard(
+                roadmap = MyRoadmapCardUiModel(
+                    id = "backend",
+                    title = "Backend Intern (Node.js) Roadmap",
+                    categoryKey = "WEB_DEVELOPMENT",
+                    categoryLabel = "Web Development",
+                    isTemplate = false,
+                    completionPercent = 10,
+                    nodesCompleted = 7,
+                    nodesTotal = 70,
+                    deadlineDate = "2026-07-31",
+                    estimatedWeeks = 18,
+                    startedAt = "2026-06-01T03:22:18.055Z",
+                    isBehind = false
+                ),
+                onClick = {},
+                onCtaClick = {}
+            )
+        }
     }
 }

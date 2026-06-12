@@ -33,7 +33,7 @@ class DashboardRepositoryImpl(
             emit(Result.success(dashboard))
         }
 
-        if (freshResult.isFailure && cached == null) {
+        if (freshResult.isFailure) {
             emit(freshResult)
         }
     }

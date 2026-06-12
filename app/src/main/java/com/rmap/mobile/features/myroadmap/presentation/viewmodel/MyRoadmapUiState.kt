@@ -2,30 +2,65 @@ package com.rmap.mobile.features.myroadmap.presentation.viewmodel
 
 data class MyRoadmapUiState(
     val userName: String = "",
-    val filters: List<MyRoadmapFilterUiModel> = MyRoadmapFilter.entries.map { filter ->
-        MyRoadmapFilterUiModel(filter = filter, count = 0)
-    },
-    val selectedFilter: MyRoadmapFilter = MyRoadmapFilter.Active,
+    val selectedFilter: MyRoadmapFilter = MyRoadmapFilter.All,
+    val searchQuery: String = "",
     val roadmaps: List<MyRoadmapCardUiModel> = emptyList(),
-    val achievements: List<MyRoadmapAchievementUiModel> = emptyList(),
-    val completedSkills: Int = 0,
     val isLoading: Boolean = true,
     val errorMessage: String? = null
 ) {
+    val filters: List<MyRoadmapFilterUiModel>
+        get() = MyRoadmapFilter.entries.map { filter ->
+            val count = roadmaps.count { roadmap ->
+                when (filter) {
+                    MyRoadmapFilter.All -> true
+                    MyRoadmapFilter.Active -> roadmap.startedAt != null && roadmap.completionPercent < 100
+                    MyRoadmapFilter.Completed -> roadmap.completionPercent >= 100
+                    MyRoadmapFilter.Behind -> roadmap.isBehind
+                }
+            }
+            MyRoadmapFilterUiModel(filter = filter, count = count)
+        }
     val visibleRoadmaps: List<MyRoadmapCardUiModel>
-        get() = roadmaps.filter { roadmap ->
-            when (selectedFilter) {
-                MyRoadmapFilter.Active -> roadmap.startedAt != null && roadmap.completionPercent < 100
-                MyRoadmapFilter.All -> true
-                MyRoadmapFilter.Completed -> roadmap.completionPercent >= 100
-                MyRoadmapFilter.Behind -> roadmap.isBehind
+        get() {
+            val normalizedQuery = searchQuery.trim()
+            val filteredRoadmaps = roadmaps.filter { roadmap ->
+                val matchesFilter = when (selectedFilter) {
+                    MyRoadmapFilter.Active -> roadmap.startedAt != null && roadmap.completionPercent < 100
+                    MyRoadmapFilter.All -> true
+                    MyRoadmapFilter.Completed -> roadmap.completionPercent >= 100
+                    MyRoadmapFilter.Behind -> roadmap.isBehind
+                }
+                val matchesSearch = normalizedQuery.isBlank() ||
+                    roadmap.title.contains(normalizedQuery, ignoreCase = true) ||
+                    roadmap.categoryLabel.contains(normalizedQuery, ignoreCase = true)
+
+                matchesFilter && matchesSearch
+            }
+            return if (selectedFilter == MyRoadmapFilter.Active || selectedFilter == MyRoadmapFilter.Behind) {
+                filteredRoadmaps.sortedWith(
+                    compareByDescending<MyRoadmapCardUiModel> { it.isBehind }
+                        .thenBy { it.deadlineDate ?: SORT_LAST_DATE }
+                        .thenByDescending { it.completionPercent }
+                )
+            } else {
+                filteredRoadmaps
             }
         }
+
+    val hasRoadmapSearchResults: Boolean
+        get() = visibleRoadmaps.isNotEmpty()
+
+    val isSearching: Boolean
+        get() = searchQuery.isNotBlank()
+
+    private companion object {
+        const val SORT_LAST_DATE = "9999-12-31"
+    }
 }
 
 enum class MyRoadmapFilter {
-    Active,
     All,
+    Active,
     Completed,
     Behind
 }
@@ -50,8 +85,6 @@ data class MyRoadmapCardUiModel(
     val isBehind: Boolean
 )
 
-data class MyRoadmapAchievementUiModel(
-    val categoryKey: String,
-    val label: String,
-    val totalSkills: Int
-)
+sealed interface MyRoadmapEvent {
+    data object DashboardRefreshFailed : MyRoadmapEvent
+}
