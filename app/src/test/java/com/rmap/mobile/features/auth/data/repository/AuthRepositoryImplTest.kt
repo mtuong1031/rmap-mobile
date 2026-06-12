@@ -192,6 +192,12 @@ class AuthRepositoryImplTest {
             return loginWithGithubResponse
         }
 
+        override suspend fun linkWithGoogle(request: MobileOAuthRequestDto): Response<AuthMessageResponseDto> =
+            Response.success(AuthMessageResponseDto("Google account linked"))
+
+        override suspend fun linkWithGithub(request: GithubMobileOAuthRequestDto): Response<AuthMessageResponseDto> =
+            Response.success(AuthMessageResponseDto("GitHub account linked"))
+
         override suspend fun logout(): Response<AuthMessageResponseDto> = logoutResponse
 
         override suspend fun changePassword(request: ChangePasswordRequestDto): Response<AuthMessageResponseDto> {

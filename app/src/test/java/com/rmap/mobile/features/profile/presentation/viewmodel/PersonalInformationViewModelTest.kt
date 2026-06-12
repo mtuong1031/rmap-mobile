@@ -135,6 +135,11 @@ class PersonalInformationViewModelTest {
                 )
             )
         }
+
+        override suspend fun getIntegrations(): Result<List<com.rmap.mobile.features.profile.domain.model.UserIntegration>> =
+            Result.success(emptyList())
+
+        override suspend fun disconnectIntegration(provider: String): Result<Unit> = Result.success(Unit)
     }
 
     private class FakeAuthRepository : AuthRepository {
@@ -146,6 +151,10 @@ class PersonalInformationViewModelTest {
         override suspend fun loginWithGoogle(idToken: String): Result<User> = Result.success(testUser)
 
         override suspend fun loginWithGithub(code: String): Result<User> = Result.success(testUser)
+
+        override suspend fun linkWithGoogle(idToken: String): Result<Unit> = Result.success(Unit)
+
+        override suspend fun linkWithGithub(code: String): Result<Unit> = Result.success(Unit)
 
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
 

@@ -126,6 +126,10 @@ class PrivacySecurityViewModelTest {
 
         override suspend fun loginWithGithub(code: String): Result<User> = Result.success(testUser)
 
+        override suspend fun linkWithGoogle(idToken: String): Result<Unit> = Result.success(Unit)
+
+        override suspend fun linkWithGithub(code: String): Result<Unit> = Result.success(Unit)
+
         override suspend fun logout(): Result<Unit> = Result.success(Unit)
 
         override suspend fun changePassword(

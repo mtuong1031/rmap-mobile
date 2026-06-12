@@ -106,5 +106,10 @@ class ProfileRepositoryImplTest {
             updateRequest = request
             return updateResponse
         }
+
+        override suspend fun getIntegrations(): Response<List<com.rmap.mobile.features.profile.data.model.UserIntegrationDto>> =
+            Response.success(emptyList())
+
+        override suspend fun disconnectIntegration(provider: String): Response<Unit> = Response.success(Unit)
     }
 }

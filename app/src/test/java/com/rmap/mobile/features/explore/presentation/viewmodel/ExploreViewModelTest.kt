@@ -202,6 +202,10 @@ class ExploreViewModelTest {
 
         override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
 
+        override suspend fun linkWithGoogle(idToken: String): Result<Unit> = error("Not used")
+
+        override suspend fun linkWithGithub(code: String): Result<Unit> = error("Not used")
+
         override suspend fun logout(): Result<Unit> = error("Not used")
 
         override suspend fun changePassword(
