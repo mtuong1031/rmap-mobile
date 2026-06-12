@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="snackbar_dismiss_content_description">Đóng thông báo</string>
+    <string name="snackbar_title_success">Thành công</string>
+    <string name="snackbar_title_error">Đã xảy ra lỗi</string>
+    <string name="snackbar_title_warning">Cần chú ý</string>
+    <string name="snackbar_title_info">Thông báo</string>
     <string name="app_name">rmap-mobile</string>
 
     <!-- Auth Screen -->
@@ -75,6 +80,15 @@
     <string name="home_search_roadmaps_found_count">Tìm thấy %1$d Roadmap</string>
     <string name="home_search_skills_found_count">Tìm thấy %1$d kỹ năng</string>
     <string name="home_search_ai_suggestion_title">Gợi ý từ AI</string>
+    <string name="home_search_popular_frontend">Frontend</string>
+    <string name="home_search_popular_react">React</string>
+    <string name="home_search_popular_backend">Backend</string>
+    <string name="home_search_popular_devops">DevOps</string>
+    <string name="home_search_popular_data_analyst">Phân tích dữ liệu</string>
+    <string name="home_search_popular_ai_engineer">Kỹ sư AI</string>
+    <string name="home_search_ai_suggestion_card_title">Tạo Roadmap React cá nhân hóa</string>
+    <string name="home_search_ai_suggestion_card_description">Tạo Roadmap dựa trên mục tiêu, kỹ năng hiện tại và thời gian của bạn.</string>
+    <string name="home_search_ai_suggestion_card_action">Tạo bằng AI</string>
 
     <string name="home_streak_label">Streak</string>
     <string name="home_learning_plan_title">Kế hoạch học tập hôm nay</string>
@@ -98,6 +112,7 @@
     <string name="home_beginner_roadmaps_title">Roadmap cho người mới</string>
     <string name="home_beginner_roadmaps_subtitle">Điểm khởi đầu hoàn hảo cho hành trình của bạn</string>
     <string name="home_popular_roadmaps_explore_title">Roadmap phổ biến</string>
+    <string name="home_category_languages">Ngôn ngữ</string>
     <string name="home_recommended_title">Đề xuất theo mục tiêu</string>
     <string name="home_roadmap_view_action">Xem Roadmap</string>
     <string name="home_roadmap_starter_badge">Khởi đầu</string>
@@ -278,7 +293,7 @@
     <string name="profile_experience_trending_content_description">Xu hướng học tập</string>
 
     <string name="profile_active_roadmaps_title">Roadmap đang học</string>
-    <string name="profile_active_roadmaps_subtitle">%1$d Roadmap đang học</string>
+    <string name="profile_active_roadmaps_subtitle">2 Roadmap đang học</string>
     <string name="profile_active_roadmaps_subtitle_single">1 Roadmap đang học</string>
     <string name="profile_active_roadmaps_subtitle_count">%1$d Roadmap đang học</string>
     <string name="profile_active_roadmaps_empty">Bạn chưa có Roadmap nào đang học.</string>
@@ -328,7 +343,7 @@
     <string name="profile_skill_prototyping">Interactive Prototyping</string>
 
     <string name="profile_weekly_activity_title">Hoạt động hàng tuần</string>
-    <string name="profile_weekly_activity_subtitle">Học %1$d ngày trong tuần</string>
+    <string name="profile_weekly_activity_subtitle">Học 4 ngày trong tuần</string>
     <string name="profile_weekly_activity_subtitle_count">Học %1$d ngày trong tuần</string>
     <string name="profile_weekly_activity_best">Kỷ lục: 5 ngày</string>
     <string name="profile_weekly_activity_best_count">Kỷ lục: %1$d ngày</string>
@@ -655,4 +670,42 @@
     <string name="profile_setting_language_subtitle">Ngôn ngữ hiển thị ứng dụng</string>
     <string name="language_sheet_title">Chọn ngôn ngữ</string>
     <string name="language_changed_message">Đã thay đổi ngôn ngữ sang %1$s</string>
+
+    <!-- Snackbar, authentication and guest access -->
+    <string name="auth_explore_as_guest">Khám phá với tư cách khách</string>
+    <string name="action_back">Quay lại</string>
+    <string name="action_login">Đăng nhập</string>
+    <string name="auth_required_title">Yêu cầu đăng nhập</string>
+    <string name="auth_required_generate_roadmap_message">Đăng nhập để tạo Roadmap cá nhân hóa.</string>
+    <string name="auth_required_start_roadmap_message">Đăng nhập để bắt đầu học và theo dõi tiến độ.</string>
+    <string name="session_expired_message">Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.</string>
+    <string name="auth_required_view_lesson_message">Đăng nhập để truy cập tài liệu học tập.</string>
+
+    <!-- My Roadmap additions -->
+    <string name="my_roadmap_tab_roadmaps">Roadmap (%1$d)</string>
+    <string name="my_roadmap_tab_achievements">Thành tựu (%1$d)</string>
+    <string name="my_roadmap_search_placeholder">Tìm Roadmap của tôi...</string>
+    <string name="my_roadmap_search_placeholder_achievements">Tìm danh mục...</string>
+    <string name="my_roadmap_achievements_summary">Đạt được %1$d kỹ năng</string>
+    <string name="my_roadmap_search_empty_body_achievements">Không có danh mục phù hợp với “%1$s”. Hãy thử từ khóa khác hoặc xóa tìm kiếm.</string>
+    <string name="my_roadmap_progress_label">Tiến độ Roadmap</string>
+    <string name="my_roadmap_progress_percent">%1$d%%</string>
+    <string name="my_roadmap_nodes_completed">%1$d/%2$d nút đã hoàn thành</string>
+    <string name="my_roadmap_card_content_description">Mở chi tiết Roadmap %1$s</string>
+    <string name="my_roadmap_cta_continue">Tiếp tục học</string>
+    <string name="my_roadmap_cta_review">Xem lại Roadmap</string>
+    <string name="my_roadmap_cta_view_completed">Xem Roadmap đã hoàn thành</string>
+    <string name="my_roadmap_achievement_category_progress">Đạt %1$d/%2$d kỹ năng</string>
+    <string name="my_roadmap_achievement_content_description">Xem kỹ năng đã đạt trong %1$s. Đã đạt %2$d/%3$d kỹ năng.</string>
+    <string name="my_roadmap_achievements_empty">Hoàn thành các kỹ năng trong Roadmap để xây dựng bộ sưu tập thành tựu.</string>
+    <string name="my_roadmap_achievement_sheet_subtitle">Đạt được %1$d kỹ năng</string>
+    <string name="my_roadmap_achievement_sheet_empty">Chưa có kỹ năng hoàn thành trong danh mục này.</string>
+    <string name="my_roadmap_achievement_sheet_error">Không thể tải các kỹ năng đã hoàn thành. Vui lòng thử lại.</string>
+    <string name="my_roadmap_achievement_sheet_loading_more">Đang tải thêm kỹ năng...</string>
+    <string name="my_roadmap_skill_completed_at">Hoàn thành %1$s</string>
+    <string name="my_roadmap_skill_achieved">Đã đạt</string>
+    <string name="my_roadmap_search_empty_title">Không tìm thấy Roadmap phù hợp</string>
+    <string name="my_roadmap_search_empty_body">Không có Roadmap phù hợp với “%1$s”. Hãy thử từ khóa khác hoặc xóa tìm kiếm.</string>
+    <string name="my_roadmap_search_clear">Xóa tìm kiếm</string>
+    <string name="my_roadmap_refresh_failed">Không thể làm mới Roadmap. Đang hiển thị dữ liệu đã lưu.</string>
 </resources>

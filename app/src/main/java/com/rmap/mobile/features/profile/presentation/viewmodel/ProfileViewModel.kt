@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class ProfileViewModel(
     private val profileRepository: ProfileRepository = RMapAppGraph.profileRepository,
@@ -38,7 +39,7 @@ class ProfileViewModel(
 
     private fun loadCurrentLanguage() {
         val locales = AppCompatDelegate.getApplicationLocales()
-        val tag = if (locales.isEmpty) null else locales.get(0)?.language
+        val tag = if (locales.isEmpty) Locale.getDefault().language else locales.get(0)?.language
         _uiState.update { it.copy(currentLanguage = AppLanguage.fromTag(tag)) }
     }
 

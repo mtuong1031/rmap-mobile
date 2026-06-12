@@ -1,4 +1,9 @@
 <resources>
+    <string name="snackbar_dismiss_content_description">Dismiss notification</string>
+    <string name="snackbar_title_success">Success</string>
+    <string name="snackbar_title_error">Something went wrong</string>
+    <string name="snackbar_title_warning">Attention needed</string>
+    <string name="snackbar_title_info">Notification</string>
     <string name="app_name">rmap-moblie</string>
 
     <!-- Auth Screen -->
@@ -35,14 +40,22 @@
     <string name="auth_sign_in_failed">Unable to sign in. Please try again.</string>
     <string name="auth_error_no_accounts">No matching accounts found.</string>
     <string name="auth_error_cancelled">Sign-in was cancelled.</string>
+    <string name="auth_explore_as_guest">Explore as guest</string>
     <string name="coming_soon_message">This action is coming soon.</string>
     <string name="separator_bullet">•</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_back">Back</string>
     <string name="action_see_all">See all</string>
     <string name="action_see_less">See less</string>
     <string name="action_see_more">See more</string>
     <string name="action_explore_roadmaps">Explore roadmaps</string>
     <string name="action_retry">Retry</string>
+    <string name="action_login">Login</string>
+    <string name="auth_required_title">Sign in required</string>
+    <string name="auth_required_generate_roadmap_message">Sign in to generate your personalized roadmap.</string>
+    <string name="auth_required_start_roadmap_message">Sign in to start learning and track your progress.</string>
+    <string name="session_expired_message">Your session has expired. Please sign in again.</string>
+    <string name="auth_required_view_lesson_message">Sign in to access learning resources.</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
@@ -74,6 +87,15 @@
     <string name="home_search_roadmaps_found_count">%1$d roadmaps founds</string>
     <string name="home_search_skills_found_count">%1$d skills founds</string>
     <string name="home_search_ai_suggestion_title">AI suggestion</string>
+    <string name="home_search_popular_frontend">Frontend</string>
+    <string name="home_search_popular_react">React</string>
+    <string name="home_search_popular_backend">Backend</string>
+    <string name="home_search_popular_devops">DevOps</string>
+    <string name="home_search_popular_data_analyst">Data Analyst</string>
+    <string name="home_search_popular_ai_engineer">AI Engineer</string>
+    <string name="home_search_ai_suggestion_card_title">Create a personalized React roadmap</string>
+    <string name="home_search_ai_suggestion_card_description">Generate a roadmap based on your goal, current skills, and timeline.</string>
+    <string name="home_search_ai_suggestion_card_action">Create with AI</string>
 
     <string name="home_streak_label">Streak</string>
     <string name="home_learning_plan_title">Today\'s Learning Plan</string>
@@ -98,6 +120,7 @@
     <string name="home_beginner_roadmaps_title">Beginner-friendly Roadmaps</string>
     <string name="home_beginner_roadmaps_subtitle">Perfect starting points for your journey</string>
     <string name="home_popular_roadmaps_explore_title">Popular Roadmaps to Explore</string>
+    <string name="home_category_languages">Languages</string>
     <string name="home_recommended_title">Recommended for your goal</string>
     <string name="home_roadmap_view_action">View roadmap</string>
     <string name="home_roadmap_starter_badge">Starter</string>
@@ -206,7 +229,13 @@
 
     <!-- My Roadmap Screen -->
     <string name="my_roadmap_header_eyebrow">My learning paths</string>
-    <string name="my_roadmap_header_title">My Roadmap</string>
+    <string name="my_roadmap_header_title">Track your learning journey</string>
+    <string name="my_roadmap_tab_roadmaps">Roadmaps (%1$d)</string>
+    <string name="my_roadmap_tab_achievements">Achievements (%1$d)</string>
+    <string name="my_roadmap_search_placeholder">Search my roadmaps...</string>
+    <string name="my_roadmap_search_placeholder_achievements">Search categories...</string>
+    <string name="my_roadmap_achievements_summary">%1$d skills achieved</string>
+    <string name="my_roadmap_search_empty_body_achievements">No categories match “%1$s”. Try another keyword or clear the search.</string>
     <string name="my_roadmap_filter_active">Active</string>
     <string name="my_roadmap_filter_all">All</string>
     <string name="my_roadmap_filter_completed">Completed</string>
@@ -217,11 +246,27 @@
     <string name="my_roadmap_list_subtitle_completed">Roadmaps you have fully completed.</string>
     <string name="my_roadmap_list_subtitle_behind">Roadmaps that need pacing attention.</string>
     <string name="my_roadmap_progress_meta">%1$d%% • %2$d/%3$d nodes</string>
+    <string name="my_roadmap_progress_label">Roadmap progress</string>
+    <string name="my_roadmap_progress_percent">%1$d%%</string>
+    <string name="my_roadmap_nodes_completed">%1$d of %2$d nodes</string>
+    <string name="my_roadmap_card_content_description">Open %1$s roadmap details</string>
+    <string name="my_roadmap_cta_continue">Continue learning</string>
+    <string name="my_roadmap_cta_review">Review roadmap</string>
+    <string name="my_roadmap_cta_view_completed">View completed roadmap</string>
     <string name="my_roadmap_badge_template">Template</string>
     <string name="my_roadmap_badge_ai">AI roadmap</string>
     <string name="my_roadmap_achievements_title">Achievements</string>
     <string name="my_roadmap_achievements_subtitle">%1$d skills completed</string>
     <string name="my_roadmap_achievement_category_skills">%1$d skills in this category</string>
+    <string name="my_roadmap_achievement_category_progress">%1$d of %2$d skills achieved</string>
+    <string name="my_roadmap_achievement_content_description">View achieved skills in %1$s. %2$d of %3$d skills achieved.</string>
+    <string name="my_roadmap_achievements_empty">Complete roadmap skills to build your achievement collection.</string>
+    <string name="my_roadmap_achievement_sheet_subtitle">%1$d skills achieved</string>
+    <string name="my_roadmap_achievement_sheet_empty">No completed skills are available in this category yet.</string>
+    <string name="my_roadmap_achievement_sheet_error">Unable to load completed skills. Please try again.</string>
+    <string name="my_roadmap_achievement_sheet_loading_more">Loading more skills...</string>
+    <string name="my_roadmap_skill_completed_at">Completed %1$s</string>
+    <string name="my_roadmap_skill_achieved">Achieved</string>
     <string name="my_roadmap_empty_title">No roadmap yet</string>
     <string name="my_roadmap_empty_body">Create a personalized roadmap or explore ready-made paths.</string>
     <string name="my_roadmap_empty_create_ai">Create with AI</string>
@@ -231,6 +276,10 @@
     <string name="my_roadmap_filter_empty_completed">No completed roadmaps yet.</string>
     <string name="my_roadmap_filter_empty_behind">No roadmaps are behind pace.</string>
     <string name="my_roadmap_filter_empty_show_all">Show all roadmaps</string>
+    <string name="my_roadmap_search_empty_title">No matching roadmaps</string>
+    <string name="my_roadmap_search_empty_body">No roadmaps match “%1$s”. Try another keyword or clear the search.</string>
+    <string name="my_roadmap_search_clear">Clear search</string>
+    <string name="my_roadmap_refresh_failed">Couldn’t refresh your roadmaps. Showing saved data.</string>
     <string name="my_roadmap_estimated_weeks">%1$d weeks estimated</string>
     <string name="my_roadmap_no_deadline">No deadline</string>
     <string name="my_roadmap_due_today">Due today</string>
