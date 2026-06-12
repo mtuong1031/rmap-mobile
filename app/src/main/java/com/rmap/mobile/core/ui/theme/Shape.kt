@@ -23,6 +23,7 @@ object AppShapes {
     val iconContainer = RoundedCornerShape(Dimens.cardRadiusSm)
     val iconContainerLarge = RoundedCornerShape(Dimens.cardRadiusSmPlus)
     val button = RoundedCornerShape(Dimens.cardRadiusMd)
+    val snackbar = RoundedCornerShape(Dimens.cardRadiusMd)
     val iconFrameInner = RoundedCornerShape(Dimens.cardRadiusMdPlus)
     val searchBar = RoundedCornerShape(Dimens.cardRadiusLg)
     val statCard = RoundedCornerShape(Dimens.cardRadiusLgPlus)

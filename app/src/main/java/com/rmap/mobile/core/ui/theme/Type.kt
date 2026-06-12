@@ -72,6 +72,23 @@ val Typography = Typography(
 )
 
 object AppTextStyles {
+    val snackbarTitle: TextStyle
+        @Composable get() = MaterialTheme.typography.titleSmall.copy(
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.sp
+        )
+
+    val snackbarMessage: TextStyle
+        @Composable get() = MaterialTheme.typography.bodyMedium.copy(
+            letterSpacing = 0.sp
+        )
+
+    val snackbarAction: TextStyle
+        @Composable get() = MaterialTheme.typography.labelLarge.copy(
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.sp
+        )
+
     val sectionTitle: TextStyle
         @Composable get() = MaterialTheme.typography.titleLarge.copy(
             fontSize = 20.sp,

@@ -1,6 +1,8 @@
 package com.rmap.mobile.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 
 // RMap Colors
 private val RMapBlue = Color(0xFF2B7FFF)
@@ -75,6 +77,20 @@ val ScrimLight = Color(0x99000000)
 
 val SuccessLight = RMapGreen
 val SuccessContainerLight = RMapGreenSoft
+val OnSuccessContainerLight = Color(0xFF047857)
+val SuccessBorderLight = Color(0xFFA7F3D0)
+
+val WarningLight = Color(0xFFD97706)
+val WarningContainerLight = Color(0xFFFFFBEB)
+val OnWarningContainerLight = Color(0xFF92400E)
+val WarningBorderLight = Color(0xFFFDE68A)
+
+val InfoLight = RMapBlue
+val InfoContainerLight = RMapBlueSoft
+val OnInfoContainerLight = RMapBlueStrong
+val InfoBorderLight = RMapBlueContainer
+
+val ErrorBorderLight = Color(0xFFFECACA)
 
 val PrimaryDark = Color(0xFF60A5FA)
 val OnPrimaryDark = RMapInk
@@ -110,6 +126,92 @@ val ScrimDark = Color(0xCC000000)
 
 val SuccessDark = Color(0xFF34D399)
 val SuccessContainerDark = Color(0xFF064E3B)
+val OnSuccessContainerDark = Color(0xFFD1FAE5)
+val SuccessBorderDark = Color(0xFF047857)
+
+val WarningDark = Color(0xFFFBBF24)
+val WarningContainerDark = Color(0xFF451A03)
+val OnWarningContainerDark = Color(0xFFFEF3C7)
+val WarningBorderDark = Color(0xFF92400E)
+
+val InfoDark = PrimaryDark
+val InfoContainerDark = PrimaryContainerDark
+val OnInfoContainerDark = OnPrimaryContainerDark
+val InfoBorderDark = Color(0xFF2563EB)
+
+val ErrorBorderDark = Color(0xFF991B1B)
+
+@Immutable
+data class SemanticColorSet(
+    val accent: Color,
+    val container: Color,
+    val content: Color,
+    val border: Color
+)
+
+@Immutable
+data class RMapSemanticColors(
+    val success: SemanticColorSet,
+    val error: SemanticColorSet,
+    val warning: SemanticColorSet,
+    val info: SemanticColorSet
+)
+
+internal val LightRMapSemanticColors = RMapSemanticColors(
+    success = SemanticColorSet(
+        accent = SuccessLight,
+        container = SuccessContainerLight,
+        content = OnSuccessContainerLight,
+        border = SuccessBorderLight
+    ),
+    error = SemanticColorSet(
+        accent = ErrorLight,
+        container = ErrorContainerLight,
+        content = OnErrorContainerLight,
+        border = ErrorBorderLight
+    ),
+    warning = SemanticColorSet(
+        accent = WarningLight,
+        container = WarningContainerLight,
+        content = OnWarningContainerLight,
+        border = WarningBorderLight
+    ),
+    info = SemanticColorSet(
+        accent = InfoLight,
+        container = InfoContainerLight,
+        content = OnInfoContainerLight,
+        border = InfoBorderLight
+    )
+)
+
+internal val DarkRMapSemanticColors = RMapSemanticColors(
+    success = SemanticColorSet(
+        accent = SuccessDark,
+        container = SuccessContainerDark,
+        content = OnSuccessContainerDark,
+        border = SuccessBorderDark
+    ),
+    error = SemanticColorSet(
+        accent = ErrorDark,
+        container = ErrorContainerDark,
+        content = OnErrorContainerDark,
+        border = ErrorBorderDark
+    ),
+    warning = SemanticColorSet(
+        accent = WarningDark,
+        container = WarningContainerDark,
+        content = OnWarningContainerDark,
+        border = WarningBorderDark
+    ),
+    info = SemanticColorSet(
+        accent = InfoDark,
+        container = InfoContainerDark,
+        content = OnInfoContainerDark,
+        border = InfoBorderDark
+    )
+)
+
+val LocalRMapSemanticColors = staticCompositionLocalOf { LightRMapSemanticColors }
 
 // Custom Colors
 val OnSurfacePlaceholderLight = RMapTextTertiary
