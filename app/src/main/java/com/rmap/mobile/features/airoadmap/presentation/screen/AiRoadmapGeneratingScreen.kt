@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.TrackChanges
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -583,17 +584,45 @@ private fun GeneratingActionButtons(
         )
 
         if (!isSucceeded) {
-            TextButton(
-                onClick = onCancelClick,
-                modifier = Modifier.fillMaxWidth()
+            RMapCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(AppShapes.button)
+                    .clickable(onClick = onCancelClick),
+                shape = AppShapes.button,
+                border = androidx.compose.foundation.BorderStroke(Dimens.borderThin, MaterialTheme.colorScheme.error.copy(alpha = 0.6f))
             ) {
-                Text(
-                    text = cancelText,
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.SemiBold
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = Dimens.spacingXl),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(Dimens.iconXxl)
+                            .background(MaterialTheme.colorScheme.errorContainer, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(Dimens.iconSm)
+                        )
+                    }
+
+                    Text(
+                        text = cancelText,
+                        modifier = Modifier.padding(start = Dimens.spacingMd),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
+                }
             }
         }
     }

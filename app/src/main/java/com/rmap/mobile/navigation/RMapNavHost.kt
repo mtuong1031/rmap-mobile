@@ -121,6 +121,7 @@ fun RMapNavHost(
     val startDestination = AppRoutes.MAIN_TABS
     val pagerState = rememberPagerState(pageCount = { 5 })
     var isAiRoadmapSubScreen by remember { mutableStateOf(false) }
+    var isAiRoadmapGenerating by remember { mutableStateOf(false) }
     var handledNotificationRoute by remember { mutableStateOf<String?>(null) }
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
@@ -473,6 +474,7 @@ fun RMapNavHost(
 
                                 LaunchedEffect(uiState.step) {
                                     isAiRoadmapSubScreen = uiState.step != AiRoadmapStep.Library
+                                    isAiRoadmapGenerating = uiState.step == AiRoadmapStep.Generating
                                 }
 
                                 LaunchedEffect(viewModel) {
@@ -1165,15 +1167,19 @@ fun RMapNavHost(
                 )
             }
 
-            if (aiGenerationStatus.isActive && currentRoute != AppRoutes.AI_ROADMAP) {
+            val isAiAssistantGeneratingScreen = currentRoute == AppRoutes.MAIN_TABS &&
+                pagerState.currentPage == 2 &&
+                isAiRoadmapGenerating
+
+            val shouldShowAiBanner = aiGenerationStatus.isActive && !isAiAssistantGeneratingScreen
+
+            if (shouldShowAiBanner) {
                 AiRoadmapProgressBanner(
                     status = aiGenerationStatus,
                     title = stringResource(R.string.ai_roadmap_banner_title),
                     actionText = stringResource(R.string.ai_roadmap_banner_action),
                     onClick = {
-                        navController.navigate(AppRoutes.AI_ROADMAP) {
-                            launchSingleTop = true
-                        }
+                        handleDestinationSelected(NavBarDestination.AiAssistant)
                     },
                     modifier = Modifier
                         .align(Alignment.TopCenter)
