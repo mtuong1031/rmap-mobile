@@ -3,12 +3,16 @@ package com.rmap.mobile.core.utils
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import com.rmap.mobile.core.auth.AuthGuard
+import com.rmap.mobile.core.auth.PendingProtectedActionStore
+import com.rmap.mobile.core.auth.ProtectedActionGate
 import com.rmap.mobile.core.database.DatabaseProvider
 import com.rmap.mobile.core.database.RMapDatabase
 import com.rmap.mobile.core.database.sync.ClearDynamicDataUseCase
 import com.rmap.mobile.core.database.sync.SyncApi
 import com.rmap.mobile.core.database.sync.SyncManager
 import com.rmap.mobile.core.network.ApiClient
+import com.rmap.mobile.core.notification.AppNotificationManager
 import com.rmap.mobile.core.network.SessionCookieJar
 import com.rmap.mobile.core.session.SessionManager
 import com.rmap.mobile.core.storage.SharedPreferencesSessionCookieStorage
@@ -31,6 +35,9 @@ import com.rmap.mobile.features.home.data.repository.HomeRepositoryImpl
 import com.rmap.mobile.features.home.data.repository.SharedPreferencesRecentSearchRepository
 import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.home.domain.repository.RecentSearchRepository
+import com.rmap.mobile.features.myroadmap.data.remote.CompletedSkillsApi
+import com.rmap.mobile.features.myroadmap.data.repository.RemoteCompletedSkillsRepository
+import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepository
 import com.rmap.mobile.features.profile.data.notification.LearningNotificationNotifier
 import com.rmap.mobile.features.profile.data.notification.LearningReminderScheduler
 import com.rmap.mobile.features.profile.data.notification.SharedPreferencesNotificationSettingsRepository
@@ -57,6 +64,8 @@ object RMapAppGraph {
     lateinit var profileRepository: ProfileRepository
         private set
     lateinit var dashboardRepository: DashboardRepository
+        private set
+    lateinit var completedSkillsRepository: CompletedSkillsRepository
         private set
     lateinit var skillLearningRepository: SkillLearningRepository
         private set
@@ -87,6 +96,12 @@ object RMapAppGraph {
         private set
     lateinit var recentSearchRepository: RecentSearchRepository
         private set
+    lateinit var appNotificationManager: AppNotificationManager
+        private set
+    lateinit var pendingProtectedActionStore: PendingProtectedActionStore
+        private set
+    lateinit var authGuard: ProtectedActionGate
+        private set
 
     lateinit var loginWithGoogleUseCase: LoginWithGoogleUseCase
         private set
@@ -104,6 +119,7 @@ object RMapAppGraph {
             ::authRepository.isInitialized &&
             ::roadmapRepository.isInitialized &&
             ::dashboardRepository.isInitialized &&
+            ::completedSkillsRepository.isInitialized &&
             ::profileRepository.isInitialized &&
             ::recentSearchRepository.isInitialized
         ) {
@@ -112,6 +128,8 @@ object RMapAppGraph {
 
         val applicationContext = context.applicationContext
         val application = applicationContext as Application
+        appNotificationManager = AppNotificationManager()
+        pendingProtectedActionStore = PendingProtectedActionStore()
         sessionCookieStorage = SharedPreferencesSessionCookieStorage(applicationContext)
         sessionCookieJar = SessionCookieJar(sessionCookieStorage)
         sessionManager = SessionManager(
@@ -127,6 +145,11 @@ object RMapAppGraph {
         authRepository = AuthRepositoryImpl(
             authApi = apiClient.createService(AuthApi::class.java),
             sessionManager = sessionManager
+        )
+        authGuard = AuthGuard(
+            authRepository = authRepository,
+            pendingProtectedActionStore = pendingProtectedActionStore,
+            appNotificationManager = appNotificationManager
         )
         homeRepository = HomeRepositoryImpl(
             homeApi = apiClient.createService(HomeApi::class.java),
@@ -144,6 +167,10 @@ object RMapAppGraph {
             sessionManager = sessionManager,
             dashboardCacheDao = database.dashboardCacheDao()
         )
+        completedSkillsRepository = RemoteCompletedSkillsRepository(
+            api = apiClient.createService(CompletedSkillsApi::class.java),
+            sessionManager = sessionManager
+        )
 //        roadmapRepository = RoadmapRepositoryImpl(
 //            roadmapApi = apiClient.createService(RoadmapApi::class.java),
 //            sessionManager = sessionManager
@@ -159,6 +186,7 @@ object RMapAppGraph {
         roadmapRepository = RemoteRoadmapRepository(
             roadmapApi = apiClient.createService(RoadmapApi::class.java),
             sessionManager = sessionManager,
+            authRepository = authRepository,
             templateCategoryDao = database.templateCategoryDao(),
             templateRoadmapDao = database.templateRoadmapDao(),
             syncManager = syncManager,
