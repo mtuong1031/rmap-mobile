@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -41,6 +40,7 @@ fun ExploreScreen(
     selectedDestination: NavBarDestination = NavBarDestination.Explore,
     reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onHeaderActionClick: () -> Unit = {},
+    avatarUrl: String = "",
     onSearchQueryChange: (String) -> Unit = {},
     onDestinationSelected: (NavBarDestination) -> Unit = {},
     onCategoryClick: (CategoryUiModel) -> Unit = {},
@@ -80,7 +80,7 @@ fun ExploreScreen(
                     RMapHeader(
                         greetingText = stringResource(R.string.explore_greeting),
                         headingText = stringResource(R.string.explore_title),
-                        actionIcon = Icons.Outlined.Explore,
+                        actionImageUrl = avatarUrl,
                         onActionClick = onHeaderActionClick,
                         modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
                     )

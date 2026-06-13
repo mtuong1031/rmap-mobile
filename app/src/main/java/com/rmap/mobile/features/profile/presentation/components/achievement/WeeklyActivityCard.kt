@@ -108,3 +108,53 @@ private fun ActivityDay(day: ProfileActivityDayUiModel) {
     }
 }
 
+@Composable
+fun LockedWeeklyActivityCard(
+    modifier: Modifier = Modifier,
+    onLoginClick: () -> Unit
+) {
+    ProfileSectionCard(modifier = modifier) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(Dimens.iconMd)
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = androidx.compose.ui.res.stringResource(id = com.rmap.mobile.R.string.profile_guest_weekly_activity_title),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = androidx.compose.ui.res.stringResource(id = com.rmap.mobile.R.string.profile_guest_weekly_activity_subtitle),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = Dimens.spacingLg, vertical = Dimens.spacingXs)
+                )
+            }
+
+            androidx.compose.material3.Button(
+                onClick = onLoginClick,
+                shape = AppShapes.button,
+                modifier = Modifier.padding(top = Dimens.spacingSm)
+            ) {
+                Text(text = androidx.compose.ui.res.stringResource(id = com.rmap.mobile.R.string.profile_guest_action_login))
+            }
+        }
+    }
+}

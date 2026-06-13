@@ -15,5 +15,6 @@ data class ProfileUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val showLanguageSheet: Boolean = false,
-    val currentLanguage: AppLanguage = AppLanguage.ENGLISH
+    val currentLanguage: AppLanguage = AppLanguage.ENGLISH,
+    val isAuthenticated: Boolean = false
 )

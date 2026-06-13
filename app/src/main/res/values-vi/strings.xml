@@ -55,7 +55,6 @@
     <string name="nav_my_roadmap">My Roadmap</string>
     <string name="nav_ai">Roadmap AI</string>
     <string name="nav_explore">Explore</string>
-    <string name="nav_more">More</string>
 
     <!-- Home Screen -->
     <string name="roadmap_trending_title">Roadmap nổi bật</string>
@@ -367,6 +366,7 @@
     <string name="profile_setting_privacy">Bảo mật &amp; Quyền riêng tư</string>
     <string name="profile_setting_connected_accounts">Tài khoản liên kết</string>
     <string name="profile_setting_sign_out">Đăng xuất</string>
+    <string name="profile_sign_out_success">Đăng xuất thành công</string>
 
     <string name="personal_information_title">Thông tin cá nhân</string>
     <string name="personal_information_public_profile_title">Hồ sơ công khai</string>
@@ -708,7 +708,6 @@
     <string name="my_roadmap_search_empty_body">Không có Roadmap phù hợp với “%1$s”. Hãy thử từ khóa khác hoặc xóa tìm kiếm.</string>
     <string name="my_roadmap_search_clear">Xóa tìm kiếm</string>
     <string name="my_roadmap_refresh_failed">Không thể làm mới Roadmap. Đang hiển thị dữ liệu đã lưu.</string>
-
     <string name="ai_roadmap_notification_failed_title">Roadmap generation failed</string>
     <string name="ai_roadmap_notification_failed_body">RMap could not finish your %1$s roadmap. Please try again later or explore available roadmaps meanwhile.</string>
     <string name="notification_learning_reminders_title">Learning reminders</string>
@@ -727,4 +726,21 @@
     <string name="notification_day_saturday_short">Sat</string>
     <string name="notification_day_sunday_short">Sun</string>
     <string name="notification_action_snooze_tonight">Snooze tonight</string>
+    <string name="notification_time_hour_suffix">H</string>
+    <string name="notification_time_minute_suffix">M</string>
+    <string name="notification_time_input_label">Thời gian</string>
+    <string name="notification_time_input_placeholder">20:30</string>
+    <string name="notification_time_input_helper">Sử dụng định dạng 24 giờ, ví dụ 08:15 hoặc 21:45.</string>
+    <string name="notification_time_input_error">Nhập thời gian hợp lệ từ 00:00 đến 23:59.</string>
+    <string name="notification_exact_alarm_required_title">Cần quyền báo thức</string>
+    <string name="notification_exact_alarm_required_body">Cho phép báo thức và nhắc nhở để RMap có thể thông báo cho bạn gần thời gian nhắc nhở bạn chọn.</string>
+    <string name="notification_exact_alarm_open_settings">Mở cài đặt báo thức</string>
+    <string name="notification_learning_body_with_roadmap">Roadmap %1$s của bạn đang có bài học tiếp theo. Mở RMap để tiếp tục học nhé.</string>
+
+    <!-- Guest Profile -->
+    <string name="profile_guest_title">Đăng nhập hoặc Đăng ký</string>
+    <string name="profile_guest_subtitle">Tạo tài khoản để lưu lộ trình học tập, tiến độ và chuỗi ngày học của bạn.</string>
+    <string name="profile_guest_action_login">Đăng Nhập / Đăng Ký</string>
+    <string name="profile_guest_weekly_activity_title">Theo dõi chuỗi ngày học của bạn</string>
+    <string name="profile_guest_weekly_activity_subtitle">Đăng nhập để theo dõi số ngày học, duy trì chuỗi liên tục và xem tiến độ hàng tuần của bạn.</string>
 </resources>

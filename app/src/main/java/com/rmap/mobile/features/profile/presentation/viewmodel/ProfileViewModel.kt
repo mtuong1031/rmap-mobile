@@ -45,6 +45,11 @@ class ProfileViewModel(
 
     fun loadProfile() {
         viewModelScope.launch {
+            if (authRepository.authState.value !is AuthState.Authenticated) {
+                _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+                return@launch
+            }
+
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             profileRepository.getActivity()
                 .onSuccess { activity ->
@@ -72,13 +77,20 @@ class ProfileViewModel(
     private fun observeAuthState() {
         viewModelScope.launch {
             authRepository.authState.collect { authState ->
+                val isAuthenticated = authState is AuthState.Authenticated
                 val user = (authState as? AuthState.Authenticated)?.user
                 _uiState.update {
                     it.copy(
+                        isAuthenticated = isAuthenticated,
                         name = user?.fullName.orEmpty(),
                         role = user?.role?.toProfileRoleLabel().orEmpty(),
                         avatarUrl = user?.avatarUrl.orEmpty()
                     )
+                }
+
+                // Reload profile data when authentication state changes to authenticated
+                if (isAuthenticated && _uiState.value.recentActivity.isEmpty()) {
+                    loadProfile()
                 }
             }
         }
@@ -86,18 +98,34 @@ class ProfileViewModel(
 
     fun onEditProfile() {
         viewModelScope.launch {
-            _events.emit(ProfileEvent.NavigateToPersonalInformation)
+            if (_uiState.value.isAuthenticated) {
+                _events.emit(ProfileEvent.NavigateToPersonalInformation)
+            } else {
+                _events.emit(ProfileEvent.NavigateToAuth)
+            }
         }
     }
 
     fun onSettingClick(action: ProfileSettingAction) {
         viewModelScope.launch {
+            // Language and Theme (future) don't require auth
+            if (action == ProfileSettingAction.Language) {
+                _uiState.update { it.copy(showLanguageSheet = true) }
+                return@launch
+            }
+
+            // All other actions require auth
+            if (!_uiState.value.isAuthenticated) {
+                _events.emit(ProfileEvent.NavigateToAuth)
+                return@launch
+            }
+
             when (action) {
                 ProfileSettingAction.PersonalInfo -> _events.emit(ProfileEvent.NavigateToPersonalInformation)
                 ProfileSettingAction.Notifications -> _events.emit(ProfileEvent.NavigateToNotificationSettings)
                 ProfileSettingAction.Privacy -> _events.emit(ProfileEvent.NavigateToPrivacySecurity)
                 ProfileSettingAction.ConnectedAccounts -> _events.emit(ProfileEvent.NavigateToConnectedAccounts)
-                ProfileSettingAction.Language -> _uiState.update { it.copy(showLanguageSheet = true) }
+                ProfileSettingAction.Language -> {} // Handled above
                 ProfileSettingAction.SignOut -> {
                     logoutUseCase()
                         .onSuccess { _events.emit(ProfileEvent.SignedOut) }

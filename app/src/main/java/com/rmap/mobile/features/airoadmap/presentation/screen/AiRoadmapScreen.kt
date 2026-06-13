@@ -30,7 +30,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Psychology
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -85,6 +84,8 @@ fun AiRoadmapScreen(
     onExploreClick: () -> Unit,
     onExploreRoadmapsClick: () -> Unit,
     onRoadmapSelected: (String) -> Unit,
+    onHeaderActionClick: () -> Unit = {},
+    avatarUrl: String = "",
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -251,7 +252,8 @@ fun AiRoadmapScreen(
                             greetingText = stringResource(R.string.ai_roadmap_library_eyebrow),
                             headingText = stringResource(R.string.ai_roadmap_library_title),
                             greetingIcon = Icons.Outlined.AutoAwesome,
-                            actionIcon = Icons.Outlined.Psychology,
+                            actionImageUrl = avatarUrl,
+                            onActionClick = onHeaderActionClick,
                         )
                     }
                 }

@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
 import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Groups
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.NightsStay
@@ -77,6 +76,7 @@ fun HomeScreen(
     selectedDestination: NavBarDestination = NavBarDestination.Home,
     reselectEvent: Flow<NavBarDestination> = emptyFlow(),
     onHeaderActionClick: () -> Unit = {},
+    avatarUrl: String = "",
     searchQuery: String = "",
     onSearchQueryChange: (String) -> Unit = {},
     onSearchClick: () -> Unit = {},
@@ -186,7 +186,7 @@ fun HomeScreen(
                         headingText = headingText,
                         greetingIcon = greetingVisual.icon,
                         greetingIconTint = greetingVisual.tint,
-                        actionIcon = Icons.Outlined.Home,
+                        actionImageUrl = avatarUrl,
                         onActionClick = onHeaderActionClick,
                         modifier = Modifier.padding(horizontal = sectionHorizontalPadding)
                     )

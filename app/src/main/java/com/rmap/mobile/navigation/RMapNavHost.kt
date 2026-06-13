@@ -13,6 +13,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +51,7 @@ import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.airoadmap.presentation.components.AiRoadmapProgressBanner
 import com.rmap.mobile.features.airoadmap.presentation.screen.AiRoadmapScreen
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapEvent
+import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapFormError
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapStep
 import com.rmap.mobile.features.airoadmap.presentation.viewmodel.AiRoadmapViewModel
 import com.rmap.mobile.features.auth.domain.model.AuthState
@@ -114,6 +116,7 @@ fun RMapNavHost(
     val profileUpdatedMessage = stringResource(R.string.personal_information_profile_updated)
     val passwordChangedMessage = stringResource(R.string.privacy_security_password_changed)
     val myRoadmapRefreshFailedMessage = stringResource(R.string.my_roadmap_refresh_failed)
+    val debugNotificationSentMessage = stringResource(R.string.notification_debug_sent_snackbar)
     val snackbarSuccessTitle = stringResource(R.string.snackbar_title_success)
     val snackbarErrorTitle = stringResource(R.string.snackbar_title_error)
     val snackbarWarningTitle = stringResource(R.string.snackbar_title_warning)
@@ -123,6 +126,8 @@ fun RMapNavHost(
     var isAiRoadmapSubScreen by remember { mutableStateOf(false) }
     var isAiRoadmapGenerating by remember { mutableStateOf(false) }
     var handledNotificationRoute by remember { mutableStateOf<String?>(null) }
+    val currentUserAvatarUrl = (authState as? AuthState.Authenticated)?.user?.avatarUrl.orEmpty()
+    var isAiRoadmapQuestionsStep by remember { mutableStateOf(false) }
     val isDebugBuild = remember(context) {
         context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
     }
@@ -154,7 +159,6 @@ fun RMapNavHost(
             NavBarDestination.MyRoadmap -> 1
             NavBarDestination.AiAssistant -> 2
             NavBarDestination.Explore -> 3
-            NavBarDestination.More -> 4
         }
         val currentRoute = navController.currentDestination?.route
 
@@ -167,10 +171,6 @@ fun RMapNavHost(
         } else {
             coroutineScope.launch { pagerState.animateScrollToPage(targetPage) }
         }
-    }
-
-    fun navigateFromBottomBar(destination: NavBarDestination) {
-        handleDestinationSelected(destination)
     }
 
     fun navigateBackFromRoadmapDetail() {
@@ -348,10 +348,37 @@ fun RMapNavHost(
                         val viewModel: AuthViewModel = viewModel()
                         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                         val code = backStackEntry.arguments?.getString("code")
+                        val context = LocalContext.current
 
                         LaunchedEffect(code) {
                             if (!code.isNullOrBlank()) {
                                 viewModel.onGithubCodeReceived(code)
+                            } else {
+                                val intent = (context as? androidx.activity.ComponentActivity)?.intent
+                                if (intent?.data?.scheme == "rmap" && intent.data?.host == "oauth") {
+                                    val codeFromIntent = intent.data?.getQueryParameter("code")
+                                    if (!codeFromIntent.isNullOrBlank()) {
+                                        intent.data = null
+                                        viewModel.onGithubCodeReceived(codeFromIntent)
+                                    }
+                                }
+                            }
+                        }
+
+                        DisposableEffect(context) {
+                            val listener = androidx.core.util.Consumer<android.content.Intent> { intent ->
+                                if (intent.data?.scheme == "rmap" && intent.data?.host == "oauth") {
+                                    val newCode = intent.data?.getQueryParameter("code")
+                                    if (!newCode.isNullOrBlank()) {
+                                        intent.data = null
+                                        viewModel.onGithubCodeReceived(newCode)
+                                    }
+                                }
+                            }
+                            val activity = context as? androidx.activity.ComponentActivity
+                            activity?.addOnNewIntentListener(listener)
+                            onDispose {
+                                activity?.removeOnNewIntentListener(listener)
                             }
                         }
 
@@ -385,6 +412,7 @@ fun RMapNavHost(
                 }
 
                 composable(AppRoutes.MAIN_TABS) {
+                    val aiRoadmapViewModel: AiRoadmapViewModel = viewModel()
                     androidx.activity.compose.BackHandler(enabled = pagerState.currentPage != 0) {
                         coroutineScope.launch {
                             pagerState.animateScrollToPage(0)
@@ -402,8 +430,14 @@ fun RMapNavHost(
 
                                 HomeScreen(
                                     uiState = uiState,
+                                    avatarUrl = currentUserAvatarUrl,
                                     selectedDestination = NavBarDestination.Home,
                                     onDestinationSelected = ::handleDestinationSelected,
+                                    onHeaderActionClick = {
+                                        navController.navigate(AppRoutes.PROFILE) {
+                                            launchSingleTop = true
+                                        }
+                                    },
                                     onSearchClick = {
                                         navController.navigate(AppRoutes.HOME_SEARCH) {
                                             launchSingleTop = true
@@ -419,7 +453,11 @@ fun RMapNavHost(
                                         navController.navigate(AppRoutes.roadmapDetail(item.id))
                                     },
                                     onCreateRoadmapWithAiClick = {
+                                        aiRoadmapViewModel.onCreateRoadmapClick()
                                         handleDestinationSelected(NavBarDestination.AiAssistant)
+                                    },
+                                    onExploreReadyMadeClick = {
+                                        handleDestinationSelected(NavBarDestination.Explore)
                                     },
                                     reselectEvent = reselectEvent
                                 )
@@ -446,8 +484,14 @@ fun RMapNavHost(
                                 MyRoadmapScreen(
                                     uiState = uiState,
                                     isAuthenticated = authState is AuthState.Authenticated,
+                                    avatarUrl = currentUserAvatarUrl,
                                     selectedDestination = NavBarDestination.MyRoadmap,
                                     onDestinationSelected = ::handleDestinationSelected,
+                                    onHeaderActionClick = {
+                                        navController.navigate(AppRoutes.PROFILE) {
+                                            launchSingleTop = true
+                                        }
+                                    },
                                     onSearchQueryChange = viewModel::onSearchQueryChange,
                                     onClearSearchClick = viewModel::clearSearch,
                                     onFilterSelected = viewModel::onFilterSelected,
@@ -459,6 +503,7 @@ fun RMapNavHost(
                                     },
                                     onRetryClick = viewModel::loadDashboard,
                                     onCreateWithAiClick = {
+                                        aiRoadmapViewModel.onCreateRoadmapClick()
                                         handleDestinationSelected(NavBarDestination.AiAssistant)
                                     },
                                     onExploreRoadmapsClick = {
@@ -468,7 +513,7 @@ fun RMapNavHost(
                                 )
                             }
                             2 -> {
-                                val viewModel: AiRoadmapViewModel = viewModel()
+                                val viewModel: AiRoadmapViewModel = aiRoadmapViewModel
                                 val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                                 val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.AiAssistant } }
 
@@ -483,14 +528,36 @@ fun RMapNavHost(
                                             is AiRoadmapEvent.NavigateToRoadmapDetail -> {
                                                 navController.navigate(AppRoutes.roadmapDetail(event.roadmapId))
                                             }
+                                            is AiRoadmapEvent.ShowError -> {
+                                                val message = when (event.error) {
+                                                    AiRoadmapFormError.AnswerAllQuestions -> context.getString(R.string.ai_roadmap_error_answer_all)
+                                                    AiRoadmapFormError.CustomAnswerRequired -> context.getString(R.string.ai_roadmap_error_custom_answer_required)
+                                                    AiRoadmapFormError.GenerationFailed -> context.getString(R.string.ai_roadmap_error_generation)
+                                                    AiRoadmapFormError.TopicRequired -> context.getString(R.string.ai_roadmap_error_topic_required)
+                                                    AiRoadmapFormError.DeadlineRequired -> context.getString(R.string.ai_roadmap_error_deadline_required)
+                                                    AiRoadmapFormError.DeadlineInPast -> context.getString(R.string.ai_roadmap_error_deadline_past)
+                                                    AiRoadmapFormError.QuestionsLoadFailed -> context.getString(R.string.ai_roadmap_error_questions)
+                                                }
+                                                snackbarHostState.showRMapSnackbar(
+                                                    title = snackbarErrorTitle,
+                                                    message = message,
+                                                    variant = AppNotificationVariant.Error
+                                                )
+                                            }
                                         }
                                     }
                                 }
 
                                 AiRoadmapScreen(
                                     uiState = uiState,
+                                    avatarUrl = currentUserAvatarUrl,
                                     selectedDestination = NavBarDestination.AiAssistant,
                                     onDestinationSelected = ::handleDestinationSelected,
+                                    onHeaderActionClick = {
+                                        navController.navigate(AppRoutes.PROFILE) {
+                                            launchSingleTop = true
+                                        }
+                                    },
                                     onSearchQueryChange = viewModel::onSearchQueryChange,
                                     onCreateRoadmapClick = viewModel::onCreateRoadmapClick,
                                     onSeeMoreGeneratedRoadmaps = viewModel::onSeeMoreGeneratedRoadmaps,
@@ -525,8 +592,14 @@ fun RMapNavHost(
 
                                 ExploreScreen(
                                     uiState = uiState,
+                                    avatarUrl = currentUserAvatarUrl,
                                     selectedDestination = NavBarDestination.Explore,
                                     onDestinationSelected = ::handleDestinationSelected,
+                                    onHeaderActionClick = {
+                                        navController.navigate(AppRoutes.PROFILE) {
+                                            launchSingleTop = true
+                                        }
+                                    },
                                     onSearchQueryChange = viewModel::onSearchQueryChange,
                                     onCategoryClick = viewModel::onCategorySelected,
                                     onSeeMoreRoadmapsClick = viewModel::onSeeMoreRoadmaps,
@@ -538,44 +611,54 @@ fun RMapNavHost(
                                     reselectEvent = reselectEvent
                                 )
                             }
-                            4 -> {
-                                val viewModel: ProfileViewModel = viewModel()
-                                val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-                                val profileComingSoonMessage = stringResource(R.string.coming_soon_message)
-                                val reselectEvent = remember { tabReselectEvent.filter { it == NavBarDestination.More } }
+                        }
+                    }
+                }
 
-                                LaunchedEffect(viewModel) {
-                                    viewModel.events.collect { event ->
-                                        when (event) {
-                                            ProfileEvent.NavigateToPersonalInformation -> navController.navigate(AppRoutes.PERSONAL_INFORMATION)
-                                            ProfileEvent.NavigateToNotificationSettings -> navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
-                                            ProfileEvent.NavigateToPrivacySecurity -> navController.navigate(AppRoutes.PRIVACY_SECURITY)
-                                            ProfileEvent.NavigateToConnectedAccounts -> navController.navigate(AppRoutes.CONNECTED_ACCOUNTS)
-                                            ProfileEvent.ShowComingSoon -> snackbarHostState.showRMapSnackbar(
-                                                title = snackbarInfoTitle,
-                                                message = profileComingSoonMessage,
-                                                variant = AppNotificationVariant.Info
-                                            )
-                                            ProfileEvent.SignedOut -> navController.navigate(AppRoutes.AUTH) {
-                                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                                            }
-                                        }
+                composable(AppRoutes.PROFILE) {
+                    val viewModel: ProfileViewModel = viewModel()
+                    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+                    val profileComingSoonMessage = stringResource(R.string.coming_soon_message)
+
+                    LaunchedEffect(viewModel) {
+                        viewModel.events.collect { event ->
+                            when (event) {
+                                ProfileEvent.NavigateToPersonalInformation -> navController.navigate(AppRoutes.PERSONAL_INFORMATION)
+                                ProfileEvent.NavigateToNotificationSettings -> navController.navigate(AppRoutes.NOTIFICATION_SETTINGS)
+                                ProfileEvent.NavigateToPrivacySecurity -> navController.navigate(AppRoutes.PRIVACY_SECURITY)
+                                ProfileEvent.NavigateToConnectedAccounts -> navController.navigate(AppRoutes.CONNECTED_ACCOUNTS)
+                                ProfileEvent.ShowComingSoon -> snackbarHostState.showRMapSnackbar(
+                                    title = snackbarInfoTitle,
+                                    message = profileComingSoonMessage,
+                                    variant = AppNotificationVariant.Info
+                                )
+                                ProfileEvent.SignedOut -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showRMapSnackbar(
+                                            title = snackbarSuccessTitle,
+                                            message = context.getString(R.string.profile_sign_out_success),
+                                            variant = AppNotificationVariant.Success
+                                        )
+                                    }
+                                    navController.navigate(AppRoutes.AUTH) {
+                                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
                                     }
                                 }
-
-                                ProfileScreen(
-                                    uiState = uiState,
-                                    selectedDestination = NavBarDestination.More,
-                                    onDestinationSelected = ::handleDestinationSelected,
-                                    onEditProfile = viewModel::onEditProfile,
-                                    onSettingClick = viewModel::onSettingClick,
-                                    onLanguageSelected = viewModel::onLanguageSelected,
-                                    onDismissLanguageSheet = viewModel::onDismissLanguageSheet,
-                                    reselectEvent = reselectEvent
-                                )
+                                ProfileEvent.NavigateToAuth -> navController.navigate(AppRoutes.AUTH) {
+                                    launchSingleTop = true
+                                }
                             }
                         }
                     }
+
+                    ProfileScreen(
+                        uiState = uiState,
+                        onBackClick = { navController.popBackStack() },
+                        onEditProfile = viewModel::onEditProfile,
+                        onSettingClick = viewModel::onSettingClick,
+                        onLanguageSelected = viewModel::onLanguageSelected,
+                        onDismissLanguageSheet = viewModel::onDismissLanguageSheet
+                    )
                 }
 
                 composable(AppRoutes.HOME_SEARCH) {
@@ -766,7 +849,19 @@ fun RMapNavHost(
                         onLearningRemindersEnabledChange = viewModel::onLearningRemindersEnabledChange,
                         onStreakProtectionEnabledChange = viewModel::onStreakProtectionEnabledChange,
                         onAiRoadmapUpdatesEnabledChange = viewModel::onAiRoadmapUpdatesEnabledChange,
-                        onReminderTimeSelected = viewModel::onReminderTimeSelected
+                        onReminderTimeSelected = viewModel::onReminderTimeSelected,
+                        onReminderFrequencySelected = viewModel::onReminderFrequencySelected,
+                        isDebugNotificationTestVisible = isDebugBuild,
+                        onSendTestNotificationClick = {
+                            RMapAppGraph.learningNotificationNotifier.showLearningReminder()
+                            coroutineScope.launch {
+                                snackbarHostState.showRMapSnackbar(
+                                    title = snackbarSuccessTitle,
+                                    message = debugNotificationSentMessage,
+                                    variant = AppNotificationVariant.Success
+                                )
+                            }
+                        }
                     )
                 }
 
@@ -1157,7 +1252,6 @@ fun RMapNavHost(
                         1 -> NavBarDestination.MyRoadmap
                         2 -> NavBarDestination.AiAssistant
                         3 -> NavBarDestination.Explore
-                        4 -> NavBarDestination.More
                         else -> NavBarDestination.Home
                     }
                 }

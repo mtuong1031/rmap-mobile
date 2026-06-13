@@ -44,7 +44,8 @@ import com.rmap.mobile.features.profile.presentation.viewmodel.ProfileSettingAct
 fun SettingsSection(
     onItemClick: (ProfileSettingAction) -> Unit,
     modifier: Modifier = Modifier,
-    currentLanguageDisplayName: String = "English"
+    currentLanguageDisplayName: String = "English",
+    isAuthenticated: Boolean = true
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -103,7 +104,9 @@ fun SettingsSection(
             }
         }
 
-        SignOutButton(onClick = { onItemClick(ProfileSettingAction.SignOut) })
+        if (isAuthenticated) {
+            SignOutButton(onClick = { onItemClick(ProfileSettingAction.SignOut) })
+        }
     }
 }
 

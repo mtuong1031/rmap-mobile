@@ -136,7 +136,7 @@ class ProfileViewModelTest {
     }
 
     private class FakeAuthRepository(
-        initialState: AuthState = AuthState.Unauthenticated
+        initialState: AuthState = AuthState.Authenticated(testUser)
     ) : AuthRepository {
         override val authState: StateFlow<AuthState> = MutableStateFlow(initialState)
 

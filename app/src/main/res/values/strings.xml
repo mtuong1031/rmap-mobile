@@ -62,7 +62,6 @@
     <string name="nav_my_roadmap">My Roadmap</string>
     <string name="nav_ai">AI Roadmap</string>
     <string name="nav_explore">Explore</string>
-    <string name="nav_more">More</string>
 
     <!-- Home Screen -->
     <string name="roadmap_trending_title">Trending Roadmaps</string>
@@ -403,6 +402,7 @@
     <string name="profile_setting_privacy">Privacy &amp; Security</string>
     <string name="profile_setting_connected_accounts">Connected Accounts</string>
     <string name="profile_setting_sign_out">Sign Out</string>
+    <string name="profile_sign_out_success">Logged out successfully</string>
 
     <string name="personal_information_title">Personal Information</string>
     <string name="personal_information_public_profile_title">Public profile</string>
@@ -750,4 +750,15 @@
     <string name="profile_setting_language_subtitle">App display language</string>
     <string name="language_sheet_title">Choose Language</string>
     <string name="language_changed_message">Language changed to %1$s</string>
+    <string name="notification_action_mark_streak">Mark Streak</string>
+    <string name="notification_debug_send_test">Send Test Notification</string>
+    <string name="notification_debug_sent_snackbar">Test notification sent.</string>
+
+    <!-- Guest Profile -->
+    <string name="profile_guest_title">Log in or Sign up</string>
+    <string name="profile_guest_subtitle">Create an account to save your learning roadmap, progress, and daily streak.</string>
+    <string name="profile_guest_action_login">Log In / Sign Up</string>
+    <string name="profile_guest_weekly_activity_title">Track your learning streak</string>
+    <string name="profile_guest_weekly_activity_subtitle">Log in to track your learning days, keep streaks alive, and view your weekly progress.</string>
+
 </resources>

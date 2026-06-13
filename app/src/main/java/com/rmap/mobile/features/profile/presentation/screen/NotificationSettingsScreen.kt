@@ -74,6 +74,7 @@ import com.rmap.mobile.features.profile.presentation.components.ProfileSettingsT
 import com.rmap.mobile.features.profile.presentation.viewmodel.NotificationSettingsUiState
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import com.rmap.mobile.features.profile.presentation.viewmodel.ReminderFrequency
 
 @Composable
 fun NotificationSettingsScreen(
@@ -86,7 +87,10 @@ fun NotificationSettingsScreen(
     onStreakProtectionEnabledChange: (Boolean) -> Unit,
     onAiRoadmapUpdatesEnabledChange: (Boolean) -> Unit,
     onReminderTimeSelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onReminderFrequencySelected: (ReminderFrequency) -> Unit,
+    modifier: Modifier = Modifier,
+    isDebugNotificationTestVisible: Boolean = false,
+    onSendTestNotificationClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val isInspectionMode = LocalInspectionMode.current
@@ -114,7 +118,7 @@ fun NotificationSettingsScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background
-    ) {
+    ) { innerPadding ->
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -650,7 +654,8 @@ private fun NotificationSettingsScreenPreview() {
             onLearningRemindersEnabledChange = {},
             onStreakProtectionEnabledChange = {},
             onAiRoadmapUpdatesEnabledChange = {},
-            onReminderTimeSelected = {}
+            onReminderTimeSelected = {},
+            onReminderFrequencySelected = {}
         )
     }
 }

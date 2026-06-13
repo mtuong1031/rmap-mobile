@@ -7,4 +7,5 @@ sealed class ProfileEvent {
     data object NavigateToConnectedAccounts : ProfileEvent()
     data object ShowComingSoon : ProfileEvent()
     data object SignedOut : ProfileEvent()
+    data object NavigateToAuth : ProfileEvent()
 }

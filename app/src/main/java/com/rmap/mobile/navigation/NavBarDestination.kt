@@ -2,7 +2,6 @@ package com.rmap.mobile.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
@@ -29,9 +28,5 @@ enum class NavBarDestination(
     Explore(
         labelRes = R.string.nav_explore,
         icon = Icons.Outlined.Search,
-    ),
-    More(
-        labelRes = R.string.nav_more,
-        icon = Icons.Outlined.AccountCircle,
     )
 }

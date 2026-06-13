@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
@@ -20,9 +22,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -32,6 +37,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import com.rmap.mobile.R
 import com.rmap.mobile.core.ui.icons.RMapIcons
 import com.rmap.mobile.core.ui.theme.AppShapes
@@ -39,12 +47,12 @@ import com.rmap.mobile.core.ui.theme.AppTextStyles
 import com.rmap.mobile.core.ui.theme.Dimens
 import com.rmap.mobile.core.ui.theme.RMapTheme
 
-private val RMapHeaderActionShape = AppShapes.searchBar
+private val RMapHeaderActionShape = AppShapes.pill
 
 object RMapHeaderDefaults {
-    val ActionButtonSize: Dp = Dimens.controlLg
+    val ActionButtonSize: Dp = 48.dp
     val ActionButtonShape = RMapHeaderActionShape
-    val ActionIconSize: Dp = Dimens.iconMdPlus
+    val ActionIconSize: Dp = 32.dp
     val GreetingIconSize: Dp = Dimens.iconSm
     val GreetingSpacing: Dp = Dimens.spacingSm
     val SectionSpacing: Dp = Dimens.spacingXsPlus
@@ -59,6 +67,7 @@ fun RMapHeader(
     greetingIcon: ImageVector = RMapIcons.Map,
     greetingIconTint: Color? = null,
     actionIcon: ImageVector = Icons.Outlined.Person,
+    actionImageUrl: String = "",
     actionContentDescription: String? = null,
     onActionClick: (() -> Unit)? = null
 ) {
@@ -87,6 +96,18 @@ fun RMapHeader(
         Modifier
     }
     val resolvedGreetingIconTint = greetingIconTint ?: MaterialTheme.colorScheme.primary
+    val context = LocalContext.current
+    val actionImageRequest = remember(actionImageUrl, context) {
+        val builder = ImageRequest.Builder(context)
+            .data(actionImageUrl)
+            .crossfade(true)
+
+        if (actionImageUrl.needsSvgDecoder()) {
+            builder.decoderFactory(SvgDecoder.Factory())
+        }
+
+        builder.build()
+    }
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -133,31 +154,51 @@ fun RMapHeader(
             modifier = Modifier
                 .size(RMapHeaderDefaults.ActionButtonSize)
                 .shadow(
-                    elevation = Dimens.cardElevationHeader,
-                    spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                    elevation = 4.dp,
+                    shape = RMapHeaderDefaults.ActionButtonShape,
+                    spotColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
                 .background(
                     color = MaterialTheme.colorScheme.surface,
                     shape = RMapHeaderDefaults.ActionButtonShape
                 )
                 .border(
-                    width = Dimens.borderThin,
-                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
                     shape = RMapHeaderDefaults.ActionButtonShape
                 )
                 .then(actionSemanticsModifier)
                 .then(actionModifier),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = actionIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(RMapHeaderDefaults.ActionIconSize)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(1.dp)
+                    .clip(RMapHeaderDefaults.ActionButtonShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = actionIcon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(RMapHeaderDefaults.ActionIconSize)
+                )
+                if (actionImageUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = actionImageRequest,
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
         }
     }
+}
+
+private fun String.needsSvgDecoder(): Boolean {
+    return contains("/svg", ignoreCase = true) || substringBefore("?").endsWith(".svg", ignoreCase = true)
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 180)

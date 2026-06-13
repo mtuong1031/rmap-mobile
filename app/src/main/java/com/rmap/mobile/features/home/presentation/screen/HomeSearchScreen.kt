@@ -79,7 +79,7 @@ fun HomeSearchScreen(
             .fillMaxSize(),
         contentPadding = PaddingValues(
             top = Dimens.spacingScreenTopCompact,
-            bottom = Dimens.spacingScreenBottomCompact
+            bottom = Dimens.spacingScreenBottomCompact + Dimens.spacingMassive
         ),
         verticalArrangement = Arrangement.spacedBy(Dimens.spacingHuge)
     ) {

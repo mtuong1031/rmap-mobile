@@ -110,6 +110,8 @@ fun MyRoadmapScreen(
     onRetryClick: () -> Unit,
     onCreateWithAiClick: () -> Unit,
     onExploreRoadmapsClick: () -> Unit,
+    onHeaderActionClick: () -> Unit = {},
+    avatarUrl: String = "",
     modifier: Modifier = Modifier,
     reselectEvent: Flow<NavBarDestination> = emptyFlow()
 ) {
@@ -139,7 +141,8 @@ fun MyRoadmapScreen(
                     greetingText = stringResource(R.string.my_roadmap_header_eyebrow),
                     headingText = stringResource(R.string.my_roadmap_header_title),
                     greetingIcon = Icons.Outlined.Route,
-                    actionIcon = Icons.Outlined.Map,
+                    actionImageUrl = avatarUrl,
+                    onActionClick = onHeaderActionClick,
                     modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
                 )
             }
