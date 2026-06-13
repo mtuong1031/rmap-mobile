@@ -32,8 +32,19 @@ class TokenAuthenticator(
             return null
         }
 
-        if (response.request.url.encodedPath.endsWith("auth/refresh")) {
-            Log.d("TokenAuthenticator", "Refresh token request itself failed with 401")
+        val path = response.request.url.encodedPath
+        if (path.endsWith("auth/refresh") || path.endsWith("auth/logout")) {
+            Log.d("TokenAuthenticator", "Token refresh skipped for path: $path")
+            return null
+        }
+
+        val hasSession = when (cookieJar) {
+            is SessionCookieJar -> cookieJar.hasStoredCookies()
+            else -> true
+        }
+
+        if (!hasSession) {
+            Log.d("TokenAuthenticator", "No active session cookies, skipping refresh")
             return null
         }
 

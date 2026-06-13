@@ -43,6 +43,12 @@ class SessionCookieJar(
         }
     }
 
+    fun hasStoredCookies(): Boolean {
+        return synchronized(lock) {
+            loadStoredCookies().isNotEmpty()
+        }
+    }
+
     private fun loadStoredCookies(): List<StoredCookie> {
         return storage.load().mapNotNull(StoredCookie::decode)
     }

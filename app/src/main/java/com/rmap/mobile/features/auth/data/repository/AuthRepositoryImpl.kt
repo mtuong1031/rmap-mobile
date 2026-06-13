@@ -81,7 +81,7 @@ class AuthRepositoryImpl(
 
     override suspend fun logout(): Result<Unit> {
         val networkResult = SafeApiCall.execute(
-            onUnauthorized = ::handleUnauthorized
+            onUnauthorized = {}
         ) {
             authApi.logout()
         }

@@ -69,6 +69,27 @@ class SessionCookieJarTest {
         assertTrue(storage.load().isEmpty())
     }
 
+    @Test
+    fun `hasStoredCookies returns true when cookies are present and false when empty`() {
+        val storage = InMemorySessionCookieStorage()
+        val cookieJar = SessionCookieJar(storage)
+        val responseUrl = "http://10.0.2.2:3001/api/v1/auth/login".toHttpUrl()
+
+        // Initially empty
+        assertTrue(!cookieJar.hasStoredCookies())
+
+        // Save a cookie
+        cookieJar.saveFromResponse(
+            responseUrl,
+            listOf(sessionCookie("access_token", "abc"))
+        )
+        assertTrue(cookieJar.hasStoredCookies())
+
+        // Clear cookies
+        cookieJar.clear()
+        assertTrue(!cookieJar.hasStoredCookies())
+    }
+
     private fun sessionCookie(name: String, value: String): Cookie {
         return Cookie.Builder()
             .name(name)
