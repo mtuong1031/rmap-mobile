@@ -8,6 +8,8 @@ import com.rmap.mobile.features.dashboard.domain.model.DashboardRoadmap
 import com.rmap.mobile.features.dashboard.domain.repository.DashboardRepository
 import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepository
 import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -22,7 +24,8 @@ import kotlin.math.roundToInt
 class MyRoadmapViewModel(
     private val dashboardRepository: DashboardRepository = RMapAppGraph.dashboardRepository,
     private val completedSkillsRepository: CompletedSkillsRepository = RMapAppGraph.completedSkillsRepository,
-    private val learningReminderContextRepository: LearningReminderContextRepository = RMapAppGraph.learningReminderContextRepository
+    private val learningReminderContextRepository: LearningReminderContextRepository = RMapAppGraph.learningReminderContextRepository,
+    private val authRepository: AuthRepository = RMapAppGraph.authRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MyRoadmapUiState())
     val uiState: StateFlow<MyRoadmapUiState> = _uiState.asStateFlow()
@@ -31,10 +34,27 @@ class MyRoadmapViewModel(
     private var dashboardJob: Job? = null
 
     init {
-        loadDashboard()
+        observeAuthState()
+    }
+
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authRepository.authState.collect { authState ->
+                if (authState is AuthState.Authenticated) {
+                    loadDashboard()
+                } else {
+                    dashboardJob?.cancel()
+                    _uiState.update { MyRoadmapUiState() }
+                }
+            }
+        }
     }
 
     fun loadDashboard() {
+        if (authRepository.authState.value !is AuthState.Authenticated) {
+            _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+            return
+        }
         dashboardJob?.cancel()
         dashboardJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }

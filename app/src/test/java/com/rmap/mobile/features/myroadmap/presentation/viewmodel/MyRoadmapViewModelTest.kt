@@ -11,6 +11,11 @@ import com.rmap.mobile.features.myroadmap.domain.model.CompletedSkillPage
 import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepository
 import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
 import com.rmap.mobile.features.profile.domain.model.LearningReminderContext
+import com.rmap.mobile.features.auth.domain.model.AuthState
+import com.rmap.mobile.features.auth.domain.model.User
+import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runCurrent
@@ -29,7 +34,8 @@ class MyRoadmapViewModelTest {
         val viewModel = MyRoadmapViewModel(
             dashboardRepository = FakeDashboardRepository(),
             completedSkillsRepository = FakeCompletedSkillsRepository(),
-            learningReminderContextRepository = FakeLearningReminderContextRepository()
+            learningReminderContextRepository = FakeLearningReminderContextRepository(),
+            authRepository = FakeAuthRepository()
         )
 
         runCurrent()
@@ -43,7 +49,8 @@ class MyRoadmapViewModelTest {
         val viewModel = MyRoadmapViewModel(
             dashboardRepository = FakeDashboardRepository(),
             completedSkillsRepository = FakeCompletedSkillsRepository(),
-            learningReminderContextRepository = FakeLearningReminderContextRepository()
+            learningReminderContextRepository = FakeLearningReminderContextRepository(),
+            authRepository = FakeAuthRepository()
         )
         runCurrent()
 
@@ -72,6 +79,28 @@ private class FakeCompletedSkillsRepository : CompletedSkillsRepository {
 private class FakeLearningReminderContextRepository : LearningReminderContextRepository {
     override fun getContext(): LearningReminderContext = LearningReminderContext(activeRoadmapTitle = null)
     override suspend fun setActiveRoadmap(title: String?) {}
+}
+
+private class FakeAuthRepository(
+    initialState: AuthState = AuthState.Authenticated(
+        User(
+            id = "user-1",
+            email = "user@example.com",
+            fullName = "RMap Learner",
+            avatarUrl = null,
+            role = "USER",
+            createdAt = "2026-01-01T00:00:00Z"
+        )
+    )
+) : AuthRepository {
+    override val authState: StateFlow<AuthState> = MutableStateFlow(initialState)
+    override suspend fun loginWithGoogle(idToken: String): Result<User> = error("Not used")
+    override suspend fun loginWithGithub(code: String): Result<User> = error("Not used")
+    override suspend fun linkWithGoogle(idToken: String): Result<Unit> = error("Not used")
+    override suspend fun linkWithGithub(code: String): Result<Unit> = error("Not used")
+    override suspend fun logout(): Result<Unit> = error("Not used")
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = error("Not used")
+    override suspend fun getCurrentUser(): Result<User> = error("Not used")
 }
 
 private fun dashboard(): Dashboard = Dashboard(
