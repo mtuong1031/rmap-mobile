@@ -18,6 +18,8 @@ import com.rmap.mobile.features.auth.domain.model.User
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -46,6 +48,24 @@ class AiRoadmapViewModelTest {
     }
 
     @Test
+    fun onSubmitSetup_setsTopicRequiredError_whenTopicIsBlank_emitsShowErrorEvent() = runTest {
+        val viewModel = AiRoadmapViewModel(
+            repository = FakeAiRoadmapRepository(),
+            protectedActionGate = FakeProtectedActionGate.authenticated(),
+            currentTimeMillis = { now }
+        )
+        val events = mutableListOf<AiRoadmapEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect { event -> events.add(event) }
+        }
+
+        viewModel.onSubmitSetup()
+
+        assertEquals(AiRoadmapFormError.TopicRequired, viewModel.uiState.value.formError)
+        assertEquals(listOf(AiRoadmapEvent.ShowError(AiRoadmapFormError.TopicRequired)), events)
+    }
+
+    @Test
     fun onSubmitSetup_loadsQuestions_whenSetupIsValid() = runTest {
         val viewModel = AiRoadmapViewModel(
             repository = FakeAiRoadmapRepository(),
@@ -70,6 +90,21 @@ class AiRoadmapViewModelTest {
         viewModel.onSubmitAnswers()
 
         assertEquals(AiRoadmapFormError.AnswerAllQuestions, viewModel.uiState.value.formError)
+    }
+
+    @Test
+    fun onSubmitAnswers_requiresEveryQuestionToBeAnswered_emitsShowErrorEvent() = runTest {
+        val viewModel = preparedViewModel()
+        val events = mutableListOf<AiRoadmapEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect { event -> events.add(event) }
+        }
+
+        viewModel.onOptionSelected("level", "level-1")
+        viewModel.onSubmitAnswers()
+
+        assertEquals(AiRoadmapFormError.AnswerAllQuestions, viewModel.uiState.value.formError)
+        assertEquals(listOf(AiRoadmapEvent.ShowError(AiRoadmapFormError.AnswerAllQuestions)), events)
     }
 
     @Test
@@ -112,6 +147,21 @@ class AiRoadmapViewModelTest {
         assertTrue(firstQuestion.isCustomAnswerSelected)
         assertEquals(0, viewModel.uiState.value.currentQuestionIndex)
         assertEquals(AiRoadmapFormError.CustomAnswerRequired, viewModel.uiState.value.formError)
+    }
+
+    @Test
+    fun onNextQuestion_requiresTextWhenCustomOptionIsSelected_emitsShowErrorEvent() = runTest {
+        val viewModel = preparedViewModel()
+        val events = mutableListOf<AiRoadmapEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect { event -> events.add(event) }
+        }
+
+        viewModel.onCustomAnswerChange("level", "")
+        viewModel.onNextQuestion()
+
+        assertEquals(AiRoadmapFormError.CustomAnswerRequired, viewModel.uiState.value.formError)
+        assertEquals(listOf(AiRoadmapEvent.ShowError(AiRoadmapFormError.CustomAnswerRequired)), events)
     }
 
     @Test
@@ -189,6 +239,26 @@ class AiRoadmapViewModelTest {
         assertEquals("frontend-pro", viewModel.uiState.value.generationStatus.generatedRoadmapId)
         assertEquals("frontend-pro", viewModel.uiState.value.generatedRoadmaps.first().id)
         assertEquals("Frontend Pro Roadmap", viewModel.uiState.value.generatedRoadmaps.first().title)
+    }
+
+    @Test
+    fun generationFailed_emitsShowErrorEvent() = runTest {
+        val repository = FakeAiRoadmapRepository()
+        val viewModel = AiRoadmapViewModel(
+            repository = repository,
+            protectedActionGate = FakeProtectedActionGate.authenticated(),
+            currentTimeMillis = { now }
+        )
+        val events = mutableListOf<AiRoadmapEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.events.collect { event -> events.add(event) }
+        }
+
+        repository.status.value = AiRoadmapGenerationStatus(
+            phase = AiRoadmapGenerationPhase.Failed
+        )
+
+        assertEquals(listOf(AiRoadmapEvent.ShowError(AiRoadmapFormError.GenerationFailed)), events)
     }
 
     private fun preparedViewModel(

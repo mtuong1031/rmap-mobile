@@ -25,7 +25,7 @@ internal fun AiRoadmapSetupScreen(
         dailyStudyHours = uiState.dailyStudyHours,
         isSubmitEnabled = uiState.isSetupSubmitEnabled,
         isLoading = uiState.isLoadingQuestions,
-        errorText = uiState.formError.toMessage(),
+        errorText = null,
         guideTitle = stringResource(R.string.ai_roadmap_setup_guide_title),
         guideBody = stringResource(R.string.ai_roadmap_setup_guide_body),
         topicLabel = stringResource(R.string.ai_roadmap_topic_label),

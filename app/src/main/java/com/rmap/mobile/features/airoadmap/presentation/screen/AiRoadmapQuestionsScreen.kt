@@ -39,7 +39,7 @@ internal fun AiRoadmapQuestionsScreen(
         previousText = stringResource(R.string.ai_roadmap_previous),
         nextText = stringResource(R.string.ai_roadmap_next),
         generateText = stringResource(R.string.ai_roadmap_generate),
-        errorText = uiState.formError.toMessage(),
+        errorText = null,
         isFirstQuestion = uiState.isFirstQuestion,
         isLastQuestion = uiState.isLastQuestion,
         isCurrentQuestionAnswered = uiState.isCurrentQuestionAnswered,

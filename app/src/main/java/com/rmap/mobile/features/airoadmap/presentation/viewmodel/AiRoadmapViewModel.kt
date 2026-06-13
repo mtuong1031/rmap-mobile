@@ -41,6 +41,9 @@ class AiRoadmapViewModel(
 
         viewModelScope.launch {
             repository.generationStatus.collect { status ->
+                if (status.phase == AiRoadmapGenerationPhase.Failed) {
+                    _events.emit(AiRoadmapEvent.ShowError(AiRoadmapFormError.GenerationFailed))
+                }
                 _uiState.update { state ->
                     val nextStep = when (status.phase) {
                         AiRoadmapGenerationPhase.Queued,
@@ -216,6 +219,9 @@ class AiRoadmapViewModel(
                             formError = AiRoadmapFormError.QuestionsLoadFailed
                         )
                     }
+                    viewModelScope.launch {
+                        _events.emit(AiRoadmapEvent.ShowError(AiRoadmapFormError.QuestionsLoadFailed))
+                    }
                 }
         }
     }
@@ -265,13 +271,18 @@ class AiRoadmapViewModel(
     }
 
     fun onNextQuestion() {
+        var errorToEmit: AiRoadmapFormError? = null
         _uiState.update { state ->
             val question = state.currentQuestion
 
             when {
                 question == null -> state
-                !question.hasSelection -> state.copy(formError = AiRoadmapFormError.AnswerAllQuestions)
+                !question.hasSelection -> {
+                    errorToEmit = AiRoadmapFormError.AnswerAllQuestions
+                    state.copy(formError = AiRoadmapFormError.AnswerAllQuestions)
+                }
                 question.isCustomAnswerSelected && question.customAnswer.isBlank() -> {
+                    errorToEmit = AiRoadmapFormError.CustomAnswerRequired
                     state.copy(formError = AiRoadmapFormError.CustomAnswerRequired)
                 }
                 else -> {
@@ -280,6 +291,11 @@ class AiRoadmapViewModel(
                         formError = null
                     )
                 }
+            }
+        }
+        errorToEmit?.let { error ->
+            viewModelScope.launch {
+                _events.emit(AiRoadmapEvent.ShowError(error))
             }
         }
     }
@@ -320,11 +336,17 @@ class AiRoadmapViewModel(
         }
         if (hasBlankCustomAnswer) {
             _uiState.update { it.copy(formError = AiRoadmapFormError.CustomAnswerRequired) }
+            viewModelScope.launch {
+                _events.emit(AiRoadmapEvent.ShowError(AiRoadmapFormError.CustomAnswerRequired))
+            }
             return false
         }
 
         if (!state.isReadyToGenerate) {
             _uiState.update { it.copy(formError = AiRoadmapFormError.AnswerAllQuestions) }
+            viewModelScope.launch {
+                _events.emit(AiRoadmapEvent.ShowError(AiRoadmapFormError.AnswerAllQuestions))
+            }
             return false
         }
 
@@ -356,6 +378,7 @@ class AiRoadmapViewModel(
             repository.startGeneration(request)
         }.onFailure {
             _uiState.update { it.copy(formError = AiRoadmapFormError.AnswerAllQuestions) }
+            _events.emit(AiRoadmapEvent.ShowError(AiRoadmapFormError.AnswerAllQuestions))
         }
     }
 
@@ -409,6 +432,9 @@ class AiRoadmapViewModel(
 
         if (error != null) {
             _uiState.update { it.copy(formError = error) }
+            viewModelScope.launch {
+                _events.emit(AiRoadmapEvent.ShowError(error))
+            }
             return null
         }
 
