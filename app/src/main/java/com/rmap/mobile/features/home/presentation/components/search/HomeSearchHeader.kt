@@ -2,6 +2,7 @@ package com.rmap.mobile.features.home.presentation.components.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -63,7 +64,11 @@ fun HomeSearchHeader(
             shape = HomeSearchInputShape,
             height = HomeSearchInputHeight,
             colors = RMapTextInputDefaults.colors(
-                borderColor = MaterialTheme.colorScheme.inversePrimary
+                borderColor = if (isSystemInDarkTheme()) {
+                    MaterialTheme.colorScheme.outline
+                } else {
+                    MaterialTheme.colorScheme.inversePrimary
+                }
             )
         )
     }

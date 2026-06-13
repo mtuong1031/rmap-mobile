@@ -80,7 +80,11 @@ object RMapTextInputDefaults {
     fun colors(
         containerColor: Color = MaterialTheme.colorScheme.surface,
         contentColor: Color = MaterialTheme.colorScheme.onSurface,
-        placeholderColor: Color = Color(OnSurfacePlaceholderLight.value),
+        placeholderColor: Color = if (androidx.compose.foundation.isSystemInDarkTheme()) {
+            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        } else {
+            Color(OnSurfacePlaceholderLight.value)
+        },
         cursorColor: Color = MaterialTheme.colorScheme.primary,
         borderColor: Color = MaterialTheme.colorScheme.secondaryContainer,
         shadowColor: Color = ShadowColor
@@ -241,7 +245,13 @@ fun RMapTextInput(
                             .padding(start = trailingIconSpacing)
                             .size(RMapTextInputDefaults.ClearButtonSize)
                             .clip(CircleShape)
-                            .background(RMapTextInputDefaults.ClearButtonContainerColor)
+                            .background(
+                                if (androidx.compose.foundation.isSystemInDarkTheme()) {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                } else {
+                                    RMapTextInputDefaults.ClearButtonContainerColor
+                                }
+                            )
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,

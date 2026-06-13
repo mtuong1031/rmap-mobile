@@ -118,7 +118,7 @@ private fun HomeRecentSearchRow(
             Icon(
                 imageVector = Icons.Filled.Close,
                 contentDescription = null,
-                tint = Color(0xFFD1D5DC),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(Dimens.iconSm)
             )
         }

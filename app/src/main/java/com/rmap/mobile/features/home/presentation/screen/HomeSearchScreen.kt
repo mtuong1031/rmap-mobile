@@ -263,3 +263,82 @@ private fun HomeSearchScreenPreview() {
         )
     }
 }
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390, heightDp = 844)
+@Composable
+private fun HomeSearchScreenDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
+        HomeSearchScreen(
+            query = "React",
+            recentSearches = listOf(
+                "React roadmap",
+                "CSS Grid",
+                "Backend developer",
+                "DevOps",
+                "AI Engineer"
+            ),
+            popularSearches = listOf(
+                "Frontend",
+                "React",
+                "Backend",
+                "DevOps",
+                "Data Analyst",
+                "AI Engineer"
+            ),
+            roadmaps = listOf(
+                HomeSearchRoadmapItemUiModel(
+                    id = "react-fundamentals",
+                    title = "React Fundamentals",
+                    categoryLabel = "Web Development",
+                    metadataText = "4 weeks",
+                    leadingIcon = Icons.Outlined.TrackChanges,
+                    style = HomeSearchRoadmapItemDefaults.reactStyle()
+                ),
+                HomeSearchRoadmapItemUiModel(
+                    id = "frontend-starter",
+                    title = "Frontend Interview Prep",
+                    categoryLabel = "Web Development",
+                    metadataText = "3 weeks",
+                    leadingText = "FI",
+                    style = HomeSearchRoadmapItemDefaults.starterStyle()
+                )
+            ),
+            skills = listOf(
+                HomeSearchSkillItemUiModel(
+                    id = "frontend-react",
+                    title = "Frontend",
+                    parentText = "Part of: React Fundamentals"
+                ),
+                HomeSearchSkillItemUiModel(
+                    id = "frontend-pro",
+                    title = "Frontend",
+                    parentText = "Part of: Frontend Pro"
+                )
+            ),
+            roadmapTotal = 2,
+            skillTotal = 2,
+            aiSuggestion = HomeSearchAiSuggestionUiModel(
+                id = "react-roadmap",
+                title = "Create a personalized React roadmap",
+                description = "Generate a roadmap based on your goal, current skills, and timeline.",
+                actionText = "Create with AI"
+            ),
+            isLoading = false,
+            hasMoreRoadmaps = true,
+            hasMoreSkills = true,
+            isLoadingMoreRoadmaps = false,
+            isLoadingMoreSkills = false,
+            onQueryChange = {},
+            onBackClick = {},
+            onClearRecentSearchesClick = {},
+            onRecentSearchClick = {},
+            onRemoveRecentSearchClick = {},
+            onPopularSearchClick = {},
+            onRoadmapClick = {},
+            onSeeMoreRoadmapsClick = {},
+            onSkillClick = {},
+            onSeeMoreSkillsClick = {},
+            onCreateWithAiClick = {}
+        )
+    }
+}

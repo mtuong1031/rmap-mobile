@@ -241,9 +241,13 @@
     <string name="my_roadmap_empty_create_ai">Tạo Roadmap AI</string>
     <string name="my_roadmap_empty_explore">Khám phá thư viện</string>
     <string name="my_roadmap_filter_empty_active">Chưa có Roadmap nào đang học.</string>
+    <string name="my_roadmap_filter_empty_active_body">Chọn một Roadmap trong danh sách và tiếp tục học theo nhịp độ của bạn.</string>
     <string name="my_roadmap_filter_empty_all">Không có Roadmap nào phù hợp với bộ lọc này.</string>
+    <string name="my_roadmap_filter_empty_all_body">Các Roadmap của bạn sẽ xuất hiện tại đây khi có dữ liệu.</string>
     <string name="my_roadmap_filter_empty_completed">Bạn chưa hoàn thành Roadmap nào.</string>
+    <string name="my_roadmap_filter_empty_completed_body">Tiếp tục học và những Roadmap hoàn thành sẽ được lưu lại tại đây.</string>
     <string name="my_roadmap_filter_empty_behind">Tiến độ của bạn đang rất tốt, không có Roadmap nào bị chậm!</string>
+    <string name="my_roadmap_filter_empty_behind_body">Tuyệt vời! Tất cả Roadmap đang học đều đúng tiến độ.</string>
     <string name="my_roadmap_filter_empty_show_all">Hiển thị tất cả Roadmap</string>
     <string name="my_roadmap_estimated_weeks">Ước tính %1$d tuần</string>
     <string name="my_roadmap_no_deadline">Không có thời hạn</string>

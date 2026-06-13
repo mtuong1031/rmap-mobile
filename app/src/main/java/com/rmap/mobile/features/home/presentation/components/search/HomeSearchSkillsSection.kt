@@ -89,7 +89,7 @@ private fun HomeSearchSkillCard(
             .background(MaterialTheme.colorScheme.surface)
             .border(
                 width = Dimens.borderThin,
-                color = Color(0x80F9FAFB),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 shape = AppShapes.searchBar
             )
             .clickable(

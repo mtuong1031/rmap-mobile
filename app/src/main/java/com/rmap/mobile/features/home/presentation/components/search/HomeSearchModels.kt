@@ -1,5 +1,6 @@
 package com.rmap.mobile.features.home.presentation.components.search
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -37,11 +38,19 @@ object HomeSearchRoadmapItemDefaults {
 
     @Composable
     fun starterStyle(): HomeSearchRoadmapItemStyle {
-        return HomeSearchRoadmapItemStyle(
-            iconContainerColor = Color(0xFFEEF2FF),
-            iconContentColor = Color(0xFF615FFF),
-            categoryColor = Color(0xFF4F39F6)
-        )
+        return if (isSystemInDarkTheme()) {
+            HomeSearchRoadmapItemStyle(
+                iconContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                iconContentColor = MaterialTheme.colorScheme.tertiary,
+                categoryColor = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+        } else {
+            HomeSearchRoadmapItemStyle(
+                iconContainerColor = Color(0xFFEEF2FF),
+                iconContentColor = Color(0xFF615FFF),
+                categoryColor = Color(0xFF4F39F6)
+            )
+        }
     }
 }
 

@@ -48,10 +48,10 @@ fun HomeGoalQuizCard(
             .fillMaxWidth()
             .cardShadow(shape = HomeGoalQuizCardShape)
             .clip(HomeGoalQuizCardShape)
-            .background(Color(0xFFEFF6FF))
+            .background(MaterialTheme.colorScheme.primaryContainer)
             .border(
                 width = Dimens.borderThin,
-                color = Color(0xFFDBEAFE),
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.16f),
                 shape = HomeGoalQuizCardShape
             )
     ) {
@@ -76,7 +76,7 @@ fun HomeGoalQuizCard(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             )
 
@@ -85,7 +85,7 @@ fun HomeGoalQuizCard(
                 modifier = Modifier.fillMaxWidth(0.86f),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF4A5565)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
             )
 
@@ -110,6 +110,21 @@ fun HomeGoalQuizCard(
 @Composable
 private fun HomeGoalQuizCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
+        Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
+            HomeGoalQuizCard(
+                title = "Not sure which path fits you?",
+                description = "Answer a few questions and RMap will suggest your first roadmap.",
+                actionText = "Take goal quiz",
+                onActionClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390)
+@Composable
+private fun HomeGoalQuizCardDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
         Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
             HomeGoalQuizCard(
                 title = "Not sure which path fits you?",

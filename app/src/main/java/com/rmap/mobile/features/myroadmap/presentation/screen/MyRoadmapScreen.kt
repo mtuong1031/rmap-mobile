@@ -492,6 +492,7 @@ private val MyRoadmapEmptyContentMaxWidth = 282.dp
 private val MyRoadmapEmptyIconContainerShape = RoundedCornerShape(24.dp)
 private val MyRoadmapEmptyMinHeight = 420.dp
 private val MyRoadmapEmptyMaxHeight = 520.dp
+private val MyRoadmapFilterEmptyMinHeight = 320.dp
 private const val MyRoadmapEmptyHeightRatio = 1.42f
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
@@ -603,26 +604,69 @@ private fun FilterEmptyState(
     onShowAllClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    RMapCard(
-        modifier = modifier.fillMaxWidth(),
-        shadowElevation = Dimens.cardElevationXs
+    val visual = selectedFilter.emptyVisual()
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = MyRoadmapFilterEmptyMinHeight)
     ) {
+        RMapHeroSectionBackground(modifier = Modifier.matchParentSize())
+
         Column(
-            modifier = Modifier.padding(Dimens.spacingLg),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = Dimens.spacingHuge, vertical = Dimens.spacingXxl)
+                .widthIn(max = MyRoadmapEmptyContentMaxWidth)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Box(
+                modifier = Modifier
+                    .size(Dimens.controlXl + Dimens.spacingLg)
+                    .clip(MyRoadmapEmptyIconContainerShape)
+                    .background(visual.containerColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = visual.icon,
+                    contentDescription = null,
+                    tint = visual.contentColor,
+                    modifier = Modifier.size(Dimens.iconXxl)
+                )
+            }
+
             Text(
                 text = selectedFilter.emptyTitle(),
-                style = MaterialTheme.typography.titleMedium.copy(
+                modifier = Modifier
+                    .padding(top = Dimens.spacingXl)
+                    .fillMaxWidth(),
+                style = MaterialTheme.typography.headlineSmall.copy(
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
-                )
+                ),
+                textAlign = TextAlign.Center
             )
+
+            Text(
+                text = selectedFilter.emptyBody(),
+                modifier = Modifier
+                    .padding(top = Dimens.spacingSm)
+                    .fillMaxWidth(),
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.secondary
+                ),
+                textAlign = TextAlign.Center
+            )
+
             RMapButton(
                 text = stringResource(R.string.my_roadmap_filter_empty_show_all),
                 onClick = onShowAllClick,
+                modifier = Modifier
+                    .padding(top = Dimens.spacingXxl)
+                    .fillMaxWidth(),
                 variant = RMapButtonVariant.Secondary,
-                size = RMapButtonSize.Medium
+                size = RMapButtonSize.Large
             )
         }
     }
@@ -779,6 +823,44 @@ private fun MyRoadmapFilter.emptyTitle(): String {
 }
 
 @Composable
+private fun MyRoadmapFilter.emptyBody(): String {
+    val resId = when (this) {
+        MyRoadmapFilter.Active -> R.string.my_roadmap_filter_empty_active_body
+        MyRoadmapFilter.All -> R.string.my_roadmap_filter_empty_all_body
+        MyRoadmapFilter.Completed -> R.string.my_roadmap_filter_empty_completed_body
+        MyRoadmapFilter.Behind -> R.string.my_roadmap_filter_empty_behind_body
+    }
+    return stringResource(resId)
+}
+
+@Composable
+private fun MyRoadmapFilter.emptyVisual(): MyRoadmapEmptyVisual {
+    val semanticColors = LocalRMapSemanticColors.current
+    return when (this) {
+        MyRoadmapFilter.Active -> MyRoadmapEmptyVisual(
+            icon = Icons.Outlined.PlayArrow,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.primary
+        )
+        MyRoadmapFilter.All -> MyRoadmapEmptyVisual(
+            icon = Icons.Outlined.Map,
+            containerColor = semanticColors.info.container,
+            contentColor = semanticColors.info.content
+        )
+        MyRoadmapFilter.Completed -> MyRoadmapEmptyVisual(
+            icon = Icons.Outlined.CheckCircle,
+            containerColor = semanticColors.success.container,
+            contentColor = semanticColors.success.content
+        )
+        MyRoadmapFilter.Behind -> MyRoadmapEmptyVisual(
+            icon = Icons.Outlined.Route,
+            containerColor = semanticColors.success.container,
+            contentColor = semanticColors.success.content
+        )
+    }
+}
+
+@Composable
 private fun MyRoadmapCardUiModel.deadlineLabel(): String {
     val daysLeft = deadlineDate?.toDaysLeftFromToday()
     return when {
@@ -843,6 +925,12 @@ private data class RoadmapStatusVisual(
     val containerColor: Color,
     val contentColor: Color,
     val icon: ImageVector
+)
+
+private data class MyRoadmapEmptyVisual(
+    val icon: ImageVector,
+    val containerColor: Color,
+    val contentColor: Color
 )
 
 private fun String.toDaysLeftFromToday(): Int? {
@@ -935,6 +1023,19 @@ private fun MyRoadmapCompactCardPreview() {
                 ),
                 onClick = {},
                 onCtaClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390)
+@Composable
+private fun MyRoadmapFilterEmptyDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
+        Box(modifier = Modifier.padding(Dimens.spacingScreenHorizontal)) {
+            FilterEmptyState(
+                selectedFilter = MyRoadmapFilter.Completed,
+                onShowAllClick = {}
             )
         }
     }

@@ -3,6 +3,7 @@ package com.rmap.mobile.features.home.presentation.components.trending
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,6 +68,8 @@ data class TrendingRoadmapCardStyle(
     val rankContentColor: Color,
     val categoryContainerColor: Color,
     val categoryContentColor: Color,
+    val categoryContainerColorDark: Color,
+    val categoryContentColorDark: Color,
     val decorativeIconColor: Color,
     val decorativeIconAlpha: Float,
     val trendContentColor: Color
@@ -95,6 +98,8 @@ object TrendingRoadmapCardDefaults {
             rankContentColor = Color(0xFF155DFC),
             categoryContainerColor = Color(0xFFEFF6FF),
             categoryContentColor = Color(0xFF155DFC),
+            categoryContainerColorDark = Color(0xFF1D3A5F),
+            categoryContentColorDark = Color(0xFFBFDBFE),
             decorativeIconColor = Color(0xFF2B7FFF),
             decorativeIconAlpha = 0.25f,
             trendContentColor = TrendingRoadmapOrange
@@ -108,6 +113,8 @@ object TrendingRoadmapCardDefaults {
             rankContentColor = Color(0xFF45556C),
             categoryContainerColor = Color(0xFFF1F5F9),
             categoryContentColor = Color(0xFF45556C),
+            categoryContainerColorDark = Color(0xFF282936),
+            categoryContentColorDark = Color(0xFFCBD5E1),
             decorativeIconColor = Color(0xFF45556C),
             decorativeIconAlpha = 0.15f,
             trendContentColor = TrendingRoadmapOrange
@@ -121,6 +128,8 @@ object TrendingRoadmapCardDefaults {
             rankContentColor = Color(0xFF4F39F6),
             categoryContainerColor = Color(0xFFEEF2FF),
             categoryContentColor = Color(0xFF4F39F6),
+            categoryContainerColorDark = Color(0xFF312E81),
+            categoryContentColorDark = Color(0xFFC7D2FE),
             decorativeIconColor = Color(0xFF4F39F6),
             decorativeIconAlpha = 0.2f,
             trendContentColor = TrendingRoadmapOrange
@@ -322,10 +331,22 @@ private fun TrendingRoadmapCategoryBadge(
     text: String,
     style: TrendingRoadmapCardStyle
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val containerColor = if (isDarkTheme) {
+        style.categoryContainerColorDark
+    } else {
+        style.categoryContainerColor
+    }
+    val contentColor = if (isDarkTheme) {
+        style.categoryContentColorDark
+    } else {
+        style.categoryContentColor
+    }
+
     Box(
         modifier = Modifier
             .background(
-                color = style.categoryContainerColor,
+                color = containerColor,
                 shape = TrendingRoadmapBadgeShape
             )
             .padding(horizontal = Dimens.spacingSm, vertical = Dimens.spacingXs),
@@ -335,7 +356,7 @@ private fun TrendingRoadmapCategoryBadge(
             text = text.uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
-                color = style.categoryContentColor
+                color = contentColor
             ),
             maxLines = 1
         )
@@ -395,6 +416,37 @@ private fun TrendingRoadmapLearnersCardPreview() {
                     style = TrendingRoadmapCardDefaults.neutralStyle()
                 )
             )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390)
+@Composable
+private fun TrendingRoadmapCardDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
+        Column(
+            modifier = Modifier.padding(Dimens.spacingXxl),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMd)
+        ) {
+            listOf(
+                "Web Development" to TrendingRoadmapCardDefaults.primaryStyle(),
+                "Languages and Platforms" to TrendingRoadmapCardDefaults.neutralStyle(),
+                "AI and Machine Learning" to TrendingRoadmapCardDefaults.indigoStyle()
+            ).forEachIndexed { index, (category, style) ->
+                TrendingRoadmapCard(
+                    item = TrendingRoadmapCardUiModel(
+                        id = "dark-preview-$index",
+                        rankText = "#${index + 1}",
+                        categoryLabel = category,
+                        title = "Roadmap Preview",
+                        metadataText = "68 nodes • Self-paced",
+                        trendText = "Popular this month",
+                        leadingIcon = Icons.Outlined.DataObject,
+                        trendIcon = Icons.AutoMirrored.Outlined.TrendingUp,
+                        style = style
+                    )
+                )
+            }
         }
     }
 }

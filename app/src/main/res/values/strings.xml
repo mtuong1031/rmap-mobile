@@ -273,9 +273,13 @@
     <string name="my_roadmap_empty_create_ai">Create with AI</string>
     <string name="my_roadmap_empty_explore">Explore roadmaps</string>
     <string name="my_roadmap_filter_empty_active">No active roadmaps yet.</string>
+    <string name="my_roadmap_filter_empty_active_body">Choose a roadmap from all items and continue learning at your own pace.</string>
     <string name="my_roadmap_filter_empty_all">No roadmaps match this view.</string>
+    <string name="my_roadmap_filter_empty_all_body">Your roadmaps will appear here when they become available.</string>
     <string name="my_roadmap_filter_empty_completed">No completed roadmaps yet.</string>
+    <string name="my_roadmap_filter_empty_completed_body">Keep learning and your completed roadmaps will be collected here.</string>
     <string name="my_roadmap_filter_empty_behind">No roadmaps are behind pace.</string>
+    <string name="my_roadmap_filter_empty_behind_body">Great work! Every active roadmap is currently on track.</string>
     <string name="my_roadmap_filter_empty_show_all">Show all roadmaps</string>
     <string name="my_roadmap_search_empty_title">No matching roadmaps</string>
     <string name="my_roadmap_search_empty_body">No roadmaps match “%1$s”. Try another keyword or clear the search.</string>

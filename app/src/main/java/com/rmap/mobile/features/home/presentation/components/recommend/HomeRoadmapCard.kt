@@ -41,9 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.LocalRMapSemanticColors
 import com.rmap.mobile.core.ui.theme.RMapTheme
-import com.rmap.mobile.core.ui.theme.SuccessContainerLight
-import com.rmap.mobile.core.ui.theme.SuccessLight
 import com.rmap.mobile.core.ui.theme.cardShadow
 
 private val HomeRoadmapCardWidth = 260.dp
@@ -325,10 +324,12 @@ private fun HomeRoadmapBadge(
 private fun HomeRoadmapStarterBadge(
     text: String
 ) {
+    val successColors = LocalRMapSemanticColors.current.success
+
     Box(
         modifier = Modifier
             .background(
-                color = SuccessContainerLight,
+                color = successColors.container,
                 shape = HomeRoadmapBadgeShape
             )
             .padding(horizontal = Dimens.spacingXsPlus, vertical = Dimens.spacingMicro),
@@ -338,7 +339,7 @@ private fun HomeRoadmapStarterBadge(
             text = text.uppercase(),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
-                color = SuccessLight
+                color = successColors.content
             )
         )
     }
@@ -407,6 +408,30 @@ private fun HomeRoadmapCardPreview() {
                     title = "Frontend Starter",
                     nodesText = "24 nodes",
                     durationText = "4 weeks",
+                    actionText = "View roadmap",
+                    icon = Icons.Outlined.Code,
+                    style = HomeRoadmapCardDefaults.webDevelopmentStyle(),
+                    isBeginner = true
+                )
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390)
+@Composable
+private fun HomeRoadmapCardDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
+        Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
+            HomeRoadmapCard(
+                metadataSeparatorText = "•",
+                starterBadgeText = "Starter",
+                item = HomeRoadmapCardUiModel(
+                    id = "kubernetes-roadmap",
+                    categoryLabel = "DevOps",
+                    title = "Kubernetes Roadmap",
+                    nodesText = "68 nodes",
+                    durationText = "Self-paced",
                     actionText = "View roadmap",
                     icon = Icons.Outlined.Code,
                     style = HomeRoadmapCardDefaults.webDevelopmentStyle(),

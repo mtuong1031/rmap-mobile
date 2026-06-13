@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.LocalRMapSemanticColors
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.cardShadow
 
@@ -42,15 +43,17 @@ fun HomePaceAlertCard(
     onActionClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val warningColors = LocalRMapSemanticColors.current.warning
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .cardShadow(shape = AppShapes.card)
             .clip(AppShapes.card)
-            .background(Color(0xFFFFFBEB))
+            .background(warningColors.container)
             .border(
                 width = Dimens.borderThin,
-                color = Color(0xFFFEE685),
+                color = warningColors.border,
                 shape = AppShapes.card
             )
             .padding(Dimens.spacingLg),
@@ -69,7 +72,7 @@ fun HomePaceAlertCard(
             Icon(
                 imageVector = Icons.Filled.LocalFireDepartment,
                 contentDescription = null,
-                tint = Color(0xFFFF8A00),
+                tint = warningColors.accent,
                 modifier = Modifier.size(HomePaceAlertIconSize)
             )
         }
@@ -82,7 +85,7 @@ fun HomePaceAlertCard(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF973C00)
+                    color = warningColors.content
                 )
             )
 
@@ -99,14 +102,14 @@ fun HomePaceAlertCard(
                     text = actionText,
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFBB4D00)
+                        color = warningColors.accent
                     )
                 )
 
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = Color(0xFFBB4D00),
+                    tint = warningColors.accent,
                     modifier = Modifier.size(HomePaceAlertActionIconSize)
                 )
             }
@@ -118,6 +121,20 @@ fun HomePaceAlertCard(
 @Composable
 private fun HomePaceAlertCardPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
+        Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
+            HomePaceAlertCard(
+                message = "You are 15% behind your target pace.\nFinish 1 skill node today to back the track.",
+                actionText = "Adjust plan",
+                onActionClick = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390)
+@Composable
+private fun HomePaceAlertCardDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
         Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
             HomePaceAlertCard(
                 message = "You are 15% behind your target pace.\nFinish 1 skill node today to back the track.",
