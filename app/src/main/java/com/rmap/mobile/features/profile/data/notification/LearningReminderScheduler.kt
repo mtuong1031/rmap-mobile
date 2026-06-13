@@ -114,6 +114,7 @@ class LearningReminderScheduler(
     private fun recurringReminderPendingIntent(): PendingIntent {
         val intent = Intent(context, LearningReminderReceiver::class.java).apply {
             action = LearningReminderReceiver.ACTION_SHOW_LEARNING_REMINDER
+            addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
 
         return PendingIntent.getBroadcast(
@@ -127,6 +128,7 @@ class LearningReminderScheduler(
     private fun snoozeReminderPendingIntent(): PendingIntent {
         val intent = Intent(context, LearningReminderReceiver::class.java).apply {
             action = LearningReminderReceiver.ACTION_SHOW_SNOOZED_LEARNING_REMINDER
+            addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
 
         return PendingIntent.getBroadcast(
@@ -140,6 +142,7 @@ class LearningReminderScheduler(
     private fun testReminderPendingIntent(): PendingIntent {
         val intent = Intent(context, LearningReminderReceiver::class.java).apply {
             action = LearningReminderReceiver.ACTION_SHOW_TEST_LEARNING_REMINDER
+            addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
 
         return PendingIntent.getBroadcast(
