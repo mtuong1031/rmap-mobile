@@ -6,6 +6,7 @@ import android.content.Context
 import com.rmap.mobile.core.auth.AuthGuard
 import com.rmap.mobile.core.auth.PendingProtectedActionStore
 import com.rmap.mobile.core.auth.ProtectedActionGate
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.database.DatabaseProvider
 import com.rmap.mobile.core.database.RMapDatabase
 import com.rmap.mobile.core.database.sync.ClearDynamicDataUseCase
@@ -98,6 +99,8 @@ object RMapAppGraph {
         private set
     lateinit var homeRepository: HomeRepository
         private set
+    lateinit var dynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator
+        private set
     lateinit var recentSearchRepository: RecentSearchRepository
         private set
     lateinit var appNotificationManager: AppNotificationManager
@@ -170,6 +173,10 @@ object RMapAppGraph {
             dashboardApi = apiClient.createService(DashboardApi::class.java),
             sessionManager = sessionManager,
             dashboardCacheDao = database.dashboardCacheDao()
+        )
+        dynamicDataRefreshCoordinator = DynamicDataRefreshCoordinator(
+            homeRepository = homeRepository,
+            dashboardRepository = dashboardRepository
         )
         completedSkillsRepository = RemoteCompletedSkillsRepository(
             api = apiClient.createService(CompletedSkillsApi::class.java),
