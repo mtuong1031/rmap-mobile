@@ -96,7 +96,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun RMapNavHost(
     navController: NavHostController,
-    initialNotificationRoute: String? = null
+    initialNotificationRoute: String? = null,
+    initialMainTab: Int? = null
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -124,10 +125,14 @@ fun RMapNavHost(
     val snackbarWarningTitle = stringResource(R.string.snackbar_title_warning)
     val snackbarInfoTitle = stringResource(R.string.snackbar_title_info)
     val startDestination = AppRoutes.MAIN_TABS
-    val pagerState = rememberPagerState(pageCount = { 5 })
+    val pagerState = rememberPagerState(
+        initialPage = initialMainTab?.coerceIn(0, 3) ?: 0,
+        pageCount = { 5 }
+    )
     var isAiRoadmapSubScreen by remember { mutableStateOf(false) }
     var isAiRoadmapGenerating by remember { mutableStateOf(false) }
     var handledNotificationRoute by remember { mutableStateOf<String?>(null) }
+    var handledMainTab by remember { mutableStateOf<Int?>(null) }
     val currentUserAvatarUrl = (authState as? AuthState.Authenticated)?.user?.avatarUrl.orEmpty()
     var isAiRoadmapQuestionsStep by remember { mutableStateOf(false) }
     val isDebugBuild = remember(context) {
@@ -143,6 +148,13 @@ fun RMapNavHost(
 
     LaunchedEffect(Unit) {
         RMapAppGraph.getCurrentUserUseCase()
+    }
+
+    LaunchedEffect(authState) {
+        RMapAppGraph.updateContinueLearningWidgetUseCase(
+            authState = authState,
+            homeContent = null
+        )
     }
 
     if (authState == AuthState.Checking) {
@@ -237,18 +249,40 @@ fun RMapNavHost(
 
     LaunchedEffect(authState, initialNotificationRoute) {
         val route = initialNotificationRoute?.takeIf { it != handledNotificationRoute } ?: return@LaunchedEffect
+        if (authState == AuthState.Checking) return@LaunchedEffect
+
+        handledNotificationRoute = route
+        if (route == AppRoutes.EXPLORE) {
+            navController.popBackStack(AppRoutes.MAIN_TABS, inclusive = false)
+            pagerState.scrollToPage(3)
+            return@LaunchedEffect
+        }
+
         when (authState) {
             is AuthState.Authenticated -> {
-                handledNotificationRoute = route
                 navController.navigate(route) {
                     launchSingleTop = true
                 }
             }
             AuthState.Checking -> Unit
             else -> {
-                handledNotificationRoute = route
+                navController.navigate(AppRoutes.AUTH) {
+                    launchSingleTop = true
+                }
             }
         }
+    }
+
+    LaunchedEffect(authState, initialMainTab) {
+        val targetPage = initialMainTab
+            ?.coerceIn(0, 3)
+            ?.takeIf { it != handledMainTab }
+            ?: return@LaunchedEffect
+        if (authState == AuthState.Checking) return@LaunchedEffect
+
+        handledMainTab = targetPage
+        navController.popBackStack(AppRoutes.MAIN_TABS, inclusive = false)
+        pagerState.scrollToPage(targetPage)
     }
 
     val aiGenerationStatus by RMapAppGraph.aiRoadmapRepository.generationStatus.collectAsStateWithLifecycle()

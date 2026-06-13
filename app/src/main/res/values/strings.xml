@@ -1,10 +1,46 @@
 <resources>
+    <string name="widget_continue_learning_title">Continue learning</string>
+    <string name="widget_brand_title">RMap</string>
+    <string name="widget_continue_learning_description">See your active roadmap, progress, and learning streak.</string>
+    <string name="widget_logo_content_description">RMap logo</string>
+    <string name="widget_signed_out_title">Keep your learning on track</string>
+    <string name="widget_signed_out_message">Sign in to see your active roadmap and progress.</string>
+    <string name="widget_sign_in_action">Sign in</string>
+    <string name="widget_empty_title">Start your first roadmap</string>
+    <string name="widget_empty_message">Choose a learning path and track your progress here.</string>
+    <string name="widget_explore_action">Explore roadmaps</string>
+    <string name="widget_continue_message">Your next learning step is ready.</string>
+    <string name="widget_continue_action">Continue learning</string>
+    <string name="widget_behind_label">Needs attention</string>
+    <string name="widget_learning_pulse">Learning Pulse</string>
+    <string name="widget_stat_roadmap">Roadmap</string>
+    <string name="widget_stat_streak">Streak</string>
+    <string name="widget_stat_readiness">Readiness</string>
+    <string name="widget_previous_description">Previous roadmap</string>
+    <string name="widget_next_description">Next roadmap</string>
+    <string name="widget_nodes_complete_format">%1$d of %2$d nodes complete</string>
+    <string name="widget_progress_fallback">Learning progress</string>
+    <string name="widget_next_unlock_format">Next unlock: %1$s</string>
+    <plurals name="widget_streak_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="widget_streak_days_short">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="widget_required_skill_hours">
+        <item quantity="one">Required skill · %1$d h left</item>
+        <item quantity="other">Required skill · %1$d h left</item>
+    </plurals>
+    <string name="widget_progress_format">%1$d%% · %2$d/%3$d nodes</string>
+    <string name="widget_percent_format">%1$d%%</string>
     <string name="snackbar_dismiss_content_description">Dismiss notification</string>
     <string name="snackbar_title_success">Success</string>
     <string name="snackbar_title_error">Something went wrong</string>
     <string name="snackbar_title_warning">Attention needed</string>
     <string name="snackbar_title_info">Notification</string>
-    <string name="app_name">rmap-moblie</string>
+    <string name="app_name">RMap</string>
 
     <!-- Auth Screen -->
     <string name="auth_heading_continue_account">Continue with an account</string>

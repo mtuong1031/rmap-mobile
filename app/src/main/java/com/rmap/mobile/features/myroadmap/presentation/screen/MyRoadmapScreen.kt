@@ -491,6 +491,14 @@ private fun MyRoadmapCompactCard(
                     )
                 )
             }
+
+            RMapButton(
+                text = roadmap.ctaLabel(),
+                onClick = onCtaClick,
+                modifier = Modifier.fillMaxWidth(),
+                variant = RMapButtonVariant.Primary,
+                size = RMapButtonSize.Medium
+            )
         }
         DropdownMenu(
             expanded = isActionMenuExpanded,

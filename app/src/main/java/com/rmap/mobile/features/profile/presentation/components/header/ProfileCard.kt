@@ -134,19 +134,6 @@ fun ProfileCard(
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center
         )
-
-        Spacer(modifier = Modifier.height(Dimens.spacingXs))
-
-        Text(
-            text = role,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = TextAlign.Center
-        )
     }
 }
 

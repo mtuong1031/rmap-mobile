@@ -20,10 +20,14 @@ import com.rmap.mobile.navigation.RMapNavHost
 
 class MainActivity : AppCompatActivity() {
     private var notificationRoute by mutableStateOf<String?>(null)
+    private var initialMainTab by mutableStateOf<Int?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        notificationRoute = intent.toNotificationRoute()
+        intent.toNavigationTarget().let { target ->
+            notificationRoute = target.route
+            initialMainTab = target.mainTab
+        }
         RMapAppGraph.initialize(applicationContext)
         enableEdgeToEdge()
         setContent {
@@ -35,7 +39,8 @@ class MainActivity : AppCompatActivity() {
                     val navController = rememberNavController()
                     RMapNavHost(
                         navController = navController,
-                        initialNotificationRoute = notificationRoute
+                        initialNotificationRoute = notificationRoute,
+                        initialMainTab = initialMainTab
                     )
                 }
             }
@@ -45,24 +50,43 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        notificationRoute = intent.toNotificationRoute()
-    }
-
-    private fun Intent?.toNotificationRoute(): String? {
-        if (this == null) return null
-        val destination = getStringExtra(EXTRA_NOTIFICATION_DESTINATION)
-        return when (destination) {
-            DESTINATION_ROADMAP_DETAIL -> {
-                val roadmapId = getStringExtra(EXTRA_ROADMAP_ID)?.takeIf { it.isNotBlank() }
-                roadmapId?.let(AppRoutes::roadmapDetail)
-            }
-            else -> null
+        intent.toNavigationTarget().let { target ->
+            notificationRoute = target.route
+            initialMainTab = target.mainTab
         }
     }
+
+    private fun Intent?.toNavigationTarget(): NavigationTarget {
+        if (this == null) return NavigationTarget()
+        val destination = getStringExtra(EXTRA_NOTIFICATION_DESTINATION)
+        return when (destination) {
+            DESTINATION_AUTH -> NavigationTarget(route = AppRoutes.AUTH)
+            DESTINATION_EXPLORE -> NavigationTarget(route = AppRoutes.EXPLORE)
+            DESTINATION_HOME -> NavigationTarget(mainTab = HOME_TAB_INDEX)
+            DESTINATION_MY_ROADMAP -> NavigationTarget(mainTab = MY_ROADMAP_TAB_INDEX)
+            DESTINATION_ROADMAP_DETAIL -> {
+                val roadmapId = getStringExtra(EXTRA_ROADMAP_ID)?.takeIf { it.isNotBlank() }
+                NavigationTarget(route = roadmapId?.let(AppRoutes::roadmapDetail))
+            }
+            else -> NavigationTarget()
+        }
+    }
+
+    private data class NavigationTarget(
+        val route: String? = null,
+        val mainTab: Int? = null
+    )
 
     companion object {
         const val EXTRA_NOTIFICATION_DESTINATION = "com.rmap.mobile.extra.NOTIFICATION_DESTINATION"
         const val EXTRA_ROADMAP_ID = "com.rmap.mobile.extra.ROADMAP_ID"
+        const val DESTINATION_AUTH = "auth"
+        const val DESTINATION_EXPLORE = "explore"
         const val DESTINATION_ROADMAP_DETAIL = "roadmap_detail"
+        const val DESTINATION_HOME = "home"
+        const val DESTINATION_MY_ROADMAP = "my_roadmap"
+
+        private const val HOME_TAB_INDEX = 0
+        private const val MY_ROADMAP_TAB_INDEX = 1
     }
 }

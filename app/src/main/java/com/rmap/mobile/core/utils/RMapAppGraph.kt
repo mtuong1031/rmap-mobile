@@ -3,6 +3,7 @@ package com.rmap.mobile.core.utils
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import androidx.glance.appwidget.updateAll
 import com.rmap.mobile.core.auth.AuthGuard
 import com.rmap.mobile.core.auth.PendingProtectedActionStore
 import com.rmap.mobile.core.auth.ProtectedActionGate
@@ -54,11 +55,16 @@ import com.rmap.mobile.features.roadmap.data.repository.RemoteRoadmapRepository
 import com.rmap.mobile.features.roadmap.data.repository.RemoteSkillLearningRepository
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import com.rmap.mobile.features.roadmap.domain.repository.SkillLearningRepository
+import com.rmap.mobile.features.widget.data.repository.SharedPreferencesContinueLearningWidgetRepository
+import com.rmap.mobile.features.widget.domain.repository.ContinueLearningWidgetRepository
+import com.rmap.mobile.features.widget.domain.usecase.RefreshContinueLearningWidgetUseCase
+import com.rmap.mobile.features.widget.domain.usecase.UpdateContinueLearningWidgetUseCase
+import com.rmap.mobile.features.widget.presentation.ContinueLearningWidget
 
 /**
  * Manual Service Locator for the application.
  *
- * NOTE: Fields holding objects that contain an [android.app.Application] context are safe from 
+ * NOTE: Fields holding objects that contain an [android.app.Application] context are safe from
  * memory leaks as both live for the entire process duration.
  */
 object RMapAppGraph {
@@ -109,6 +115,12 @@ object RMapAppGraph {
         private set
     lateinit var authGuard: ProtectedActionGate
         private set
+    lateinit var continueLearningWidgetRepository: ContinueLearningWidgetRepository
+        private set
+    lateinit var updateContinueLearningWidgetUseCase: UpdateContinueLearningWidgetUseCase
+        private set
+    lateinit var refreshContinueLearningWidgetUseCase: RefreshContinueLearningWidgetUseCase
+        private set
 
     lateinit var loginWithGoogleUseCase: LoginWithGoogleUseCase
         private set
@@ -128,7 +140,8 @@ object RMapAppGraph {
             ::dashboardRepository.isInitialized &&
             ::completedSkillsRepository.isInitialized &&
             ::profileRepository.isInitialized &&
-            ::recentSearchRepository.isInitialized
+            ::recentSearchRepository.isInitialized &&
+            ::continueLearningWidgetRepository.isInitialized
         ) {
             return
         }
@@ -165,6 +178,20 @@ object RMapAppGraph {
             syncManager = syncManager
         )
         recentSearchRepository = SharedPreferencesRecentSearchRepository(applicationContext)
+        continueLearningWidgetRepository = SharedPreferencesContinueLearningWidgetRepository(
+            context = applicationContext,
+            onSnapshotChanged = {
+                ContinueLearningWidget().updateAll(applicationContext)
+            }
+        )
+        updateContinueLearningWidgetUseCase = UpdateContinueLearningWidgetUseCase(
+            repository = continueLearningWidgetRepository
+        )
+        refreshContinueLearningWidgetUseCase = RefreshContinueLearningWidgetUseCase(
+            authRepository = authRepository,
+            homeRepository = homeRepository,
+            updateWidget = updateContinueLearningWidgetUseCase
+        )
         profileRepository = ProfileRepositoryImpl(
             profileApi = apiClient.createService(ProfileApi::class.java),
             sessionManager = sessionManager

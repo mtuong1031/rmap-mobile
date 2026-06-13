@@ -100,6 +100,7 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.glance.appwidget)
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
