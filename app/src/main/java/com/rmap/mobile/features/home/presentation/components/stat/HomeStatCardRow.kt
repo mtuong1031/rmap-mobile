@@ -83,3 +83,35 @@ private fun HomeStatCardRowPreview() {
         }
     }
 }
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390)
+@Composable
+private fun HomeStatCardRowDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
+        Box(modifier = Modifier.padding(Dimens.spacingXxl)) {
+            HomeStatCardRow(items = homeStatPreviewItems())
+        }
+    }
+}
+
+@Composable
+private fun homeStatPreviewItems() = listOf(
+    HomeStatItemUiModel(
+        valueText = "75%",
+        labelText = "Roadmap",
+        icon = Icons.Outlined.Map,
+        style = HomeStatCardDefaults.roadmapStyle()
+    ),
+    HomeStatItemUiModel(
+        valueText = "5 days",
+        labelText = "Streak",
+        icon = Icons.Outlined.LocalFireDepartment,
+        style = HomeStatCardDefaults.streakStyle()
+    ),
+    HomeStatItemUiModel(
+        valueText = "42%",
+        labelText = "Readiness",
+        icon = Icons.Outlined.TrackChanges,
+        style = HomeStatCardDefaults.readinessStyle()
+    )
+)

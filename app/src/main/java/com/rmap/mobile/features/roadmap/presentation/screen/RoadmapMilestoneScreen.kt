@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,6 +69,7 @@ import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Score
 import androidx.compose.material.icons.automirrored.outlined.FactCheck
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.rotate
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmber
 import com.rmap.mobile.features.roadmap.presentation.components.common.roadmapAmberDark
@@ -202,21 +204,23 @@ private fun MilestoneHeaderCard(
     uiState: RoadmapMilestoneUiState,
     modifier: Modifier = Modifier
 ) {
+    val colors = if (isSystemInDarkTheme()) DarkMilestoneHeaderColors else LightMilestoneHeaderColors
+
     RoadmapDecoratedCard(
         modifier = modifier.fillMaxWidth(),
-        borderColor = roadmapAmberBorder,
+        borderColor = colors.border,
         useHeroBackground = true,
         backgroundBrush = Brush.linearGradient(
             colors = listOf(
-                roadmapMilestoneSoftBg.copy(alpha = 0.96f),
-                roadmapAmberBg.copy(alpha = 0.98f)
+                colors.gradientStart,
+                colors.gradientEnd
             )
         )
     ) {
         Icon(
             imageVector = Icons.Outlined.AutoAwesome,
             contentDescription = null,
-            tint = roadmapAmber.copy(alpha = 0.18f),
+            tint = colors.decorativeIcon,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = Dimens.spacingSm)
@@ -230,14 +234,14 @@ private fun MilestoneHeaderCard(
         ) {
             RoadmapPill(
                 text = stringResource(R.string.roadmap_detail_milestone_label),
-                containerColor = roadmapAmberBg,
-                contentColor = roadmapAmber,
-                borderColor = roadmapAmberBorder,
+                containerColor = colors.pillContainer,
+                contentColor = colors.accent,
+                borderColor = colors.border,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.AutoAwesome,
                         contentDescription = null,
-                        tint = roadmapAmber,
+                        tint = colors.accent,
                         modifier = Modifier.size(Dimens.iconXxs)
                     )
                 }
@@ -247,7 +251,7 @@ private fun MilestoneHeaderCard(
                 Text(
                     text = uiState.title,
                     style = MaterialTheme.typography.titleLarge.copy(
-                        color = roadmapAmberDark,
+                        color = colors.title,
                         fontWeight = FontWeight.Bold
                     ),
                     maxLines = 3,
@@ -256,7 +260,7 @@ private fun MilestoneHeaderCard(
                 Text(
                     text = uiState.description?.takeIf { it.isNotBlank() }
                         ?: stringResource(R.string.roadmap_milestone_project_brief_empty),
-                    style = MaterialTheme.typography.bodyMedium.copy(color = roadmapAmberText)
+                    style = MaterialTheme.typography.bodyMedium.copy(color = colors.body)
                 )
             }
         }
@@ -735,63 +739,56 @@ private fun RoadmapMilestoneSubmissionStatusUiModel.contentColor() = when (this)
     RoadmapMilestoneSubmissionStatusUiModel.Passed -> roadmapSuccess
     RoadmapMilestoneSubmissionStatusUiModel.Failed,
     RoadmapMilestoneSubmissionStatusUiModel.Error -> MaterialTheme.colorScheme.error
-    RoadmapMilestoneSubmissionStatusUiModel.Running -> roadmapAmberText
+    RoadmapMilestoneSubmissionStatusUiModel.Running -> if (isSystemInDarkTheme()) {
+        DarkMilestoneHeaderColors.accent
+    } else {
+        roadmapAmberText
+    }
     RoadmapMilestoneSubmissionStatusUiModel.Unknown -> MaterialTheme.colorScheme.onSurface
 }
+
+private data class MilestoneHeaderColors(
+    val gradientStart: Color,
+    val gradientEnd: Color,
+    val border: Color,
+    val pillContainer: Color,
+    val accent: Color,
+    val title: Color,
+    val body: Color,
+    val decorativeIcon: Color
+)
+
+private val LightMilestoneHeaderColors = MilestoneHeaderColors(
+    gradientStart = roadmapMilestoneSoftBg.copy(alpha = 0.96f),
+    gradientEnd = roadmapAmberBg.copy(alpha = 0.98f),
+    border = roadmapAmberBorder,
+    pillContainer = roadmapAmberBg,
+    accent = roadmapAmber,
+    title = roadmapAmberDark,
+    body = roadmapAmberText,
+    decorativeIcon = roadmapAmber.copy(alpha = 0.18f)
+)
+
+private val DarkMilestoneHeaderColors = MilestoneHeaderColors(
+    gradientStart = Color(0xFF35290F),
+    gradientEnd = Color(0xFF292314),
+    border = Color(0xFF80621E),
+    pillContainer = Color(0xFF49370F),
+    accent = Color(0xFFFBBF24),
+    title = Color(0xFFFDE68A),
+    body = Color(0xFFF5C75B),
+    decorativeIcon = Color(0xFFFBBF24).copy(alpha = 0.16f)
+)
 
 private val MilestoneBottomActionPadding =
     Dimens.controlXl + Dimens.controlXl + Dimens.controlXl + Dimens.spacingScreenBottomCompact
 
-@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
+@Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390, heightDp = 844)
 @Composable
 private fun RoadmapMilestoneScreenPreview() {
     RMapTheme(darkTheme = false, dynamicColor = false) {
         RoadmapMilestoneScreen(
-            uiState = RoadmapMilestoneUiState(
-                title = "Basic API Server",
-                description = "Construct a raw Node.js HTTP server that handles routing and parses JSON bodies.",
-                status = RoadmapMilestoneDetailStatusUiModel.InProgress,
-                testSuite = RoadmapMilestoneTestSuiteUiModel(
-                    title = "Raw Node.js API Server Evaluation",
-                    summary = "This suite verifies a manual HTTP server using Node.js built-in modules.",
-                    passThresholdPercent = 80,
-                    testCases = listOf(
-                        RoadmapMilestoneTestCaseUiModel(
-                            name = "Dependency Audit",
-                            description = "Verifies that no high-level frameworks like Express are listed in package.json."
-                        ),
-                        RoadmapMilestoneTestCaseUiModel(
-                            name = "HTTP Module Integration",
-                            description = "Checks for usage of the native node:http module to create the server."
-                        )
-                    )
-                ),
-                latestSubmission = RoadmapMilestoneSubmissionUiModel(
-                    repoUrl = "https://github.com/example/rmap-test",
-                    status = RoadmapMilestoneSubmissionStatusUiModel.Error,
-                    outputLog = "[error]\nspawn docker ENOENT",
-                    passRatePercent = null,
-                    passedTests = null,
-                    totalTests = null,
-                    attemptNumber = 6,
-                    testResults = listOf(
-                        RoadmapMilestoneSubmissionTestResultUiModel(
-                            name = "Tailwind CSS Dependency Check",
-                            message = "Tailwind CSS is missing from package.json",
-                            passed = false
-                        ),
-                        RoadmapMilestoneSubmissionTestResultUiModel(
-                            name = "Linting and Formatting Setup",
-                            message = "Requirement met.",
-                            passed = true
-                        )
-                    )
-                ),
-                repoUrl = "",
-                isTestSuiteExpanded = false,
-                canSubmit = false,
-                isLoading = false
-            ),
+            uiState = roadmapMilestonePreviewState(),
             onBackClick = {},
             onRetryClick = {},
             onRepoUrlChanged = {},
@@ -800,3 +797,64 @@ private fun RoadmapMilestoneScreenPreview() {
         )
     }
 }
+
+@Preview(showBackground = true, backgroundColor = 0xFF15151B, widthDp = 390, heightDp = 844)
+@Composable
+private fun RoadmapMilestoneScreenDarkPreview() {
+    RMapTheme(darkTheme = true, dynamicColor = false) {
+        RoadmapMilestoneScreen(
+            uiState = roadmapMilestonePreviewState(),
+            onBackClick = {},
+            onRetryClick = {},
+            onRepoUrlChanged = {},
+            onTestSuiteToggleClick = {},
+            onSubmitClick = {}
+        )
+    }
+}
+
+private fun roadmapMilestonePreviewState() = RoadmapMilestoneUiState(
+    title = "Basic API Server",
+    description = "Construct a raw Node.js HTTP server that handles routing and parses JSON bodies.",
+    status = RoadmapMilestoneDetailStatusUiModel.InProgress,
+    testSuite = RoadmapMilestoneTestSuiteUiModel(
+        title = "Raw Node.js API Server Evaluation",
+        summary = "This suite verifies a manual HTTP server using Node.js built-in modules.",
+        passThresholdPercent = 80,
+        testCases = listOf(
+            RoadmapMilestoneTestCaseUiModel(
+                name = "Dependency Audit",
+                description = "Verifies that no high-level frameworks like Express are listed in package.json."
+            ),
+            RoadmapMilestoneTestCaseUiModel(
+                name = "HTTP Module Integration",
+                description = "Checks for usage of the native node:http module to create the server."
+            )
+        )
+    ),
+    latestSubmission = RoadmapMilestoneSubmissionUiModel(
+        repoUrl = "https://github.com/example/rmap-test",
+        status = RoadmapMilestoneSubmissionStatusUiModel.Error,
+        outputLog = "[error]\nspawn docker ENOENT",
+        passRatePercent = null,
+        passedTests = null,
+        totalTests = null,
+        attemptNumber = 6,
+        testResults = listOf(
+            RoadmapMilestoneSubmissionTestResultUiModel(
+                name = "Tailwind CSS Dependency Check",
+                message = "Tailwind CSS is missing from package.json",
+                passed = false
+            ),
+            RoadmapMilestoneSubmissionTestResultUiModel(
+                name = "Linting and Formatting Setup",
+                message = "Requirement met.",
+                passed = true
+            )
+        )
+    ),
+    repoUrl = "",
+    isTestSuiteExpanded = false,
+    canSubmit = false,
+    isLoading = false
+)

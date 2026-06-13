@@ -3,6 +3,7 @@ package com.rmap.mobile.features.roadmap.presentation.components.content
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -60,22 +62,24 @@ fun RoadmapMilestoneCard(
     modifier: Modifier = Modifier
 ) {
     val isLocked = milestone.state == RoadmapMilestoneState.Locked
+    val isDarkTheme = isSystemInDarkTheme()
+    val colors = if (isDarkTheme) DarkMilestoneColors else LightMilestoneColors
 
     RoadmapDecoratedCard(
         modifier = modifier,
-        borderColor = roadmapAmberBorder,
+        borderColor = colors.border,
         useHeroBackground = true,
         backgroundBrush = Brush.linearGradient(
             colors = listOf(
-                roadmapMilestoneSoftBg.copy(alpha = 0.96f),
-                roadmapAmberBg.copy(alpha = 0.98f)
+                colors.gradientStart,
+                colors.gradientEnd
             )
         )
     ) {
         Icon(
             imageVector = Icons.Outlined.AutoAwesome,
             contentDescription = null,
-            tint = roadmapAmber.copy(alpha = 0.18f),
+            tint = colors.decorativeIcon,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = Dimens.spacingSm)
@@ -89,14 +93,14 @@ fun RoadmapMilestoneCard(
         ) {
             RoadmapPill(
                 text = stringResource(R.string.roadmap_detail_milestone_label),
-                containerColor = roadmapAmberBg,
-                contentColor = roadmapAmber,
-                borderColor = roadmapAmberBorder,
+                containerColor = colors.pillContainer,
+                contentColor = colors.accent,
+                borderColor = colors.border,
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Outlined.AutoAwesome,
                         contentDescription = null,
-                        tint = roadmapAmber,
+                        tint = colors.accent,
                         modifier = Modifier.size(Dimens.iconXxs)
                     )
                 }
@@ -106,7 +110,7 @@ fun RoadmapMilestoneCard(
                 Text(
                     text = milestone.title,
                     style = MaterialTheme.typography.titleSmall.copy(
-                        color = roadmapAmberDark,
+                        color = colors.title,
                         fontWeight = FontWeight.Bold
                     ),
                     maxLines = 1,
@@ -114,7 +118,7 @@ fun RoadmapMilestoneCard(
                 )
                 Text(
                     text = milestone.description,
-                    style = MaterialTheme.typography.labelMedium.copy(color = roadmapAmberText),
+                    style = MaterialTheme.typography.labelMedium.copy(color = colors.body),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -145,7 +149,7 @@ fun RoadmapMilestoneCard(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = roadmapAmberText,
+                            tint = colors.body,
                             modifier = Modifier.size(RMapButtonSize.Small.iconSize)
                         )
                     }
@@ -153,11 +157,13 @@ fun RoadmapMilestoneCard(
                     null
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = if (isLocked) 0.86f else 0.68f),
-                    contentColor = if (isLocked) MaterialTheme.colorScheme.onSurfaceVariant else roadmapAmberText
+                    containerColor = colors.buttonContainer,
+                    contentColor = colors.body,
+                    disabledContainerColor = colors.disabledButtonContainer,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = Dimens.cardElevationNone),
-                border = if (isLocked) BorderStroke(Dimens.borderThin, roadmapMilestoneLockedBorder) else null,
+                border = if (isLocked) BorderStroke(Dimens.borderThin, colors.lockedBorder) else null,
                 enabled = !isLocked
             )
         }
@@ -171,6 +177,7 @@ fun RoadmapMilestoneCompactCard(
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val isDarkTheme = isSystemInDarkTheme()
 
     Row(
         modifier = modifier
@@ -206,7 +213,7 @@ fun RoadmapMilestoneCompactCard(
             Text(
                 text = milestone.title,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = roadmapInk,
+                    color = if (isDarkTheme) MaterialTheme.colorScheme.onSurface else roadmapInk,
                     fontWeight = FontWeight.SemiBold
                 ),
                 maxLines = 1,
@@ -215,7 +222,11 @@ fun RoadmapMilestoneCompactCard(
             Text(
                 text = stringResource(R.string.roadmap_search_recent_milestone_project),
                 style = MaterialTheme.typography.labelSmall.copy(
-                    color = OnSurfacePlaceholderLight
+                    color = if (isDarkTheme) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        OnSurfacePlaceholderLight
+                    }
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -225,6 +236,48 @@ fun RoadmapMilestoneCompactCard(
 }
 
 private val MilestoneDecorIconSize = Dimens.iconFrameSize + Dimens.spacingMd
+
+private data class MilestoneColors(
+    val gradientStart: Color,
+    val gradientEnd: Color,
+    val border: Color,
+    val pillContainer: Color,
+    val accent: Color,
+    val title: Color,
+    val body: Color,
+    val decorativeIcon: Color,
+    val buttonContainer: Color,
+    val disabledButtonContainer: Color,
+    val lockedBorder: Color
+)
+
+private val LightMilestoneColors = MilestoneColors(
+    gradientStart = roadmapMilestoneSoftBg.copy(alpha = 0.96f),
+    gradientEnd = roadmapAmberBg.copy(alpha = 0.98f),
+    border = roadmapAmberBorder,
+    pillContainer = roadmapAmberBg,
+    accent = roadmapAmber,
+    title = roadmapAmberDark,
+    body = roadmapAmberText,
+    decorativeIcon = roadmapAmber.copy(alpha = 0.18f),
+    buttonContainer = Color.White.copy(alpha = 0.68f),
+    disabledButtonContainer = Color.White.copy(alpha = 0.86f),
+    lockedBorder = roadmapMilestoneLockedBorder
+)
+
+private val DarkMilestoneColors = MilestoneColors(
+    gradientStart = Color(0xFF35290F),
+    gradientEnd = Color(0xFF292314),
+    border = Color(0xFF80621E),
+    pillContainer = Color(0xFF49370F),
+    accent = Color(0xFFFBBF24),
+    title = Color(0xFFFDE68A),
+    body = Color(0xFFF5C75B),
+    decorativeIcon = Color(0xFFFBBF24).copy(alpha = 0.16f),
+    buttonContainer = Color(0xFF3B321E),
+    disabledButtonContainer = Color(0xFF302C23),
+    lockedBorder = Color(0xFF514936)
+)
 
 @Preview(showBackground = true, backgroundColor = 0xFFF4F8FF, widthDp = 390)
 @Composable

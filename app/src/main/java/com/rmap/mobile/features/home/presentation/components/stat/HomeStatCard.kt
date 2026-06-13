@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rmap.mobile.core.ui.theme.AppShapes
 import com.rmap.mobile.core.ui.theme.Dimens
+import com.rmap.mobile.core.ui.theme.LocalRMapSemanticColors
 import com.rmap.mobile.core.ui.theme.RMapTheme
 import com.rmap.mobile.core.ui.theme.cardShadow
 
@@ -39,7 +40,8 @@ private val HomeStatIconSize = 22.dp
 @Immutable
 data class HomeStatCardStyle(
     val iconContainerColor: Color,
-    val accentColor: Color
+    val accentColor: Color,
+    val borderColor: Color
 )
 
 @Immutable
@@ -60,23 +62,31 @@ object HomeStatCardDefaults {
 
     @Composable
     fun roadmapStyle(): HomeStatCardStyle {
+        val infoColors = LocalRMapSemanticColors.current.info
         return HomeStatCardStyle(
-            iconContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            accentColor = MaterialTheme.colorScheme.primary
+            iconContainerColor = infoColors.container,
+            accentColor = infoColors.accent,
+            borderColor = infoColors.border
         )
     }
 
+    @Composable
     fun streakStyle(): HomeStatCardStyle {
+        val warningColors = LocalRMapSemanticColors.current.warning
         return HomeStatCardStyle(
-            iconContainerColor = Color(0xFFFFFBEB),
-            accentColor = Color(0xFFFE9A00)
+            iconContainerColor = warningColors.container,
+            accentColor = warningColors.accent,
+            borderColor = warningColors.border
         )
     }
 
+    @Composable
     fun readinessStyle(): HomeStatCardStyle {
+        val successColors = LocalRMapSemanticColors.current.success
         return HomeStatCardStyle(
-            iconContainerColor = Color(0xFFECFDF5),
-            accentColor = Color(0xFF00BC7D)
+            iconContainerColor = successColors.container,
+            accentColor = successColors.accent,
+            borderColor = successColors.border
         )
     }
 }
@@ -108,7 +118,7 @@ fun HomeStatCard(
             .background(MaterialTheme.colorScheme.surface)
             .border(
                 width = Dimens.borderThin,
-                color = style.accentColor.copy(alpha = 0.4f),
+                color = style.borderColor,
                 shape = HomeStatCardDefaults.CardShape
             )
             .then(clickableModifier)
