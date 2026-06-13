@@ -107,6 +107,8 @@ fun RMapNavHost(
 
     val nodeProgressUpdatedMessage = stringResource(R.string.roadmap_detail_progress_updated)
     val nodeProgressUpdateFailedMessage = stringResource(R.string.roadmap_detail_progress_update_failed)
+    val roadmapProgressResetMessage = stringResource(R.string.roadmap_detail_progress_reset_success)
+    val roadmapDeletedMessage = stringResource(R.string.roadmap_detail_delete_roadmap_success)
     val learningCompletedMessage = stringResource(R.string.roadmap_learning_completed_snackbar)
     val learningCompletionRequiresQuizMessage = stringResource(R.string.roadmap_learning_completion_requires_quiz)
     val learningLockedQuizMessage = stringResource(R.string.roadmap_learning_locked_quiz_snackbar)
@@ -477,6 +479,27 @@ fun RMapNavHost(
                                                     variant = AppNotificationVariant.Warning
                                                 )
                                             }
+                                            is MyRoadmapEvent.RoadmapActionFailed -> {
+                                                snackbarHostState.showRMapSnackbar(
+                                                    title = snackbarErrorTitle,
+                                                    message = event.message ?: nodeProgressUpdateFailedMessage,
+                                                    variant = AppNotificationVariant.Error
+                                                )
+                                            }
+                                            MyRoadmapEvent.RoadmapProgressResetSucceeded -> {
+                                                snackbarHostState.showRMapSnackbar(
+                                                    title = snackbarSuccessTitle,
+                                                    message = roadmapProgressResetMessage,
+                                                    variant = AppNotificationVariant.Success
+                                                )
+                                            }
+                                            MyRoadmapEvent.RoadmapDeleted -> {
+                                                snackbarHostState.showRMapSnackbar(
+                                                    title = snackbarSuccessTitle,
+                                                    message = roadmapDeletedMessage,
+                                                    variant = AppNotificationVariant.Success
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -501,6 +524,8 @@ fun RMapNavHost(
                                     onRoadmapCtaClick = { roadmapId ->
                                         navController.navigate(AppRoutes.roadmapDetail(roadmapId))
                                     },
+                                    onResetRoadmapProgress = viewModel::resetRoadmapProgress,
+                                    onDeleteRoadmap = viewModel::deleteRoadmap,
                                     onRetryClick = viewModel::loadDashboard,
                                     onCreateWithAiClick = {
                                         aiRoadmapViewModel.onCreateRoadmapClick()
@@ -926,6 +951,28 @@ fun RMapNavHost(
                                         variant = AppNotificationVariant.Error
                                     )
                                 }
+                                is RoadmapDetailEvent.RoadmapActionFailed -> {
+                                    snackbarHostState.showRMapSnackbar(
+                                        title = snackbarErrorTitle,
+                                        message = event.message ?: nodeProgressUpdateFailedMessage,
+                                        variant = AppNotificationVariant.Error
+                                    )
+                                }
+                                RoadmapDetailEvent.RoadmapProgressResetSucceeded -> {
+                                    snackbarHostState.showRMapSnackbar(
+                                        title = snackbarSuccessTitle,
+                                        message = roadmapProgressResetMessage,
+                                        variant = AppNotificationVariant.Success
+                                    )
+                                }
+                                RoadmapDetailEvent.RoadmapDeleted -> {
+                                    navigateBackFromRoadmapDetail()
+                                    snackbarHostState.showRMapSnackbar(
+                                        title = snackbarSuccessTitle,
+                                        message = roadmapDeletedMessage,
+                                        variant = AppNotificationVariant.Success
+                                    )
+                                }
                                 RoadmapDetailEvent.NodeActionUnavailable -> {
                                     snackbarHostState.showRMapSnackbar(
                                         title = snackbarInfoTitle,
@@ -970,6 +1017,8 @@ fun RMapNavHost(
                         onSearchClearClick = viewModel::onSearchClearClick,
                         onSearchBackClick = viewModel::onSearchBackClick,
                         onRetryClick = viewModel::retryLoadRoadmap,
+                        onResetProgressConfirm = viewModel::resetRoadmapProgress,
+                        onDeleteRoadmapConfirm = viewModel::deleteRoadmap,
                         onNodeActionClick = viewModel::onNodeActionClick,
                         onGroupClick = {
                             coroutineScope.launch {

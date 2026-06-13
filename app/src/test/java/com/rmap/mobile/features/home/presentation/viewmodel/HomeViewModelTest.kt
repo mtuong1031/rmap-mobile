@@ -21,6 +21,7 @@ import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import com.rmap.mobile.features.profile.domain.model.LearningReminderContext
 import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -113,6 +114,34 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `home content update refreshes learning plans`() = runTest {
+        val repository = FakeHomeRepository()
+        val viewModel = HomeViewModel(
+            homeRepository = repository,
+            authRepository = FakeAuthRepository(),
+            learningReminderContextRepository = FakeLearningReminderContextRepository()
+        )
+        advanceUntilIdle()
+
+        repository.emitHomeContent(
+            testHomeContent().copy(
+                activeRoadmaps = listOf(
+                    activeRoadmap(id = "roadmap-fresh", warning = false).copy(
+                        title = "Android Roadmap",
+                        planNode = HomePlanNode("node-fresh", "Compose State", null, "REQUIRED", 2.0)
+                    )
+                )
+            )
+        )
+        advanceUntilIdle()
+
+        val plan = viewModel.uiState.value.learningPlans.single()
+        assertEquals("roadmap-fresh", plan.id)
+        assertEquals("Android Roadmap", plan.roadmapTitle)
+        assertEquals("Compose State", plan.skillTitle)
+    }
+
+    @Test
     fun `extracts first name safely`() {
         assertEquals("Thinh", " Thinh Hoang Duy ".toFirstName())
         assertEquals("", "   ".toFirstName())
@@ -133,7 +162,13 @@ private class FakeLearningReminderContextRepository : LearningReminderContextRep
 }
 
 private class FakeHomeRepository : HomeRepository {
+    override val homeContentUpdates = MutableSharedFlow<HomeContent>(replay = 1)
+
     override suspend fun getHomeContent(): Result<HomeContent> = Result.success(testHomeContent())
+
+    suspend fun emitHomeContent(content: HomeContent) {
+        homeContentUpdates.emit(content)
+    }
 
     override suspend fun searchDashboard(
         query: String,

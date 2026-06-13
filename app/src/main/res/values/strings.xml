@@ -475,6 +475,16 @@
     <string name="roadmap_detail_progress_updated">Progress updated.</string>
     <string name="roadmap_detail_progress_unlocked">%1$d new node unlocked.</string>
     <string name="roadmap_detail_progress_update_failed">Unable to save progress. You can keep learning and try again later.</string>
+    <string name="roadmap_detail_action_reset_progress">Reset progress</string>
+    <string name="roadmap_detail_action_delete_roadmap">Delete roadmap</string>
+    <string name="roadmap_detail_reset_progress_dialog_title">Reset learning progress?</string>
+    <string name="roadmap_detail_reset_progress_dialog_message">Your learning progress for this roadmap will return to the beginning. Roadmap content and milestone submissions will be kept.</string>
+    <string name="roadmap_detail_reset_progress_dialog_confirm">Reset progress</string>
+    <string name="roadmap_detail_delete_roadmap_dialog_title">Delete this AI roadmap?</string>
+    <string name="roadmap_detail_delete_roadmap_dialog_message">This AI roadmap will be removed from your account. This action cannot be undone.</string>
+    <string name="roadmap_detail_delete_roadmap_dialog_confirm">Delete roadmap</string>
+    <string name="roadmap_detail_progress_reset_success">Roadmap progress reset.</string>
+    <string name="roadmap_detail_delete_roadmap_success">Roadmap deleted.</string>
     <string name="roadmap_detail_category_web_development">Web Development</string>
     <string name="roadmap_detail_section_core_web_fundamentals">Core Web Fundamentals</string>
     <string name="roadmap_detail_section_framework_ecosystem">Framework Ecosystem</string>

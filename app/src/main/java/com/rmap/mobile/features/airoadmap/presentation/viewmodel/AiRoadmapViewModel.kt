@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.core.auth.PendingProtectedAction
 import com.rmap.mobile.core.auth.ProtectedActionGate
+import com.rmap.mobile.core.datarefresh.DynamicDataChange
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.airoadmap.domain.model.AiGeneratedRoadmap
 import com.rmap.mobile.features.airoadmap.domain.model.AiRoadmapAnswer
@@ -26,6 +28,7 @@ import kotlin.math.roundToInt
 class AiRoadmapViewModel(
     private val repository: AiRoadmapRepository = RMapAppGraph.aiRoadmapRepository,
     private val protectedActionGate: ProtectedActionGate = RMapAppGraph.authGuard,
+    private val dynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator? = null,
     private val currentTimeMillis: () -> Long = { System.currentTimeMillis() }
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AiRoadmapUiState())
@@ -35,6 +38,10 @@ class AiRoadmapViewModel(
     val events: SharedFlow<AiRoadmapEvent> = _events.asSharedFlow()
 
     private var lastLoadedGeneratedRoadmapId: String? = null
+    private val activeDynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator?
+        get() = dynamicDataRefreshCoordinator ?: runCatching {
+            RMapAppGraph.dynamicDataRefreshCoordinator
+        }.getOrNull()
 
     init {
         loadGeneratedRoadmaps()
@@ -82,6 +89,7 @@ class AiRoadmapViewModel(
                     generatedRoadmapId != lastLoadedGeneratedRoadmapId
                 ) {
                     lastLoadedGeneratedRoadmapId = generatedRoadmapId
+                    notifyDynamicDataChanged(DynamicDataChange.AiRoadmapGenerated(generatedRoadmapId))
                     loadGeneratedRoadmaps()
                 }
             }
@@ -414,6 +422,13 @@ class AiRoadmapViewModel(
                 .onFailure {
                     _uiState.update { it.copy(isLoadingGeneratedRoadmaps = false) }
                 }
+        }
+    }
+
+    private fun notifyDynamicDataChanged(change: DynamicDataChange) {
+        val coordinator = activeDynamicDataRefreshCoordinator ?: return
+        viewModelScope.launch {
+            runCatching { coordinator.notifyChange(change) }
         }
     }
 

@@ -20,6 +20,8 @@ import com.rmap.mobile.core.notification.AppNotification
 import com.rmap.mobile.core.notification.AppNotificationAction
 import com.rmap.mobile.core.notification.AppNotificationManager
 import com.rmap.mobile.core.notification.AppNotificationVariant
+import com.rmap.mobile.core.datarefresh.DynamicDataChange
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.network.AppException
 import com.rmap.mobile.core.network.NetworkErrorType
 import com.rmap.mobile.features.auth.domain.model.AuthState
@@ -27,6 +29,7 @@ import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 
 class RoadmapDetailViewModel(
     private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val dynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator? = null,
     private val authRepository: AuthRepository? = null,
     private val appNotificationManager: AppNotificationManager? = null
 ) : ViewModel() {
@@ -58,6 +61,11 @@ class RoadmapDetailViewModel(
                 AppNotificationManager()
             }
         }
+    private val activeDynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator?
+        get() = dynamicDataRefreshCoordinator ?: runCatching {
+            RMapAppGraph.dynamicDataRefreshCoordinator
+        }.getOrNull()
+
     private val _uiState = MutableStateFlow(RoadmapDetailUiState())
     val uiState: StateFlow<RoadmapDetailUiState> = _uiState.asStateFlow()
     private val _events = MutableSharedFlow<RoadmapDetailEvent>()
@@ -221,6 +229,54 @@ class RoadmapDetailViewModel(
         refreshRoadmap()
     }
 
+    fun resetRoadmapProgress() {
+        val roadmapId = _uiState.value.roadmapId.takeIf { it.isNotBlank() } ?: return
+        if (activeAuthRepository.authState.value == AuthState.Unauthenticated) {
+            enqueueAuthRequiredNotification()
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(errorMessageResId = null) }
+            repository.resetRoadmapProgress(roadmapId)
+                .onSuccess {
+                    refreshRoadmapAfterMutation(roadmapId)
+                    notifyDynamicDataChanged(DynamicDataChange.RoadmapProgressReset(roadmapId))
+                    _events.emit(RoadmapDetailEvent.RoadmapProgressResetSucceeded)
+                }
+                .onFailure { error ->
+                    if (error is AppException && error.type == NetworkErrorType.Unauthorized) {
+                        return@onFailure
+                    }
+                    _events.emit(RoadmapDetailEvent.RoadmapActionFailed(error.toUserMessage()))
+                }
+        }
+    }
+
+    fun deleteRoadmap() {
+        val roadmapId = _uiState.value.roadmapId.takeIf { it.isNotBlank() } ?: return
+        if (_uiState.value.isTemplate) return
+        if (activeAuthRepository.authState.value == AuthState.Unauthenticated) {
+            enqueueAuthRequiredNotification()
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(errorMessageResId = null) }
+            repository.deleteRoadmap(roadmapId)
+                .onSuccess {
+                    notifyDynamicDataChanged(DynamicDataChange.RoadmapDeleted(roadmapId))
+                    _events.emit(RoadmapDetailEvent.RoadmapDeleted)
+                }
+                .onFailure { error ->
+                    if (error is AppException && error.type == NetworkErrorType.Unauthorized) {
+                        return@onFailure
+                    }
+                    _events.emit(RoadmapDetailEvent.RoadmapActionFailed(error.toUserMessage()))
+                }
+        }
+    }
+
     fun onSearchQueryChange(query: String) {
         _uiState.update {
             it.copy(
@@ -322,6 +378,7 @@ class RoadmapDetailViewModel(
             repository.startRoadmap(roadmapId)
                 .onSuccess {
                     val refreshedState = refreshRoadmapAfterStart(roadmapId)
+                    notifyDynamicDataChanged(DynamicDataChange.RoadmapStarted(roadmapId))
                     val targetNode = refreshedState?.currentSearchNode()
                     if (targetNode != null) {
                         emitNavigateToLearning(
@@ -342,6 +399,13 @@ class RoadmapDetailViewModel(
         }
     }
 
+    private fun notifyDynamicDataChanged(change: DynamicDataChange) {
+        val coordinator = activeDynamicDataRefreshCoordinator ?: return
+        viewModelScope.launch {
+            runCatching { coordinator.notifyChange(change) }
+        }
+    }
+
     private suspend fun refreshRoadmapAfterStart(roadmapId: String): RoadmapDetailUiState? {
         return repository.getRoadmapDetail(roadmapId)
             .map { detail ->
@@ -355,6 +419,40 @@ class RoadmapDetailViewModel(
                 _uiState.update { state -> state.copy(updatingNodeId = null) }
             }
             .getOrNull()
+    }
+
+    private suspend fun refreshRoadmapAfterMutation(roadmapId: String): RoadmapDetailUiState? {
+        val searchState = _uiState.value.toSearchState()
+        return repository.getRoadmapDetail(roadmapId)
+            .map { detail ->
+                currentDetail = detail
+                detail.toLoadedUiState()
+            }
+            .onSuccess { loadedState ->
+                _uiState.update {
+                    loadedState.copy(
+                        searchQuery = searchState.query,
+                        isSearchActive = searchState.isActive,
+                        isSearchInputFocused = searchState.isInputFocused,
+                        updatingNodeId = null
+                    )
+                }
+            }
+            .getOrNull()
+    }
+
+    private fun enqueueAuthRequiredNotification() {
+        viewModelScope.launch {
+            activeAppNotificationManager.enqueue(
+                AppNotification(
+                    titleResId = R.string.auth_required_title,
+                    messageResId = R.string.auth_required_start_roadmap_message,
+                    variant = AppNotificationVariant.Warning,
+                    actionLabelResId = R.string.action_login,
+                    action = AppNotificationAction.Login
+                )
+            )
+        }
     }
 
     private fun RoadmapDetail.toLoadedUiState(): RoadmapDetailUiState {
@@ -377,6 +475,9 @@ class RoadmapDetailViewModel(
 sealed class RoadmapDetailEvent {
     data class NodeProgressUpdated(val unlockedNodeCount: Int) : RoadmapDetailEvent()
     data class NodeProgressUpdateFailed(val message: String? = null) : RoadmapDetailEvent()
+    data class RoadmapActionFailed(val message: String? = null) : RoadmapDetailEvent()
+    data object RoadmapProgressResetSucceeded : RoadmapDetailEvent()
+    data object RoadmapDeleted : RoadmapDetailEvent()
     data object NodeActionUnavailable : RoadmapDetailEvent()
     data class MilestoneSelected(val milestoneId: String) : RoadmapDetailEvent()
     data class NavigateToLearning(

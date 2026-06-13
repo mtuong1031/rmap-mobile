@@ -7,6 +7,7 @@ import java.util.Locale
 
 data class RoadmapDetailUiState(
     val roadmapId: String = "",
+    val isTemplate: Boolean = false,
     val title: String = "",
     val categoryLabel: String = "",
     val progressFraction: Float = 0f,

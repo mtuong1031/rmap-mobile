@@ -521,6 +521,36 @@ class RemoteRoadmapRepository(
         }
     }
 
+    override suspend fun resetRoadmapProgress(roadmapId: String): Result<Unit> {
+        val normalizedRoadmapId = roadmapId.trim()
+        if (normalizedRoadmapId.isBlank()) {
+            return Result.failure(invalidRoadmapId())
+        }
+
+        return when (val result = getResetRoadmapProgressResult(normalizedRoadmapId)) {
+            is NetworkResult.Success -> {
+                roadmapDetailCacheDao?.deleteById(normalizedRoadmapId)
+                Result.success(Unit)
+            }
+            is NetworkResult.Error -> Result.failure(result.toAppException())
+        }
+    }
+
+    override suspend fun deleteRoadmap(roadmapId: String): Result<Unit> {
+        val normalizedRoadmapId = roadmapId.trim()
+        if (normalizedRoadmapId.isBlank()) {
+            return Result.failure(invalidRoadmapId())
+        }
+
+        return when (val result = getDeleteRoadmapResult(normalizedRoadmapId)) {
+            is NetworkResult.Success -> {
+                roadmapDetailCacheDao?.deleteById(normalizedRoadmapId)
+                Result.success(Unit)
+            }
+            is NetworkResult.Error -> Result.failure(result.toAppException())
+        }
+    }
+
     override suspend fun updateNodeProgress(
         roadmapId: String,
         nodeId: String,
@@ -704,6 +734,26 @@ class RemoteRoadmapRepository(
             onUnauthorized = sessionManager::handleUnauthorized
         ) {
             roadmapApi.startRoadmap(roadmapId)
+        }
+    }
+
+    private suspend fun getResetRoadmapProgressResult(
+        roadmapId: String
+    ): NetworkResult<Unit> {
+        return SafeApiCall.executeUnit(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            roadmapApi.resetRoadmapProgress(roadmapId)
+        }
+    }
+
+    private suspend fun getDeleteRoadmapResult(
+        roadmapId: String
+    ): NetworkResult<Unit> {
+        return SafeApiCall.executeUnit(
+            onUnauthorized = sessionManager::handleUnauthorized
+        ) {
+            roadmapApi.deleteRoadmap(roadmapId)
         }
     }
 

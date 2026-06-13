@@ -27,11 +27,15 @@ import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import com.rmap.mobile.core.notification.AppNotification
 import com.rmap.mobile.core.notification.AppNotificationManager
 import com.rmap.mobile.core.notification.AppNotificationVariant
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.network.AppException
 import com.rmap.mobile.core.network.NetworkErrorType
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.model.User
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+import com.rmap.mobile.features.home.domain.model.HomeContent
+import com.rmap.mobile.features.home.domain.model.HomeSearchResult
+import com.rmap.mobile.features.home.domain.repository.HomeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.CoroutineStart
@@ -40,6 +44,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -47,6 +53,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class RoadmapDetailViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
@@ -86,6 +93,20 @@ class RoadmapDetailViewModelTest {
         assertFalse(state.isLoading)
         assertEquals(RoadmapPrimaryAction.StartLearning, state.primaryAction)
         assertEquals("REST API", state.nextActionTitle)
+    }
+
+    @Test
+    fun `loadRoadmap maps template flag into ui state`() {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(notStartedDetail.copy(isTemplate = true))
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository
+        )
+
+        viewModel.loadRoadmap("roadmap-1")
+
+        assertTrue(viewModel.uiState.value.isTemplate)
     }
 
     @Test
@@ -203,6 +224,99 @@ class RoadmapDetailViewModelTest {
         )
         assertEquals(RoadmapNodeStatus.InProgress, viewModel.uiState.value.groups.first().nodes.first().status)
         assertEquals(null, viewModel.uiState.value.updatingNodeId)
+    }
+
+    @Test
+    fun `onContinueClick refreshes home content after roadmap starts`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(notStartedDetail)
+        )
+        val homeRepository = FakeHomeRepository()
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            dynamicDataRefreshCoordinator = DynamicDataRefreshCoordinator(
+                homeRepository = homeRepository,
+                dashboardRepository = FakeDashboardRepository()
+            )
+        )
+        viewModel.loadRoadmap("roadmap-1")
+
+        val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
+
+        viewModel.onContinueClick()
+
+        event.await()
+        advanceUntilIdle()
+
+        assertEquals(1, homeRepository.refreshCount)
+    }
+
+    @Test
+    fun `resetRoadmapProgress refreshes detail and notifies dynamic data refresh`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(testDetail)
+        )
+        val homeRepository = FakeHomeRepository()
+        val dashboardRepository = FakeDashboardRepository()
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            dynamicDataRefreshCoordinator = DynamicDataRefreshCoordinator(
+                homeRepository = homeRepository,
+                dashboardRepository = dashboardRepository
+            )
+        )
+        viewModel.loadRoadmap("roadmap-1")
+        val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
+
+        viewModel.resetRoadmapProgress()
+
+        assertEquals(listOf("roadmap-1"), repository.resetRoadmapIds)
+        assertEquals(RoadmapDetailEvent.RoadmapProgressResetSucceeded, event.await())
+        advanceUntilIdle()
+        assertEquals(1, homeRepository.refreshCount)
+        assertEquals(1, dashboardRepository.refreshCount)
+        assertEquals(RoadmapPrimaryAction.StartLearning, viewModel.uiState.value.primaryAction)
+    }
+
+    @Test
+    fun `deleteRoadmap emits deleted event and notifies dynamic data refresh for AI roadmap`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(testDetail.copy(isTemplate = false))
+        )
+        val homeRepository = FakeHomeRepository()
+        val dashboardRepository = FakeDashboardRepository()
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository,
+            dynamicDataRefreshCoordinator = DynamicDataRefreshCoordinator(
+                homeRepository = homeRepository,
+                dashboardRepository = dashboardRepository
+            )
+        )
+        viewModel.loadRoadmap("roadmap-1")
+        val event = async(start = CoroutineStart.UNDISPATCHED) { viewModel.events.first() }
+
+        viewModel.deleteRoadmap()
+
+        assertEquals(listOf("roadmap-1"), repository.deletedRoadmapIds)
+        assertEquals(RoadmapDetailEvent.RoadmapDeleted, event.await())
+        advanceUntilIdle()
+        assertEquals(1, homeRepository.refreshCount)
+        assertEquals(1, dashboardRepository.refreshCount)
+    }
+
+    @Test
+    fun `deleteRoadmap ignores template roadmap`() = runTest {
+        val repository = FakeRoadmapRepository(
+            detailResult = Result.success(testDetail.copy(isTemplate = true))
+        )
+        val viewModel = RoadmapDetailViewModel(
+            repository = repository
+        )
+        viewModel.loadRoadmap("roadmap-1")
+
+        viewModel.deleteRoadmap()
+
+        assertTrue(repository.deletedRoadmapIds.isEmpty())
     }
 
     @Test
@@ -607,9 +721,33 @@ class RoadmapDetailViewModelTest {
         }
     }
 
+    private class FakeHomeRepository : HomeRepository {
+        var refreshCount = 0
+            private set
+
+        override suspend fun getHomeContent(): Result<HomeContent> {
+            return Result.failure(UnsupportedOperationException())
+        }
+
+        override suspend fun refreshHomeContent(): Result<HomeContent> {
+            refreshCount += 1
+            return Result.failure(UnsupportedOperationException())
+        }
+
+        override suspend fun searchDashboard(
+            query: String,
+            roadmapPage: Int,
+            skillPage: Int
+        ): Result<HomeSearchResult> {
+            return Result.failure(UnsupportedOperationException())
+        }
+    }
+
     private class FakeRoadmapRepository(
         private var detailResult: Result<RoadmapDetail> = Result.success(testDetail),
         private val startResult: Result<Unit> = Result.success(Unit),
+        private val resetResult: Result<Unit> = Result.success(Unit),
+        private val deleteResult: Result<Unit> = Result.success(Unit),
         private val updateResult: Result<NodeProgressUpdateResult> = Result.success(
             NodeProgressUpdateResult(
                 nodeId = "node-api",
@@ -620,6 +758,8 @@ class RoadmapDetailViewModelTest {
     ) : RoadmapRepository {
         val requestedIds = mutableListOf<String>()
         val startedRoadmapIds = mutableListOf<String>()
+        val resetRoadmapIds = mutableListOf<String>()
+        val deletedRoadmapIds = mutableListOf<String>()
         val progressUpdates = mutableListOf<ProgressUpdateRequest>()
 
         override suspend fun getLearningProgress(): Result<LearningProgress> {
@@ -703,6 +843,19 @@ class RoadmapDetailViewModelTest {
                 detailResult = Result.success(testDetail)
             }
             return startResult
+        }
+
+        override suspend fun resetRoadmapProgress(roadmapId: String): Result<Unit> {
+            resetRoadmapIds += roadmapId
+            if (resetResult.isSuccess) {
+                detailResult = Result.success(notStartedDetail)
+            }
+            return resetResult
+        }
+
+        override suspend fun deleteRoadmap(roadmapId: String): Result<Unit> {
+            deletedRoadmapIds += roadmapId
+            return deleteResult
         }
 
         override suspend fun updateNodeProgress(

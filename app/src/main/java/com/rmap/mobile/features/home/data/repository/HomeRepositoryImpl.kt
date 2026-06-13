@@ -25,6 +25,9 @@ import com.rmap.mobile.features.roadmap.data.local.dao.TemplateCategoryDao
 import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoriesResponseDto
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 class HomeRepositoryImpl(
     private val homeApi: HomeApi,
@@ -32,7 +35,23 @@ class HomeRepositoryImpl(
     private val trendingRoadmapDao: HomeTrendingRoadmapDao? = null,
     private val syncManager: SyncManager? = null
 ) : HomeRepository {
+    private val _homeContentUpdates = MutableSharedFlow<HomeContent>(
+        replay = 1,
+        extraBufferCapacity = 1
+    )
+    override val homeContentUpdates: Flow<HomeContent> = _homeContentUpdates.asSharedFlow()
+
     override suspend fun getHomeContent(): Result<HomeContent> {
+        return loadHomeContent().onSuccess { content ->
+            _homeContentUpdates.emit(content)
+        }
+    }
+
+    override suspend fun refreshHomeContent(): Result<HomeContent> {
+        return getHomeContent()
+    }
+
+    private suspend fun loadHomeContent(): Result<HomeContent> {
         return coroutineScope {
             val serverVersions = syncManager?.getServerVersions()
             val dashboard = async { SafeApiCall.execute { homeApi.getDashboardHome() } }

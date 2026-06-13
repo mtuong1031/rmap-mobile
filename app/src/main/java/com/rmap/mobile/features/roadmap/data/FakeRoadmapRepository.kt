@@ -335,6 +335,14 @@ class FakeRoadmapRepository : RoadmapRepository {
         return Result.success(Unit)
     }
 
+    override suspend fun resetRoadmapProgress(roadmapId: String): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun deleteRoadmap(roadmapId: String): Result<Unit> {
+        return Result.success(Unit)
+    }
+
     override suspend fun updateNodeProgress(
         roadmapId: String,
         nodeId: String,

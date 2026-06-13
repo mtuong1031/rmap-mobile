@@ -15,6 +15,7 @@ import com.rmap.mobile.features.roadmap.data.remote.model.UpdateNodeProgressResp
 import com.rmap.mobile.features.roadmap.data.remote.model.TemplateCategoriesResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.Path
@@ -71,6 +72,16 @@ interface RoadmapApi {
 
     @POST("roadmaps/{roadmapId}/start")
     suspend fun startRoadmap(
+        @Path("roadmapId") roadmapId: String
+    ): Response<Unit>
+
+    @DELETE("roadmaps/{roadmapId}/progress")
+    suspend fun resetRoadmapProgress(
+        @Path("roadmapId") roadmapId: String
+    ): Response<Unit>
+
+    @DELETE("roadmaps/{roadmapId}")
+    suspend fun deleteRoadmap(
         @Path("roadmapId") roadmapId: String
     ): Response<Unit>
 

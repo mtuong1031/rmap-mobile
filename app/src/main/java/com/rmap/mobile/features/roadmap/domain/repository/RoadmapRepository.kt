@@ -45,6 +45,8 @@ interface RoadmapRepository {
         skillId: String
     ): Result<SkillLearningContent>
     suspend fun startRoadmap(roadmapId: String): Result<Unit>
+    suspend fun resetRoadmapProgress(roadmapId: String): Result<Unit>
+    suspend fun deleteRoadmap(roadmapId: String): Result<Unit>
     suspend fun updateNodeProgress(
         roadmapId: String,
         nodeId: String,

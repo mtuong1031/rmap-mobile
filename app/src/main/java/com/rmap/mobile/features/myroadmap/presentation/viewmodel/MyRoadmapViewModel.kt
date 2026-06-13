@@ -2,6 +2,8 @@ package com.rmap.mobile.features.myroadmap.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rmap.mobile.core.datarefresh.DynamicDataChange
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.dashboard.domain.model.Dashboard
 import com.rmap.mobile.features.dashboard.domain.model.DashboardRoadmap
@@ -10,6 +12,7 @@ import com.rmap.mobile.features.myroadmap.domain.repository.CompletedSkillsRepos
 import com.rmap.mobile.features.profile.domain.repository.LearningReminderContextRepository
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -23,6 +26,10 @@ import kotlin.math.roundToInt
 
 class MyRoadmapViewModel(
     private val dashboardRepository: DashboardRepository = RMapAppGraph.dashboardRepository,
+    private val roadmapRepository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val dynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator? = runCatching {
+        RMapAppGraph.dynamicDataRefreshCoordinator
+    }.getOrNull(),
     private val completedSkillsRepository: CompletedSkillsRepository = RMapAppGraph.completedSkillsRepository,
     private val learningReminderContextRepository: LearningReminderContextRepository = RMapAppGraph.learningReminderContextRepository,
     private val authRepository: AuthRepository = RMapAppGraph.authRepository
@@ -103,6 +110,48 @@ class MyRoadmapViewModel(
     fun onFilterSelected(filter: MyRoadmapFilter) {
         _uiState.update { it.copy(selectedFilter = filter) }
     }
+
+    fun resetRoadmapProgress(roadmapId: String) {
+        val normalizedRoadmapId = roadmapId.trim()
+        if (normalizedRoadmapId.isBlank()) return
+
+        viewModelScope.launch {
+            roadmapRepository.resetRoadmapProgress(normalizedRoadmapId)
+                .onSuccess {
+                    notifyDynamicDataChanged(DynamicDataChange.RoadmapProgressReset(normalizedRoadmapId))
+                    _events.emit(MyRoadmapEvent.RoadmapProgressResetSucceeded)
+                }
+                .onFailure { error ->
+                    _events.emit(MyRoadmapEvent.RoadmapActionFailed(error.toUserMessage()))
+                }
+        }
+    }
+
+    fun deleteRoadmap(roadmapId: String, isTemplate: Boolean) {
+        val normalizedRoadmapId = roadmapId.trim()
+        if (normalizedRoadmapId.isBlank() || isTemplate) return
+
+        viewModelScope.launch {
+            roadmapRepository.deleteRoadmap(normalizedRoadmapId)
+                .onSuccess {
+                    _uiState.update { state ->
+                        state.copy(roadmaps = state.roadmaps.filterNot { roadmap -> roadmap.id == normalizedRoadmapId })
+                    }
+                    notifyDynamicDataChanged(DynamicDataChange.RoadmapDeleted(normalizedRoadmapId))
+                    _events.emit(MyRoadmapEvent.RoadmapDeleted)
+                }
+                .onFailure { error ->
+                    _events.emit(MyRoadmapEvent.RoadmapActionFailed(error.toUserMessage()))
+                }
+        }
+    }
+
+    private fun notifyDynamicDataChanged(change: DynamicDataChange) {
+        val coordinator = dynamicDataRefreshCoordinator ?: return
+        viewModelScope.launch {
+            runCatching { coordinator.notifyChange(change) }
+        }
+    }
 }
 
 private fun Dashboard.firstActiveRoadmapTitle(): String? {
@@ -153,6 +202,10 @@ private fun String.toFirstName(): String {
         .split(Regex("\\s+"))
         .firstOrNull()
         .orEmpty()
+}
+
+private fun Throwable.toUserMessage(): String? {
+    return message?.takeIf { it.isNotBlank() }
 }
 
 private const val MY_ROADMAP_LOAD_ERROR = "Unable to load your roadmaps"

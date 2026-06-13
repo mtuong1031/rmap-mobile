@@ -2,6 +2,8 @@ package com.rmap.mobile.features.roadmap.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rmap.mobile.core.datarefresh.DynamicDataChange
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.notification.AppNotification
 import com.rmap.mobile.core.notification.AppNotificationManager
 import com.rmap.mobile.core.notification.AppNotificationVariant
@@ -23,11 +25,16 @@ import kotlinx.coroutines.launch
 
 class NodeQuizViewModel(
     private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val dynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator? = null,
     private val dashboardRepository: DashboardRepository? = null,
     private val notificationManager: AppNotificationManager = RMapAppGraph.appNotificationManager
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NodeQuizUiState())
     val uiState: StateFlow<NodeQuizUiState> = _uiState.asStateFlow()
+    private val activeDynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator?
+        get() = dynamicDataRefreshCoordinator ?: runCatching {
+            RMapAppGraph.dynamicDataRefreshCoordinator
+        }.getOrNull()
 
     fun loadQuiz(
         roadmapId: String,
@@ -143,7 +150,10 @@ class NodeQuizViewModel(
                 answers = answers
             ).onSuccess { result ->
                 if (result.passed) {
-                    refreshProgressAfterPassedQuiz(state.roadmapId)
+                    refreshProgressAfterPassedQuiz(
+                        roadmapId = state.roadmapId,
+                        nodeId = state.nodeId
+                    )
                 }
                 _uiState.update {
                     it.copy(
@@ -170,19 +180,33 @@ class NodeQuizViewModel(
         }
     }
 
-    private fun refreshProgressAfterPassedQuiz(roadmapId: String) {
-        refreshDashboardInBackground()
+    private fun refreshProgressAfterPassedQuiz(
+        roadmapId: String,
+        nodeId: String
+    ) {
+        notifyDynamicDataChanged(
+            DynamicDataChange.NodeCompleted(
+                roadmapId = roadmapId,
+                nodeId = nodeId
+            )
+        )
         viewModelScope.launch {
             repository.getRoadmapDetail(roadmapId)
         }
     }
 
-    private fun refreshDashboardInBackground() {
-        val repository = dashboardRepository ?: runCatching { RMapAppGraph.dashboardRepository }.getOrNull()
-        repository ?: return
+    private fun notifyDynamicDataChanged(change: DynamicDataChange) {
+        val coordinator = activeDynamicDataRefreshCoordinator
+        if (coordinator != null) {
+            viewModelScope.launch {
+                runCatching { coordinator.notifyChange(change) }
+            }
+            return
+        }
 
+        val repository = dashboardRepository ?: runCatching { RMapAppGraph.dashboardRepository }.getOrNull() ?: return
         viewModelScope.launch {
-            repository.refreshDashboard()
+            runCatching { repository.refreshDashboard() }
         }
     }
 }

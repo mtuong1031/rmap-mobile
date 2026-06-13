@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.R
+import com.rmap.mobile.core.datarefresh.DynamicDataChange
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.utils.RMapAppGraph
 import com.rmap.mobile.features.roadmap.domain.model.LearningStatus
 import com.rmap.mobile.features.roadmap.domain.model.MilestoneDetail
@@ -22,13 +24,18 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class RoadmapMilestoneViewModel(
-    private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository
+    private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val dynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator? = null
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RoadmapMilestoneUiState())
     val uiState: StateFlow<RoadmapMilestoneUiState> = _uiState.asStateFlow()
 
     private val _events = MutableSharedFlow<RoadmapMilestoneEvent>()
     val events: SharedFlow<RoadmapMilestoneEvent> = _events.asSharedFlow()
+    private val activeDynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator?
+        get() = dynamicDataRefreshCoordinator ?: runCatching {
+            RMapAppGraph.dynamicDataRefreshCoordinator
+        }.getOrNull()
 
     fun loadMilestone(
         roadmapId: String,
@@ -143,6 +150,12 @@ class RoadmapMilestoneViewModel(
                 milestoneId = state.milestoneId,
                 repoUrl = state.repoUrl
             ).onSuccess { submission ->
+                notifyDynamicDataChanged(
+                    DynamicDataChange.MilestoneSubmitted(
+                        roadmapId = state.roadmapId,
+                        milestoneId = state.milestoneId
+                    )
+                )
                 _uiState.update { current ->
                     current.copy(
                         latestSubmission = submission.toUiModel(),
@@ -162,6 +175,13 @@ class RoadmapMilestoneViewModel(
                 }
                 _events.emit(RoadmapMilestoneEvent.SubmissionFailed)
             }
+        }
+    }
+
+    private fun notifyDynamicDataChanged(change: DynamicDataChange) {
+        val coordinator = activeDynamicDataRefreshCoordinator ?: return
+        viewModelScope.launch {
+            runCatching { coordinator.notifyChange(change) }
         }
     }
 

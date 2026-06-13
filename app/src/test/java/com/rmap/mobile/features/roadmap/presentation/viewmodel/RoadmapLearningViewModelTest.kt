@@ -570,6 +570,14 @@ class RoadmapLearningViewModelTest {
             return startResult
         }
 
+        override suspend fun resetRoadmapProgress(roadmapId: String): Result<Unit> {
+            return Result.failure(NotImplementedError())
+        }
+
+        override suspend fun deleteRoadmap(roadmapId: String): Result<Unit> {
+            return Result.failure(NotImplementedError())
+        }
+
         override suspend fun updateNodeProgress(
             roadmapId: String,
             nodeId: String,

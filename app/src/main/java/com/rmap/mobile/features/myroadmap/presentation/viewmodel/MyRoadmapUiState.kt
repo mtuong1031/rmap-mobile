@@ -87,4 +87,7 @@ data class MyRoadmapCardUiModel(
 
 sealed interface MyRoadmapEvent {
     data object DashboardRefreshFailed : MyRoadmapEvent
+    data object RoadmapProgressResetSucceeded : MyRoadmapEvent
+    data object RoadmapDeleted : MyRoadmapEvent
+    data class RoadmapActionFailed(val message: String? = null) : MyRoadmapEvent
 }

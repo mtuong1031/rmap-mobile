@@ -3,6 +3,8 @@ package com.rmap.mobile.features.roadmap.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rmap.mobile.R
+import com.rmap.mobile.core.datarefresh.DynamicDataChange
+import com.rmap.mobile.core.datarefresh.DynamicDataRefreshCoordinator
 import com.rmap.mobile.core.network.AppException
 import com.rmap.mobile.core.network.NetworkErrorType
 import com.rmap.mobile.core.utils.RMapAppGraph
@@ -31,6 +33,7 @@ import com.rmap.mobile.features.auth.domain.repository.AuthRepository
 class RoadmapLearningViewModel(
     private val skillLearningRepository: SkillLearningRepository = RMapAppGraph.skillLearningRepository,
     private val roadmapRepository: RoadmapRepository = RMapAppGraph.roadmapRepository,
+    private val dynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator? = null,
     private val authRepository: AuthRepository? = null,
     private val appNotificationManager: AppNotificationManager? = null
 ) : ViewModel() {
@@ -53,6 +56,11 @@ class RoadmapLearningViewModel(
                 }
             }
         }
+
+    private val activeDynamicDataRefreshCoordinator: DynamicDataRefreshCoordinator?
+        get() = dynamicDataRefreshCoordinator ?: runCatching {
+            RMapAppGraph.dynamicDataRefreshCoordinator
+        }.getOrNull()
 
     private val activeAppNotificationManager: AppNotificationManager
         get() = appNotificationManager ?: run {
@@ -141,6 +149,12 @@ class RoadmapLearningViewModel(
             )
                 .onSuccess {
                     lastRequestedCompleted = true
+                    notifyDynamicDataChanged(
+                        DynamicDataChange.NodeCompleted(
+                            roadmapId = roadmapId,
+                            nodeId = nodeId
+                        )
+                    )
                     _uiState.update {
                         it.copy(
                             isCompleted = true,
@@ -191,6 +205,7 @@ class RoadmapLearningViewModel(
             }
             roadmapRepository.startRoadmap(roadmapId)
                 .onSuccess {
+                    notifyDynamicDataChanged(DynamicDataChange.RoadmapStarted(roadmapId))
                     _uiState.update {
                         it.copy(
                             canTakeQuiz = true,
@@ -209,6 +224,13 @@ class RoadmapLearningViewModel(
                     }
                     _events.emit(RoadmapLearningEvent.NodeCompletionFailed)
                 }
+        }
+    }
+
+    private fun notifyDynamicDataChanged(change: DynamicDataChange) {
+        val coordinator = activeDynamicDataRefreshCoordinator ?: return
+        viewModelScope.launch {
+            runCatching { coordinator.notifyChange(change) }
         }
     }
 

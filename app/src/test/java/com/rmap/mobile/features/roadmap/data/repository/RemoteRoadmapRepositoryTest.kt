@@ -230,6 +230,30 @@ class RemoteRoadmapRepositoryTest {
     }
 
     @Test
+    fun `resetRoadmapProgress calls backend reset progress endpoint`() = runTest {
+        val api = FakeRoadmapApi()
+        val repository = newRepository(api)
+
+        val result = repository.resetRoadmapProgress(" roadmap-1 ")
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, api.resetRoadmapProgressCallCount)
+        assertEquals("roadmap-1", api.lastResetRoadmapProgressId)
+    }
+
+    @Test
+    fun `deleteRoadmap calls backend delete roadmap endpoint`() = runTest {
+        val api = FakeRoadmapApi()
+        val repository = newRepository(api)
+
+        val result = repository.deleteRoadmap(" roadmap-1 ")
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, api.deleteRoadmapCallCount)
+        assertEquals("roadmap-1", api.lastDeletedRoadmapId)
+    }
+
+    @Test
     fun `getRoadmapNodeLearningContent maps node detail skill resources and quiz state`() = runTest {
         val api = FakeRoadmapApi()
         val repository = newRepository(api)
@@ -377,6 +401,8 @@ class RemoteRoadmapRepositoryTest {
         var getRoadmapNodeDetailCallCount = 0
         var getRoadmapProgressCallCount = 0
         var startRoadmapCallCount = 0
+        var resetRoadmapProgressCallCount = 0
+        var deleteRoadmapCallCount = 0
         var updateNodeProgressCallCount = 0
         var submitMilestoneCallCount = 0
         var listRoadmapsCallCount = 0
@@ -385,6 +411,8 @@ class RemoteRoadmapRepositoryTest {
         var getTemplateNodesCallCount = 0
         var listTemplateCategoriesCallCount = 0
         var lastStartedRoadmapId: String? = null
+        var lastResetRoadmapProgressId: String? = null
+        var lastDeletedRoadmapId: String? = null
         var lastNodeDetailRoadmapId: String? = null
         var lastNodeDetailNodeId: String? = null
         var lastUpdatedRoadmapId: String? = null
@@ -402,6 +430,8 @@ class RemoteRoadmapRepositoryTest {
             Response.success(testMilestoneSubmissionEnvelope)
         var progressResponse: Response<RoadmapProgressDto> = Response.success(testProgress)
         var startRoadmapResponse: Response<Unit> = Response.success(Unit)
+        var resetRoadmapProgressResponse: Response<Unit> = Response.success(Unit)
+        var deleteRoadmapResponse: Response<Unit> = Response.success(Unit)
         var updateNodeProgressResponse: Response<UpdateNodeProgressResponseDto> =
             Response.success(testUpdateNodeProgressResponse)
         var roadmapsResponse: Response<RoadmapsResponseDto> =
@@ -480,6 +510,18 @@ class RemoteRoadmapRepositoryTest {
             return startRoadmapResponse
         }
 
+        override suspend fun resetRoadmapProgress(roadmapId: String): Response<Unit> {
+            resetRoadmapProgressCallCount++
+            lastResetRoadmapProgressId = roadmapId
+            return resetRoadmapProgressResponse
+        }
+
+        override suspend fun deleteRoadmap(roadmapId: String): Response<Unit> {
+            deleteRoadmapCallCount++
+            lastDeletedRoadmapId = roadmapId
+            return deleteRoadmapResponse
+        }
+
         override suspend fun updateNodeProgress(
             roadmapId: String,
             nodeId: String,
@@ -493,7 +535,7 @@ class RemoteRoadmapRepositoryTest {
         }
 
         override suspend fun listTemplates(
-            roleId: String?,
+            roleCategory: String?,
             page: Int?,
             perPage: Int?
         ): Response<RoadmapsResponseDto> {

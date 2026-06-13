@@ -178,6 +178,8 @@ class ExploreViewModelTest {
         override suspend fun submitMilestone(roadmapId: String, milestoneId: String, repoUrl: String): Result<MilestoneSubmission> = error("Not used")
         override suspend fun getRoadmapNodeLearningContent(roadmapId: String, nodeId: String, skillId: String): Result<SkillLearningContent> = error("Not used")
         override suspend fun startRoadmap(roadmapId: String): Result<Unit> = error("Not used")
+        override suspend fun resetRoadmapProgress(roadmapId: String): Result<Unit> = error("Not used")
+        override suspend fun deleteRoadmap(roadmapId: String): Result<Unit> = error("Not used")
         override suspend fun updateNodeProgress(roadmapId: String, nodeId: String, status: LearningStatus): Result<NodeProgressUpdateResult> = error("Not used")
 
 

@@ -439,6 +439,16 @@
     <string name="roadmap_detail_progress_updated">Đã cập nhật tiến độ.</string>
     <string name="roadmap_detail_progress_unlocked">Bạn đã mở khóa được %1$d bài học mới!</string>
     <string name="roadmap_detail_progress_update_failed">Không thể lưu tiến độ lúc này. Bạn vẫn có thể tiếp tục học và RMap sẽ thử lưu lại sau.</string>
+    <string name="roadmap_detail_action_reset_progress">Xóa tiến trình</string>
+    <string name="roadmap_detail_action_delete_roadmap">Xóa roadmap</string>
+    <string name="roadmap_detail_reset_progress_dialog_title">Xóa tiến trình học?</string>
+    <string name="roadmap_detail_reset_progress_dialog_message">Tiến trình học của bạn trong roadmap này sẽ quay về ban đầu. Nội dung roadmap và các bài nộp milestone vẫn được giữ lại.</string>
+    <string name="roadmap_detail_reset_progress_dialog_confirm">Xóa tiến trình</string>
+    <string name="roadmap_detail_delete_roadmap_dialog_title">Xóa roadmap AI này?</string>
+    <string name="roadmap_detail_delete_roadmap_dialog_message">Roadmap AI này sẽ bị xóa khỏi tài khoản của bạn. Thao tác này không thể hoàn tác.</string>
+    <string name="roadmap_detail_delete_roadmap_dialog_confirm">Xóa roadmap</string>
+    <string name="roadmap_detail_progress_reset_success">Đã xóa tiến trình roadmap.</string>
+    <string name="roadmap_detail_delete_roadmap_success">Đã xóa roadmap.</string>
     <string name="roadmap_detail_category_web_development">Web Development</string>
     <string name="roadmap_detail_section_core_web_fundamentals">Core Web Fundamentals</string>
     <string name="roadmap_detail_section_framework_ecosystem">Framework Ecosystem</string>

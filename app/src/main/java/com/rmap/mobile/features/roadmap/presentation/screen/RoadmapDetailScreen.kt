@@ -19,12 +19,18 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -78,12 +84,16 @@ fun RoadmapDetailScreen(
     onSearchClearClick: () -> Unit = {},
     onSearchBackClick: () -> Unit = {},
     onRetryClick: () -> Unit = {},
+    onResetProgressConfirm: () -> Unit = {},
+    onDeleteRoadmapConfirm: () -> Unit = {},
     onNodeActionClick: (RoadmapNodeUiModel) -> Unit = {},
     onGroupClick: (RoadmapGroupUiModel) -> Unit = {},
     onMilestoneClick: (RoadmapMilestoneUiModel) -> Unit = {}
 ) {
     val listState = rememberLazyListState()
     val hasStartedLearning = uiState.primaryAction == RoadmapPrimaryAction.ContinueLearning
+    var showResetProgressDialog by remember { mutableStateOf(false) }
+    var showDeleteRoadmapDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(scrollTarget, uiState.isLoading, uiState.isSearchActive, uiState.contentItems) {
         val target = scrollTarget ?: return@LaunchedEffect
@@ -252,11 +262,65 @@ fun RoadmapDetailScreen(
         if (!uiState.isSearchActive) {
             RoadmapDetailTopBar(
                 onBackClick = onBackClick,
+                isTemplate = uiState.isTemplate,
+                onResetProgressClick = { showResetProgressDialog = true },
+                onDeleteRoadmapClick = { showDeleteRoadmapDialog = true },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
             )
         }
+
+        if (showResetProgressDialog) {
+            RoadmapActionConfirmationDialog(
+                title = stringResource(R.string.roadmap_detail_reset_progress_dialog_title),
+                message = stringResource(R.string.roadmap_detail_reset_progress_dialog_message),
+                confirmText = stringResource(R.string.roadmap_detail_reset_progress_dialog_confirm),
+                onDismiss = { showResetProgressDialog = false },
+                onConfirm = {
+                    showResetProgressDialog = false
+                    onResetProgressConfirm()
+                }
+            )
+        }
+
+        if (showDeleteRoadmapDialog) {
+            RoadmapActionConfirmationDialog(
+                title = stringResource(R.string.roadmap_detail_delete_roadmap_dialog_title),
+                message = stringResource(R.string.roadmap_detail_delete_roadmap_dialog_message),
+                confirmText = stringResource(R.string.roadmap_detail_delete_roadmap_dialog_confirm),
+                onDismiss = { showDeleteRoadmapDialog = false },
+                onConfirm = {
+                    showDeleteRoadmapDialog = false
+                    onDeleteRoadmapConfirm()
+                }
+            )
+        }
     }
+}
+
+@Composable
+private fun RoadmapActionConfirmationDialog(
+    title: String,
+    message: String,
+    confirmText: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = { Text(text = message) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = confirmText)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.action_cancel))
+            }
+        }
+    )
 }
 
 @Composable

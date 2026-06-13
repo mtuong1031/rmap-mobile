@@ -40,6 +40,7 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        observeHomeContentUpdates()
         loadHome()
         observeAuthState()
     }
@@ -50,16 +51,7 @@ class HomeViewModel(
 
             homeRepository.getHomeContent()
                 .onSuccess { content ->
-                    learningReminderContextRepository.setActiveRoadmap(
-                        title = content.activeRoadmaps.firstOrNull()?.title
-                    )
-                    _uiState.update {
-                        content.toUiState(
-                            userName = it.userName,
-                            isAuthenticated = it.isAuthenticated,
-                            greetingPeriod = it.greetingPeriod
-                        )
-                    }
+                    applyHomeContent(content)
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -69,6 +61,27 @@ class HomeViewModel(
                         )
                     }
                 }
+        }
+    }
+
+    private fun observeHomeContentUpdates() {
+        viewModelScope.launch {
+            homeRepository.homeContentUpdates.collect { content ->
+                applyHomeContent(content)
+            }
+        }
+    }
+
+    private suspend fun applyHomeContent(content: HomeContent) {
+        learningReminderContextRepository.setActiveRoadmap(
+            title = content.activeRoadmaps.firstOrNull()?.title
+        )
+        _uiState.update {
+            content.toUiState(
+                userName = it.userName,
+                isAuthenticated = it.isAuthenticated,
+                greetingPeriod = it.greetingPeriod
+            )
         }
     }
 

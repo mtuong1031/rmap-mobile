@@ -73,6 +73,7 @@ fun RoadmapDetail.toRoadmapDetailUiState(): RoadmapDetailUiState {
 
     return RoadmapDetailUiState(
         roadmapId = id,
+        isTemplate = isTemplate,
         title = title,
         categoryLabel = roleName.ifBlank { title },
         progressFraction = progressFraction,

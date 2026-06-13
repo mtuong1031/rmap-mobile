@@ -1972,6 +1972,27 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+    delete:
+      tags: [Roadmaps]
+      summary: Delete an AI roadmap
+      description: |
+        Deletes a personal AI-generated roadmap owned by the current user.
+        Template roadmaps cannot be deleted through this learner endpoint.
+      operationId: deleteRoadmap
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+      responses:
+        '204':
+          description: Roadmap deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   # ============================================================
   # ROADMAP NODES
   # ============================================================
@@ -2109,6 +2130,35 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Progress]
+      summary: Reset learning progress for a roadmap
+      description: |
+        Deletes only the authenticated user's `user_node_progress` rows for
+        an accessible roadmap: either a public template roadmap or a personal
+        AI-generated roadmap owned by the current user. Roadmap nodes,
+        milestone submissions, quiz history, and daily activity are kept.
+      operationId: resetRoadmapProgress
+      security:
+        - CookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoadmapId'
+      responses:
+        '204':
+          description: Roadmap progress reset
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: A milestone submission is currently running for this roadmap
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /roadmap-nodes/{nodeId}/progress:
     patch:

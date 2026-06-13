@@ -2,9 +2,10 @@ package com.rmap.mobile.features.myroadmap.presentation.screen
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -38,14 +39,22 @@ import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Route
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -107,6 +116,8 @@ fun MyRoadmapScreen(
     onFilterSelected: (MyRoadmapFilter) -> Unit,
     onRoadmapClick: (String) -> Unit,
     onRoadmapCtaClick: (String) -> Unit,
+    onResetRoadmapProgress: (String) -> Unit = {},
+    onDeleteRoadmap: (String, Boolean) -> Unit = { _, _ -> },
     onRetryClick: () -> Unit,
     onCreateWithAiClick: () -> Unit,
     onExploreRoadmapsClick: () -> Unit,
@@ -116,6 +127,9 @@ fun MyRoadmapScreen(
     reselectEvent: Flow<NavBarDestination> = emptyFlow()
 ) {
     val listState = rememberLazyListState()
+    var actionMenuRoadmap by remember { mutableStateOf<MyRoadmapCardUiModel?>(null) }
+    var resetConfirmationRoadmap by remember { mutableStateOf<MyRoadmapCardUiModel?>(null) }
+    var deleteConfirmationRoadmap by remember { mutableStateOf<MyRoadmapCardUiModel?>(null) }
 
     LaunchedEffect(reselectEvent) {
         reselectEvent.collectLatest {
@@ -215,13 +229,50 @@ fun MyRoadmapScreen(
                             MyRoadmapCompactCard(
                                 roadmap = roadmap,
                                 onClick = { onRoadmapClick(roadmap.id) },
+                                onLongClick = { actionMenuRoadmap = roadmap },
                                 onCtaClick = { onRoadmapCtaClick(roadmap.id) },
+                                isActionMenuExpanded = actionMenuRoadmap?.id == roadmap.id,
+                                onActionMenuDismiss = { actionMenuRoadmap = null },
+                                onResetProgressClick = {
+                                    actionMenuRoadmap = null
+                                    resetConfirmationRoadmap = roadmap
+                                },
+                                onDeleteRoadmapClick = {
+                                    actionMenuRoadmap = null
+                                    deleteConfirmationRoadmap = roadmap
+                                },
                                 modifier = Modifier.padding(horizontal = Dimens.spacingScreenHorizontal)
                             )
                         }
                     }
                 }
             }
+        }
+
+        resetConfirmationRoadmap?.let { roadmap ->
+            MyRoadmapActionConfirmationDialog(
+                title = stringResource(R.string.roadmap_detail_reset_progress_dialog_title),
+                message = stringResource(R.string.roadmap_detail_reset_progress_dialog_message),
+                confirmText = stringResource(R.string.roadmap_detail_reset_progress_dialog_confirm),
+                onDismiss = { resetConfirmationRoadmap = null },
+                onConfirm = {
+                    resetConfirmationRoadmap = null
+                    onResetRoadmapProgress(roadmap.id)
+                }
+            )
+        }
+
+        deleteConfirmationRoadmap?.let { roadmap ->
+            MyRoadmapActionConfirmationDialog(
+                title = stringResource(R.string.roadmap_detail_delete_roadmap_dialog_title),
+                message = stringResource(R.string.roadmap_detail_delete_roadmap_dialog_message),
+                confirmText = stringResource(R.string.roadmap_detail_delete_roadmap_dialog_confirm),
+                onDismiss = { deleteConfirmationRoadmap = null },
+                onConfirm = {
+                    deleteConfirmationRoadmap = null
+                    onDeleteRoadmap(roadmap.id, roadmap.isTemplate)
+                }
+            )
         }
     }
 }
@@ -302,11 +353,17 @@ private fun MyRoadmapFilterChip(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MyRoadmapCompactCard(
     roadmap: MyRoadmapCardUiModel,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     onCtaClick: () -> Unit,
+    isActionMenuExpanded: Boolean = false,
+    onActionMenuDismiss: () -> Unit = {},
+    onResetProgressClick: () -> Unit = {},
+    onDeleteRoadmapClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val cardDescription = stringResource(R.string.my_roadmap_card_content_description, roadmap.title)
@@ -314,7 +371,11 @@ private fun MyRoadmapCompactCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(AppShapes.heroCard)
-            .clickable(role = Role.Button, onClick = onClick)
+            .combinedClickable(
+                role = Role.Button,
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .semantics { contentDescription = cardDescription },
         shape = AppShapes.heroCard,
         border = BorderStroke(
@@ -431,7 +492,47 @@ private fun MyRoadmapCompactCard(
                 )
             }
         }
+        DropdownMenu(
+            expanded = isActionMenuExpanded,
+            onDismissRequest = onActionMenuDismiss
+        ) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.roadmap_detail_action_reset_progress)) },
+                onClick = onResetProgressClick
+            )
+            if (!roadmap.isTemplate) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.roadmap_detail_action_delete_roadmap)) },
+                    onClick = onDeleteRoadmapClick
+                )
+            }
+        }
     }
+}
+
+@Composable
+private fun MyRoadmapActionConfirmationDialog(
+    title: String,
+    message: String,
+    confirmText: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = title) },
+        text = { Text(text = message) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = confirmText)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.action_cancel))
+            }
+        }
+    )
 }
 
 @Composable
@@ -1022,6 +1123,7 @@ private fun MyRoadmapCompactCardPreview() {
                     isBehind = false
                 ),
                 onClick = {},
+                onLongClick = {},
                 onCtaClick = {}
             )
         }
