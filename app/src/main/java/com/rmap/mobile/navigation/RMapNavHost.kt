@@ -143,6 +143,13 @@ fun RMapNavHost(
         RMapAppGraph.getCurrentUserUseCase()
     }
 
+    LaunchedEffect(authState) {
+        RMapAppGraph.updateContinueLearningWidgetUseCase(
+            authState = authState,
+            homeContent = null
+        )
+    }
+
     if (authState == AuthState.Checking) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -235,16 +242,26 @@ fun RMapNavHost(
 
     LaunchedEffect(authState, initialNotificationRoute) {
         val route = initialNotificationRoute?.takeIf { it != handledNotificationRoute } ?: return@LaunchedEffect
+        if (authState == AuthState.Checking) return@LaunchedEffect
+
+        handledNotificationRoute = route
+        if (route == AppRoutes.EXPLORE) {
+            navController.popBackStack(AppRoutes.MAIN_TABS, inclusive = false)
+            pagerState.scrollToPage(3)
+            return@LaunchedEffect
+        }
+
         when (authState) {
             is AuthState.Authenticated -> {
-                handledNotificationRoute = route
                 navController.navigate(route) {
                     launchSingleTop = true
                 }
             }
             AuthState.Checking -> Unit
             else -> {
-                handledNotificationRoute = route
+                navController.navigate(AppRoutes.AUTH) {
+                    launchSingleTop = true
+                }
             }
         }
     }

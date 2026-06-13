@@ -52,6 +52,8 @@ class MainActivity : AppCompatActivity() {
         if (this == null) return null
         val destination = getStringExtra(EXTRA_NOTIFICATION_DESTINATION)
         return when (destination) {
+            DESTINATION_AUTH -> AppRoutes.AUTH
+            DESTINATION_EXPLORE -> AppRoutes.EXPLORE
             DESTINATION_ROADMAP_DETAIL -> {
                 val roadmapId = getStringExtra(EXTRA_ROADMAP_ID)?.takeIf { it.isNotBlank() }
                 roadmapId?.let(AppRoutes::roadmapDetail)
@@ -63,6 +65,8 @@ class MainActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_NOTIFICATION_DESTINATION = "com.rmap.mobile.extra.NOTIFICATION_DESTINATION"
         const val EXTRA_ROADMAP_ID = "com.rmap.mobile.extra.ROADMAP_ID"
+        const val DESTINATION_AUTH = "auth"
+        const val DESTINATION_EXPLORE = "explore"
         const val DESTINATION_ROADMAP_DETAIL = "roadmap_detail"
     }
 }

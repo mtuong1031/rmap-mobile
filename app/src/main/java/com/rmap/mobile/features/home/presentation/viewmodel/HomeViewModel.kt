@@ -22,6 +22,7 @@ import com.rmap.mobile.features.home.presentation.components.trending.TrendingRo
 import com.rmap.mobile.features.roadmap.domain.model.LearningTopicIcon
 import com.rmap.mobile.features.roadmap.domain.model.toRoadmapCategoryIcon
 import com.rmap.mobile.features.roadmap.presentation.viewmodel.toImageVector
+import com.rmap.mobile.features.widget.domain.usecase.UpdateContinueLearningWidgetUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,10 +35,12 @@ class HomeViewModel(
     private val homeRepository: HomeRepository = RMapAppGraph.homeRepository,
     private val authRepository: AuthRepository = RMapAppGraph.authRepository,
     private val learningReminderContextRepository: LearningReminderContextRepository =
-        RMapAppGraph.learningReminderContextRepository
+        RMapAppGraph.learningReminderContextRepository,
+    private val updateContinueLearningWidget: UpdateContinueLearningWidgetUseCase? = null
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private var latestHomeContent: HomeContent? = null
 
     init {
         loadHome()
@@ -50,8 +53,13 @@ class HomeViewModel(
 
             homeRepository.getHomeContent()
                 .onSuccess { content ->
+                    latestHomeContent = content
                     learningReminderContextRepository.setActiveRoadmap(
                         title = content.activeRoadmaps.firstOrNull()?.title
+                    )
+                    activeWidgetUpdater()?.invoke(
+                        authState = authRepository.authState.value,
+                        homeContent = content
                     )
                     _uiState.update {
                         content.toUiState(
@@ -75,6 +83,10 @@ class HomeViewModel(
     private fun observeAuthState() {
         viewModelScope.launch {
             authRepository.authState.collect { authState ->
+                activeWidgetUpdater()?.invoke(
+                    authState = authState,
+                    homeContent = latestHomeContent
+                )
                 _uiState.update {
                     val authenticated = authState as? AuthState.Authenticated
                     it.copy(
@@ -87,6 +99,10 @@ class HomeViewModel(
         }
     }
 
+    private fun activeWidgetUpdater(): UpdateContinueLearningWidgetUseCase? {
+        return updateContinueLearningWidget
+            ?: runCatching { RMapAppGraph.updateContinueLearningWidgetUseCase }.getOrNull()
+    }
 }
 
 private fun HomeContent.toUiState(

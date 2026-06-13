@@ -27,12 +27,14 @@ import com.rmap.mobile.core.notification.AppNotificationManager
 import com.rmap.mobile.core.notification.AppNotificationVariant
 import com.rmap.mobile.features.auth.domain.model.AuthState
 import com.rmap.mobile.features.auth.domain.repository.AuthRepository
+import com.rmap.mobile.features.widget.domain.usecase.RefreshContinueLearningWidgetUseCase
 
 class RoadmapLearningViewModel(
     private val skillLearningRepository: SkillLearningRepository = RMapAppGraph.skillLearningRepository,
     private val roadmapRepository: RoadmapRepository = RMapAppGraph.roadmapRepository,
     private val authRepository: AuthRepository? = null,
-    private val appNotificationManager: AppNotificationManager? = null
+    private val appNotificationManager: AppNotificationManager? = null,
+    private val refreshContinueLearningWidget: RefreshContinueLearningWidgetUseCase? = null
 ) : ViewModel() {
     private val activeAuthRepository: AuthRepository
         get() = authRepository ?: run {
@@ -147,6 +149,7 @@ class RoadmapLearningViewModel(
                             isCompleting = false
                         )
                     }
+                    refreshContinueLearningWidgetInBackground()
                     _events.emit(RoadmapLearningEvent.NodeCompleted)
                 }
                 .onFailure { error ->
@@ -156,6 +159,16 @@ class RoadmapLearningViewModel(
                     }
                     _events.emit(RoadmapLearningEvent.NodeCompletionFailed)
                 }
+        }
+    }
+
+    private fun refreshContinueLearningWidgetInBackground() {
+        val refreshWidget = refreshContinueLearningWidget
+            ?: runCatching { RMapAppGraph.refreshContinueLearningWidgetUseCase }.getOrNull()
+            ?: return
+
+        viewModelScope.launch {
+            refreshWidget()
         }
     }
 

@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_continue_learning_title">Tiếp tục học</string>
+    <string name="widget_brand_title">RMap</string>
+    <string name="widget_continue_learning_description">Xem Roadmap đang học, tiến độ và chuỗi học tập của bạn.</string>
+    <string name="widget_logo_content_description">Logo RMap</string>
+    <string name="widget_signed_out_title">Duy trì nhịp học của bạn</string>
+    <string name="widget_signed_out_message">Đăng nhập để xem Roadmap và tiến độ hiện tại.</string>
+    <string name="widget_sign_in_action">Đăng nhập</string>
+    <string name="widget_empty_title">Bắt đầu Roadmap đầu tiên</string>
+    <string name="widget_empty_message">Chọn một lộ trình học và theo dõi tiến độ tại đây.</string>
+    <string name="widget_explore_action">Khám phá Roadmap</string>
+    <string name="widget_continue_message">Bước học tiếp theo đã sẵn sàng.</string>
+    <string name="widget_continue_action">Tiếp tục học</string>
+    <string name="widget_behind_label">Cần chú ý</string>
+    <plurals name="widget_streak_days">
+        <item quantity="other">%1$d ngày</item>
+    </plurals>
+    <string name="widget_progress_format">%1$d%% · %2$d/%3$d bài</string>
+    <string name="widget_percent_format">Đã hoàn thành %1$d%%</string>
     <string name="snackbar_dismiss_content_description">Đóng thông báo</string>
     <string name="snackbar_title_success">Thành công</string>
     <string name="snackbar_title_error">Đã xảy ra lỗi</string>
     <string name="snackbar_title_warning">Cần chú ý</string>
     <string name="snackbar_title_info">Thông báo</string>
-    <string name="app_name">rmap-mobile</string>
+    <string name="app_name">RMap</string>
 
     <!-- Auth Screen -->
     <string name="auth_heading_continue_account">Tiếp tục với tài khoản</string>
