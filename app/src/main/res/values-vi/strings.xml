@@ -13,11 +13,26 @@
     <string name="widget_continue_message">Bước học tiếp theo đã sẵn sàng.</string>
     <string name="widget_continue_action">Tiếp tục học</string>
     <string name="widget_behind_label">Cần chú ý</string>
+    <string name="widget_learning_pulse">Nhịp học tập</string>
+    <string name="widget_stat_roadmap">Roadmap</string>
+    <string name="widget_stat_streak">Chuỗi học</string>
+    <string name="widget_stat_readiness">Sẵn sàng</string>
+    <string name="widget_previous_description">Roadmap trước</string>
+    <string name="widget_next_description">Roadmap tiếp theo</string>
+    <string name="widget_nodes_complete_format">Hoàn thành %1$d/%2$d bài</string>
+    <string name="widget_progress_fallback">Tiến độ học tập</string>
+    <string name="widget_next_unlock_format">Sắp mở khóa: %1$s</string>
     <plurals name="widget_streak_days">
         <item quantity="other">%1$d ngày</item>
     </plurals>
+    <plurals name="widget_streak_days_short">
+        <item quantity="other">%1$d ngày</item>
+    </plurals>
+    <plurals name="widget_required_skill_hours">
+        <item quantity="other">Kỹ năng bắt buộc · còn %1$d giờ</item>
+    </plurals>
     <string name="widget_progress_format">%1$d%% · %2$d/%3$d bài</string>
-    <string name="widget_percent_format">Đã hoàn thành %1$d%%</string>
+    <string name="widget_percent_format">%1$d%%</string>
     <string name="snackbar_dismiss_content_description">Đóng thông báo</string>
     <string name="snackbar_title_success">Thành công</string>
     <string name="snackbar_title_error">Đã xảy ra lỗi</string>
