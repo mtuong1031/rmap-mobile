@@ -8,42 +8,41 @@ import org.junit.Test
 
 class ContinueLearningWidgetLayoutTest {
     @Test
-    fun compactWidget_usesShortHeaderAndHidesOptionalContent() {
-        val layout = continueLearningWidgetLayout(
-            width = 180.dp,
-            height = 110.dp
-        )
+    fun tinyWidget_onlyShowsEssentialHeroContent() {
+        val layout = continueLearningWidgetLayout(180.dp, 110.dp)
 
-        assertFalse(layout.showFullTitle)
-        assertFalse(layout.showSupportingText)
-        assertFalse(layout.showActiveAction)
-        assertEquals(10.dp, layout.contentPadding)
-        assertEquals(8.dp, layout.emptyActionSpacing)
+        assertEquals(WidgetLayoutTier.Tiny, layout.tier)
+        assertFalse(layout.showStats)
+        assertFalse(layout.showAction)
+        assertFalse(layout.showHeroDetails)
     }
 
     @Test
-    fun standardWidget_showsFullContentAndAction() {
-        val layout = continueLearningWidgetLayout(
-            width = 373.dp,
-            height = 210.dp
-        )
+    fun compactWidget_showsHeroAndSegmentedStats() {
+        val layout = continueLearningWidgetLayout(360.dp, 210.dp)
 
-        assertTrue(layout.showFullTitle)
-        assertTrue(layout.showSupportingText)
-        assertTrue(layout.showActiveAction)
-        assertEquals(16.dp, layout.contentPadding)
-        assertEquals(40.dp, layout.emptyActionSpacing)
+        assertEquals(WidgetLayoutTier.Compact, layout.tier)
+        assertTrue(layout.showStats)
+        assertFalse(layout.showStatCards)
+        assertFalse(layout.showAction)
     }
 
     @Test
-    fun shortWideWidget_doesNotShowActionThatWouldBeClipped() {
-        val layout = continueLearningWidgetLayout(
-            width = 373.dp,
-            height = 150.dp
-        )
+    fun standardWidget_showsCtaDotsAndStatCards() {
+        val layout = continueLearningWidgetLayout(360.dp, 280.dp)
 
-        assertTrue(layout.showFullTitle)
-        assertFalse(layout.showSupportingText)
-        assertFalse(layout.showActiveAction)
+        assertEquals(WidgetLayoutTier.Standard, layout.tier)
+        assertTrue(layout.showAction)
+        assertTrue(layout.showDots)
+        assertTrue(layout.showStatCards)
+        assertFalse(layout.showNextUnlock)
+    }
+
+    @Test
+    fun expandedWidget_showsNextUnlock() {
+        val layout = continueLearningWidgetLayout(360.dp, 400.dp)
+
+        assertEquals(WidgetLayoutTier.Expanded, layout.tier)
+        assertTrue(layout.showNextUnlock)
     }
 }

@@ -225,23 +225,30 @@ internal fun RMapSnackbarContent(
 
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.spacingXs)
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    if (visuals.title.isNotBlank()) {
-                        Text(
-                            text = visuals.title,
-                            style = AppTextStyles.snackbarTitle,
-                            color = colors.content
-                        )
-                    }
                     Text(
                         text = visuals.message,
-                        style = AppTextStyles.snackbarMessage,
+                        style = AppTextStyles.titleMediumStrong.copy(
+                            fontWeight = FontWeight.SemiBold
+                        ),
                         color = colors.content
                     )
                 }
 
-                if (hasAction) {
+                if (!hasAction && visuals.withDismissAction) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(Dimens.controlSm)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Close,
+                            contentDescription = stringResource(R.string.snackbar_dismiss_content_description),
+                            modifier = Modifier.size(RMapSnackbarDefaults.dismissIconSize),
+                            tint = colors.content.copy(alpha = 0.5f)
+                        )
+                    }
+                } else if (hasAction) {
                     TextButton(
                         onClick = onAction,
                         contentPadding = PaddingValues(horizontal = Dimens.spacingSm),
@@ -266,19 +273,6 @@ internal fun RMapSnackbarContent(
                                 )
                             )
                         }
-                    }
-                }
-                if (visuals.withDismissAction) {
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.size(Dimens.controlSm)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = stringResource(R.string.snackbar_dismiss_content_description),
-                            modifier = Modifier.size(RMapSnackbarDefaults.dismissIconSize),
-                            tint = colors.content.copy(alpha = 0.5f)
-                        )
                     }
                 }
             }

@@ -69,7 +69,7 @@ class RMapSnackbarTest {
             }
         }
 
-        composeRule.onNodeWithText("Login", ignoreCase = true).performClick()
+        composeRule.onNodeWithText("Login").performClick()
         composeRule.onNodeWithContentDescription(dismissDescription).performClick()
 
         assertTrue(snackbarData.actionPerformed)
@@ -96,7 +96,7 @@ class RMapSnackbarTest {
         }
 
         composeRule.onNodeWithText(longMessage).assertIsDisplayed()
-        composeRule.onNodeWithText("Login", ignoreCase = true).assertIsDisplayed()
+        composeRule.onNodeWithText("Login").assertIsDisplayed()
     }
 
     private class FakeSnackbarData(
