@@ -14,6 +14,7 @@ import com.rmap.mobile.features.roadmap.domain.model.NodeQuizOption
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizQuestion
 import com.rmap.mobile.features.roadmap.domain.model.NodeQuizSubmissionResult
 import com.rmap.mobile.features.roadmap.domain.repository.RoadmapRepository
+import com.rmap.mobile.features.widget.domain.usecase.RefreshContinueLearningWidgetUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,8 @@ import kotlinx.coroutines.launch
 class NodeQuizViewModel(
     private val repository: RoadmapRepository = RMapAppGraph.roadmapRepository,
     private val dashboardRepository: DashboardRepository? = null,
-    private val notificationManager: AppNotificationManager = RMapAppGraph.appNotificationManager
+    private val notificationManager: AppNotificationManager = RMapAppGraph.appNotificationManager,
+    private val refreshContinueLearningWidget: RefreshContinueLearningWidgetUseCase? = null
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NodeQuizUiState())
     val uiState: StateFlow<NodeQuizUiState> = _uiState.asStateFlow()
@@ -172,6 +174,7 @@ class NodeQuizViewModel(
 
     private fun refreshProgressAfterPassedQuiz(roadmapId: String) {
         refreshDashboardInBackground()
+        refreshContinueLearningWidgetInBackground()
         viewModelScope.launch {
             repository.getRoadmapDetail(roadmapId)
         }
@@ -183,6 +186,16 @@ class NodeQuizViewModel(
 
         viewModelScope.launch {
             repository.refreshDashboard()
+        }
+    }
+
+    private fun refreshContinueLearningWidgetInBackground() {
+        val refreshWidget = refreshContinueLearningWidget
+            ?: runCatching { RMapAppGraph.refreshContinueLearningWidgetUseCase }.getOrNull()
+            ?: return
+
+        viewModelScope.launch {
+            refreshWidget()
         }
     }
 }
