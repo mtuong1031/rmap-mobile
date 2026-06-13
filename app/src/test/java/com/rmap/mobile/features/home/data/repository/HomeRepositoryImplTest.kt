@@ -44,6 +44,7 @@ class HomeRepositoryImplTest {
         assertEquals("roadmap-1", content.activeRoadmaps.single().roadmapId)
         assertEquals(12.5, content.metrics.roadmapCompletionPct, 0.0)
         assertEquals("template-1", content.recommendations.single().roadmapId)
+        assertEquals("trend-1", content.beginners.single().roadmapId)
         assertEquals("trend-1", content.trendings.single().roadmapId)
     }
 
@@ -74,6 +75,7 @@ class HomeRepositoryImplTest {
 
         assertTrue(result.isSuccess)
         assertEquals(null, result.getOrThrow().recommendations.single().description)
+        assertEquals(null, result.getOrThrow().beginners.single().durationLabel)
         assertEquals(null, result.getOrThrow().trendings.single().durationLabel)
     }
 

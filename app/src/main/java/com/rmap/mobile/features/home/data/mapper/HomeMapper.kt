@@ -42,12 +42,14 @@ import com.rmap.mobile.features.home.domain.model.HomeTrendingRoadmap
 fun toHomeContent(
     dashboard: HomeDashboardResponseDto,
     recommendations: HomeTemplateRecommendationsResponseDto,
+    beginners: HomeTemplateTrendingsResponseDto,
     trendings: HomeTemplateTrendingsResponseDto
 ): HomeContent {
     return HomeContent(
         activeRoadmaps = dashboard.activeRoadmaps.map { it.toDomain() },
         metrics = dashboard.metrics.toDomain(),
         recommendations = recommendations.relevantRoadmaps.map { it.toDomain() },
+        beginners = beginners.trendings.map { it.toDomain() },
         trendings = trendings.trendings.map { it.toDomain() }
     )
 }

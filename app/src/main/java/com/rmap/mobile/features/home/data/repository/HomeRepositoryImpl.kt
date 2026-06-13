@@ -38,10 +38,12 @@ class HomeRepositoryImpl(
             val dashboard = async { SafeApiCall.execute { homeApi.getDashboardHome() } }
             val recommendations = async { SafeApiCall.execute { homeApi.getTemplateRecommendations() } }
             val categories = async { getTemplateCategoriesResult(serverVersions) }
-            val trendings = async { getTemplateTrendingsResult(serverVersions) }
+            val beginners = async { getTemplateTrendingsResult(serverVersions, bypassCache = true) }
+            val trendings = async { getTemplateTrendingsResult(serverVersions, bypassCache = false) }
 
             val dashboardResult = dashboard.await()
             val recommendationsResult = recommendations.await()
+            val beginnersResult = beginners.await()
             val trendingsResult = trendings.await()
 
             val dashboardData = when (dashboardResult) {
@@ -73,6 +75,20 @@ class HomeRepositoryImpl(
                 }
             }
 
+            val beginnersData = when (beginnersResult) {
+                is NetworkResult.Success -> beginnersResult.data
+                is NetworkResult.Error -> {
+                    if (beginnersResult.code == 401) {
+                        HomeTemplateTrendingsResponseDto(
+                            total = 0,
+                            trendings = emptyList()
+                        )
+                    } else {
+                        return@coroutineScope Result.failure(beginnersResult.toAppException())
+                    }
+                }
+            }
+
             val trendingsData = when (trendingsResult) {
                 is NetworkResult.Success -> trendingsResult.data
                 is NetworkResult.Error -> {
@@ -91,6 +107,7 @@ class HomeRepositoryImpl(
                 toHomeContent(
                     dashboard = dashboardData,
                     recommendations = recommendationsData,
+                    beginners = beginnersData,
                     trendings = trendingsData
                 )
             )
@@ -146,10 +163,11 @@ class HomeRepositoryImpl(
     }
 
     private suspend fun getTemplateTrendingsResult(
-        serverVersions: SyncVersionDto?
+        serverVersions: SyncVersionDto?,
+        bypassCache: Boolean = false
     ): NetworkResult<HomeTemplateTrendingsResponseDto> {
         val cachedTrendings = trendingRoadmapDao?.getAll().orEmpty()
-        val shouldUseCache = cachedTrendings.isNotEmpty() &&
+        val shouldUseCache = !bypassCache && cachedTrendings.isNotEmpty() &&
             syncManager?.isStale(SyncDataType.TEMPLATE_TRENDINGS, serverVersions) == false
         if (shouldUseCache) {
             return NetworkResult.Success(
@@ -163,10 +181,12 @@ class HomeRepositoryImpl(
 
         return when (val result = SafeApiCall.execute { homeApi.getTemplateTrendings() }) {
             is NetworkResult.Success -> {
-                trendingRoadmapDao?.replaceAll(
-                    result.data.trendings.map { roadmap -> roadmap.toEntity() }
-                )
-                syncManager?.markSynced(SyncDataType.TEMPLATE_TRENDINGS, serverVersions)
+                if (!bypassCache) {
+                    trendingRoadmapDao?.replaceAll(
+                        result.data.trendings.map { roadmap -> roadmap.toEntity() }
+                    )
+                    syncManager?.markSynced(SyncDataType.TEMPLATE_TRENDINGS, serverVersions)
+                }
                 result
             }
 

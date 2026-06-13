@@ -48,6 +48,7 @@ class HomeViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(2, state.learningPlans.size)
         assertEquals(1, state.recommendedRoadmaps.size)
+        assertEquals(1, state.beginnerRoadmaps.size)
         assertEquals(1, state.trendingRoadmaps.size)
         assertEquals(2, state.streakDays)
         assertEquals(0.5f, state.readinessFraction, 0.0f)
@@ -197,7 +198,19 @@ private fun testHomeContent(): HomeContent = HomeContent(
             requiredNodesTotal = 50
         )
     ),
-
+    beginners = listOf(
+        HomeTrendingRoadmap(
+            rank = 1,
+            roadmapId = "beginner-trend-1",
+            title = "Beginner Roadmap",
+            roleCategory = "WEB_DEVELOPMENT",
+            categoryLabel = "Web Development",
+            estimatedWeeks = null,
+            durationLabel = null,
+            nodesTotal = 5,
+            trendText = "Popular"
+        )
+    ),
     trendings = listOf(
         HomeTrendingRoadmap(
             rank = 1,

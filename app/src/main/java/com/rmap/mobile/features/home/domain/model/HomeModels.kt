@@ -4,6 +4,7 @@ data class HomeContent(
     val activeRoadmaps: List<HomeActiveRoadmap>,
     val metrics: HomeMetrics,
     val recommendations: List<HomeTemplateRoadmap>,
+    val beginners: List<HomeTrendingRoadmap>,
     val trendings: List<HomeTrendingRoadmap>
 )
 

@@ -111,7 +111,7 @@ private fun HomeContent.toUiState(
         hasInProgressRoadmap = learningPlans.isNotEmpty(),
         learningPlans = learningPlans,
         recommendedRoadmaps = recommendations.map { it.toRecommendedRoadmapState() },
-        beginnerRoadmaps = trendings.map { it.toBeginnerRoadmapState() },
+        beginnerRoadmaps = beginners.map { it.toBeginnerRoadmapState() },
         trendingRoadmaps = trendings.map { it.toTrendingRoadmapCardUiModel() },
         isLoading = false,
         errorMessage = null
